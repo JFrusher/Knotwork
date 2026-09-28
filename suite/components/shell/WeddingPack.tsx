@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FileDown } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
-import { assemblePack, type PackSection } from "@/lib/export/weddingPack";
+import type { PackSection } from "@/lib/export/weddingPack";
 import { readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 
 /**
@@ -58,6 +58,9 @@ export function WeddingPack() {
       return;
     }
 
+    // Lazily too: `assemblePack` is where pdf-lib comes in. Imported at the
+    // top of the file, it put the PDF library in the front page's first load.
+    const { assemblePack } = await import("@/lib/export/weddingPack");
     const pack = await assemblePack(sections);
     const name = (couple || "wedding").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const url = URL.createObjectURL(new Blob([pack.bytes as BlobPart], { type: "application/pdf" }));

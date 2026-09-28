@@ -13,7 +13,8 @@ const VERSION = 2;
 /**
  * What survives a refresh. Guest data is included deliberately — losing a
  * hundred and fifty names to an accidental tab close is the worst papercut this
- * app could have — and it never leaves the device.
+ * app could have. It travels wherever the wedding does: this device, and the
+ * account when the wedding is synced to one.
  *
  * Undo history is here too, so a reload does not silently reset the depth of
  * work the user can back out of (S-D1.1). Snapshots hold the design only, never

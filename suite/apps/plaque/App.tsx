@@ -216,8 +216,6 @@ export function App() {
         });
       } else if (saved.status === "discarded") {
         queued.push({ text: `${saved.reason} Starting fresh.` });
-      } else {
-        queued.push({ text: "Everything you do here stays on this device. Nothing is uploaded." });
       }
 
       // A project file that had to be migrated left its original here. Offer it
