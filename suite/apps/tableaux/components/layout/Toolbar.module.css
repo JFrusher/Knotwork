@@ -83,6 +83,7 @@
   place-items: center;
   background: var(--warn);
   color: #fff;
+  /* Below the 12px floor on purpose: a count inside a 16px badge, not a label. */
   font-size: 10px;
   font-weight: var(--weight-semibold);
   border-radius: var(--radius-full);
