@@ -107,6 +107,16 @@ the rule disabled and passes with it.
 **Cost:** a Data-panel edit remounts the open tool, which resets its undo
 history. Phase 4 removes the copies and with them the remount.
 
+**Found on the way, and not caused by it:** under heavy parallel load the
+existing e2e test "a Seating edit survives an immediate reload" fails now and
+then. An edit made less than 400ms before a reload is still inside Seating's
+autosave delay, so it depends on a save issued as the page unloads — and the
+page is sometimes gone before IndexedDB commits it. Measured on untouched
+`main` at 2 in 80 runs and with this fix at 5 in 56, which is not a
+significant difference; an instrumented failing run showed the new rule never
+fired. Phase 4 removes the cause: an edit reaches the shared store, and so
+IndexedDB, when it is made.
+
 ## Design language
 
 The look stays. What is decided here is its grammar, so that every new window

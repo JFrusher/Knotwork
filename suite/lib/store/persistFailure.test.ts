@@ -28,6 +28,7 @@ beforeEach(() => {
   useTrousseauStore.setState({
     status: "ready",
     error: null,
+    saveError: null,
     savedAt: null,
     raw: doc as unknown as Record<string, unknown>,
     doc,
@@ -45,8 +46,11 @@ test("a browser that refuses IndexedDB is reported, not thrown past", () => {
   // were not guarded.
   expect(() => vi.advanceTimersByTime(1000)).not.toThrow();
 
-  const { error, savedAt } = useTrousseauStore.getState();
-  expect(error).toContain(refused.message);
+  const { saveError, error, savedAt } = useTrousseauStore.getState();
+  expect(saveError).toContain(refused.message);
+  // A failed write is not an unreadable wedding: writes are still accepted,
+  // so the next one can land and clear this.
+  expect(error).toBeNull();
   // The point of the message: the user must not be told this was saved.
   expect(savedAt).toBeNull();
 });

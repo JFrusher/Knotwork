@@ -4,12 +4,13 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Database, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { TOOLS } from "@/lib/tools";
 import { AccountStatus } from "./AccountStatus";
 import { HowThisWorks } from "./TourButtons";
 import { ChromeSlot } from "./chrome";
+import { DataButton } from "./DataButton";
 
 const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataManager), {
   ssr: false,
@@ -32,7 +33,10 @@ export function Header() {
   const [dataEverOpened, setDataEverOpened] = useState(false);
   const pathname = usePathname();
   const guestCount = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
-  const dirty = useTrousseauStore((s) => s.status === "error");
+  const openData = () => {
+    setDataEverOpened(true);
+    setDataOpen(true);
+  };
 
   return (
     <>
@@ -89,23 +93,7 @@ export function Header() {
             {guestCount}
           </span>
 
-          <button
-            type="button"
-            data-tour="shell.data"
-            onClick={() => {
-              setDataEverOpened(true);
-              setDataOpen(true);
-            }}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded border px-2.5 py-1.5 text-sm transition ${
-              dirty
-                ? "border-danger bg-danger-soft text-charcoal"
-                : "border-charcoal/15 text-slate hover:border-gold hover:text-charcoal"
-            }`}
-          >
-            <Database size={15} />
-            {/* Still the button's name when the word does not fit on screen. */}
-            <span className="sr-only sm:not-sr-only">Data</span>
-          </button>
+          <DataButton onOpen={openData} />
 
           <HowThisWorks />
           <AccountStatus />

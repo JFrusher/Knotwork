@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { CloudOff, Download, FileUp, RefreshCw, Upload, X } from "lucide-react";
 import { migrate, serialise, suggestedFilename } from "@jfrusher/trousseau";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { Button, Notice, Panel, TextField } from "@/components/ui/controls";
+import { Dialog } from "@/components/ui/Dialog";
 import { readGuests } from "@/lib/model/slices";
 import { useWriters } from "@/lib/model/useSuite";
 import { reconcileLoadedDocument } from "@/lib/seating/normalise";
@@ -26,40 +27,17 @@ import {
  * and it writes the whole document rather than a slice.
  */
 export function DataManager({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-
-  // A native modal dialog, because it is the one that behaves as a dialog:
-  // the page behind goes inert so Tab stays inside, Escape closes it, and
-  // focus goes back to the Data button afterwards. The hand-built overlay
-  // this replaced said `aria-modal` and did none of those things.
-  useEffect(() => {
-    const element = dialog.current;
-    if (!element) return;
-    if (open && !element.open) element.showModal();
-    if (!open && element.open) element.close();
-  }, [open]);
-
   return (
-    <dialog
-      ref={dialog}
-      aria-labelledby="data-manager-title"
-      // Fires for Escape as well as for `close()`, so the header's state
-      // follows however the dialog was dismissed.
-      onClose={onClose}
-      // A click on the backdrop lands on the dialog element itself.
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-      className="mx-auto my-8 w-[calc(100%-2rem)] max-w-2xl rounded-lg border border-charcoal/10 bg-parchment text-slate shadow-2xl backdrop:bg-charcoal/40"
-    >
-      {open ? <Body onClose={onClose} /> : null}
-    </dialog>
+    <Dialog open={open} onClose={onClose} labelledBy="data-manager-title">
+      <Body onClose={onClose} />
+    </Dialog>
   );
 }
 
 function Body({ onClose }: { onClose: () => void }) {
   const status = useTrousseauStore((s) => s.status);
   const error = useTrousseauStore((s) => s.error);
+  const saveError = useTrousseauStore((s) => s.saveError);
   const savedAt = useTrousseauStore((s) => s.savedAt);
   const replaceDocument = useTrousseauStore((s) => s.replaceDocument);
   const guestCount = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
@@ -163,6 +141,12 @@ function Body({ onClose }: { onClose: () => void }) {
       {status === "error" ? (
         <Notice tone="danger">
           {error} Nothing has been written over it — export a backup below and restore a good copy.
+        </Notice>
+      ) : null}
+      {saveError ? (
+        <Notice tone="danger">
+          {saveError} What is on screen has not been stored on this device — export a backup
+          below before closing this page.
         </Notice>
       ) : null}
       {problem ? <Notice tone="danger">{problem}</Notice> : null}

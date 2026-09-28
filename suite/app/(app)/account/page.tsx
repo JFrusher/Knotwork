@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Download, LogOut, Trash2, UserPlus } from "lucide-react";
 import { browserClient } from "@/lib/accounts/browserClient";
 import { Button, TextField } from "@/components/ui/controls";
+import { useConfirm } from "@/components/ui/Confirm";
 
 interface AccountState {
   signedIn: boolean;
@@ -30,6 +31,7 @@ export default function AccountPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [notice, setNotice] = useState<Notice | null>(null);
   const client = browserClient();
+  const confirm = useConfirm();
   const [signinFailed, setSigninFailed] = useState(false);
   useEffect(() => {
     setSigninFailed(new URLSearchParams(window.location.search).get("signin") === "failed");
@@ -94,9 +96,13 @@ export default function AccountPage() {
   }
 
   async function deleteAccount() {
-    if (!window.confirm("Delete your account? Your wedding data goes with it. This cannot be undone.")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Delete your account?",
+      body: "If your partner is still on the wedding, it stays with them. If you are the last one on it, the wedding is deleted too. This cannot be undone.",
+      action: "Delete my account",
+      tone: "danger",
+    });
+    if (!confirmed) return;
     const response = await fetch("/api/accounts/delete", { method: "POST" });
     const body = await readJson<{ error?: string }>(response);
     if (!response.ok) {

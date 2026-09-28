@@ -1,5 +1,6 @@
 "use client";
 
+import type { Confirm } from "@/components/ui/Confirm";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 
 /**
@@ -16,16 +17,17 @@ export function isWeddingEmpty(): boolean {
   return Object.keys(doc.guests).length === 0 && (doc.day?.blocks.length ?? 0) === 0;
 }
 
-export async function loadExampleWedding(): Promise<"loaded" | "cancelled"> {
+export async function loadExampleWedding(confirm: Confirm): Promise<"loaded" | "cancelled"> {
   if (!isWeddingEmpty()) {
     const { doc } = useTrousseauStore.getState();
     const guests = Object.keys(doc.guests).length;
     const blocks = doc.day?.blocks.length ?? 0;
-    const confirmed = window.confirm(
-      `This replaces the wedding in this browser — ${guests} guests and ${blocks} blocks of the day — with the example one.\n\n` +
-        `Export a backup first from the Data button if you want to keep it. This cannot be undone.\n\n` +
-        `Load the example wedding?`,
-    );
+    const confirmed = await confirm({
+      title: "Replace this wedding with the example?",
+      body: `This replaces the wedding in this browser — ${guests} guests and ${blocks} blocks of the day — with the example one. Export a backup first from Data if you want to keep it.`,
+      action: "Replace it",
+      tone: "danger",
+    });
     if (!confirmed) return "cancelled";
   }
 

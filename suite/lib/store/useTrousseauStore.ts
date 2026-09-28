@@ -115,6 +115,13 @@ export interface TrousseauState {
   status: StoreStatus;
   /** Set when the stored bytes could not be read. Writes are refused while it is. */
   error: string | null;
+  /**
+   * Set when the last write to this device failed — a full disk, a browser
+   * that stopped allowing storage — and cleared by the next one that lands.
+   * Kept apart from `error`: that one means the wedding could not be read and
+   * every write is refused; this one means the edit on screen is not stored.
+   */
+  saveError: string | null;
   /** ISO time of the last successful write. Drives the "saved 13:42" notice. */
   savedAt: string | null;
   /** The stored document, exactly as stored. Never the parsed one. */
@@ -184,6 +191,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
     }),
   status: "idle",
   error: null,
+  saveError: null,
   savedAt: null,
   ...freshDoc(),
 
@@ -551,12 +559,12 @@ function persist(raw: Record<string, unknown>): void {
   const noted = (cause: unknown) =>
     // A save the user believes happened and did not is the worst outcome
     // here, so it goes on screen rather than into the console.
-    useTrousseauStore.setState({ error: `The wedding could not be saved: ${message(cause)}` });
+    useTrousseauStore.setState({ saveError: `The wedding could not be saved: ${message(cause)}` });
   try {
     // `idbSet` opens the database synchronously, so a browser that refuses
     // one throws here rather than rejecting.
     void idbSet(STORAGE_KEY, raw).then(() => {
-      useTrousseauStore.setState({ savedAt: new Date().toISOString(), error: null });
+      useTrousseauStore.setState({ savedAt: new Date().toISOString(), saveError: null });
       // Only after the local write has landed. Local storage is the record
       // of what the user has if the cloud is unreachable, so it goes first.
       scheduleCloudPush();
