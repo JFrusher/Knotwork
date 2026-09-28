@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertTriangle, CloudOff, Download, FileUp, RefreshCw, Upload, X } from "lucide-react";
+import { CloudOff, Download, FileUp, RefreshCw, Upload, X } from "lucide-react";
 import { migrate, serialise, suggestedFilename } from "@jfrusher/trousseau";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { Button, Notice, Panel, TextField } from "@/components/ui/controls";
 import { readGuests } from "@/lib/model/slices";
 import { useWriters } from "@/lib/model/useSuite";
 import { reconcileLoadedDocument } from "@/lib/seating/normalise";
@@ -160,48 +161,48 @@ function Body({ onClose }: { onClose: () => void }) {
       </header>
 
       {status === "error" ? (
-        <Banner tone="alarm">
+        <Notice tone="danger">
           {error} Nothing has been written over it — export a backup below and restore a good copy.
-        </Banner>
+        </Notice>
       ) : null}
-      {problem ? <Banner tone="alarm">{problem}</Banner> : null}
-      {notice ? <Banner tone="calm">{notice}</Banner> : null}
+      {problem ? <Notice tone="danger">{problem}</Notice> : null}
+      {notice ? <Notice tone="ok">{notice}</Notice> : null}
 
-      <Section title="The wedding">
+      <Panel title="The wedding">
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field
+          <TextField
             label="Names"
             value={event.coupleNames}
             placeholder="Charis & Jacob"
             onChange={(coupleNames) => setEvent({ coupleNames })}
           />
-          <Field
+          <TextField
             label="Date"
             type="date"
             value={event.date}
             onChange={(date) => setEvent({ date })}
           />
-          <Field
+          <TextField
             label="Venue"
             value={event.venueName}
             placeholder="The barn"
             onChange={(venueName) => setEvent({ venueName })}
           />
         </div>
-      </Section>
+      </Panel>
 
-      <Section title="Backup">
+      <Panel title="Backup">
         <p className="mb-3 text-sm text-slate">
           One file holding the whole wedding — guests, seating, the day, the crew and the
           stationery. It never leaves this machine unless you send it somewhere.
         </p>
         <div className="flex flex-wrap gap-2">
-          <Action onClick={exportJson} icon={Download} primary>
+          <Button onClick={exportJson} icon={Download} tone="primary">
             Export backup
-          </Action>
-          <Action onClick={() => jsonInput.current?.click()} icon={Upload}>
+          </Button>
+          <Button onClick={() => jsonInput.current?.click()} icon={Upload}>
             Restore from file
-          </Action>
+          </Button>
           <input
             ref={jsonInput}
             type="file"
@@ -214,7 +215,7 @@ function Body({ onClose }: { onClose: () => void }) {
             }}
           />
         </div>
-      </Section>
+      </Panel>
 
       {/*
         Absent entirely without an account. `cloudStatus` is "disabled" until
@@ -223,7 +224,7 @@ function Body({ onClose }: { onClose: () => void }) {
         opted into.
       */}
       {cloudStatus !== "disabled" ? (
-        <Section title="Cloud">
+        <Panel title="Cloud">
           {cloudStatus === "conflict" && cloudConflicts.length > 0 ? (
             <div className="space-y-4">
               <p className="text-sm text-slate">
@@ -234,16 +235,16 @@ function Body({ onClose }: { onClose: () => void }) {
                 <div key={conflict.slice} className="rounded border border-charcoal/10 p-3">
                   <p className="mb-2 text-sm font-semibold capitalize">{conflict.slice}</p>
                   <div className="flex flex-wrap gap-2">
-                    <Action
+                    <Button
                       onClick={() => resolveConflict(conflict.slice, "theirs")}
                       icon={RefreshCw}
-                      primary
+                      tone="primary"
                     >
                       Use their version
-                    </Action>
-                    <Action onClick={() => resolveConflict(conflict.slice, "mine")} icon={Upload}>
+                    </Button>
+                    <Button onClick={() => resolveConflict(conflict.slice, "mine")} icon={Upload}>
                       Keep mine
-                    </Action>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -258,7 +259,7 @@ function Body({ onClose }: { onClose: () => void }) {
           ) : (
             <p className="text-sm text-slate">Synced to your account.</p>
           )}
-        </Section>
+        </Panel>
       ) : null}
 
       {/*
@@ -267,11 +268,11 @@ function Body({ onClose }: { onClose: () => void }) {
         account. Without it on screen nobody can take down a link they have
         already published, which is the half of it that matters.
       */}
-      <Section title="Guest link">
-        <GuestLinkPanel onProblem={setProblem} />
-      </Section>
+      {/* Titled by its own panel ("A link for the guests"); wrapping it in a
+          second one printed two headings for one section. */}
+      <GuestLinkPanel onProblem={setProblem} />
 
-      <Section title="Guest list">
+      <Panel title="Guest list">
         {pending ? (
           <CsvMapping
             table={pending.table}
@@ -287,9 +288,9 @@ function Body({ onClose }: { onClose: () => void }) {
               People already on the list are matched by name and updated, never duplicated — and
               a re-import never unseats anybody.
             </p>
-            <Action onClick={() => csvInput.current?.click()} icon={FileUp}>
+            <Button onClick={() => csvInput.current?.click()} icon={FileUp}>
               Upload CSV
-            </Action>
+            </Button>
             <input
               ref={csvInput}
               type="file"
@@ -303,7 +304,7 @@ function Body({ onClose }: { onClose: () => void }) {
             />
           </>
         )}
-      </Section>
+      </Panel>
     </div>
   );
 }
@@ -348,89 +349,11 @@ function CsvMapping({
         ))}
       </div>
       <div className="flex gap-2">
-        <Action onClick={onCommit} icon={FileUp} primary>
+        <Button onClick={onCommit} icon={FileUp} tone="primary">
           Import {named} {named === 1 ? "row" : "rows"}
-        </Action>
-        <Action onClick={onCancel}>Cancel</Action>
+        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
       </div>
     </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mt-6 border-t border-charcoal/10 pt-5">
-      <h3 className="mb-3 text-sm font-bold tracking-widest text-slate uppercase">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
-function Banner({ tone, children }: { tone: "alarm" | "calm"; children: React.ReactNode }) {
-  return (
-    <p
-      className={`mb-4 flex gap-2 rounded border px-3 py-2 text-sm ${
-        tone === "alarm"
-          ? "border-rose/50 bg-rose/10 text-charcoal"
-          : "border-sage/50 bg-sage/10 text-charcoal"
-      }`}
-    >
-      {tone === "alarm" ? <AlertTriangle size={16} className="mt-0.5 shrink-0" /> : null}
-      <span>{children}</span>
-    </p>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (next: string) => void;
-  placeholder?: string;
-  type?: string;
-}) {
-  return (
-    <label className="block text-sm">
-      <span className="mb-1 block text-slate">{label}</span>
-      <input
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-charcoal/15 bg-parchment px-2 py-1.5 text-charcoal focus:border-gold"
-      />
-    </label>
-  );
-}
-
-function Action({
-  onClick,
-  icon: Icon,
-  primary,
-  children,
-}: {
-  onClick: () => void;
-  icon?: React.ComponentType<{ size?: number }>;
-  primary?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded border px-3 py-1.5 text-sm transition ${
-        primary
-          ? "border-gold bg-gold/15 text-charcoal hover:bg-gold/25"
-          : "border-charcoal/15 text-slate hover:border-charcoal/30 hover:text-charcoal"
-      }`}
-    >
-      {Icon ? <Icon size={16} /> : null}
-      {children}
-    </button>
   );
 }
