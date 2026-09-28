@@ -211,7 +211,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       <span className={styles.meta}>
         {missingLabel(missing, assetNames) ??
           (artefacts.length === 0
-            ? "Upload a guest list to begin"
+            ? "Press “Use the room” to begin"
             : `${artefacts.length} ${artefacts.length === 1 ? "card" : "cards"} · ${sheetCount} ${sheetCount === 1 ? "sheet" : "sheets"}`)}
       </span>
       {printer && isNotableDrift(printer.scale) && (

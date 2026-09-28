@@ -5,6 +5,12 @@
   color: var(--text-muted);
 }
 
+.none a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .summary {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -20,8 +26,4 @@
 .summary dd {
   margin: 0;
   font-variant-numeric: tabular-nums;
-}
-
-.file {
-  display: none;
 }

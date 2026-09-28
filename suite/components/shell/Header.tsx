@@ -24,11 +24,11 @@ const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataMana
  */
 export function Header() {
   const [dataOpen, setDataOpen] = useState(false);
-  // DataManager's chunk (framer-motion, CSV/guest-import parsing, etc.) is
-  // dynamically imported — keep it out of the tree entirely until the user
+  // DataManager's chunk (CSV and guest-import parsing, the guest link panel)
+  // is dynamically imported — keep it out of the tree entirely until the user
   // has opened it once, so the chunk isn't fetched on every route's first
-  // render. Once opened, it stays mounted so its own AnimatePresence can
-  // still animate the close.
+  // render. Once opened, its dialog element stays mounted and is opened and
+  // closed in place.
   const [dataEverOpened, setDataEverOpened] = useState(false);
   const pathname = usePathname();
   const guestCount = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
@@ -38,11 +38,13 @@ export function Header() {
     <>
       <header className="sticky top-0 z-40 border-b border-charcoal/10 bg-parchment/95 backdrop-blur">
         <div className="mx-auto flex h-[var(--shell-header-h)] max-w-7xl items-center gap-2 px-4 sm:gap-6">
-          <Link href="/" className="shrink-0 font-display text-lg text-charcoal">
+          <Link href="/" className="shrink-0 font-display text-xl text-charcoal">
             Trousseau
           </Link>
 
-          <nav className="flex shrink-0 items-center gap-1">
+          {/* Scrolls within the header on a narrow screen, rather than making
+              the whole page wider than it and pushing Data off the edge. */}
+          <nav aria-label="Tools" className="flex min-w-0 items-center gap-1 overflow-x-auto">
             {TOOLS.map((tool) => {
               const active = pathname === tool.href;
               return (
@@ -67,8 +69,12 @@ export function Header() {
             * are editing in — it is the only thing that knows what your last
             * change was — and its document controls sit beside it rather than
             * on a second bar of their own.
+            *
+            * `safe` end alignment: plain `justify-end` pushes overflow out of
+            * the start edge, where no scrollbar can reach it, and Timeline's
+            * zoom and Present buttons sat there invisible at 1440px.
             */}
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-1 overflow-x-auto [&_button]:whitespace-nowrap [&>*]:shrink-0">
+          <div className="flex min-w-0 flex-1 items-center justify-end-safe gap-1 overflow-x-auto [&_button]:whitespace-nowrap [&>*]:shrink-0">
             <ChromeSlot name="tool-actions" />
           </div>
           <div className="hidden shrink-0 items-center sm:flex">
@@ -92,12 +98,13 @@ export function Header() {
             }}
             className={`inline-flex shrink-0 items-center gap-1.5 rounded border px-2.5 py-1.5 text-sm transition ${
               dirty
-                ? "border-rose bg-rose/15 text-charcoal"
+                ? "border-danger bg-danger-soft text-charcoal"
                 : "border-charcoal/15 text-slate hover:border-gold hover:text-charcoal"
             }`}
           >
             <Database size={15} />
-            <span className="hidden sm:inline">Data</span>
+            {/* Still the button's name when the word does not fit on screen. */}
+            <span className="sr-only sm:not-sr-only">Data</span>
           </button>
 
           <HowThisWorks />

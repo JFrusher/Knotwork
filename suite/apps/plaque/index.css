@@ -9,10 +9,15 @@
   --header-h: 48px;
 }
 
-.plaque-scope,
-.plaque-scope *,
-.plaque-scope *::before,
-.plaque-scope *::after {
+/*
+ * Element resets, scoped with `:where()` so they add no specificity. Standalone
+ * they were bare element rules that any class beat; `.plaque-scope button`
+ * instead beat every button class in the tool.
+ */
+:where(.plaque-scope),
+:where(.plaque-scope) *,
+:where(.plaque-scope) *::before,
+:where(.plaque-scope) *::after {
   box-sizing: border-box;
 }
 
@@ -32,12 +37,12 @@
   -webkit-font-smoothing: antialiased;
 }
 
-.plaque-scope :is(h1, h2, h3) {
+:where(.plaque-scope) :is(h1, h2, h3) {
   margin: 0;
   font-weight: 600;
 }
 
-.plaque-scope :is(button, input, select, textarea) {
+:where(.plaque-scope) :is(button, input, select, textarea) {
   font: inherit;
   color: inherit;
 }

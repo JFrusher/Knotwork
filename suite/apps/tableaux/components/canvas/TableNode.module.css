@@ -45,8 +45,10 @@
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  font-family: var(--font-display);
-  font-size: var(--text-table);
+  /* The UI face: Marcellus draws 1 like I, so "Table 11" read as "Table II". */
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
   white-space: nowrap;
   pointer-events: none;
@@ -60,8 +62,8 @@
   transform: translateX(-50%);
   width: 110px;
   text-align: center;
-  font-family: var(--font-display);
-  font-size: var(--text-table);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
   color: var(--ink);
   background: var(--surface-raised);
   border: 1px solid var(--accent);

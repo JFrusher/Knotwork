@@ -1,15 +1,14 @@
 import { guestName, readGuests, readSeating } from "@/lib/model/slices";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
-import type { CsvIssue, GuestRow } from "../core/csv/parse";
+import type { RowIssue, GuestRow } from "../core/data/rows";
 
 /**
- * The guest list Plaque prints from, taken out of the room instead of a file.
+ * The guest list Place cards prints from: the room, and nothing else.
  *
- * Plaque was a standalone app, so the only way in was a CSV you exported from
- * somewhere else. That is still how a list arrives when it comes from a
- * spreadsheet, but the usual case here is that the wedding already has one: you
- * seated the room next door, and every table number on those cards is a fact
- * this app already holds.
+ * Plaque was a standalone app, so the only way in was a CSV exported from
+ * somewhere else — and a CSV exported before the last three people moved
+ * prints three wrong tables. Here the wedding already holds the list, and
+ * every table number on those cards is a fact this app already has.
  *
  * Going through the file shape rather than around it is deliberate. Plaque's
  * whole design is built on columns — you bind `{{First Name}}` to a text
@@ -26,14 +25,22 @@ const COLUMNS = ["First Name", "Last Name", "Name", "Table", "Dietary", "Side"] 
 export interface RoomRows {
   headers: string[];
   rows: GuestRow[];
-  issues: CsvIssue[];
+  issues: RowIssue[];
   fileName: string;
 }
 
-/** Reads the wedding as it stands. Empty when nobody has been seated yet. */
-export function rowsFromRoom(): RoomRows {
+/**
+ * Reads the wedding as it stands. Empty when there are no guests yet.
+ *
+ * `only` narrows it to some of the guests, by id, for reprinting a handful of
+ * cards — a misspelt name, a late change of table — without the whole run.
+ */
+export function rowsFromRoom(only?: ReadonlySet<string>): RoomRows {
   const { doc } = useTrousseauStore.getState();
-  const guests = readGuests(doc);
+  const everyone = readGuests(doc);
+  const guests = only
+    ? Object.fromEntries(Object.entries(everyone).filter(([id]) => only.has(id)))
+    : everyone;
   const seating = readSeating(doc);
 
   const tableLabel = new Map<string, string>();
@@ -61,7 +68,7 @@ export function rowsFromRoom(): RoomRows {
    * at all. Said once, as a count, rather than once per person.
    */
   const unseated = people.filter((guest) => !guest.assignedTableId).length;
-  const issues: CsvIssue[] =
+  const issues: RowIssue[] =
     unseated === 0
       ? []
       : [

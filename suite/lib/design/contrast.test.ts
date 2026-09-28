@@ -91,7 +91,9 @@ describe("the shared ramp", () => {
     expect(Object.keys(root).length).toBeGreaterThan(20);
   });
 
-  const GROUNDS = ["--t-0", "--t-1", "--t-2"];
+  // `--t-3` included: the canvas behind the work carries labels too, and muted
+  // text there sat at 4.1:1 while every check here passed.
+  const GROUNDS = ["--t-0", "--t-1", "--t-2", "--t-3"];
   const TEXT = ["--t-9", "--t-7", "--t-6"];
 
   for (const ink of TEXT) {
@@ -137,6 +139,16 @@ describe("each tool's accent", () => {
      */
     it(`${scope} identity colour is distinguishable`, () => {
       expect(contrast(hex(scope, "--accent-bright"), hex(":root", "--t-1"))).toBeGreaterThanOrEqual(3);
+    });
+  }
+});
+
+describe("Seating's dark panel", () => {
+  // Its secondary text was a spread of transparent greys, 40% to 70% of the
+  // panel's ink, and the two faintest sat at 3.3:1 and 4.4:1.
+  for (const ink of ["--panel-text", "--panel-text-muted"]) {
+    it(`${ink} on the panel clears AA`, () => {
+      expect(contrast(hex(".tableaux-scope", ink), hex(".tableaux-scope", "--panel-bg"))).toBeGreaterThanOrEqual(4.5);
     });
   }
 });

@@ -74,11 +74,11 @@
 }
 
 .sectionLabel {
-  font-size: var(--text-label);
+  font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: rgba(231, 229, 228, 0.4);
+  color: var(--panel-text-muted);
   padding: var(--space-2) var(--space-2) var(--space-1);
 }
 
@@ -115,7 +115,7 @@
 .noResults {
   padding: var(--space-5) var(--space-4);
   font-size: var(--text-sm);
-  color: rgba(231, 229, 228, 0.5);
+  color: var(--panel-text-muted);
   text-align: center;
 }
 

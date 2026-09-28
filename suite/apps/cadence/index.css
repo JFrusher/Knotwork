@@ -9,10 +9,15 @@
   --header-h: 48px;
 }
 
-.cadence-scope,
-.cadence-scope *,
-.cadence-scope *::before,
-.cadence-scope *::after {
+/*
+ * Element resets, scoped with `:where()` so they add no specificity. Standalone
+ * they were bare element rules that any class beat; `.cadence-scope button`
+ * instead beat every button class in the tool.
+ */
+:where(.cadence-scope),
+:where(.cadence-scope) *,
+:where(.cadence-scope) *::before,
+:where(.cadence-scope) *::after {
   box-sizing: border-box;
 }
 
@@ -30,30 +35,30 @@
   -webkit-font-smoothing: antialiased;
 }
 
-.cadence-scope :is(h1, h2, h3) {
+:where(.cadence-scope) :is(h1, h2, h3) {
   margin: 0;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-.cadence-scope h1 {
+:where(.cadence-scope) h1 {
   font-size: var(--text-xl);
 }
 
-.cadence-scope h2 {
+:where(.cadence-scope) h2 {
   font-size: var(--text-lg);
 }
 
-.cadence-scope h3 {
+:where(.cadence-scope) h3 {
   font-size: var(--text-md);
 }
 
-.cadence-scope button {
+:where(.cadence-scope) button {
   font: inherit;
   color: inherit;
 }
 
-.cadence-scope :is(input, select, textarea) {
+:where(.cadence-scope) :is(input, select, textarea) {
   font: inherit;
   color: inherit;
 }

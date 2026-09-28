@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { DEFAULT_FONT_ID } from "../assets/fonts";
-import type { CsvIssue, GuestRow } from "../core/csv/parse";
+import type { RowIssue, GuestRow } from "../core/data/rows";
 import { defaultRowIds } from "../core/data/artefacts";
 import { defaultFoldPosition } from "../core/geometry/fold";
 import { sideOf } from "../core/imposition/duplex";
@@ -54,7 +54,7 @@ export interface PlaqueState extends Snapshot {
    * again restores the originals exactly" is the acceptance criterion.
    */
   merged: Record<string, { indexes: number[]; ids: string[]; rows: GuestRow[] }>;
-  csvIssues: CsvIssue[];
+  csvIssues: RowIssue[];
   fileName: string | null;
 
   /**
@@ -110,7 +110,7 @@ export interface PlaqueState extends Snapshot {
   past: Snapshot[];
   future: Snapshot[];
 
-  setCsv: (data: { headers: string[]; rows: GuestRow[]; issues: CsvIssue[]; fileName: string }) => void;
+  setCsv: (data: { headers: string[]; rows: GuestRow[]; issues: RowIssue[]; fileName: string }) => void;
   setCard: (patch: Partial<CardSpec>) => void;
   setSheet: (patch: Partial<SheetSpec>) => void;
   applySuggestion: (s: LayoutSuggestion) => void;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { KO_FI_URL } from "@/lib/support";
 
 /**
  * The wedding, and how long there is.
@@ -35,6 +36,15 @@ export function Countdown() {
         {!venue && !date && <span>No date set yet. Add one in Timeline.</span>}
       </p>
       {date && <p className="mt-1 text-sm text-slate">{howLong(date)}</p>}
+      {date && isPast(date) && (
+        <p className="mt-3 text-sm text-slate">
+          Congratulations. If Trousseau helped along the way,{" "}
+          <a href={KO_FI_URL} className="text-charcoal underline underline-offset-2">
+            a coffee on Ko-fi
+          </a>{" "}
+          helps keep it free for the next couple.
+        </p>
+      )}
     </header>
   );
 }
@@ -43,6 +53,15 @@ function longDate(iso: string): string {
   const when = new Date(`${iso}T00:00:00`);
   if (Number.isNaN(when.getTime())) return iso;
   return when.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+}
+
+/** Whether the day has been and gone: from the morning after, not the day itself. */
+function isPast(iso: string): boolean {
+  const when = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(when.getTime())) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return when.getTime() < today.getTime();
 }
 
 /**

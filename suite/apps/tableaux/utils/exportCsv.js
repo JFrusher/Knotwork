@@ -1,4 +1,4 @@
-import { downloadFile, slug } from './exportJson.js'
+import { downloadFile, slug } from './download.js'
 
 // Cells beginning with these characters can be executed as formulas by Excel /
 // Google Sheets; prefix with a quote to neutralise spreadsheet injection.

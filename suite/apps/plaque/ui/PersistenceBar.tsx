@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { deleteFont } from "../state/blobStore";
 import { deleteImage } from "../state/imageStore";
-import { saveProjectFile } from "../state/saveProjectFile";
 import { usePlaque } from "../state/store";
 import styles from "./PersistenceBar.module.css";
 
@@ -58,17 +57,10 @@ export function PersistenceBar({ reason, onRetry }: { reason: string; onRetry: (
 
   return (
     <div className={styles.bar} role="alert">
-      <strong className={styles.headline}>Not saving — export your project now.</strong>
+      <strong className={styles.headline}>
+        Not saving — export a backup from the Data button now.
+      </strong>
       <span className={styles.reason}>{reason}</span>
-
-      <button
-        type="button"
-        className={styles.primary}
-        disabled={busy}
-        onClick={() => void run(saveProjectFile, "The project could not be saved.")}
-      >
-        Save project file
-      </button>
 
       {uploadCount > 0 &&
         (confirming ? (

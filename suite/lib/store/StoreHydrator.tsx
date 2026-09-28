@@ -27,7 +27,7 @@ export function StoreHydrator() {
   }, [hydrate, startCloudSync]);
 
   useEffect(() => {
-    // Guarded the same way `schedulePersist` is: this file is imported by
+    // Guarded the same way `persist` is: this file is imported by
     // tests that run without a `window`.
     if (typeof window === "undefined") return;
     const onOnline = () => void useTrousseauStore.getState().syncToCloud();

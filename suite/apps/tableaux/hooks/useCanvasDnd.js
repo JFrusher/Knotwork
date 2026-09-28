@@ -10,6 +10,32 @@ import { screenToCanvas, isWithinViewport } from '../utils/canvasCoords.js'
  * The drop point is reconstructed from the activator event + delta so it works
  * regardless of which droppable (if any) reported `over`.
  */
+/**
+ * Add a table from the palette at a canvas point and select it: a table type,
+ * or a saved preset with its full footprint and seating. Shared by dropping an
+ * item on the canvas and by pressing it, which adds it mid-view.
+ */
+export function addTableFromPalette(data, point) {
+  const store = useStore.getState()
+  let cmd = null
+  if (data.type === 'palette') {
+    cmd = store.addTable({ type: data.tableType, x: point.x, y: point.y })
+  } else {
+    const preset = (store.settings.customTablePresets || []).find((pr) => pr.id === data.presetId)
+    if (!preset) return
+    cmd = store.addTable({
+      type: preset.type,
+      x: point.x,
+      y: point.y,
+      capacity: preset.capacity,
+      sizeUnits: preset.sizeUnits || undefined,
+      perSideSeats: preset.perSideSeats || undefined,
+      seatMode: preset.seatMode,
+    })
+  }
+  if (cmd?.meta?.newTableId) store.select('table', cmd.meta.newTableId)
+}
+
 export function useCanvasDnd() {
   const [activeDrag, setActiveDrag] = useState(null)
 
@@ -31,30 +57,9 @@ export function useCanvasDnd() {
     const overData = over?.data?.current
 
     // Palette → create a table at the drop position.
-    if (data.type === 'palette') {
+    if (data.type === 'palette' || data.type === 'palette-preset') {
       if (!isWithinViewport(clientX, clientY)) return
-      const p = screenToCanvas(clientX, clientY)
-      const cmd = store.addTable({ type: data.tableType, x: p.x, y: p.y })
-      if (cmd?.meta?.newTableId) store.select('table', cmd.meta.newTableId)
-      return
-    }
-
-    // Saved preset → recreate its full footprint + seating at the drop position.
-    if (data.type === 'palette-preset') {
-      if (!isWithinViewport(clientX, clientY)) return
-      const preset = (store.settings.customTablePresets || []).find((pr) => pr.id === data.presetId)
-      if (!preset) return
-      const p = screenToCanvas(clientX, clientY)
-      const cmd = store.addTable({
-        type: preset.type,
-        x: p.x,
-        y: p.y,
-        capacity: preset.capacity,
-        sizeUnits: preset.sizeUnits || undefined,
-        perSideSeats: preset.perSideSeats || undefined,
-        seatMode: preset.seatMode,
-      })
-      if (cmd?.meta?.newTableId) store.select('table', cmd.meta.newTableId)
+      addTableFromPalette(data, screenToCanvas(clientX, clientY))
       return
     }
 

@@ -88,6 +88,13 @@ const schema = z
      */
     VERCEL_PROJECT_PRODUCTION_URL: absent(z.string().min(1)),
 
+    /**
+     * Set to "1" by Vercel on its own builds. Vercel Web Analytics is served
+     * from the deployment itself, so anywhere else its script is a 404 on
+     * every page load.
+     */
+    VERCEL: absent(z.literal("1")),
+
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   })
   .superRefine((env, ctx) => {
@@ -151,6 +158,11 @@ export function resetCache(): void {
 export function syncConfigured(): boolean {
   const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = env();
   return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+}
+
+/** Whether this deployment is on Vercel, which serves its own analytics endpoint. */
+export function onVercel(): boolean {
+  return env().VERCEL === "1";
 }
 
 /** Whether this deployment has accounts/sign-in available at all. */

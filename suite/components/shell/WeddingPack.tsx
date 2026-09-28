@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { FileDown } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
-import { assemblePack, type PackSection } from "@/lib/export/weddingPack";
+import { KO_FI_URL } from "@/lib/support";
+import type { PackSection } from "@/lib/export/weddingPack";
 import { readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 
 /**
@@ -58,6 +59,9 @@ export function WeddingPack() {
       return;
     }
 
+    // Lazily too: `assemblePack` is where pdf-lib comes in. Imported at the
+    // top of the file, it put the PDF library in the front page's first load.
+    const { assemblePack } = await import("@/lib/export/weddingPack");
     const pack = await assemblePack(sections);
     const name = (couple || "wedding").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const url = URL.createObjectURL(new Blob([pack.bytes as BlobPart], { type: "application/pdf" }));
@@ -99,8 +103,18 @@ export function WeddingPack() {
         </p>
       )}
       {note && <p className="mt-3 text-xs text-slate">{note}</p>}
+      {/* Said only once something has been made, and never in the way of it. */}
+      {note && (
+        <p className="mt-2 text-xs text-slate">
+          If Trousseau saved you some work,{" "}
+          <a href={KO_FI_URL} className="underline underline-offset-2 hover:text-charcoal">
+            a coffee on Ko-fi
+          </a>{" "}
+          helps keep it free.
+        </p>
+      )}
       {problem && (
-        <p role="alert" className="mt-3 text-xs text-rose">
+        <p role="alert" className="mt-3 text-xs text-danger">
           {problem}
         </p>
       )}

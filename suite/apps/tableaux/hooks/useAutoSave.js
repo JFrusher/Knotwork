@@ -12,9 +12,9 @@ import { readDoc, writeDoc } from '../store/sliceBridge'
  *
  * None of it is gone — all of it moved. The shell stores the wedding on this
  * device, so there is no request to fail and nothing to back up against its
- * failure; it syncs end-to-end encrypted, so the version that wins is settled
- * by the conflict resolution shared with the other three tools rather than by
- * one tool's own dialogue; and its writes are debounced and flushed on unload,
+ * failure; it syncs to the account, so the version that wins is settled by the
+ * conflict resolution shared with the other tools rather than by one tool's
+ * own dialogue; and it writes to IndexedDB the moment it is handed the plan,
  * which is what the beacon was for.
  *
  * What is left is the part that was always Tableaux's: read the document, and
@@ -46,30 +46,35 @@ export async function saveNow({ manual = false } = {}) {
   }
 }
 
-/** Re-reads the plan from the shared wedding, discarding unsaved edits. */
-export async function reloadPlan() {
-  useStore.getState().hydrate(readDoc())
-}
-
 /**
- * Was a synchronous localStorage copy, written when a save had failed or a
- * session had expired — a second place to keep the work when the first one had
- * just proved unreliable. There is no unreliable first place any more, so the
- * honest translation of "make sure this is safe" is simply to save.
+ * How long the plan waits after the last edit before handing it to the shared
+ * store — the same as the other tools. A drag bumps `_rev` every frame, so this
+ * writes once when the drag ends rather than sixty times a second.
  */
-export function writeBackup() {
-  saveNow({ manual: true })
-}
+const SAVE_DELAY_MS = 400
 
-export function useAutoSave(intervalMs = 30000) {
+export function useAutoSave() {
   useEffect(() => {
     useStore.getState().hydrate(readDoc())
 
-    const timer = setInterval(() => saveNow({ manual: false }), intervalMs)
+    // On every document change rather than on a clock. This was a 30-second
+    // interval, and anything done inside that half-minute was gone on reload:
+    // on screen, never saved.
+    let timer = null
+    const flush = () => {
+      clearTimeout(timer)
+      timer = null
+      saveNow({ manual: false })
+    }
+    const unsubscribe = useStore.subscribe((state, previous) => {
+      if (state._rev === previous._rev) return
+      clearTimeout(timer)
+      timer = setTimeout(flush, SAVE_DELAY_MS)
+    })
 
-    // The shared store debounces its own write and flushes it on unload, so
-    // this only has to make sure the latest edit has reached it.
-    const flush = () => saveNow({ manual: false })
+    // The shared store writes to IndexedDB the moment it is handed the plan,
+    // so the page going away only has to hand over the edit still inside the
+    // delay above.
     const onHide = () => {
       if (document.visibilityState === 'hidden') flush()
     }
@@ -77,15 +82,12 @@ export function useAutoSave(intervalMs = 30000) {
     document.addEventListener('visibilitychange', onHide)
 
     return () => {
-      clearInterval(timer)
+      unsubscribe()
       window.removeEventListener('beforeunload', flush)
       document.removeEventListener('visibilitychange', onHide)
-      // Standalone Tableaux was the page, so this only ran when the page was
-      // going away and `beforeunload` had already covered it. It is a tab now,
-      // and switching to Place cards unmounts it without the browser ever
-      // firing an unload — which would silently drop up to a full interval of
-      // work on the way out.
+      // Switching to another tool unmounts this one without the browser ever
+      // firing an unload, so the pending edit is handed over here too.
       flush()
     }
-  }, [intervalMs])
+  }, [])
 }

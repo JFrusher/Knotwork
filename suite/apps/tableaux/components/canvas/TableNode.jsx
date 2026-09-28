@@ -52,6 +52,7 @@ function TableNodeBase({ tableId, screenToCanvas }) {
   const chairCm = useStore((s) => s.settings.chairSizeUnits || 45)
 
   const select = useStore((s) => s.select)
+  const moveTable = useStore((s) => s.moveTable)
   const dispatch = useStore((s) => s.dispatch)
   const patchEntityLive = useStore((s) => s.patchEntityLive)
   const setDragGuides = useStore((s) => s.setDragGuides)
@@ -309,6 +310,24 @@ function TableNodeBase({ tableId, screenToCanvas }) {
         transform: `translate(-50%, -50%) rotate(${rot}deg)`,
       }}
       data-canvas-item
+      // Reachable from the keyboard: Enter or Space selects the table and
+      // opens its panel; the arrow keys move it one grid step.
+      tabIndex={0}
+      role="button"
+      aria-label={`${table.label}, ${seated} of ${capacity} seats taken`}
+      aria-pressed={isSelected}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          select('table', tableId)
+          return
+        }
+        const step = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]
+        if (!step) return
+        e.preventDefault()
+        moveTable(tableId, table.x + step[0] * gridSize, table.y + step[1] * gridSize)
+      }}
       onPointerDown={handlePointerDown}
       onDoubleClick={(e) => {
         e.stopPropagation()

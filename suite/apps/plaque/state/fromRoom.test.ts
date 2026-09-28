@@ -67,6 +67,22 @@ describe("printing from the room", () => {
     expect(rowsFromRoom().rows[0]?.["Table"]).toBe("");
   });
 
+  it("prints only the chosen guests when reprinting a few", () => {
+    seat(
+      {
+        g1: { id: "g1", firstName: "Charis", assignedTableId: "t1" },
+        g2: { id: "g2", firstName: "Tobias", assignedTableId: "t1" },
+        g3: { id: "g3", firstName: "Eleanor", assignedTableId: "t1" },
+      },
+      { t1: { id: "t1", label: "Table 1" } },
+    );
+
+    const { rows, fileName } = rowsFromRoom(new Set(["g1", "g3"]));
+    expect(rows.map((row) => row["First Name"])).toEqual(["Charis", "Eleanor"]);
+    // Still the room: a reprint must not read as cards from an imported file.
+    expect(fileName).toBe("the room");
+  });
+
   it("offers the columns a card is actually set from", () => {
     seat({}, {});
     expect(rowsFromRoom().headers).toEqual([

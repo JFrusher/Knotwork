@@ -9,10 +9,15 @@
   --header-h: 48px;
 }
 
-.brigade-scope,
-.brigade-scope *,
-.brigade-scope *::before,
-.brigade-scope *::after {
+/*
+ * Element resets, scoped with `:where()` so they add no specificity. Standalone
+ * they were bare element rules that any class beat; `.brigade-scope button`
+ * instead beat every button class in the tool.
+ */
+:where(.brigade-scope),
+:where(.brigade-scope) *,
+:where(.brigade-scope) *::before,
+:where(.brigade-scope) *::after {
   box-sizing: border-box;
 }
 
@@ -30,30 +35,30 @@
   -webkit-font-smoothing: antialiased;
 }
 
-.brigade-scope :is(h1, h2, h3) {
+:where(.brigade-scope) :is(h1, h2, h3) {
   margin: 0;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-.brigade-scope h1 {
+:where(.brigade-scope) h1 {
   font-size: var(--text-xl);
 }
 
-.brigade-scope h2 {
+:where(.brigade-scope) h2 {
   font-size: var(--text-lg);
 }
 
-.brigade-scope h3 {
+:where(.brigade-scope) h3 {
   font-size: var(--text-md);
 }
 
-.brigade-scope button {
+:where(.brigade-scope) button {
   font: inherit;
   color: inherit;
 }
 
-.brigade-scope :is(input, select, textarea) {
+:where(.brigade-scope) :is(input, select, textarea) {
   font: inherit;
   color: inherit;
 }

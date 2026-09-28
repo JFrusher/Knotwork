@@ -43,8 +43,11 @@ import { syncAssets } from "@/lib/documents/assets";
 /** IndexedDB, via idb-keyval — the same engine the four tools already use. */
 export const STORAGE_KEY = "trousseau.document";
 
-/** Trailing write delay. A drag on the seating canvas fires many mutations. */
-const PERSIST_DELAY_MS = 250;
+/**
+ * Trailing delay before a local write is pushed to the cloud. Bursts of edits
+ * become one request. The local write itself is never delayed — see `persist`.
+ */
+const CLOUD_PUSH_DELAY_MS = 250;
 
 export type StoreStatus = "idle" | "loading" | "ready" | "error";
 
@@ -228,7 +231,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
             future: [],
           }),
     });
-    schedulePersist(raw);
+    persist(raw);
   },
 
   replaceDocument: (next, options = {}) => {
@@ -255,7 +258,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
           : [],
       future: options.silent ? state.future : [],
     });
-    schedulePersist(raw);
+    persist(raw);
   },
 
   undo: () => {
@@ -270,7 +273,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
         past: state.past.slice(0, -1),
         future: [...state.future, { raw: state.raw, label: previous.label, at: Date.now() }],
       });
-      schedulePersist(previous.raw);
+      persist(previous.raw);
     } catch {
       // A history entry that no longer parses is dropped rather than restored.
       // It can only happen if a schema changed under a live session, and the
@@ -290,7 +293,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
         past: pushHistory(state.past, state.raw, next.label),
         future: state.future.slice(0, -1),
       });
-      schedulePersist(next.raw);
+      persist(next.raw);
     } catch {
       set({ future: state.future.slice(0, -1) });
     }
@@ -326,7 +329,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
     } else {
       // Nothing saved for this account yet. A wedding built entirely offline
       // and then signed into would otherwise sit stranded until the user's
-      // next edit — schedulePersist is the only other thing that calls
+      // next edit — persist is the only other thing that calls
       // syncToCloud, and it fires on a write, not on sign-in. Empty stays
       // untouched: nothing to lose, and one fewer round trip on a brand-new
       // account.
@@ -467,7 +470,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
       // "idle", and the persist scheduled below then pushes normally.
       cloudStatus: remaining.length > 0 ? "conflict" : "idle",
     });
-    schedulePersist(raw);
+    persist(raw);
   },
 }));
 
@@ -497,40 +500,48 @@ export const selectGuestCount = (s: TrousseauState): number => Object.keys(s.doc
 export const selectTableCount = (s: TrousseauState): number => Object.keys(s.doc.seating).length;
 export const selectBlockCount = (s: TrousseauState): number => s.doc.day?.blocks.length ?? 0;
 
-// ponytail: one trailing timer for the whole store. Fine while writes are
-// coarse; if a slice ever needs its own cadence, key the timer by slice name.
-let persistTimer: ReturnType<typeof setTimeout> | undefined;
-
-function schedulePersist(raw: Record<string, unknown>): void {
+/**
+ * Write the document to IndexedDB now, then push it to the cloud shortly after.
+ *
+ * The local write is started synchronously, never from a timer. The tools
+ * hand over their last edit from `beforeunload` and `pagehide`, and a timer
+ * started there never fires: the page is gone first. A write deferred by even
+ * 250ms lost every Seating edit made in the half-minute before a reload.
+ * IndexedDB runs transactions in the order they were opened, so the last
+ * write always lands last.
+ */
+function persist(raw: Record<string, unknown>): void {
   if (typeof window === "undefined") return;
-  clearTimeout(persistTimer);
-  persistTimer = setTimeout(() => {
-    const noted = (cause: unknown) =>
-      // A save the user believes happened and did not is the worst outcome
-      // here, so it goes on screen rather than into the console.
-      useTrousseauStore.setState({ error: `The wedding could not be saved: ${message(cause)}` });
-    try {
-      // `idbSet` opens the database synchronously, so a browser that refuses
-      // one throws here rather than rejecting. Outside a promise chain and
-      // inside a timer, that escapes to the top as an uncaught exception and
-      // takes the message below with it.
-      void idbSet(STORAGE_KEY, raw).then(() => {
-        useTrousseauStore.setState({ savedAt: new Date().toISOString(), error: null });
-        // Only after the local write has landed. Local storage is the record
-        // of what the user has if the cloud is unreachable, so it goes first.
-        void useTrousseauStore.getState().syncToCloud();
-      }, noted);
-    } catch (cause) {
-      noted(cause);
-    }
-  }, PERSIST_DELAY_MS);
+  const noted = (cause: unknown) =>
+    // A save the user believes happened and did not is the worst outcome
+    // here, so it goes on screen rather than into the console.
+    useTrousseauStore.setState({ error: `The wedding could not be saved: ${message(cause)}` });
+  try {
+    // `idbSet` opens the database synchronously, so a browser that refuses
+    // one throws here rather than rejecting.
+    void idbSet(STORAGE_KEY, raw).then(() => {
+      useTrousseauStore.setState({ savedAt: new Date().toISOString(), error: null });
+      // Only after the local write has landed. Local storage is the record
+      // of what the user has if the cloud is unreachable, so it goes first.
+      scheduleCloudPush();
+    }, noted);
+  } catch (cause) {
+    noted(cause);
+  }
+}
+
+let cloudPushTimer: ReturnType<typeof setTimeout> | undefined;
+
+function scheduleCloudPush(): void {
+  clearTimeout(cloudPushTimer);
+  cloudPushTimer = setTimeout(() => void useTrousseauStore.getState().syncToCloud(), CLOUD_PUSH_DELAY_MS);
 }
 
 /**
  * Fold a write's answer back into the store.
  *
  * Shared by every path that pushes, and deliberately not a store action: it is
- * called from `schedulePersist`'s timer as well as from the actions, and
+ * called from `persist`'s timer as well as from the actions, and
  * reaching for `setState` directly is what the persist path already does.
  *
  * A conflict is merged per slice, never overwritten wholesale. Slices that
@@ -597,9 +608,12 @@ function applyCloudResult(result: PushResult, pushed?: Record<string, unknown>):
   useTrousseauStore.setState({ cloudStatus: "error", cloudError: "The cloud could not be reached." });
 }
 
-/** Exposed for tests and for the Data Manager's "save now". */
+/**
+ * For tests: settle the local write and cancel the pending cloud push, so a
+ * push scheduled in one test cannot fire against the next test's mocks.
+ */
 export async function flushPersist(): Promise<void> {
-  clearTimeout(persistTimer);
+  clearTimeout(cloudPushTimer);
   if (typeof window === "undefined") return;
   await idbSet(STORAGE_KEY, useTrousseauStore.getState().raw);
   useTrousseauStore.setState({ savedAt: new Date().toISOString() });

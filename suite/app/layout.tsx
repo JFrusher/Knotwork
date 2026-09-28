@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Lato, Marcellus } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { ReportUnhandled } from "@/components/shell/ReportUnhandled";
-import { siteUrl } from "@/lib/env";
+import { onVercel, siteUrl } from "@/lib/env";
 import "./globals.css";
 // Before any tool's own stylesheet: each of those maps its vocabulary onto the
 // values decided here, so these have to exist by the time they are read.
@@ -58,6 +59,9 @@ export default function RootLayout({
       <body>
         <ReportUnhandled />
         {children}
+        {/* Cookieless page counts on the hosted instance. Vercel serves the
+            endpoint, so a copy hosted anywhere else sends nothing. */}
+        {onVercel() ? <Analytics /> : null}
       </body>
     </html>
   );

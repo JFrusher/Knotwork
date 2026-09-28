@@ -1,5 +1,5 @@
 import { buildArtefacts } from "./data/artefacts";
-import type { GuestRow } from "./csv/parse";
+import type { GuestRow } from "./data/rows";
 import {
   hasBackSide,
   interleave,

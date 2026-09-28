@@ -67,3 +67,16 @@ test("an unreadable document is refused, never overwritten", async () => {
     event: { date: 42 },
   });
 });
+
+test("an edit starts its local write at once, not on a timer", async () => {
+  await useTrousseauStore.getState().hydrate();
+
+  // What a tool does from `beforeunload`: hand over its last edit and let the
+  // page go. A write deferred to a timer never runs, because the page is gone
+  // before the timer fires — which lost every Seating edit made in the
+  // half-minute before a reload.
+  useTrousseauStore.getState().setSlice("event", { coupleNames: "Charis & Jacob" });
+
+  const stored = db.get(STORAGE_KEY) as Record<string, unknown> | undefined;
+  expect(stored?.["event"]).toEqual({ coupleNames: "Charis & Jacob" });
+});

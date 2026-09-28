@@ -1,5 +1,5 @@
 import type { IconRule } from "../types";
-import type { GuestRow } from "../csv/parse";
+import type { GuestRow } from "../data/rows";
 
 function key(value: string): string {
   return value.trim().toLowerCase();

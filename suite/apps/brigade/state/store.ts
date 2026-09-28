@@ -1,6 +1,4 @@
 import { create } from "zustand";
-import { parseDay } from "../core/import/day";
-import { describe, reconcile } from "../core/import/reconcile";
 import { coverage, warningsByJob, type Warning } from "../core/jobs/coverage";
 import { emptyDoc } from "../core/model/defaults";
 import { newId } from "../core/model/ids";
@@ -49,7 +47,6 @@ export interface StoreState {
   filter: Filter;
   notice: string | null;
 
-  importDay: (json: string) => void;
   loadDoc: (doc: BrigadeDoc) => void;
 
   addTeam: (seed?: Partial<Team>) => string;
@@ -88,21 +85,6 @@ export const useStore = create<StoreState>((set, get) => {
     filter: { personId: null, teamId: null, unassignedOnly: false },
     notice: null,
 
-    importDay: (json) => {
-      const parsed = parseDay(json);
-      if (parsed.error !== undefined) {
-        set({ notice: parsed.error });
-        return;
-      }
-
-      const { doc, report } = reconcile(getDoc(get()), parsed.day, parsed.teams);
-      commit(doc);
-      set({
-        notice:
-          describe(report, doc) +
-          (parsed.fromFuture ? " It came from a newer Cadence than this Brigade knows." : ""),
-      });
-    },
 
     loadDoc: (doc) => set({ history: reset(doc), selectedJobId: null, notice: null }),
 

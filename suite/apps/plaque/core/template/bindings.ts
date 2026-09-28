@@ -10,7 +10,7 @@ import type {
   TextElement,
 } from "../types";
 import { BUNDLED_VIEW, type IconArt } from "../../assets/icons";
-import type { GuestRow } from "../csv/parse";
+import type { GuestRow } from "../data/rows";
 import { interpolate } from "../csv/interpolate";
 import { transformForPanel } from "../geometry/fold";
 import { resolveIconForRow } from "./icons";
