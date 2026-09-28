@@ -1,0 +1,277 @@
+# Trousseau — the expansion: planners, setup, and the windows around the tools
+
+Date: 2026-09-28
+Status: direction approved by the maintainer (answers recorded below). Each
+phase gets its own dated implementation plan before it is built.
+Scope: the whole suite — the setup flow, accounts, a planner role, new views,
+and the architecture those need underneath them.
+
+## Why
+
+An audit of the suite on 2026-09-28 found that the five tools are individually
+strong and that the weak places are all *between* them: where a shared fact is
+edited, where a device meets an account, where a new couple starts. The setup
+flow runs straight through every one of those seams.
+
+The audit's findings are listed below with how each was established, because
+several turned out differently once tested than they looked when read.
+
+- **Reproduced** — shown failing in a test or a real browser.
+- **Traced** — every caller read; not run.
+- **Seen** — visible in a screenshot of a production build.
+
+### Setup and accounts
+
+| # | Finding | How established |
+|---|---|---|
+| S1 | The Data panel's edits (guest import, names, date) were written back over by whichever of Seating or Timeline was open, on that tool's next save. | Reproduced — unit, and Playwright against a production build. **Fixed 2026-09-28**, see below. |
+| S2 | A failed local save sets the store's `error`, but both components that read it render it only for a failed *read*. Nothing shows a failed save. | Traced |
+| S3 | Creating a wedding or accepting an invite does not start cloud sync until a full reload: `startCloudSync` has one caller, on mount. | Traced |
+| S4 | Accepting an invite silently replaces the invitee's local wedding on their next load. | Traced |
+| S5 | A magic link opened in the wrong browser sends an invitee to `/account`, whose main button is **Create your wedding** — which then blocks the invite for good (`already-in-a-wedding`). | Traced |
+| S6 | Loading the example wedding while signed in pushes it over the shared wedding; the confirmation says it replaces "the wedding in this browser". The emptiness check counts only guests and blocks. | Traced |
+| S7 | Names, date and venue have three editors (Data panel, Timeline's Day panel, Seating's write-back). Guest import has two implementations with different rules. | Traced, seen |
+| S8 | The guest link needs a second credential — an unrecoverable passphrase — even for a signed-in couple, and goes stale silently when seats change. | Traced, seen |
+| S9 | "Take a tour" runs the six-step front-page chapter and stops; the other 23 steps are reachable only one tool at a time. | Traced |
+| S10 | The example wedding has 0 of 100 guests seated, no crew, no jobs, no shots and no card design. The promise it exists to demonstrate cannot be shown from it. | Reproduced (fixture counted), seen |
+
+### Architecture
+
+- **Six state containers, five undo systems.** The shared store, four tool
+  stores each seeded once on mount, and Group shots reading live.
+- **Every partner change remounts the open tool.** A pulled change swaps the
+  document, which resets the tool's undo history and selection even when the
+  partner touched an unrelated slice. Traced.
+- **Undo differs per page.** Group shots uses the shared history, which also
+  holds the Data panel's import — so Undo there can take back an import made
+  elsewhere. Traced.
+- **Conflicts are per whole slice and shown blind.** Two partners editing
+  different guests conflict on "guests"; the choice has no diff; the state is
+  visible only inside the Data dialog. The server keeps version history
+  (`wedding_document_history`) with no UI. Traced.
+- **Three `Button`s, four modal patterns, two `window.confirm`s, three CSV
+  parsers**, and the legacy passphrase sync (`lib/sync`) kept alive only for the
+  guest link.
+
+### UX
+
+The front page has five competing starts and no primary action; the Data
+dialog does four unrelated jobs with the most important one last; at the
+declared minimum width Seating's Overview covers the canvas; three sidebar
+idioms; empty states that claim success ("Every job has somebody" with no
+jobs); "Bride's side / Groom's side" hard-coded in seven places; every tool
+walled off below 1024px. The tour overlay declares `aria-modal` and never moves
+focus. `/seat` — the one page guests use — is not in the axe run.
+
+## Decisions
+
+The maintainer's answers, 2026-09-28. Where the answer delegated the choice,
+the choice made is recorded with its reason.
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Who uses it | The couple (two partners) **plus a wedding planner role**. Planners are a market in their own right: one account, many client weddings, and a library of their own designs to reuse. |
+| 2 | Real usage today | None yet. Migrations may be bold; clarity beats compatibility. |
+| 3 | Phones | A phone-first, read-only **day-of binder**. The editing tools stay desktop. |
+| 4 | S1 | Fix now. Done — see *S1, fixed*. |
+| 5 | Bride/groom | Replace with **sides named after the partners**. |
+| 6 | Look | Keep it. |
+| 7 | Window types | Delegated. See *Design language*. |
+| 8 | Theme | Light only. |
+| 9 | Device vs account weddings | Delegated: see *Signing in safely*. Nothing is replaced without a restorable copy. |
+| 10 | Create the wedding automatically | Delegated: **yes**, on first sign-in — except when arriving through an invite. Removes S5's trap. |
+| 11 | One importer | Delegated: **the suite's `lib/data/guestImport.ts`** is the engine; one dialog with a preview. Adds and updates, never unseats, never deletes silently — people missing from the new file are listed and can be removed there, explicitly. RSVPs arrive this way from Joy and similar, so their exports become golden fixtures. |
+| 12 | Guest link | Delegated: **on the account, no passphrase, and live** — once published it republishes itself as seats change, with a visible "updated" time and a take-down. A stale seat link sends a guest to the wrong table, which is worse than no link. |
+| 13 | Priorities | RSVP stays with Joy and friends (imported). Build money, checklist, vendor portal, day-of binder and real-time sync. |
+| 14 | Privacy | Data may leave the device. The promise is **nobody is reading your plans or your friends' names**: no admin view, no content analytics, guest data never sent to a third party. Venue-level data (an address to find sunset times) may be, and only when the feature is used. |
+| 15 | Tableaux | Delegated: **converge every tool on the live document** (see Phase 4). Seating goes last and becomes TypeScript as part of it. |
+
+## S1, fixed
+
+A tool reads the wedding once, into a store of its own, and writes that copy
+back on every save. The generation guard in `lib/store/toolGeneration.ts`
+already stopped a stale copy being written after a *whole* document was
+swapped. It did not cover one slice being written from outside — which is
+exactly what the Data panel does, over whichever tool is on screen.
+
+Now each tool's gate (`WhenDocumentReady`) declares what the tool copies
+(`HOLDS`), each tool tags its own writes (`by`), and a write to a held slice from
+anywhere else starts a new generation. The tool remounts onto the current
+document and its stale save is refused. One rule in the store covers every
+writer: the Data panel, the post-load reconcile, and the legacy sync client.
+
+Verified by unit tests on the rule, bridge-level tests for Seating and
+Timeline, and an end-to-end test (`e2e/persistence.spec.ts`) that fails with
+the rule disabled and passes with it.
+
+**Cost:** a Data-panel edit remounts the open tool, which resets its undo
+history. Phase 4 removes the copies and with them the remount.
+
+## Design language
+
+The look stays. What is decided here is its grammar, so that every new window
+is one of a small number of known kinds.
+
+**Paper on a desk.** Parchment is the page, stone is a panel, white is reserved
+for what prints or stands for a card. **One display voice**: Marcellus for the
+wedding's name and a page's single heading, Lato everywhere else, figures
+tabular. **One accent per area**, and semantic colour — ok, warn, danger —
+never changes hue between areas. **Quiet until it needs you**: the one loud
+thing on a screen is the thing that needs a decision.
+
+### Kinds of window
+
+| Kind | Use it when | Examples | Rules |
+|---|---|---|---|
+| **Page** | Somewhere you work for minutes, or want to link to | The tools, Guests, Money, Checklist, Binder, a planner's Weddings, Setup | Its own route and heading. Reached from the header or the front page. |
+| **Slide-over** | Look at or act on something without losing your place | Sync & history, Guest link, one guest from anywhere | Right edge, one width, the page behind inert, Escape closes, addressable by `?panel=`. |
+| **Dialog** | A decision, or a short flow that must finish or be cancelled | Confirmations, import, delete, "two weddings" | Native `<dialog>`, focus kept inside, one primary action. Replaces every `window.confirm`. |
+| **Popover** | Picking something small | Menus, pickers | Anchored; outside click dismisses. |
+| **Notice** | State that belongs to a place | Errors, empty states, warnings | Inline, never a toast. |
+| **Toast** | Confirming something just done | "Backup written", "Undo" | Never the only record of anything. |
+
+### Rules that follow
+
+- **Empty is not success.** A check over nothing says there is nothing yet, and
+  offers the one action that starts it.
+- **One status pill** in the header: *Saved · Syncing · Offline · Needs you*.
+  "Needs you" opens Sync & history. This is where S2's failed save appears.
+- **One kit.** `components/ui` gains `Dialog`, `SlideOver`, `Confirm`,
+  `EmptyState`, `Pill`, `Table`; the tools' own kits retire as they are touched.
+- **Type floor.** Labels go from 11px to 12px across the scale, checked against
+  screenshots of all five tools before it lands.
+- **Navigation.** The header keeps the five tools. The wedding's own pages —
+  Overview, Guests, Money, Checklist, Binder — sit under the wedding's name,
+  which for a planner is also the switcher between client weddings. To be
+  settled with a mock in the Phase 0 plan.
+
+## Signing in safely
+
+The rule: **nothing is replaced without a restorable copy, and nothing is
+replaced silently when both sides have work in them.**
+
+- A wedding "has content" if any slice has anything in it — not only guests and
+  day blocks (fixes S6's check).
+- Device empty → take the account's. Account empty → push the device's. Neither
+  loses anything, so neither asks.
+- Both have content and the device last synced with *this* wedding → the
+  ordinary per-slice merge.
+- Both have content and they are different weddings → **stop and ask**, with
+  what each holds ("This device: Alex & Sam, 100 guests. Your account: Robin &
+  Kit, 80 guests"). Use the account's, use this device's, or choose per part.
+  The losing side survives: the account's in its server history, the device's
+  in a local copy — both restorable from Sync & history.
+- The same screen handles accepting an invite (S4) and loading the example
+  wedding over a synced one (S6), whose confirmation names who else it affects.
+- Creating or joining a wedding starts sync immediately (S3).
+- Signing out asks whether to keep this wedding on the device or remove it —
+  shared computers exist.
+
+## The planner role
+
+- **Membership gains a role**: `partner` (at most two per wedding, as now) or
+  `planner` (at most one per wedding in v1). An account may be a partner in one
+  wedding and a planner in any number. Caps stay in application code, as the
+  2026-09-02 identity spec argued.
+- **Either direction:** a couple invites their planner, or a planner creates a
+  wedding for a client and invites the couple. The couple always sees who has
+  access and can remove the planner; removal takes effect at once through RLS.
+- **Weddings page** for planners: each client wedding with its date, what is
+  left (the same `readiness`, run over each document), money outstanding and
+  last activity.
+- **Library:** a planner saves a card design, a running order, a room or a
+  checklist from one wedding and applies it to another. Saved without anything
+  personal — a design without its rows, a day without its date, a room without
+  its guests. Stored per planner account.
+- **Local copies are kept per wedding**, keyed by id, so switching clients is a
+  document swap and never a merge.
+
+## Phases
+
+Each phase ends with the suite's own gate green — typecheck, every Vitest
+project, the build, and the Playwright run — and gets its own plan first.
+
+### Phase 0 — Foundations
+
+1. **S1** — done.
+2. **Status pill** and failed saves shown (S2); conflicts visible outside the
+   Data dialog.
+3. **Design language in code:** the shared kit above; `TourOverlay` onto
+   `Dialog` so it traps focus; axe extended to `/seat`, `/invite` and open
+   dialogs.
+4. **Sides named after the partners.** The stored values do not change; the
+   labels come from the couple, across filters, the inspector, import, exports
+   and group-shot roles.
+5. **One editor per fact, one importer** (decision 11), with Joy, Zola and The
+   Knot exports as fixtures.
+
+### Phase 1 — Setup and accounts
+
+1. **Signing in safely** (above): S3, S4, S5, S6; automatic wedding creation.
+2. **Roles and many weddings per account**, the switcher, per-wedding local
+   storage.
+3. **Setup** (`/setup`): *the two of you* (names, date, venue) → *guests*
+   (import, paste, or later) → *the room* (a starting layout, or later) →
+   *together* (account, partner, planner). Staged as a draft and committed as
+   one change — one undo step, one push. The front page's primary action until
+   it is done.
+4. **Guest link on the account**, live (decision 12). Then `lib/sync` and its
+   tables are deleted — nothing else uses them.
+5. **Tour and example wedding:** "Take a tour" runs every chapter; the example
+   gains seats, crew, jobs, shots and a card design so every chapter has
+   something real to point at.
+
+### Phase 2 — Windows around the tools
+
+1. **Overview** — the front page as the wedding's state: progress per area and
+   one next step, replacing the tool grid that repeats the header.
+2. **Guests** — the whole list as a sortable, filterable, bulk-editable table:
+   RSVP, side, dietary, table, plus-one, tags. Today the list exists only as a
+   column inside the Seating canvas.
+3. **Money** — a view over what the crew slice already holds (cost, deposit,
+   paid-on, balance due, budget). Adds one field, `balancePaidOn`, because
+   today nothing records that a balance was paid. Due-soon balances join What
+   is left.
+4. **Checklist** — a view over the jobs with no block, which the 2026-09-08
+   design already made general tasks. Adds `dueOn`, and templates relative to
+   the wedding date. Overdue tasks join What is left.
+5. **Sync & history** — what changed and who changed it, conflicts settled with
+   a real diff, and restore from the server's history.
+6. **Command palette** — any guest, table, block, job or page by name.
+
+### Phase 3 — Beyond the couple
+
+1. **Planners:** Weddings page and library.
+2. **Binder** (`/binder`): now and next against the clock, the run sheet, who to
+   ring, find a guest's table, the shot list to tick off. Works offline from the
+   last synced copy — venues have bad signal.
+3. **Vendor links:** each supplier gets a link to their own call sheet and a
+   *Confirm* button that sets `confirmedOn`. The 2026-09-08 design deferred
+   this "for something a wedding has about eight of"; a planner has eight per
+   client, which is the reason it is worth building now.
+
+### Phase 4 — One live document
+
+Each tool stops keeping a copy: it reads its slices from the shared store and
+writes through it, as Group shots already does. That retires, in one move, the
+stale-copy class of bug S1 belonged to, the remount on every partner change,
+the five undo systems (one history, labelled), and the 400ms window in which a
+committed edit lives only in a tool's own store. Tool by tool, smallest first:
+Delegation, Place cards, Timeline, then Seating — converted to TypeScript as
+part of it.
+
+**Real-time sync** (Supabase Realtime in place of the 20-second poll, and
+presence) lands after this, not before: an instant pull into a tool that still
+remounts on every change would make that remount constant.
+
+Per-record merging — two partners editing different guests do not conflict —
+lands with Sync & history, over keyed records (guests, tables, blocks, jobs).
+
+## Explicitly deferred
+
+- RSVP collection. Joy and similar do it; Trousseau imports the result.
+- Agency teams (more than one planner on a wedding).
+- A public page marketing Trousseau to planners.
+- A binder link for day-of helpers without an account — it would carry phone
+  numbers, and deserves its own look at what a link may reveal.
+- Editing tools on phones.

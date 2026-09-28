@@ -46,6 +46,12 @@ instead (see subsystem F).
 | H | Guided tour & example wedding | — | ✅ **built** — [spec](superpowers/specs/2026-09-07-guided-tour-design.md), [plan](superpowers/plans/2026-09-07-guided-tour.md) complete 2026-09-07 |
 | I | Retention sweep for account weddings | B | ⬜ **not started** — the 24-month sweep covers synced weddings only; the privacy page deliberately does not claim it for accounts |
 | G | Multi-tenant suite mechanics | A, B | ✅ **built** — [spec](superpowers/specs/2026-09-02-multitenant-mechanics-design.md), [plan](superpowers/plans/2026-09-07-multitenant-mechanics.md) complete 2026-09-07 |
+| J | Planner role and many weddings per account | A, G | ⬜ planned — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phases 1 and 3 |
+| K | Setup flow and signing in safely | A, B | ⬜ planned — master plan, phase 1 |
+| L | Design language and shared kit | — | ⬜ planned — master plan, phase 0 |
+| M | Windows around the tools: Overview, Guests, Money, Checklist, Sync & history, palette | E, L | ⬜ planned — master plan, phase 2 |
+| N | Day-of binder and vendor links | E, J | ⬜ planned — master plan, phase 3 |
+| O | One live document: tools stop keeping copies; real-time sync | — | ⬜ planned — master plan, phase 4 |
 
 ## Decisions log
 
@@ -118,6 +124,25 @@ against, not a discussion to reopen without a reason.
 - **2026-09-02** — Accounts-to-weddings: one active wedding per account for
   v1, no switcher UI. Additive-safe — can extend to multiple weddings per
   account later without redesigning the model.
+- **2026-09-28** — A **planner role**, alongside the two partners. An account
+  may be a partner in one wedding and a planner in any number; a wedding has
+  at most one planner in v1. This is the "extend later" the entry above left
+  room for. Detail in the
+  [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md).
+- **2026-09-28** — Sides are named after the partners, not "bride" and
+  "groom".
+- **2026-09-28** — Phones get a read-only day-of binder; the editing tools
+  stay desktop.
+- **2026-09-28** — RSVPs stay with Joy and similar services; Trousseau imports
+  the result through one importer that never unseats or silently deletes.
+- **2026-09-28** — The guest link moves onto the account with no passphrase,
+  and stays current by itself once published. `lib/sync` goes when it does.
+- **2026-09-28** — Privacy promise restated: data may leave the device; nobody
+  reads a couple's plans or their guests' names, and guest data never goes to
+  a third party.
+- **2026-09-28** — Every tool converges on the live document (no private
+  copies, one undo). Seating goes last and becomes TypeScript as part of it.
+  Supersedes the incremental-only Tableaux migration for its store layer.
 
 ## Subsystem H — Guided tour & example wedding
 
