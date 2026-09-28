@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { AlertTriangle, ArrowRight, Check, Users, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRight, Banknote, Check, Users, type LucideIcon } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { readiness, type Readiness } from "@/lib/model/readiness";
 import { overview, type Area, type AreaId } from "@/lib/model/overview";
@@ -13,9 +13,10 @@ import { TakeTheTour } from "./TourButtons";
 /** Where each area is worked on, and how it is drawn. */
 const PLACES: Record<AreaId, { name: string; href: string; icon: LucideIcon; tokens: string }> = {
   guests: { name: "Guests", href: "/guests", icon: Users, tokens: "tableaux-tokens" },
+  money: { name: "Money", href: "/money", icon: Banknote, tokens: "brigade-tokens" },
   ...(Object.fromEntries(
     TOOLS.map((tool) => [tool.href.slice(1), { name: tool.name, href: tool.href, icon: tool.icon, tokens: tool.tokens }]),
-  ) as Record<Exclude<AreaId, "guests">, { name: string; href: string; icon: LucideIcon; tokens: string }>),
+  ) as Record<Exclude<AreaId, "guests" | "money">, { name: string; href: string; icon: LucideIcon; tokens: string }>),
 };
 
 /**

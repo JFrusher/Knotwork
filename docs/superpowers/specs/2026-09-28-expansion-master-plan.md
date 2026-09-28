@@ -335,7 +335,15 @@ project, the build, and the Playwright run — and gets its own plan first.
 3. **Money** — a view over what the crew slice already holds (cost, deposit,
    paid-on, balance due, budget). Adds one field, `balancePaidOn`, because
    today nothing records that a balance was paid. Due-soon balances join What
-   is left.
+   is left. **Built 2026-09-28** at `/money`, and made the one place money is
+   changed: Delegation's crew panel kept who the suppliers are, their email
+   and when they confirmed, and points here for the rest. The balance is the
+   cost less the deposit, never stored. What is left says a balance due within
+   30 days is coming and holds an overdue one up as a problem; the budget line
+   moved here with them. The front page has a Money area. Found on the way: an
+   e2e test that reloaded straight after an edit lost it to the unload race
+   noted under S1 — the test now goes across the app as a person would, and
+   the ones that are about reloading wait for the write first.
 4. **Checklist** — a view over the jobs with no block, which the 2026-09-08
    design already made general tasks. Adds `dueOn`, and templates relative to
    the wedding date. Overdue tasks join What is left.

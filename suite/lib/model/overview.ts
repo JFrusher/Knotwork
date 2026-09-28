@@ -1,6 +1,7 @@
 import type { Trousseau } from "@jfrusher/trousseau";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { resolveShot } from "@/lib/ensemble/resolve";
+import { money } from "@/lib/money/money";
 import { stationery } from "./readiness";
 import { isComing, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
 
@@ -12,7 +13,7 @@ import { isComing, readCrew, readGuests, readSeating, readShots, resolvedDay } f
  * how much of it is done, so the page reads as the wedding's state rather than
  * as a list of ways into it.
  */
-export type AreaId = "guests" | "seating" | "place-cards" | "timeline" | "delegation" | "group-shots";
+export type AreaId = "guests" | "money" | "seating" | "place-cards" | "timeline" | "delegation" | "group-shots";
 
 export interface Area {
   id: AreaId;
@@ -40,6 +41,21 @@ function guests(doc: Trousseau): Area {
       .join(" · "),
     // Replies in: a no is as much an answer as a yes.
     progress: (yes + no) / people.length,
+  };
+}
+
+function costs(doc: Trousseau): Area {
+  const accounts = money(readCrew(doc));
+  if (accounts.suppliers.length === 0) return { id: "money", summary: "No costs yet", detail: "", progress: null };
+  return {
+    id: "money",
+    summary:
+      accounts.budget === null
+        ? `${accounts.committed.toLocaleString()} committed`
+        : `${accounts.committed.toLocaleString()} of ${accounts.budget.toLocaleString()}`,
+    detail: `${accounts.paid.toLocaleString()} paid · ${accounts.owed.toLocaleString()} to pay`,
+    // Paid of what is agreed: how far through the paying the wedding is.
+    progress: accounts.committed > 0 ? accounts.paid / accounts.committed : null,
   };
 }
 
@@ -122,5 +138,5 @@ function groupShots(doc: Trousseau): Area {
 }
 
 export function overview(doc: Trousseau, raw: unknown): Area[] {
-  return [guests(doc), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc)];
+  return [guests(doc), costs(doc), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc)];
 }

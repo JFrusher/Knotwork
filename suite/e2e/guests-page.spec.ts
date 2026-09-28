@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { seedExampleWedding } from "./wedding";
+import { seedExampleWedding, storedDocument } from "./wedding";
 
 /*
  * The Guests page changes the one list the tools read. What is worth holding
@@ -43,6 +43,12 @@ test("a reply changed in its row is kept", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(page.getByRole("row", { name: /Niamh MacIntyre/ })).toContainText("Gluten-free");
 
+  // Stored, and then reloaded into: what a reload reads is what was written.
+  const niamh = async () =>
+    Object.values((await storedDocument(page))["guests"] as Record<string, { firstName: string; lastName: string; rsvpStatus: string; dietaryRaw: string }>).find(
+      (guest) => guest.firstName === "Niamh" && guest.lastName === "MacIntyre",
+    );
+  await expect.poll(niamh).toMatchObject({ rsvpStatus: "confirmed", dietaryRaw: "Coeliac" });
   await page.reload();
   await page.getByRole("searchbox").fill("Niamh MacIntyre");
   await expect(page.getByLabel("Reply from Niamh MacIntyre")).toHaveValue("confirmed");

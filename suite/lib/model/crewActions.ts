@@ -18,6 +18,7 @@ const NO_CONTRACT = {
   deposit: null,
   depositPaidOn: "",
   balanceDueOn: "",
+  balancePaidOn: "",
   confirmedOn: "",
 } as const;
 

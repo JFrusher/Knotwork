@@ -51,6 +51,7 @@ export interface Team {
   /** ISO dates, or "" for "not yet". */
   depositPaidOn: string;
   balanceDueOn: string;
+  balancePaidOn: string;
   confirmedOn: string;
 }
 

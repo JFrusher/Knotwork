@@ -1,6 +1,7 @@
 import type { Trousseau } from "@jfrusher/trousseau";
 import { guestName, isComing, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
 import { resolveShot } from "@/lib/ensemble/resolve";
+import { daysUntil, DUE_SOON_DAYS, longDate, money, todayIso } from "@/lib/money/money";
 
 /**
  * What is left to do, across the whole wedding.
@@ -27,7 +28,7 @@ export interface Readiness {
   severity: Severity;
   message: string;
   /** Where the fix is, so a row can take you there. */
-  href: "/seating" | "/place-cards" | "/timeline" | "/delegation" | "/group-shots";
+  href: "/guests" | "/money" | "/seating" | "/place-cards" | "/timeline" | "/delegation" | "/group-shots";
   action: string;
 }
 
@@ -80,10 +81,11 @@ function boundTokens(design: Record<string, unknown> | null): Set<string> {
 }
 
 /**
- * @param doc  the parsed wedding, for the typed readers
- * @param raw  the slices as stored, for the parts the readers narrow away
+ * @param doc    the parsed wedding, for the typed readers
+ * @param raw    the slices as stored, for the parts the readers narrow away
+ * @param today  ISO date, for what falls due; the user's own today unless a test says otherwise
  */
-export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
+export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso()): Readiness[] {
   const out: Readiness[] = [];
   const guests = readGuests(doc);
   const people = Object.values(guests);
@@ -98,7 +100,7 @@ export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
         id: "no-guests",
         severity: "advisory",
         message: "No guest list yet. Everything else is built on it.",
-        href: "/seating",
+        href: "/guests",
         action: "Import a guest list",
       },
     ];
@@ -237,14 +239,42 @@ export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
     });
   }
 
-  const committed = crew.teams.reduce((total, team) => total + (team.cost ?? 0), 0);
-  if (crew.budget !== null && committed > crew.budget) {
+  const accounts = money(crew);
+  if (accounts.budget !== null && accounts.left !== null && accounts.left < 0) {
     out.push({
       id: "over-budget",
       severity: "advisory",
-      message: `Committed ${committed.toLocaleString()} against a budget of ${crew.budget.toLocaleString()}.`,
-      href: "/delegation",
+      message: `Committed ${accounts.committed.toLocaleString()} against a budget of ${accounts.budget.toLocaleString()}.`,
+      href: "/money",
       action: "Look at the costs",
+    });
+  }
+
+  // Balances, which have a date; a deposit is paid when the supplier is booked.
+  const balances = accounts.toPay.filter((payment) => payment.kind === "balance" && payment.dueOn !== "");
+  const overdue = balances.filter((payment) => daysUntil(payment.dueOn, today) < 0);
+  const soon = balances.filter((payment) => {
+    const days = daysUntil(payment.dueOn, today);
+    return days >= 0 && days <= DUE_SOON_DAYS;
+  });
+  const one = (payment: (typeof balances)[number], tense: "was" | "is") =>
+    `${payment.team}’s balance of ${payment.amount.toLocaleString()} ${tense} due on ${longDate(payment.dueOn)}.`;
+  if (overdue.length > 0) {
+    out.push({
+      id: "payments-overdue",
+      severity: "blocking",
+      message: overdue.length === 1 ? one(overdue[0]!, "was") : `${overdue.length} balances are overdue.`,
+      href: "/money",
+      action: "Pay, or mark them paid",
+    });
+  }
+  if (soon.length > 0) {
+    out.push({
+      id: "payments-due",
+      severity: "advisory",
+      message: soon.length === 1 ? one(soon[0]!, "is") : `${soon.length} balances fall due in the next ${DUE_SOON_DAYS} days.`,
+      href: "/money",
+      action: "See what is due",
     });
   }
 

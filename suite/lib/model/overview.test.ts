@@ -15,6 +15,8 @@ describe("the front page's measures", () => {
 
     expect(areas.guests).toMatchObject({ summary: "106 guests", detail: "95 said yes · 5 yet to reply · 6 said no" });
     expect(areas.guests.progress).toBeCloseTo(101 / 106);
+    expect(areas.money).toMatchObject({ summary: "15,865 of 24,000", detail: "3,325 paid · 12,540 to pay" });
+    expect(areas.money.progress).toBeCloseTo(3325 / 15865);
     // Out of those coming: the six who said no need no seat.
     expect(areas.seating).toMatchObject({ summary: "97 of 100 seated", detail: "14 tables", progress: 0.97 });
     expect(areas["place-cards"]).toMatchObject({ summary: "100 cards", detail: "Drawn from the room" });

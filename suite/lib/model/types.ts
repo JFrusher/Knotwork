@@ -247,6 +247,8 @@ export interface Team {
   depositPaidOn: string;
   /** ISO date the balance falls due, or "". */
   balanceDueOn: string;
+  /** ISO date the balance was paid, or "" if it has not been. */
+  balancePaidOn: string;
   /** ISO date this team confirmed their jobs and times, or "". */
   confirmedOn: string;
 }

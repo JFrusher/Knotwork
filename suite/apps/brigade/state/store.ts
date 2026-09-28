@@ -51,7 +51,6 @@ export interface StoreState {
 
   addTeam: (seed?: Partial<Team>) => string;
   updateTeam: (id: string, patch: Partial<Team>) => void;
-  setBudget: (budget: number | null) => void;
   deleteTeam: (id: string) => void;
 
   addPerson: (seed?: Partial<Person>) => string;
@@ -105,6 +104,7 @@ export const useStore = create<StoreState>((set, get) => {
             deposit: null,
             depositPaidOn: "",
             balanceDueOn: "",
+            balancePaidOn: "",
             confirmedOn: "",
             ...seed,
           },
@@ -119,7 +119,6 @@ export const useStore = create<StoreState>((set, get) => {
         teams: doc.teams.map((team) => (team.id === id ? { ...team, ...patch } : team)),
       })),
 
-    setBudget: (budget) => edit((doc) => ({ ...doc, budget })),
 
     // People keep their jobs when their team goes: the work did not stop
     // existing because the supplier's row did.

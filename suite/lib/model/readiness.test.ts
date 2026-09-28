@@ -165,6 +165,34 @@ describe("group shots", () => {
   });
 });
 
+describe("payments", () => {
+  const on = (today: string, balanceDueOn: string, balancePaidOn = "") => {
+    const full = {
+      ...emptyTrousseau(),
+      guests: GUESTS,
+      crew: { teams: [{ id: "t1", name: "Granary Kitchen", cost: 9400, deposit: 2000, balanceDueOn, balancePaidOn }] },
+    };
+    return readiness(migrate(full), full, today);
+  };
+
+  it("says a balance falling due within a month is coming", () => {
+    const item = on("2028-05-01", "2028-05-18").find((entry) => entry.id === "payments-due");
+    expect(item).toMatchObject({ severity: "advisory", href: "/money" });
+    expect(item?.message).toBe("Granary Kitchen’s balance of 7,400 is due on 18 May 2028.");
+  });
+
+  it("holds an overdue balance up as a problem", () => {
+    const item = on("2028-05-19", "2028-05-18").find((entry) => entry.id === "payments-overdue");
+    expect(item).toMatchObject({ severity: "blocking", href: "/money" });
+    expect(item?.message).toBe("Granary Kitchen’s balance of 7,400 was due on 18 May 2028.");
+  });
+
+  it("says nothing of a balance months away, or one already paid", () => {
+    expect(on("2027-01-01", "2028-05-18").map((entry) => entry.id)).not.toContain("payments-due");
+    expect(on("2028-05-19", "2028-05-18", "2028-05-10").map((entry) => entry.id)).not.toContain("payments-overdue");
+  });
+});
+
 describe("money and confirmations", () => {
   it("says nothing when there is no budget and nothing committed", () => {
     expect(ids({ guests: GUESTS, crew: { teams: [{ id: "t1", name: "Ushers" }] } })).not.toContain(

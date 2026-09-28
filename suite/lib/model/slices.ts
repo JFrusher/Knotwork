@@ -671,6 +671,7 @@ export function readCrew(doc: Trousseau): Crew {
           deposit: typeof t["deposit"] === "number" ? t["deposit"] : null,
           depositPaidOn: str(t["depositPaidOn"]),
           balanceDueOn: str(t["balanceDueOn"]),
+          balancePaidOn: str(t["balancePaidOn"]),
           confirmedOn: str(t["confirmedOn"]),
         };
       }),

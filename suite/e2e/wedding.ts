@@ -72,3 +72,19 @@ export async function storedWedding(page: Page): Promise<StoredWedding> {
       }),
   );
 }
+
+/** The stored document itself, for a test that needs a field `storedWedding` does not report. */
+export async function storedDocument(page: Page): Promise<Record<string, any>> {
+  return page.evaluate(
+    () =>
+      new Promise<Record<string, any>>((resolve, reject) => {
+        const open = indexedDB.open("keyval-store");
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const read = open.result.transaction("keyval").objectStore("keyval").get("trousseau.document");
+          read.onerror = () => reject(read.error);
+          read.onsuccess = () => resolve(read.result ?? {});
+        };
+      }),
+  );
+}
