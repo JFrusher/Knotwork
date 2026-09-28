@@ -1,7 +1,8 @@
 import type { Trousseau } from "@jfrusher/trousseau";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { resolveShot } from "@/lib/ensemble/resolve";
-import { money } from "@/lib/money/money";
+import { money, todayIso } from "@/lib/money/money";
+import { checklist } from "@/lib/checklist/checklist";
 import { stationery } from "./readiness";
 import { isComing, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
 
@@ -13,7 +14,7 @@ import { isComing, readCrew, readGuests, readSeating, readShots, resolvedDay } f
  * how much of it is done, so the page reads as the wedding's state rather than
  * as a list of ways into it.
  */
-export type AreaId = "guests" | "money" | "seating" | "place-cards" | "timeline" | "delegation" | "group-shots";
+export type AreaId = "guests" | "money" | "checklist" | "seating" | "place-cards" | "timeline" | "delegation" | "group-shots";
 
 export interface Area {
   id: AreaId;
@@ -59,6 +60,25 @@ function costs(doc: Trousseau): Area {
   };
 }
 
+function tasks(doc: Trousseau, today: string): Area {
+  const list = checklist(readCrew(doc), today);
+  const open = list.overdue.length + list.comingUp.length + list.later.length + list.undated.length;
+  const all = open + list.done.length;
+  if (all === 0) return { id: "checklist", summary: "No tasks yet", detail: "", progress: null };
+  return {
+    id: "checklist",
+    summary: open === 0 ? "All done" : `${open} to do`,
+    detail: [
+      `${list.done.length} done`,
+      list.overdue.length > 0 ? `${list.overdue.length} late` : "",
+      list.comingUp.length > 0 ? `${list.comingUp.length} due this month` : "",
+    ]
+      .filter(Boolean)
+      .join(" · "),
+    progress: list.done.length / all,
+  };
+}
+
 function seating(doc: Trousseau): Area {
   const tables = Object.keys(readSeating(doc).tables).length;
   if (tables === 0) return { id: "seating", summary: "No tables yet", detail: "", progress: null };
@@ -100,8 +120,10 @@ function timeline(doc: Trousseau): Area {
 
 function delegation(doc: Trousseau): Area {
   const crew = readCrew(doc);
-  if (crew.jobs.length === 0) return { id: "delegation", summary: "No jobs yet", detail: "", progress: null };
-  const covered = crew.jobs.filter((job) => job.personIds.length > 0).length;
+  // The jobs on the day; the tasks before it are the Checklist's.
+  const jobs = crew.jobs.filter((job) => job.blockId !== null);
+  if (jobs.length === 0) return { id: "delegation", summary: "No jobs yet", detail: "", progress: null };
+  const covered = jobs.filter((job) => job.personIds.length > 0).length;
   // Only suppliers with something to do on the day have anything to confirm,
   // as What is left counts them.
   const working = new Set(crew.jobs.map((job) => job.teamId).filter((id) => id !== null));
@@ -109,14 +131,14 @@ function delegation(doc: Trousseau): Area {
   const confirmed = suppliers.filter((team) => team.confirmedOn !== "").length;
   return {
     id: "delegation",
-    summary: plural(crew.jobs.length, "job", "jobs"),
+    summary: plural(jobs.length, "job", "jobs"),
     detail: [
-      covered === crew.jobs.length ? "All have somebody" : `${crew.jobs.length - covered} with nobody`,
+      covered === jobs.length ? "All have somebody" : `${jobs.length - covered} with nobody`,
       suppliers.length > 0 ? `${confirmed} of ${suppliers.length} suppliers confirmed` : "",
     ]
       .filter(Boolean)
       .join(" · "),
-    progress: covered / crew.jobs.length,
+    progress: covered / jobs.length,
   };
 }
 
@@ -137,6 +159,6 @@ function groupShots(doc: Trousseau): Area {
   };
 }
 
-export function overview(doc: Trousseau, raw: unknown): Area[] {
-  return [guests(doc), costs(doc), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc)];
+export function overview(doc: Trousseau, raw: unknown, today: string = todayIso()): Area[] {
+  return [guests(doc), costs(doc), tasks(doc, today), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc)];
 }

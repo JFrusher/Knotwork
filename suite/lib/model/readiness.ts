@@ -2,6 +2,7 @@ import type { Trousseau } from "@jfrusher/trousseau";
 import { guestName, isComing, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
 import { resolveShot } from "@/lib/ensemble/resolve";
 import { daysUntil, DUE_SOON_DAYS, longDate, money, todayIso } from "@/lib/money/money";
+import { checklist } from "@/lib/checklist/checklist";
 
 /**
  * What is left to do, across the whole wedding.
@@ -28,7 +29,7 @@ export interface Readiness {
   severity: Severity;
   message: string;
   /** Where the fix is, so a row can take you there. */
-  href: "/guests" | "/money" | "/seating" | "/place-cards" | "/timeline" | "/delegation" | "/group-shots";
+  href: "/guests" | "/money" | "/checklist" | "/seating" | "/place-cards" | "/timeline" | "/delegation" | "/group-shots";
   action: string;
 }
 
@@ -200,7 +201,9 @@ export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso
     }
   }
 
-  const uncrewed = crew.jobs.filter((job) => job.personIds.length === 0);
+  // On the day only. A task off it with nobody named is the couple's own to
+  // do, and the Checklist is where it is kept track of.
+  const uncrewed = crew.jobs.filter((job) => job.blockId !== null && job.personIds.length === 0);
   if (uncrewed.length > 0) {
     out.push({
       id: "jobs-uncrewed",
@@ -247,6 +250,20 @@ export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso
       message: `Committed ${accounts.committed.toLocaleString()} against a budget of ${accounts.budget.toLocaleString()}.`,
       href: "/money",
       action: "Look at the costs",
+    });
+  }
+
+  const late = checklist(crew, today).overdue;
+  if (late.length > 0) {
+    out.push({
+      id: "tasks-overdue",
+      severity: "advisory",
+      message:
+        late.length === 1
+          ? `“${late[0]!.label}” was to be done by ${longDate(late[0]!.dueOn)}.`
+          : `${late.length} tasks are past the date they were to be done by.`,
+      href: "/checklist",
+      action: "See the checklist",
     });
   }
 

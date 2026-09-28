@@ -703,6 +703,7 @@ export function readCrew(doc: Trousseau): Crew {
           teamId: typeof j["teamId"] === "string" ? j["teamId"] : null,
           personIds: list(j["personIds"], (p) => (typeof p === "string" ? p : null)),
           status: status === "doing" || status === "done" ? status : "todo",
+          dueOn: str(j["dueOn"]),
         };
       }),
       budget: typeof raw["budget"] === "number" ? raw["budget"] : null,

@@ -273,6 +273,8 @@ export interface Job {
   personIds: string[];
   /** Kanban column. Derived work is not stored; this is the user's own mark. */
   status: JobStatus;
+  /** ISO date a task off the day should be done by, or "". The Checklist's. */
+  dueOn: string;
 }
 
 export const JOB_STATUSES = ["todo", "doing", "done"] as const;

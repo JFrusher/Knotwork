@@ -136,7 +136,7 @@ describe("what is left to do", () => {
     const found = wedding({
       guests: GUESTS,
       ...TABLES,
-      crew: { jobs: [{ id: "j1", label: "Rings to the best man", personIds: [] }] },
+      crew: { jobs: [{ id: "j1", blockId: "blk-rings", label: "Rings to the best man", personIds: [] }] },
     }).find((item) => item.id === "jobs-uncrewed");
 
     expect(found?.severity).toBe("blocking");
@@ -162,6 +162,38 @@ describe("group shots", () => {
 
   it("says nothing when every shot resolves cleanly", () => {
     expect(ids({ guests: GUESTS, ...TABLES, shots: shotsWith("g1") })).not.toContain("shots-dangling");
+  });
+});
+
+describe("jobs with nobody on them", () => {
+  it("counts a job on the day with nobody doing it", () => {
+    expect(ids({ guests: GUESTS, crew: { jobs: [{ id: "j1", blockId: "b1", label: "Rings", personIds: [] }] } })).toContain("jobs-uncrewed");
+  });
+
+  it("leaves a task off the day alone: with nobody named, it is the couple's own", () => {
+    expect(ids({ guests: GUESTS, crew: { jobs: [{ id: "j1", blockId: null, label: "Book the florist", personIds: [] }] } })).not.toContain(
+      "jobs-uncrewed",
+    );
+  });
+});
+
+describe("the checklist", () => {
+  const on = (today: string, jobs: unknown[]) => {
+    const full = { ...emptyTrousseau(), guests: GUESTS, crew: { jobs } };
+    return readiness(migrate(full), full, today).find((entry) => entry.id === "tasks-overdue");
+  };
+
+  it("nudges about a task past its date", () => {
+    expect(on("2028-05-02", [{ id: "j1", blockId: null, label: "Order the cake", dueOn: "2028-05-01", personIds: [] }])).toMatchObject({
+      severity: "advisory",
+      message: "“Order the cake” was to be done by 1 May 2028.",
+      href: "/checklist",
+    });
+  });
+
+  it("says nothing of one that is done, or not due yet", () => {
+    expect(on("2028-05-02", [{ id: "j1", blockId: null, label: "Order the cake", dueOn: "2028-05-01", status: "done" }])).toBeUndefined();
+    expect(on("2028-04-30", [{ id: "j1", blockId: null, label: "Order the cake", dueOn: "2028-05-01" }])).toBeUndefined();
   });
 });
 

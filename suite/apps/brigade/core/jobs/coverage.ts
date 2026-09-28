@@ -44,7 +44,9 @@ export function coverage(doc: BrigadeDoc): Warning[] {
       continue;
     }
 
-    if (job.personIds.length > 0) continue;
+    // A task off the day with nobody named is the couple's own to do, as What
+    // is left reads it; the Checklist keeps track of those.
+    if (job.personIds.length > 0 || job.blockId === null) continue;
     found.push(
       job.teamId === null
         ? {

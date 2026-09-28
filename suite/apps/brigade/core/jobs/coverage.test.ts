@@ -90,4 +90,9 @@ describe("coverage", () => {
     const doc = withJobs(sampleDoc(), [job("job-a", null, ["per-ana"])]);
     expect(coverage(doc)).toEqual([]);
   });
+
+  it("says nothing of a task with nobody named: it is the couple's own to do", () => {
+    const doc = withJobs(sampleDoc(), [job("job-a", null, [])]);
+    expect(coverage(doc)).toEqual([]);
+  });
 });

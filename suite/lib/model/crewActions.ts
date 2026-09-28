@@ -45,8 +45,17 @@ export function addJob(crew: Crew, blockId: string, label = "New job"): Crew {
     teamId: null,
     personIds: [],
     status: "todo",
+    dueOn: "",
   };
   return { ...crew, jobs: [...crew.jobs, job] };
+}
+
+/** A task off the day: something to have done by a date, rather than on it. */
+export function addTask(crew: Crew, label: string, dueOn = ""): Crew {
+  const clean = label.trim();
+  if (!clean) return crew;
+  const task: Job = { id: newId("j"), blockId: null, label: clean, notes: "", teamId: null, personIds: [], status: "todo", dueOn };
+  return { ...crew, jobs: [...crew.jobs, task] };
 }
 
 export const patchJob = (crew: Crew, id: string, patch: Partial<Job>): Crew => ({

@@ -111,7 +111,9 @@ export function CrewPanel() {
 
       {/* Money has one place to be changed, and it is not here. */}
       <p className={styles.hint}>
-        Costs, deposits and payments are on the <Link href="/money">Money</Link> page.
+        Costs, deposits and payments are on the <Link href="/money" className="underline">
+          Money
+        </Link> page.
       </p>
 
       {doc.teams.map((team) => (

@@ -67,7 +67,10 @@ export function App() {
     };
   }, []);
 
-  const unassigned = doc.jobs.filter((job) => job.personIds.length === 0).length;
+  // The jobs on the day. A task before it with nobody named is the couple's
+  // own, kept on the Checklist, and is not a gap in the crew.
+  const onTheDay = doc.jobs.filter((job) => job.blockId !== null);
+  const unassigned = onTheDay.filter((job) => job.personIds.length === 0).length;
 
   return (
     <div className={styles.app}>
@@ -81,11 +84,11 @@ export function App() {
       <ChromeFill name="tool-actions" tokens="brigade-tokens">
         {/* Nothing to report leaves nothing behind, rather than an empty
             styled span sitting in the header as a stray mark. */}
-        {doc.jobs.length > 0 && (
+        {onTheDay.length > 0 && (
           <span className={unassigned > 0 ? styles.over : styles.slack}>
             {unassigned > 0
-              ? `${unassigned} of ${doc.jobs.length} jobs have nobody`
-              : `${doc.jobs.length} jobs, all covered`}
+              ? `${unassigned} of ${onTheDay.length} jobs have nobody`
+              : `${onTheDay.length} jobs, all covered`}
           </span>
         )}
         <Button

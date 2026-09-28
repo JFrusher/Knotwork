@@ -346,7 +346,17 @@ project, the build, and the Playwright run — and gets its own plan first.
    the ones that are about reloading wait for the write first.
 4. **Checklist** — a view over the jobs with no block, which the 2026-09-08
    design already made general tasks. Adds `dueOn`, and templates relative to
-   the wedding date. Overdue tasks join What is left.
+   the wedding date. Overdue tasks join What is left. **Built 2026-09-28** at
+   `/checklist`: late, the next 30 days, later, undated, and done folded away;
+   a task is added, dated, renamed, ticked off or removed in place. "Add the
+   usual tasks" adds eighteen, dated back from the day and matched by name so
+   it never doubles up. The example wedding has them, seven done. Found on
+   the way, with the templates as the evidence: What is left and Delegation
+   both counted a task with nobody named as a gap — What is left as
+   *blocking* — and Delegation's header, its Unassigned filter and the
+   front page's Delegation area counted tasks as jobs on the day. A task with
+   nobody named is the couple's own; all four now read the jobs on the day,
+   and Delegation folds the tasks away, there only to hand one to somebody.
 5. **Sync & history** — what changed and who changed it, conflicts settled with
    a real diff, and restore from the server's history.
 6. **Command palette** — any guest, table, block, job or page by name.

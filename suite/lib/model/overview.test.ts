@@ -22,11 +22,13 @@ describe("the front page's measures", () => {
     expect(areas["place-cards"]).toMatchObject({ summary: "100 cards", detail: "Drawn from the room" });
     expect(areas.timeline).toMatchObject({ summary: "27 blocks", detail: "07:00 to 01:00 +1" });
     expect(areas.delegation).toMatchObject({
-      summary: "11 jobs",
+      summary: "9 jobs",
       detail: "All have somebody · 1 of 3 suppliers confirmed",
       progress: 1,
     });
     expect(areas["group-shots"].summary).toBe("26 shots");
+    // Nineteen tasks before the day, seven of them done.
+    expect(areas.checklist).toMatchObject({ summary: "12 to do", detail: "7 done" });
   });
 
   it("says there is nothing yet, rather than that nothing is wrong, on an empty wedding", () => {

@@ -1,4 +1,4 @@
-import { Armchair, Banknote, Camera, ClipboardList, Clock, Contact, LayoutDashboard, Users, type LucideIcon } from "lucide-react";
+import { Armchair, Banknote, Camera, ClipboardList, Clock, Contact, LayoutDashboard, ListChecks, Users, type LucideIcon } from "lucide-react";
 
 /** The five tools, in the order the day is planned in. Nav and landing share this. */
 export interface Tool {
@@ -70,4 +70,5 @@ export const WEDDING_PAGES: readonly WeddingPage[] = [
   { href: "/", name: "Overview", icon: LayoutDashboard },
   { href: "/guests", name: "Guests", icon: Users },
   { href: "/money", name: "Money", icon: Banknote },
+  { href: "/checklist", name: "Checklist", icon: ListChecks },
 ];

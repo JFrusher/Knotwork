@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useMemo } from "react";
 import { assigneeNames, type DayBlock, type Job } from "../../core/model/types";
 import { formatClock } from "../../core/time/minutes";
@@ -33,7 +34,8 @@ export function Board() {
       const held = job.teamId === filter.teamId || job.personIds.some((id) => members.includes(id));
       if (!held) return false;
     }
-    if (filter.unassignedOnly && job.personIds.length > 0) return false;
+    // Jobs on the day with nobody on them: a task before it is the couple's own.
+    if (filter.unassignedOnly && (job.personIds.length > 0 || job.blockId === null)) return false;
     return true;
   };
 
@@ -62,17 +64,24 @@ export function Board() {
 
   return (
     <div className={styles.board}>
+      {/* Folded: the tasks before the day are the Checklist's, and here only
+          to hand one to somebody. Open while filtering, or with one picked. */}
       {tasks.length > 0 && (
-        <section className={styles.tasks}>
-          <h2 className={styles.tasksHead}>
-            Not tied to the day — {tasks.length} job{tasks.length === 1 ? "" : "s"}
-          </h2>
+        <details className={styles.tasks} open={filtering || tasks.some((job) => job.id === selectedJobId)}>
+          <summary className={styles.tasksHead}>
+            Before the day — {tasks.length} task{tasks.length === 1 ? "" : "s"}
+          </summary>
+          <p className={styles.tasksNote}>
+            Kept on the <Link href="/checklist" className="underline">
+              Checklist
+            </Link>. Pick one to give it to somebody.
+          </p>
           <ul className={styles.jobs}>
             {tasks.map((job) => (
               <JobRow key={job.id} job={job} selected={job.id === selectedJobId} onSelect={select} />
             ))}
           </ul>
-        </section>
+        </details>
       )}
 
       {orphans.length > 0 && (
@@ -162,9 +171,12 @@ export function Board() {
       <li className={[styles.job, selected ? styles.selected : "", severity].filter(Boolean).join(" ")}>
         <button type="button" className={styles.pick} onClick={() => onSelect(job.id)}>
           <span className={styles.jobLabel}>{job.label}</span>
-          <span className={who.length > 0 ? styles.who : styles.nobody}>
-            {who.length > 0 ? who.join(", ") : "nobody yet"}
-          </span>
+          {/* A task with nobody named is the couple's own, not a gap. */}
+          {who.length > 0 || job.blockId !== null ? (
+            <span className={who.length > 0 ? styles.who : styles.nobody}>
+              {who.length > 0 ? who.join(", ") : "nobody yet"}
+            </span>
+          ) : null}
           {trouble[0] && <span className={styles.warning}>{trouble[0].message}</span>}
         </button>
       </li>

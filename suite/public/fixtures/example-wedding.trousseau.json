@@ -3116,7 +3116,8 @@
         "personIds": [
           "p_ex00q"
         ],
-        "status": "done"
+        "status": "done",
+        "dueOn": ""
       },
       {
         "id": "job_ex00x",
@@ -3127,7 +3128,8 @@
         "personIds": [
           "p_ex00p"
         ],
-        "status": "todo"
+        "status": "todo",
+        "dueOn": ""
       },
       {
         "id": "job_ex00y",
@@ -3139,7 +3141,8 @@
           "p_ex00r",
           "p_ex00s"
         ],
-        "status": "todo"
+        "status": "todo",
+        "dueOn": ""
       },
       {
         "id": "job_ex00z",
@@ -3150,7 +3153,8 @@
         "personIds": [
           "p_ex00t"
         ],
-        "status": "todo"
+        "status": "todo",
+        "dueOn": ""
       },
       {
         "id": "job_ex010",
@@ -3162,7 +3166,8 @@
           "p_ex00p",
           "p_ex00r"
         ],
-        "status": "doing"
+        "status": "doing",
+        "dueOn": ""
       },
       {
         "id": "job_ex011",
@@ -3173,7 +3178,8 @@
         "personIds": [
           "p_ex00p"
         ],
-        "status": "doing"
+        "status": "doing",
+        "dueOn": ""
       },
       {
         "id": "job_ex012",
@@ -3184,7 +3190,8 @@
         "personIds": [
           "p_ex00u"
         ],
-        "status": "todo"
+        "status": "todo",
+        "dueOn": ""
       },
       {
         "id": "job_ex013",
@@ -3195,7 +3202,8 @@
         "personIds": [
           "p_ex00v"
         ],
-        "status": "todo"
+        "status": "todo",
+        "dueOn": ""
       },
       {
         "id": "job_ex014",
@@ -3206,7 +3214,8 @@
         "personIds": [
           "p_ex00q"
         ],
-        "status": "done"
+        "status": "done",
+        "dueOn": ""
       },
       {
         "id": "job_ex015",
@@ -3217,7 +3226,8 @@
         "personIds": [
           "p_ex00q"
         ],
-        "status": "todo"
+        "status": "todo",
+        "dueOn": "2028-05-18"
       },
       {
         "id": "job_ex016",
@@ -3228,7 +3238,178 @@
         "personIds": [
           "p_ex00p"
         ],
-        "status": "doing"
+        "status": "doing",
+        "dueOn": "2028-05-30"
+      },
+      {
+        "id": "task_ex00",
+        "blockId": null,
+        "label": "Set the budget",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "done",
+        "dueOn": "2027-06-02"
+      },
+      {
+        "id": "task_ex01",
+        "blockId": null,
+        "label": "Book the venue",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "done",
+        "dueOn": "2027-06-02"
+      },
+      {
+        "id": "task_ex02",
+        "blockId": null,
+        "label": "Book the registrar or celebrant",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "done",
+        "dueOn": "2027-07-07"
+      },
+      {
+        "id": "task_ex03",
+        "blockId": null,
+        "label": "Book the photographer",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "done",
+        "dueOn": "2027-08-06"
+      },
+      {
+        "id": "task_ex04",
+        "blockId": null,
+        "label": "Book the caterer",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "done",
+        "dueOn": "2027-08-06"
+      },
+      {
+        "id": "task_ex05",
+        "blockId": null,
+        "label": "Send save-the-dates",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "done",
+        "dueOn": "2027-10-05"
+      },
+      {
+        "id": "task_ex06",
+        "blockId": null,
+        "label": "Book the band or DJ",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "todo",
+        "dueOn": "2027-11-04"
+      },
+      {
+        "id": "task_ex07",
+        "blockId": null,
+        "label": "Book the florist",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "done",
+        "dueOn": "2027-12-04"
+      },
+      {
+        "id": "task_ex08",
+        "blockId": null,
+        "label": "Order the outfits",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "todo",
+        "dueOn": "2027-12-04"
+      },
+      {
+        "id": "task_ex09",
+        "blockId": null,
+        "label": "Book the cars",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "todo",
+        "dueOn": "2028-01-03"
+      },
+      {
+        "id": "task_ex10",
+        "blockId": null,
+        "label": "Send the invitations",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "todo",
+        "dueOn": "2028-02-02"
+      },
+      {
+        "id": "task_ex11",
+        "blockId": null,
+        "label": "Order the cake",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "todo",
+        "dueOn": "2028-02-02"
+      },
+      {
+        "id": "task_ex12",
+        "blockId": null,
+        "label": "Buy the rings",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "todo",
+        "dueOn": "2028-03-03"
+      },
+      {
+        "id": "task_ex13",
+        "blockId": null,
+        "label": "Chase the replies still to come",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "todo",
+        "dueOn": "2028-04-17"
+      },
+      {
+        "id": "task_ex15",
+        "blockId": null,
+        "label": "Finish the seating plan",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "todo",
+        "dueOn": "2028-05-18"
+      },
+      {
+        "id": "task_ex16",
+        "blockId": null,
+        "label": "Print the place cards",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "todo",
+        "dueOn": "2028-05-25"
+      },
+      {
+        "id": "task_ex17",
+        "blockId": null,
+        "label": "Confirm times with every supplier",
+        "notes": "",
+        "teamId": null,
+        "personIds": [],
+        "status": "todo",
+        "dueOn": "2028-05-25"
       }
     ]
   },
