@@ -23,7 +23,7 @@ test("a change that could not be saved is shown as not saved", async ({ page }) 
   });
 
   await page.getByRole("button", { name: "Data" }).click();
-  await page.getByRole("dialog", { name: "Your data" }).getByLabel("Names").fill("Robin & Kit");
+  await page.getByRole("dialog", { name: "Your data" }).getByLabel("Venue").fill("Somewhere else");
   await page.keyboard.press("Escape");
 
   await expect(page.getByRole("button", { name: /^Not saved/ })).toBeVisible();

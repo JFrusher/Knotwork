@@ -153,6 +153,8 @@ export function readDoc(): TableauxDoc {
       weddingName: doc.event.coupleNames || UNNAMED,
       venue: doc.event.venueName,
       date: doc.event.date,
+      // Whose sides the guests are on — see `lib/model/partners`.
+      partners: doc.event.partners,
     },
   }
 }

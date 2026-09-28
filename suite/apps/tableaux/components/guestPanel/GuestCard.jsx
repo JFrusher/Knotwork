@@ -5,18 +5,24 @@ import { useStore } from '../../store/useStore.js'
 import Icon from '../ui/Icon.jsx'
 import { useGuestWarnings } from '../../store/warningsContext.jsx'
 import { dietaryMeta } from '@/lib/model/dietary'
+import { partnerNames, sideLabel } from '@/lib/model/partners'
 import styles from './GuestCard.module.css'
 
-const SIDE = {
-  bride: { letter: 'B', colour: '#A6576A', label: "Bride's side" },
-  groom: { letter: 'G', colour: '#5C7E9E', label: "Groom's side" },
-  both: { letter: 'B·G', colour: '#7C6F5B', label: 'Both sides' },
+const SIDE_COLOUR = { a: '#A6576A', b: '#5C7E9E', both: '#7C6F5B' }
+
+/** The badge for a guest's side: each partner's initial, and both for both. */
+function sideBadge(side, meta) {
+  if (!SIDE_COLOUR[side]) return null
+  const [a, b] = partnerNames(meta).map((name) => name[0]?.toUpperCase() ?? '?')
+  const letter = side === 'a' ? a : side === 'b' ? b : `${a}·${b}`
+  return { letter, colour: SIDE_COLOUR[side], label: sideLabel(side, meta) }
 }
 
 function GuestCardBase({ guest, selected = false, multiSelected = false, onContextMenu }) {
   const select = useStore((s) => s.select)
   const toggleGuestSelected = useStore((s) => s.toggleGuestSelected)
   const showBadges = useStore((s) => s.settings.showDietaryBadges)
+  const meta = useStore((s) => s.meta)
   const showGroupColours = useStore((s) => s.settings.showGroupColours)
   // Single colour dot: family colour takes priority over subgroup, then group.
   const dotColour = useStore((s) => {
@@ -35,7 +41,7 @@ function GuestCardBase({ guest, selected = false, multiSelected = false, onConte
   const warnings = useGuestWarnings(guest.id)
   const assigned = !!guest.assignedTableId
   const diet = guest.dietary ? dietaryMeta(guest.dietary) : null
-  const side = guest.side ? SIDE[guest.side] : null
+  const side = guest.side ? sideBadge(guest.side, meta) : null
 
   const handleClick = (e) => {
     if (e.shiftKey || e.metaKey || e.ctrlKey) toggleGuestSelected(guest.id)

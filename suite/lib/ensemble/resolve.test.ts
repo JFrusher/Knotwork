@@ -57,10 +57,12 @@ const shot = (members: Shot["members"], extra: Partial<Shot> = {}): Shot => ({
   ...extra,
 });
 
+const NAMES = { partners: ["Alex", "Sam"] as [string, string] };
+
 describe("resolveShot: member kinds", () => {
   it("resolves a guest member by id", () => {
     const guests = { g1: guest("g1", { firstName: "Charis" }) };
-    const result = resolveShot(shot([{ kind: "guest", ref: "g1" }]), guests, seating(), emptyCast());
+    const result = resolveShot(shot([{ kind: "guest", ref: "g1" }]), guests, seating(), emptyCast(), [], NAMES);
     expect(result.people).toEqual([{ guestId: "g1", name: "Charis", rsvpStatus: "confirmed" }]);
     expect(result.problems).toEqual([]);
   });
@@ -68,7 +70,7 @@ describe("resolveShot: member kinds", () => {
   it("resolves a family member to all its members", () => {
     const guests = { g1: guest("g1", { firstName: "A" }), g2: guest("g2", { firstName: "B" }) };
     const s = seating({ families: { fam1: { id: "fam1", name: "Hartley", memberIds: ["g1", "g2"] } } });
-    const result = resolveShot(shot([{ kind: "family", ref: "fam1" }]), guests, s, emptyCast());
+    const result = resolveShot(shot([{ kind: "family", ref: "fam1" }]), guests, s, emptyCast(), [], NAMES);
     expect(result.people.map((p) => p.name)).toEqual(["A", "B"]);
   });
 
@@ -79,19 +81,24 @@ describe("resolveShot: member kinds", () => {
       g3: guest("g3", { firstName: "C" }),
     };
     const s = seating({ subgroups: { grp1: { id: "grp1", name: "University" } } });
-    const result = resolveShot(shot([{ kind: "group", ref: "grp1" }]), guests, s, emptyCast());
+    const result = resolveShot(shot([{ kind: "group", ref: "grp1" }]), guests, s, emptyCast(), [], NAMES);
     expect(result.people.map((p) => p.name).sort()).toEqual(["A", "B"]);
   });
 
   it("resolves a role member through the cast", () => {
     const guests = { g1: guest("g1", { firstName: "Charis" }) };
-    const cast: Cast = { ...emptyCast(), bride: ["g1"] };
-    const result = resolveShot(shot([{ kind: "role", ref: "bride" }]), guests, seating(), cast);
+    const cast: Cast = { ...emptyCast(), a: ["g1"] };
+    const result = resolveShot(shot([{ kind: "role", ref: "a" }]), guests, seating(), cast, [], NAMES);
     expect(result.people.map((p) => p.name)).toEqual(["Charis"]);
   });
 
+  it("says which partner's person is missing, by name", () => {
+    const result = resolveShot(shot([{ kind: "role", ref: "b-mother" }]), {}, seating(), emptyCast(), [], NAMES);
+    expect(result.problems).toContainEqual({ kind: "dangling", detail: "No one is set as Sam’s mother yet" });
+  });
+
   it("resolves a text member with no guest id", () => {
-    const result = resolveShot(shot([{ kind: "text", ref: "the dog" }]), {}, seating(), emptyCast());
+    const result = resolveShot(shot([{ kind: "text", ref: "the dog" }]), {}, seating(), emptyCast(), [], NAMES);
     expect(result.people).toEqual([{ guestId: null, name: "the dog", rsvpStatus: null }]);
   });
 
@@ -104,6 +111,7 @@ describe("resolveShot: member kinds", () => {
       seating(),
       emptyCast(),
       customRoles,
+      NAMES,
     );
     expect(result.people.map((p) => p.name)).toEqual(["A", "B"]);
   });
@@ -118,6 +126,8 @@ describe("resolveShot: dedupe and order", () => {
       guests,
       s,
       emptyCast(),
+      [],
+      NAMES,
     );
     expect(result.people.map((p) => p.name)).toEqual(["B", "A"]);
   });
@@ -125,36 +135,36 @@ describe("resolveShot: dedupe and order", () => {
 
 describe("resolveShot: problems", () => {
   it("flags a guest member that does not exist", () => {
-    const result = resolveShot(shot([{ kind: "guest", ref: "ghost" }]), {}, seating(), emptyCast());
+    const result = resolveShot(shot([{ kind: "guest", ref: "ghost" }]), {}, seating(), emptyCast(), [], NAMES);
     expect(result.problems).toEqual([{ kind: "dangling", detail: expect.stringContaining("no longer exists") }]);
   });
 
   it("flags a family member that does not exist", () => {
-    const result = resolveShot(shot([{ kind: "family", ref: "ghost" }]), {}, seating(), emptyCast());
+    const result = resolveShot(shot([{ kind: "family", ref: "ghost" }]), {}, seating(), emptyCast(), [], NAMES);
     expect(result.problems).toEqual([{ kind: "dangling", detail: expect.stringContaining("family") }]);
   });
 
   it("flags a role with nobody set", () => {
-    const result = resolveShot(shot([{ kind: "role", ref: "bride" }]), {}, seating(), emptyCast());
+    const result = resolveShot(shot([{ kind: "role", ref: "a" }]), {}, seating(), emptyCast(), [], NAMES);
     expect(result.problems).toEqual(
-      expect.arrayContaining([{ kind: "dangling", detail: expect.stringContaining("the bride") }]),
+      expect.arrayContaining([{ kind: "dangling", detail: expect.stringContaining("Alex") }]),
     );
   });
 
   it("flags a declined guest without dropping them from the shot", () => {
     const guests = { g1: guest("g1", { firstName: "Charis", rsvpStatus: "declined" }) };
-    const result = resolveShot(shot([{ kind: "guest", ref: "g1" }]), guests, seating(), emptyCast());
+    const result = resolveShot(shot([{ kind: "guest", ref: "g1" }]), guests, seating(), emptyCast(), [], NAMES);
     expect(result.people).toHaveLength(1);
     expect(result.problems).toEqual([{ kind: "declined", name: "Charis" }]);
   });
 
   it("flags an empty shot when nothing resolves to a person", () => {
-    const result = resolveShot(shot([]), {}, seating(), emptyCast());
+    const result = resolveShot(shot([]), {}, seating(), emptyCast(), [], NAMES);
     expect(result.problems).toEqual([{ kind: "empty" }]);
   });
 
   it("flags a customRole member that does not exist", () => {
-    const result = resolveShot(shot([{ kind: "customRole", ref: "ghost" }]), {}, seating(), emptyCast(), []);
+    const result = resolveShot(shot([{ kind: "customRole", ref: "ghost" }]), {}, seating(), emptyCast(), [], NAMES);
     expect(result.problems).toEqual([{ kind: "dangling", detail: expect.stringContaining("no longer exists") }]);
   });
 
@@ -166,6 +176,7 @@ describe("resolveShot: problems", () => {
       seating(),
       emptyCast(),
       customRoles,
+      NAMES,
     );
     expect(result.problems).toEqual(
       expect.arrayContaining([{ kind: "dangling", detail: expect.stringContaining("Ushers") }]),
@@ -175,7 +186,7 @@ describe("resolveShot: problems", () => {
 
 describe("resolveShot: label", () => {
   it("keeps a typed label as-is", () => {
-    const result = resolveShot(shot([], { label: "Couple, alone" }), {}, seating(), emptyCast());
+    const result = resolveShot(shot([], { label: "Couple, alone" }), {}, seating(), emptyCast(), [], NAMES);
     expect(result.label).toBe("Couple, alone");
   });
 
@@ -186,24 +197,28 @@ describe("resolveShot: label", () => {
       guests,
       seating(),
       emptyCast(),
+      [],
+      NAMES,
     );
     expect(result.label).toBe("A + B");
   });
 
   it("falls back to a placeholder when a blank label resolves to nobody", () => {
-    const result = resolveShot(shot([]), {}, seating(), emptyCast());
+    const result = resolveShot(shot([]), {}, seating(), emptyCast(), [], NAMES);
     expect(result.label).toBe("Untitled shot");
   });
 
   it("builds a blank label from each member's own descriptor, not the people it resolves to", () => {
     const s = seating({ families: { fam1: { id: "fam1", name: "Hartley family", memberIds: [] } } });
     const result = resolveShot(
-      shot([{ kind: "role", ref: "bride" }, { kind: "role", ref: "bridal-party" }, { kind: "family", ref: "fam1" }]),
+      shot([{ kind: "role", ref: "a" }, { kind: "role", ref: "a-party" }, { kind: "family", ref: "fam1" }]),
       {},
       s,
       emptyCast(),
+      [],
+      NAMES,
     );
-    expect(result.label).toBe("Bride + Bridal party + Hartley family");
+    expect(result.label).toBe("Alex + Alex’s wedding party + Hartley family");
   });
 
   it("names a custom role in the built label", () => {
@@ -214,6 +229,7 @@ describe("resolveShot: label", () => {
       seating(),
       emptyCast(),
       customRoles,
+      NAMES,
     );
     expect(result.label).toBe("Me and my family");
   });

@@ -117,12 +117,19 @@ function Body({ onClose }: { onClose: () => void }) {
       {notice ? <Notice tone="ok">{notice}</Notice> : null}
 
       <Panel title="The wedding">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {/* Each side of the family and every group shot is named after these. */}
           <TextField
-            label="Names"
-            value={event.coupleNames}
-            placeholder="Charis & Jacob"
-            onChange={(coupleNames) => setEvent({ coupleNames })}
+            label="One of you"
+            value={event.partners[0]}
+            placeholder="Alex"
+            onChange={(name) => setEvent({ partners: [name, event.partners[1]] })}
+          />
+          <TextField
+            label="The other"
+            value={event.partners[1]}
+            placeholder="Sam"
+            onChange={(name) => setEvent({ partners: [event.partners[0], name] })}
           />
           <TextField
             label="Date"

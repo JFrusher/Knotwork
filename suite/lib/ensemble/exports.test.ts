@@ -53,26 +53,28 @@ const seating: Seating = {
 };
 
 const emptyCast: Cast = {
-  bride: [],
-  groom: [],
-  "brides-mother": [],
-  "brides-father": [],
-  "grooms-mother": [],
-  "grooms-father": [],
-  "bridal-party": [],
-  groomsmen: [],
+  a: [],
+  b: [],
+  "a-mother": [],
+  "a-father": [],
+  "b-mother": [],
+  "b-father": [],
+  "a-party": [],
+  "b-party": [],
 };
+
+const NAMES = { partners: ["Alex", "Sam"] as [string, string] };
 
 describe("shotListCsv", () => {
   it("numbers shots consecutively across sections, with the resolved names", () => {
     const sections: ShotSection[] = [
-      { id: "s1", name: "Bride's family", shots: [{ id: "sh1", label: "With mum", members: [{ kind: "guest", ref: "g1" }], notes: "Quick one" }] },
+      { id: "s1", name: "Alex's family", shots: [{ id: "sh1", label: "With mum", members: [{ kind: "guest", ref: "g1" }], notes: "Quick one" }] },
       { id: "s2", name: "Both families", shots: [{ id: "sh2", label: "Everyone", members: [], notes: "" }] },
     ];
-    const table = parseCsv(shotListCsv(sections, guests, seating, emptyCast));
+    const table = parseCsv(shotListCsv(sections, guests, seating, emptyCast, [], NAMES));
     expect(table.headers).toEqual(["Section", "No", "Shot", "People", "Notes"]);
     expect(table.rows).toEqual([
-      { Section: "Bride's family", No: "1", Shot: "With mum", People: "Charis Smith", Notes: "Quick one" },
+      { Section: "Alex's family", No: "1", Shot: "With mum", People: "Charis Smith", Notes: "Quick one" },
       { Section: "Both families", No: "2", Shot: "Everyone", People: "", Notes: "" },
     ]);
   });
@@ -95,7 +97,7 @@ describe("shotListCsv", () => {
         ],
       },
     ];
-    const csv = shotListCsv(sections, guests, seating, emptyCast);
+    const csv = shotListCsv(sections, guests, seating, emptyCast, [], NAMES);
 
     // A comma inside a cell has to be quoted, or the column count is wrong.
     expect(csv).toContain('"Charis Smith, Rowan Hartley"');

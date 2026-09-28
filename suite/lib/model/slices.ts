@@ -53,6 +53,7 @@ import type {
   ShotMember,
   ShotSection,
   Shots,
+  Side,
   Snapshot,
   Space,
   Table,
@@ -150,7 +151,7 @@ export function coerceGuests(source: unknown): Record<string, Guest> {
       dietaryRaw: diet.dietaryRaw,
       entree: str(raw["entree"]),
       notes: str(raw["notes"]),
-      side: side === "bride" || side === "groom" || side === "both" ? side : "",
+      side: readSide(side),
       groupId: typeof raw["groupId"] === "string" ? raw["groupId"] : null,
       subgroupId: typeof raw["subgroupId"] === "string" ? raw["subgroupId"] : null,
       familyId: typeof raw["familyId"] === "string" ? raw["familyId"] : null,
@@ -180,12 +181,26 @@ function legacyDietary(raw: Record<string, unknown>): { dietary: string; dietary
   return { dietary: normaliseDietary(dietary), dietaryRaw: dietaryRaw || dietary };
 }
 
-/** True when any stored guest still carries the old importer's dietary text. */
-export function hasLegacyDietary(source: unknown): boolean {
+/**
+ * A guest's side. Stored as "bride" and "groom" before sides were named after
+ * the partners; those are partner `a` and `b`, in the order they were listed.
+ */
+function readSide(side: unknown): Side {
+  if (side === "a" || side === "b" || side === "both") return side;
+  if (side === "bride") return "a";
+  if (side === "groom") return "b";
+  return "";
+}
+
+/**
+ * True when any stored guest still carries something reading has to convert —
+ * the old importer's dietary text, or a side called "bride" or "groom".
+ */
+export function hasLegacyGuests(source: unknown): boolean {
   return Object.values(isRecord(source) ? source : {}).some((raw) => {
     if (!isRecord(raw)) return false;
     const dietary = str(raw["dietary"]);
-    return dietary !== "" && !isDietaryKey(dietary);
+    return (dietary !== "" && !isDietaryKey(dietary)) || raw["side"] === "bride" || raw["side"] === "groom";
   });
 }
 
@@ -690,6 +705,47 @@ export function readCrew(doc: Trousseau): Crew {
 
 const CAST_ROLE_SET = new Set<CastRole>(CAST_ROLES);
 
+/**
+ * The roles as they were stored before they were named after the partners.
+ * Partner `a` was "bride" and `b` "groom" — the order they were listed in, not
+ * a claim about either of them. Read as their new names; `reconcileLoadedDocument`
+ * writes the result back.
+ */
+const LEGACY_ROLES: Record<string, CastRole> = {
+  bride: "a",
+  groom: "b",
+  "brides-mother": "a-mother",
+  "brides-father": "a-father",
+  "grooms-mother": "b-mother",
+  "grooms-father": "b-father",
+  "bridal-party": "a-party",
+  groomsmen: "b-party",
+};
+const LEGACY_KEY_FOR = Object.fromEntries(
+  Object.entries(LEGACY_ROLES).map(([legacy, role]) => [role, legacy]),
+) as Record<CastRole, string>;
+
+/** True when the stored shots still use the roles' old names. */
+export function hasLegacyShots(source: unknown): boolean {
+  if (!isRecord(source)) return false;
+  const cast = source["cast"];
+  if (isRecord(cast) && Object.keys(cast).some((key) => key in LEGACY_ROLES)) return true;
+  const sections = Array.isArray(source["sections"]) ? source["sections"] : [];
+  return sections.some(
+    (section) =>
+      isRecord(section) &&
+      Array.isArray(section["shots"]) &&
+      section["shots"].some(
+        (shot) =>
+          isRecord(shot) &&
+          Array.isArray(shot["members"]) &&
+          shot["members"].some(
+            (member) => isRecord(member) && member["kind"] === "role" && typeof member["ref"] === "string" && member["ref"] in LEGACY_ROLES,
+          ),
+      ),
+  );
+}
+
 export function emptyCast(): Cast {
   const cast = {} as Cast;
   for (const role of CAST_ROLES) cast[role] = [];
@@ -700,7 +756,7 @@ function readCast(raw: unknown): Cast {
   const cast = emptyCast();
   if (!isRecord(raw)) return cast;
   for (const role of CAST_ROLES) {
-    cast[role] = list(raw[role], (id) => (typeof id === "string" ? id : null));
+    cast[role] = list(raw[role] ?? raw[LEGACY_KEY_FOR[role]], (id) => (typeof id === "string" ? id : null));
   }
   return cast;
 }
@@ -716,10 +772,10 @@ function readMember(raw: unknown): ShotMember | null {
     case "customRole":
     case "text":
       return typeof ref === "string" ? { kind, ref } : null;
-    case "role":
-      return typeof ref === "string" && CAST_ROLE_SET.has(ref as CastRole)
-        ? { kind: "role", ref: ref as CastRole }
-        : null;
+    case "role": {
+      const role = typeof ref === "string" ? (LEGACY_ROLES[ref] ?? ref) : null;
+      return role !== null && CAST_ROLE_SET.has(role as CastRole) ? { kind: "role", ref: role as CastRole } : null;
+    }
     default:
       return null;
   }

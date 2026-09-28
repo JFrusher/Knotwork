@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { useStore } from '../../store/useStore.js'
 import Icon from '../ui/Icon.jsx'
-import { FILTER_DEFS } from '../../utils/guestFilters.js'
+import { filterDefs } from '../../utils/guestFilters.js'
 import styles from './GuestSearch.module.css'
 
 export default function GuestSearch() {
@@ -10,6 +10,7 @@ export default function GuestSearch() {
   const filters = useStore((s) => s.filters)
   const toggleFilter = useStore((s) => s.toggleFilter)
   const clearFilters = useStore((s) => s.clearFilters)
+  const meta = useStore((s) => s.meta)
 
   return (
     <div className={styles.wrap}>
@@ -43,7 +44,7 @@ export default function GuestSearch() {
         >
           All
         </button>
-        {FILTER_DEFS.map((f) => (
+        {filterDefs(meta).map((f) => (
           <button
             key={f.key}
             type="button"

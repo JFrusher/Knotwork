@@ -195,6 +195,7 @@ async function shotSheet(): Promise<Uint8Array | null> {
     {
       fontSource: browserFontSource(),
       coupleNames: doc.event.coupleNames,
+      partners: doc.event.partners,
       generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
     },
     shots.customRoles,

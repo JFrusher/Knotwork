@@ -9,7 +9,7 @@ import type { Plan } from "./actions";
  * about who may sit with whom.
  *
  * The three collection kinds are a hierarchy of intent, not of storage. A group
- * is broad ("Bride's side"), a subgroup narrows it ("University"), and a family
+ * is broad ("Alex's family"), a subgroup narrows it ("University"), and a family
  * is the one that carries a rule with it — a family split across two tables is
  * a warning, the other two never are.
  */
@@ -170,7 +170,7 @@ export function describeConstraint(plan: Plan, constraint: Constraint): string {
 export interface GuestFilter {
   query: string;
   rsvp: "all" | "confirmed" | "pending" | "declined";
-  side: "all" | "bride" | "groom" | "both";
+  side: "all" | "a" | "b" | "both";
   seated: "all" | "seated" | "unseated";
   groupId: string | null;
   /** Only guests carrying every one of these tags. */

@@ -48,13 +48,15 @@ const seating = (extra: Partial<Seating> = {}): Seating => ({
   ...extra,
 });
 
+const NAMES = { partners: ["Alex", "Sam"] as [string, string] };
+
 describe("propose: template", () => {
   it("produces the five classic sections, every shot built from role members only", () => {
-    const sections = propose([], {}, seating(), "template");
+    const sections = propose([], {}, seating(), "template", NAMES);
     expect(sections.map((s) => s.name)).toEqual([
       "The couple",
-      "Bride's family",
-      "Groom's family",
+      "Alex’s family",
+      "Sam’s family",
       "Both families",
       "Wedding party",
     ]);
@@ -66,9 +68,16 @@ describe("propose: template", () => {
     expect(sections.flatMap((s) => s.shots).length).toBeGreaterThan(5);
   });
 
+  it("names each shot after the partners, with nobody's pronoun assumed", () => {
+    const labels = propose([], {}, seating(), "template", NAMES).flatMap((s) => s.shots.map((shot) => shot.label));
+    expect(labels).toContain("Alex with their parents");
+    expect(labels).toContain("Sam with their wedding party");
+    expect(labels.join(" ")).not.toMatch(/\b(bride|groom|her|his)\b/i);
+  });
+
   it("is idempotent: proposing twice adds nothing the second time", () => {
-    const first = propose([], {}, seating(), "template");
-    const second = propose(first, {}, seating(), "template");
+    const first = propose([], {}, seating(), "template", NAMES);
+    const second = propose(first, {}, seating(), "template", NAMES);
     expect(second).toEqual(first);
   });
 });
@@ -76,35 +85,35 @@ describe("propose: template", () => {
 describe("propose: generate", () => {
   it("adds one shot per family, sided by majority Guest.side", () => {
     const guests: Record<string, Guest> = {
-      g1: guest("g1", { side: "bride" }),
-      g2: guest("g2", { side: "bride" }),
+      g1: guest("g1", { side: "a" }),
+      g2: guest("g2", { side: "a" }),
     };
     const families: Record<string, Family> = { fam1: { id: "fam1", name: "The Hartleys", memberIds: ["g1", "g2"] } };
-    const sections = propose([], guests, seating({ families }), "generate");
-    const bridesFamily = sections.find((s) => s.name === "Bride's family")!;
-    expect(bridesFamily.shots.some((s) => s.label === "The Hartleys")).toBe(true);
+    const sections = propose([], guests, seating({ families }), "generate", NAMES);
+    const alexsFamily = sections.find((s) => s.name === "Alex’s family")!;
+    expect(alexsFamily.shots.some((s) => s.label === "The Hartleys")).toBe(true);
   });
 
   it("adds one shot per named group, groups and subgroups both", () => {
-    const guests: Record<string, Guest> = { g1: guest("g1", { subgroupId: "grp1", side: "groom" }) };
+    const guests: Record<string, Guest> = { g1: guest("g1", { subgroupId: "grp1", side: "b" }) };
     const subgroups: Record<string, NamedGroup> = { grp1: { id: "grp1", name: "University friends" } };
-    const sections = propose([], guests, seating({ subgroups }), "generate");
-    const groomsFamily = sections.find((s) => s.name === "Groom's family")!;
-    expect(groomsFamily.shots.some((s) => s.label === "University friends")).toBe(true);
+    const sections = propose([], guests, seating({ subgroups }), "generate", NAMES);
+    const samsFamily = sections.find((s) => s.name === "Sam’s family")!;
+    expect(samsFamily.shots.some((s) => s.label === "University friends")).toBe(true);
   });
 
   it("files an unsided family under Both families", () => {
     const families: Record<string, Family> = { fam1: { id: "fam1", name: "Neighbours", memberIds: [] } };
-    const sections = propose([], {}, seating({ families }), "generate");
+    const sections = propose([], {}, seating({ families }), "generate", NAMES);
     const both = sections.find((s) => s.name === "Both families")!;
     expect(both.shots.some((s) => s.label === "Neighbours")).toBe(true);
   });
 
   it("is idempotent: generating twice adds each family once", () => {
-    const guests: Record<string, Guest> = { g1: guest("g1", { side: "bride" }) };
+    const guests: Record<string, Guest> = { g1: guest("g1", { side: "a" }) };
     const families: Record<string, Family> = { fam1: { id: "fam1", name: "The Hartleys", memberIds: ["g1"] } };
-    const first = propose([], guests, seating({ families }), "generate");
-    const second = propose(first, guests, seating({ families }), "generate");
+    const first = propose([], guests, seating({ families }), "generate", NAMES);
+    const second = propose(first, guests, seating({ families }), "generate", NAMES);
     expect(second).toEqual(first);
   });
 });

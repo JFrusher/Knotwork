@@ -1,3 +1,4 @@
+import { sideShort } from '@/lib/model/partners'
 import { downloadFile, slug } from './download.js'
 
 // Cells beginning with these characters can be executed as formulas by Excel /
@@ -12,7 +13,8 @@ const esc = escCsvCell
 export const toCsv = (headers, rows) =>
   [headers, ...rows].map((r) => r.map(esc).join(',')).join('\r\n') + '\r\n'
 
-const sideLabel = (side) => ({ bride: "Bride's", groom: "Groom's", both: 'Both' })[side] || ''
+/** "Alex's", "Sam's", "Both", after the partners in the plan's `meta`. */
+const sideLabel = (side, meta) => (side === 'a' || side === 'b' || side === 'both' ? sideShort(side, meta) : '')
 
 // TODO(family-ux): headers below have a Group column but no Subgroup or
 // Family column — inconsistent with exportXlsx.js's buildGroupSheetRows,
@@ -37,7 +39,7 @@ export function buildAssignmentTable(state) {
         t.label,
         t.seatMode === 'seat' ? String(idx + 1) : '',
         g.fullName,
-        sideLabel(g.side),
+        sideLabel(g.side, state.meta),
         g.rsvpStatus || '',
         g.dietary || '',
         groups[g.groupId]?.name || '',
@@ -54,7 +56,7 @@ export function buildAssignmentTable(state) {
         '(Unassigned)',
         '',
         g.fullName,
-        sideLabel(g.side),
+        sideLabel(g.side, state.meta),
         g.rsvpStatus || '',
         g.dietary || '',
         groups[g.groupId]?.name || '',

@@ -3,15 +3,16 @@ import { buildDietaryTotals, buildPerTableSummary, buildReportCsv } from './expo
 
 const state = () => ({
   guests: {
-    g1: { id: 'g1', fullName: 'A', dietary: 'vegan', side: 'bride', rsvpStatus: 'confirmed' },
-    g2: { id: 'g2', fullName: 'B', dietary: 'vegan', side: 'groom', rsvpStatus: 'confirmed' },
-    g3: { id: 'g3', fullName: 'C', dietary: '', side: 'bride', rsvpStatus: 'confirmed' },
+    g1: { id: 'g1', fullName: 'A', dietary: 'vegan', side: 'a', rsvpStatus: 'confirmed' },
+    g2: { id: 'g2', fullName: 'B', dietary: 'vegan', side: 'b', rsvpStatus: 'confirmed' },
+    g3: { id: 'g3', fullName: 'C', dietary: '', side: 'a', rsvpStatus: 'confirmed' },
     g4: { id: 'g4', fullName: 'D', dietary: 'gluten-free', side: null, rsvpStatus: 'declined' },
   },
   tables: {
     t1: { id: 't1', label: 'Table 1', type: 'round', capacity: 8, assignedGuestIds: ['g1', 'g2'] },
   },
   groups: {},
+  meta: { partners: ['Alex', 'Sam'] },
 })
 
 describe('buildDietaryTotals', () => {
@@ -27,14 +28,16 @@ describe('buildDietaryTotals', () => {
 
 describe('buildPerTableSummary', () => {
   it('summarises seated count, dietary and side mix per table', () => {
-    const { rows } = buildPerTableSummary(state())
-    const [label, seated, capacity, diet, bride, groom] = rows[0]
+    const { headers, rows } = buildPerTableSummary(state())
+    // The side columns are the partners', by name.
+    expect(headers.slice(-2)).toEqual(['Alex’s', 'Sam’s'])
+    const [label, seated, capacity, diet, a, b] = rows[0]
     expect(label).toBe('Table 1')
     expect(seated).toBe(2)
     expect(capacity).toBe(8)
     expect(diet).toContain('2 VG')
-    expect(bride).toBe(1)
-    expect(groom).toBe(1)
+    expect(a).toBe(1)
+    expect(b).toBe(1)
   })
 })
 

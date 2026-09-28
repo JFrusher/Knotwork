@@ -1,4 +1,5 @@
 import { DIETARY_META } from '@/lib/model/dietary'
+import { sideShort } from '@/lib/model/partners'
 import { getTableType } from './tableTypes.js'
 import { toCsv } from './exportCsv.js'
 import { downloadFile, slug } from './download.js'
@@ -40,8 +41,8 @@ export function buildDietaryTotals(state) {
 
 /** Per-table summary: occupancy, capacity, dietary breakdown, side mix. */
 export function buildPerTableSummary(state) {
-  const { guests = {}, tables = {} } = state
-  const headers = ['Table', 'Seated', 'Capacity', 'Dietary', "Bride's", "Groom's"]
+  const { guests = {}, tables = {}, meta } = state
+  const headers = ['Table', 'Seated', 'Capacity', 'Dietary', sideShort('a', meta), sideShort('b', meta)]
   const rows = []
   const tableList = Object.values(tables).sort((a, b) =>
     String(a.label).localeCompare(String(b.label), undefined, { numeric: true })
@@ -49,8 +50,8 @@ export function buildPerTableSummary(state) {
   for (const t of tableList) {
     const ids = (t.assignedGuestIds || []).filter(Boolean)
     const diet = {}
-    let bride = 0
-    let groom = 0
+    let a = 0
+    let b = 0
     for (const gid of ids) {
       const g = guests[gid]
       if (!g) continue
@@ -58,8 +59,8 @@ export function buildPerTableSummary(state) {
         const ab = DIETARY_META[g.dietary]?.abbrev || g.dietary
         diet[ab] = (diet[ab] || 0) + 1
       }
-      if (g.side === 'bride') bride++
-      else if (g.side === 'groom') groom++
+      if (g.side === 'a') a++
+      else if (g.side === 'b') b++
     }
     const dietStr = Object.entries(diet)
       .map(([ab, n]) => `${n} ${ab}`)
@@ -69,8 +70,8 @@ export function buildPerTableSummary(state) {
       ids.length,
       t.capacity ?? getTableType(t.type).defaultCapacity,
       dietStr,
-      bride || '',
-      groom || '',
+      a || '',
+      b || '',
     ])
   }
   return { headers, rows }

@@ -1,3 +1,4 @@
+import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import type { Guest, RsvpStatus, Side } from "@/lib/model/types";
 import { newGuest } from "@/lib/model/factories";
 import { normaliseDietary } from "@/lib/model/dietary";
@@ -130,12 +131,40 @@ export function guessRsvpMeaning(answers: string[]): Record<string, RsvpStatus> 
   return meaning;
 }
 
-function readSide(value: string): Side {
-  const key = value.trim().toLowerCase();
-  if (key.startsWith("bride")) return "bride";
-  if (key.startsWith("groom")) return "groom";
-  if (key.startsWith("both") || key.startsWith("shared")) return "both";
-  return "";
+/** Every distinct answer in the Side column, for the couple to say whose each is. */
+export function sideAnswers(table: CsvTable, mapping: FieldMapping): string[] {
+  if (!mapping.side) return [];
+  const answers = new Set<string>();
+  for (const row of table.rows) {
+    const value = (row[mapping.side] ?? "").trim();
+    if (value) answers.add(value);
+  }
+  return [...answers].sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * A first guess at whose side each answer means: a partner's name, or "both".
+ * "Bride" and "Groom" are left for the couple — the words do not say which of
+ * the two of them they are, and guessing would put a family on the wrong side.
+ */
+export function guessSideMeaning(
+  answers: string[],
+  event: Pick<WeddingEvent, "partners">,
+): Record<string, Side> {
+  const [a, b] = (event.partners ?? ["", ""]).map((name) => name.trim().toLowerCase());
+  const meaning: Record<string, Side> = {};
+  for (const answer of answers) {
+    const key = answer.trim().toLowerCase();
+    meaning[answer] =
+      a && key.startsWith(a) ? "a" : b && key.startsWith(b) ? "b" : /^(both|shared)/.test(key) ? "both" : "";
+  }
+  return meaning;
+}
+
+/** What the couple has said the file's answers mean. */
+export interface Meanings {
+  rsvp: Record<string, RsvpStatus>;
+  side: Record<string, Side>;
 }
 
 /** A whole name in one column: everything before the last space is the first name. */
@@ -180,7 +209,7 @@ const UPDATABLE = ["email", "rsvpStatus", "dietary", "dietaryRaw", "entree", "no
 export function planImport(
   table: CsvTable,
   mapping: FieldMapping,
-  rsvpMeaning: Record<string, RsvpStatus>,
+  meanings: Meanings,
   existing: Record<string, Guest>,
 ): ImportPlan {
   const byEmail = new Map<string, Guest>();
@@ -229,12 +258,12 @@ export function planImport(
       const next: Guest = {
         ...match,
         email: email || match.email,
-        rsvpStatus: answer ? (rsvpMeaning[answer] ?? "pending") : match.rsvpStatus,
+        rsvpStatus: answer ? (meanings.rsvp[answer] ?? "pending") : match.rsvpStatus,
         dietary: diet ? normaliseDietary(diet) : match.dietary,
         dietaryRaw: diet || match.dietaryRaw,
         entree: cell(row, mapping.entree) || match.entree,
         notes: cell(row, mapping.notes) || match.notes,
-        side: side ? readSide(side) : match.side,
+        side: side ? (meanings.side[side] ?? "") : match.side,
       };
       guests[match.id] = next;
       if (UPDATABLE.some((field) => next[field] !== match[field])) updated.push(next);
@@ -246,12 +275,12 @@ export function planImport(
       firstName,
       lastName,
       email,
-      rsvpStatus: answer ? (rsvpMeaning[answer] ?? "pending") : "pending",
+      rsvpStatus: answer ? (meanings.rsvp[answer] ?? "pending") : "pending",
       dietary: normaliseDietary(diet),
       dietaryRaw: diet,
       entree: cell(row, mapping.entree),
       notes: cell(row, mapping.notes),
-      side: readSide(side),
+      side: side ? (meanings.side[side] ?? "") : "",
     });
     if (sameName.length > 1) {
       ambiguous.push(guest);

@@ -17,6 +17,7 @@ import {
   resolvedDay,
   timelineDoc,
 } from "./slices";
+import { coupleTitle } from "./partners";
 import type { Crew, Guest, Seating, Shots } from "./types";
 import type { Timeline } from "./timeline";
 
@@ -68,6 +69,9 @@ export function useWriters(): SuiteWriters {
     (patch: Partial<WeddingEvent>, options: WriteOptions = { label: "wedding details" }) => {
       const { doc } = useTrousseauStore.getState();
       const event = { ...doc.event, ...patch };
+      // The title is the partners' names, written here and nowhere else, so the
+      // two can never disagree.
+      if (patch.partners) event.coupleNames = coupleTitle(patch.partners);
       // The curfew is an input to the resolver, so moving it moves the day.
       setSlices(
         [

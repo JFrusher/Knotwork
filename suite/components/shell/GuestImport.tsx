@@ -10,14 +10,17 @@ import {
   applyImport,
   guessMapping,
   guessRsvpMeaning,
+  guessSideMeaning,
   MAPPABLE_FIELDS,
   MAX_ROWS,
   planImport,
   rsvpAnswers,
+  sideAnswers,
   type FieldMapping,
 } from "@/lib/data/guestImport";
+import { partnerNames } from "@/lib/model/partners";
 import { guestName, readGuests } from "@/lib/model/slices";
-import type { Guest, RsvpStatus } from "@/lib/model/types";
+import type { Guest, RsvpStatus, Side } from "@/lib/model/types";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { useGuestImport } from "./guestImportPanel";
 
@@ -55,6 +58,9 @@ function Steps({ onClose }: { onClose: () => void }) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [mapping, setMapping] = useState<FieldMapping | null>(null);
   const [meaning, setMeaning] = useState<Record<string, RsvpStatus>>({});
+  const [sideMeaning, setSideMeaning] = useState<Record<string, Side>>({});
+  const event = useTrousseauStore((s) => s.doc.event);
+  const [nameA, nameB] = partnerNames(event);
   const [step, setStep] = useState<"file" | "columns" | "check" | "done">("file");
   const [problem, setProblem] = useState<string | null>(null);
   const [add, setAdd] = useState<Set<string>>(new Set());
@@ -74,6 +80,7 @@ function Steps({ onClose }: { onClose: () => void }) {
       setLoaded({ name: file.name, table });
       setMapping(guessed);
       setMeaning(guessRsvpMeaning(rsvpAnswers(table, guessed)));
+      setSideMeaning(guessSideMeaning(sideAnswers(table, guessed), event));
       setStep("columns");
     } catch (cause) {
       setProblem(cause instanceof Error ? cause.message : String(cause));
@@ -84,8 +91,13 @@ function Steps({ onClose }: { onClose: () => void }) {
   // since the dialog opened.
   const plan = useMemo(() => {
     if (step !== "check" || !loaded || !mapping) return null;
-    return planImport(loaded.table, mapping, meaning, readGuests(useTrousseauStore.getState().doc));
-  }, [step, loaded, mapping, meaning]);
+    return planImport(
+      loaded.table,
+      mapping,
+      { rsvp: meaning, side: sideMeaning },
+      readGuests(useTrousseauStore.getState().doc),
+    );
+  }, [step, loaded, mapping, meaning, sideMeaning]);
 
   function commit() {
     if (!plan) return;
@@ -165,6 +177,7 @@ function Steps({ onClose }: { onClose: () => void }) {
                     const next = { ...mapping, [key]: e.target.value || null };
                     setMapping(next);
                     if (key === "rsvp") setMeaning(guessRsvpMeaning(rsvpAnswers(loaded.table, next)));
+                    if (key === "side") setSideMeaning(guessSideMeaning(sideAnswers(loaded.table, next), event));
                   }}
                   className="min-w-0 flex-1 rounded border border-charcoal/15 bg-parchment px-2 py-1 text-charcoal"
                 >
@@ -180,29 +193,26 @@ function Steps({ onClose }: { onClose: () => void }) {
           </div>
 
           {Object.keys(meaning).length > 0 ? (
-            <fieldset>
-              <legend className="mb-2 text-xs tracking-widest text-slate uppercase">What the answers mean</legend>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {Object.entries(meaning).map(([answer, status]) => (
-                  <label key={answer} className="flex items-center gap-2 text-sm">
-                    <span className="min-w-0 flex-1 truncate text-charcoal" title={answer}>
-                      “{answer}”
-                    </span>
-                    <select
-                      value={status}
-                      onChange={(e) => setMeaning({ ...meaning, [answer]: e.target.value as RsvpStatus })}
-                      className="rounded border border-charcoal/15 bg-parchment px-2 py-1 text-charcoal"
-                    >
-                      {MEANINGS.map((m) => (
-                        <option key={m.value} value={m.value}>
-                          {m.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            <Answers
+              legend="What the RSVP answers mean"
+              meaning={meaning}
+              options={MEANINGS}
+              onChange={(answer, value) => setMeaning({ ...meaning, [answer]: value })}
+            />
+          ) : null}
+
+          {Object.keys(sideMeaning).length > 0 ? (
+            <Answers
+              legend="Whose side each answer means"
+              meaning={sideMeaning}
+              options={[
+                { value: "a", label: `${nameA}’s side` },
+                { value: "b", label: `${nameB}’s side` },
+                { value: "both", label: "Both sides" },
+                { value: "", label: "Not said" },
+              ]}
+              onChange={(answer, value) => setSideMeaning({ ...sideMeaning, [answer]: value })}
+            />
           ) : null}
 
           {!mapping.firstName && !mapping.fullName ? (
@@ -270,6 +280,45 @@ function Steps({ onClose }: { onClose: () => void }) {
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** Each distinct answer in a column, and what the couple says it means. */
+function Answers<T extends string>({
+  legend,
+  meaning,
+  options,
+  onChange,
+}: {
+  legend: string;
+  meaning: Record<string, T>;
+  options: Array<{ value: T; label: string }>;
+  onChange: (answer: string, value: T) => void;
+}) {
+  return (
+    <fieldset>
+      <legend className="mb-2 text-xs tracking-widest text-slate uppercase">{legend}</legend>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {Object.entries(meaning).map(([answer, value]) => (
+          <label key={answer} className="flex items-center gap-2 text-sm">
+            <span className="min-w-0 flex-1 truncate text-charcoal" title={answer}>
+              “{answer}”
+            </span>
+            <select
+              value={value}
+              onChange={(e) => onChange(answer, e.target.value as T)}
+              className="rounded border border-charcoal/15 bg-parchment px-2 py-1 text-charcoal"
+            >
+              {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 

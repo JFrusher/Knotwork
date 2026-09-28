@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import clsx from 'clsx'
 import { useStore } from '../../store/useStore.js'
 import { DIETARY_META, normaliseDietary } from '@/lib/model/dietary'
+import { partnerNames } from '@/lib/model/partners'
 import Icon from '../ui/Icon.jsx'
 import IconButton from '../ui/IconButton.jsx'
 import Button from '../ui/Button.jsx'
@@ -9,11 +10,6 @@ import TextField from './TextField.jsx'
 import f from './fields.module.css'
 import styles from './GuestInspector.module.css'
 
-const SIDES = [
-  { value: 'bride', label: 'Bride' },
-  { value: 'groom', label: 'Groom' },
-  { value: 'both', label: 'Both' },
-]
 const RSVPS = ['confirmed', 'pending', 'declined']
 
 export default function GuestInspector({ guestId }) {
@@ -28,6 +24,14 @@ export default function GuestInspector({ guestId }) {
   const assignGuest = useStore((s) => s.assignGuest)
   const tables = useStore((s) => s.tables)
   const removeGuest = useStore((s) => s.removeGuest)
+  // Whose side, in the partners' names.
+  const meta = useStore((s) => s.meta)
+  const [nameA, nameB] = partnerNames(meta)
+  const sides = [
+    { value: 'a', label: nameA },
+    { value: 'b', label: nameB },
+    { value: 'both', label: 'Both' },
+  ]
   const select = useStore((s) => s.select)
   const clearSelection = useStore((s) => s.clearSelection)
   const openModal = useStore((s) => s.openModal)
@@ -141,7 +145,7 @@ export default function GuestInspector({ guestId }) {
         <div className={f.field}>
           <span className={f.label}>Side</span>
           <div className={f.segmented}>
-            {SIDES.map((s) => (
+            {sides.map((s) => (
               <button
                 key={s.value}
                 type="button"

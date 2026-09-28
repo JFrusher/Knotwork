@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import {
   DndContext,
   KeyboardSensor,
@@ -37,6 +38,7 @@ export function ShotList({
   shots,
   guests,
   seating,
+  event,
   selectedId,
   onSelect,
   onChange,
@@ -44,6 +46,7 @@ export function ShotList({
   shots: Shots;
   guests: Record<string, Guest>;
   seating: Seating;
+  event: WeddingEvent;
   selectedId: string | null;
   onSelect: (shotId: string) => void;
   onChange: (next: Shots) => void;
@@ -141,6 +144,7 @@ export function ShotList({
                         seating={seating}
                         cast={shots.cast}
                         customRoles={shots.customRoles}
+                        event={event}
                         selected={shot.id === selectedId}
                         onSelect={() => onSelect(shot.id)}
                         onRemove={() => onChange(removeShot(shots, shot.id))}
@@ -185,6 +189,7 @@ function ShotRow({
   seating,
   cast,
   customRoles,
+  event,
   selected,
   onSelect,
   onRemove,
@@ -197,13 +202,14 @@ function ShotRow({
   seating: Seating;
   cast: Cast;
   customRoles: CustomRole[];
+  event: WeddingEvent;
   selected: boolean;
   onSelect: () => void;
   onRemove: () => void;
   onDuplicate: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: shot.id });
-  const resolved = resolveShot(shot, guests, seating, cast, customRoles);
+  const resolved = resolveShot(shot, guests, seating, cast, customRoles, event);
 
   return (
     <li

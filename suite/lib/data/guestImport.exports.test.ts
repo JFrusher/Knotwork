@@ -31,7 +31,7 @@ test("a Joy-shaped export: names, email, attending, meal and diet are all found"
   // Joy's Party is the household invited together, not whose side they are on.
   expect(mapping.side).toBeNull();
 
-  const plan = planImport(table, mapping, guessRsvpMeaning(rsvpAnswers(table, mapping)), {});
+  const plan = planImport(table, mapping, { rsvp: guessRsvpMeaning(rsvpAnswers(table, mapping)), side: {} }, {});
   expect(plan.added.map((g) => [g.firstName, g.rsvpStatus, g.dietary])).toEqual([
     ["Beatrix", "confirmed", "vegetarian"],
     ["Otto", "confirmed", ""],
@@ -46,7 +46,7 @@ test("a Zola-shaped export: one name column, RSVP status and meal are found", ()
   const mapping = guessMapping(table.headers);
   expect(mapping).toMatchObject({ fullName: "Name", email: "Email", rsvp: "RSVP Status", entree: "Meal Choice", notes: "Notes" });
 
-  const plan = planImport(table, mapping, guessRsvpMeaning(rsvpAnswers(table, mapping)), {});
+  const plan = planImport(table, mapping, { rsvp: guessRsvpMeaning(rsvpAnswers(table, mapping)), side: {} }, {});
   expect(plan.added.map((g) => [g.firstName, g.lastName, g.rsvpStatus, g.entree])).toEqual([
     ["Beatrix", "Lindqvist", "confirmed", "Risotto"],
     ["Otto", "Lindqvist", "confirmed", "Beef"],
@@ -57,10 +57,11 @@ test("a Zola-shaped export: one name column, RSVP status and meal are found", ()
 
 test("the same people from Joy then Zola are updated, not doubled", () => {
   const joy = fixture("joy-shaped.csv");
-  const first = planImport(joy, guessMapping(joy.headers), guessRsvpMeaning(rsvpAnswers(joy, guessMapping(joy.headers))), {});
+  const joyMapping = guessMapping(joy.headers);
+  const first = planImport(joy, joyMapping, { rsvp: guessRsvpMeaning(rsvpAnswers(joy, joyMapping)), side: {} }, {});
   const zola = fixture("zola-shaped.csv");
   const mapping = guessMapping(zola.headers);
-  const second = planImport(zola, mapping, guessRsvpMeaning(rsvpAnswers(zola, mapping)), first.guests);
+  const second = planImport(zola, mapping, { rsvp: guessRsvpMeaning(rsvpAnswers(zola, mapping)), side: {} }, first.guests);
   expect(second.added).toHaveLength(0);
   expect(Object.keys(second.guests)).toHaveLength(4);
 });

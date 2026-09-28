@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { parseCsv, toCsv } from "./csv";
-import { applyImport, guessMapping, guessRsvpMeaning, planImport, rsvpAnswers } from "./guestImport";
+import { applyImport, guessMapping, guessRsvpMeaning, guessSideMeaning, planImport, rsvpAnswers, sideAnswers } from "./guestImport";
 import { newGuest } from "@/lib/model/factories";
 import type { Guest } from "@/lib/model/types";
 
@@ -39,7 +39,7 @@ test("the PRD's own sample columns are all recognised", () => {
 function plan(csv: string, existing: Record<string, Guest> = {}) {
   const table = parseCsv(csv);
   const mapping = guessMapping(table.headers);
-  return planImport(table, mapping, guessRsvpMeaning(rsvpAnswers(table, mapping)), existing);
+  return planImport(table, mapping, { rsvp: guessRsvpMeaning(rsvpAnswers(table, mapping)), side: {} }, existing);
 }
 
 test("a name in one column is split into first and last", () => {
@@ -134,7 +134,12 @@ test("the couple can say what an unfamiliar RSVP answer means", () => {
   const guessed = guessRsvpMeaning(answers);
   expect(Object.values(guessed)).toEqual(["pending", "pending"]);
   // …and what the couple says is what is used.
-  const result = planImport(table, mapping, { "Joyfully accepts": "confirmed", "Regretfully declines": "declined" }, {});
+  const result = planImport(
+    table,
+    mapping,
+    { rsvp: { "Joyfully accepts": "confirmed", "Regretfully declines": "declined" }, side: {} },
+    {},
+  );
   expect(result.added.map((g) => g.rsvpStatus)).toEqual(["confirmed", "declined"]);
 });
 
@@ -188,4 +193,15 @@ test("two rows cannot both be the one guest already on the list", () => {
   expect(result.guests["a"]!.dietary).toBe("vegan");
   expect(result.added).toHaveLength(1);
   expect(result.added[0]!.dietary).toBe("halal");
+});
+
+test("a side is whoever the couple says each answer means", () => {
+  const table = parseCsv("Name,Side\r\nAnn Lee,Alex's family\r\nBo Ray,Bride\r\nCy Dee,Both\r\n");
+  const mapping = guessMapping(table.headers);
+  const guessed = guessSideMeaning(sideAnswers(table, mapping), { partners: ["Alex", "Sam"] });
+  // A partner's name and "both" are read; "Bride" does not say which of them.
+  expect(guessed).toEqual({ "Alex's family": "a", Bride: "", Both: "both" });
+
+  const result = planImport(table, mapping, { rsvp: {}, side: { ...guessed, Bride: "b" } }, {});
+  expect(result.added.map((g) => g.side)).toEqual(["a", "b", "both"]);
 });

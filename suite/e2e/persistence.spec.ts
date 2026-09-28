@@ -33,7 +33,8 @@ test("a guest import and a rename in the Data panel survive editing in Seating",
 
   await page.getByRole("button", { name: "Data" }).click();
   const data = page.getByRole("dialog", { name: "Your data" });
-  await data.getByLabel("Names").fill("Robin & Kit");
+  await data.getByLabel("One of you").fill("Robin");
+  await data.getByLabel("The other").fill("Kit");
   await data.getByRole("button", { name: "Import guests" }).click();
   const importer = page.getByRole("dialog", { name: "Import guests" });
   await importer.getByLabel("Guest list CSV").setInputFiles({

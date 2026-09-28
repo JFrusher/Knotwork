@@ -93,8 +93,8 @@ describe("shots", () => {
     shots = addShot(shots, id);
     const originalId = shots.sections[0]!.shots[0]!.id;
     shots = patchShot(shots, originalId, {
-      label: "Bride + groom",
-      members: [{ kind: "role", ref: "bride" }],
+      label: "The couple",
+      members: [{ kind: "role", ref: "a" }],
       notes: "Golden hour",
     });
 
@@ -104,8 +104,8 @@ describe("shots", () => {
 
     const copy = duplicated.sections[0]!.shots[1]!;
     expect(copy).toMatchObject({
-      label: "Bride + groom",
-      members: [{ kind: "role", ref: "bride" }],
+      label: "The couple",
+      members: [{ kind: "role", ref: "a" }],
       notes: "Golden hour",
     });
   });
@@ -136,9 +136,9 @@ describe("members", () => {
 
 describe("cast", () => {
   it("sets a role's guest ids, replacing whatever was there", () => {
-    const withRole = setCastRole(empty, "bride", ["g1"]);
-    expect(withRole.cast.bride).toEqual(["g1"]);
-    expect(setCastRole(withRole, "bride", []).cast.bride).toEqual([]);
+    const withRole = setCastRole(empty, "a", ["g1"]);
+    expect(withRole.cast.a).toEqual(["g1"]);
+    expect(setCastRole(withRole, "a", []).cast.a).toEqual([]);
   });
 });
 

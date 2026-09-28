@@ -1,5 +1,7 @@
 import { guestName } from "@/lib/model/slices";
-import { ROLE_LABEL, type Cast, type CastRole, type CustomRole, type Guest, type RsvpStatus, type Seating, type Shot, type ShotMember } from "@/lib/model/types";
+import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import { roleLabel } from "@/lib/model/partners";
+import type { Cast, CustomRole, Guest, RsvpStatus, Seating, Shot, ShotMember } from "@/lib/model/types";
 
 export interface ResolvedPerson {
   guestId: string | null;
@@ -18,14 +20,16 @@ export interface ResolvedShot {
   problems: ShotProblem[];
 }
 
-const rolePhrase = (role: CastRole): string => `the ${ROLE_LABEL[role].toLowerCase()}`;
+/** Whose names a role is spoken in: the partners'. */
+type Names = Pick<WeddingEvent, "partners">;
 
 /** A member's own short description — a role's name, a family's name, a guest's name. */
 export function memberDescriptor(
   member: ShotMember,
   guests: Record<string, Guest>,
   seating: Seating,
-  customRoles: CustomRole[] = [],
+  customRoles: CustomRole[],
+  names: Names,
 ): string {
   switch (member.kind) {
     case "guest": {
@@ -37,7 +41,7 @@ export function memberDescriptor(
     case "group":
       return (seating.groups[member.ref] ?? seating.subgroups[member.ref])?.name ?? "Deleted group";
     case "role":
-      return ROLE_LABEL[member.ref];
+      return roleLabel(member.ref, names);
     case "customRole":
       return customRoles.find((r) => r.id === member.ref)?.name ?? "Deleted role";
     case "text":
@@ -58,7 +62,8 @@ export function resolveShot(
   guests: Record<string, Guest>,
   seating: Seating,
   cast: Cast,
-  customRoles: CustomRole[] = [],
+  customRoles: CustomRole[],
+  names: Names,
 ): ResolvedShot {
   const people: ResolvedPerson[] = [];
   const seen = new Set<string>();
@@ -78,7 +83,7 @@ export function resolveShot(
   };
 
   for (const member of shot.members) {
-    resolveMember(member, guests, seating, cast, customRoles, addGuest, problems, people);
+    resolveMember(member, guests, seating, cast, customRoles, names, addGuest, problems, people);
   }
 
   if (people.length === 0 && problems.length === 0) problems.push({ kind: "empty" });
@@ -86,7 +91,7 @@ export function resolveShot(
   const label =
     shot.label.trim() ||
     (shot.members.length > 0
-      ? shot.members.map((m) => memberDescriptor(m, guests, seating, customRoles)).join(" + ")
+      ? shot.members.map((m) => memberDescriptor(m, guests, seating, customRoles, names)).join(" + ")
       : "Untitled shot");
 
   return { label, people, problems };
@@ -98,6 +103,7 @@ function resolveMember(
   seating: Seating,
   cast: Cast,
   customRoles: CustomRole[],
+  names: Names,
   addGuest: (guestId: string, source: string) => void,
   problems: ShotProblem[],
   people: ResolvedPerson[],
@@ -129,10 +135,10 @@ function resolveMember(
     case "role": {
       const guestIds = cast[member.ref];
       if (guestIds.length === 0) {
-        problems.push({ kind: "dangling", detail: `No one is set as ${rolePhrase(member.ref)} yet` });
+        problems.push({ kind: "dangling", detail: `No one is set as ${roleLabel(member.ref, names)} yet` });
         return;
       }
-      for (const guestId of guestIds) addGuest(guestId, rolePhrase(member.ref));
+      for (const guestId of guestIds) addGuest(guestId, roleLabel(member.ref, names));
       return;
     }
     case "customRole": {

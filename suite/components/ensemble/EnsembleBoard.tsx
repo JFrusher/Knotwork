@@ -63,10 +63,10 @@ export function EnsembleBoard() {
       {undo}
       <div className="flex w-96 shrink-0 flex-col border-r border-charcoal/10">
         <div data-tour="groupshots.seed" className="flex gap-2 border-b border-charcoal/10 p-3">
-          <Button icon={Wand2} onClick={() => setShots({ ...shots, sections: propose(shots.sections, guests, seating, "template") })}>
+          <Button icon={Wand2} onClick={() => setShots({ ...shots, sections: propose(shots.sections, guests, seating, "template", event) })}>
             Seed the classic list
           </Button>
-          <Button icon={Sparkles} onClick={() => setShots({ ...shots, sections: propose(shots.sections, guests, seating, "generate") })}>
+          <Button icon={Sparkles} onClick={() => setShots({ ...shots, sections: propose(shots.sections, guests, seating, "generate", event) })}>
             + families and groups
           </Button>
         </div>
@@ -74,6 +74,7 @@ export function EnsembleBoard() {
           shots={shots}
           guests={guests}
           seating={seating}
+          event={event}
           selectedId={selectedId}
           onSelect={(id) => {
             setSelectedId(id);
@@ -99,14 +100,14 @@ export function EnsembleBoard() {
         <div data-tour="groupshots.panel" className="flex-1 overflow-y-auto">
           {tab === "shot" &&
             (selectedShot ? (
-              <ShotInspector shot={selectedShot} shots={shots} guests={guests} seating={seating} onChange={setShots} />
+              <ShotInspector shot={selectedShot} shots={shots} guests={guests} seating={seating} event={event} onChange={setShots} />
             ) : (
               <div className="flex h-full items-center justify-center">
                 <Empty>Pick a shot on the left, or add one.</Empty>
               </div>
             ))}
-          {tab === "cast" && <CastPanel shots={shots} guests={guests} onChange={setShots} />}
-          {tab === "print" && <PrintPanel shots={shots} guests={guests} seating={seating} coupleNames={event.coupleNames} />}
+          {tab === "cast" && <CastPanel shots={shots} guests={guests} event={event} onChange={setShots} />}
+          {tab === "print" && <PrintPanel shots={shots} guests={guests} seating={seating} event={event} />}
         </div>
       </div>
     </div>

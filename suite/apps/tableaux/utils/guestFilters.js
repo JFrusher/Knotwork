@@ -1,23 +1,31 @@
+import { sideShort } from '@/lib/model/partners'
+
 // TODO(family-ux): no "in a family" (or per-family) filter chip exists —
 // would need an entry here AND in PREDICATES below, and a predicate can't
 // just check truthiness of a static key since it'd need the families dict
 // (guest.familyId alone isn't enough context for a per-family filter).
 // See tmp/family-ux-followups.md #8.
-/** Filter chips shown beneath the guest search box, and their predicates. */
-export const FILTER_DEFS = [
-  { key: 'unassigned', label: 'Unassigned' },
-  { key: 'bride', label: "Bride's" },
-  { key: 'groom', label: "Groom's" },
-  { key: 'vegetarian', label: 'Vegetarian' },
-  { key: 'vegan', label: 'Vegan' },
-  { key: 'gluten-free', label: 'GF' },
-  { key: 'notes', label: 'Has notes' },
-]
+/**
+ * Filter chips shown beneath the guest search box, and their predicates. The
+ * two side chips are named after the partners — "Alex's", "Sam's" — from the
+ * wedding's `meta`.
+ */
+export function filterDefs(meta) {
+  return [
+    { key: 'unassigned', label: 'Unassigned' },
+    { key: 'a', label: sideShort('a', meta) },
+    { key: 'b', label: sideShort('b', meta) },
+    { key: 'vegetarian', label: 'Vegetarian' },
+    { key: 'vegan', label: 'Vegan' },
+    { key: 'gluten-free', label: 'GF' },
+    { key: 'notes', label: 'Has notes' },
+  ]
+}
 
 const PREDICATES = {
   unassigned: (g) => !g.assignedTableId,
-  bride: (g) => g.side === 'bride' || g.side === 'both',
-  groom: (g) => g.side === 'groom' || g.side === 'both',
+  a: (g) => g.side === 'a' || g.side === 'both',
+  b: (g) => g.side === 'b' || g.side === 'both',
   vegetarian: (g) => g.dietary === 'vegetarian',
   vegan: (g) => g.dietary === 'vegan',
   'gluten-free': (g) => g.dietary === 'gluten-free',
@@ -27,7 +35,7 @@ const PREDICATES = {
 // TODO(ux-audit): matchesFilters ANDs every active filter (below), which
 // produces silent, misleading results for two real combos: Vegetarian+Vegan
 // ticked together is a guaranteed-empty result (dietary is a single value,
-// can never match both); and Bride's+Groom's together only matches
+// can never match both); and both side chips together only matches
 // side==='both', not the union a user would expect from ticking two side
 // chips. See tmp/ux-audit.md #G7.
 export function matchesFilters(guest, filters) {
