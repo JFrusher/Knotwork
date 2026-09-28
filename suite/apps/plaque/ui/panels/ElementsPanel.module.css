@@ -59,7 +59,7 @@
 .kind {
   flex-shrink: 0;
   font-size: var(--text-xs);
-  color: var(--grey-5);
+  color: var(--text-muted);
 }
 
 .name {

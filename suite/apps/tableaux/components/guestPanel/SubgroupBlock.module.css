@@ -57,7 +57,7 @@
 
 .chevron {
   flex: none;
-  color: rgba(231, 229, 228, 0.4);
+  color: var(--panel-text-muted);
 }
 
 .name {
@@ -84,7 +84,7 @@
 .count {
   flex: none;
   font-size: 10px;
-  color: rgba(231, 229, 228, 0.4);
+  color: var(--panel-text-muted);
   min-width: 14px;
   text-align: center;
   font-variant-numeric: tabular-nums;

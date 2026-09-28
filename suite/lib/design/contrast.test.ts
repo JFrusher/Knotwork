@@ -142,3 +142,13 @@ describe("each tool's accent", () => {
     });
   }
 });
+
+describe("Seating's dark panel", () => {
+  // Its secondary text was a spread of transparent greys, 40% to 70% of the
+  // panel's ink, and the two faintest sat at 3.3:1 and 4.4:1.
+  for (const ink of ["--panel-text", "--panel-text-muted"]) {
+    it(`${ink} on the panel clears AA`, () => {
+      expect(contrast(hex(".tableaux-scope", ink), hex(".tableaux-scope", "--panel-bg"))).toBeGreaterThanOrEqual(4.5);
+    });
+  }
+});

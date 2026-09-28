@@ -209,6 +209,12 @@
  */
 .tableaux-scope,
 .tableaux-tokens {
+  /* The dark left panel. Its secondary text is one colour that clears 4.5:1
+     on it, not a spread of transparent greys. */
+  --panel-bg: #1e1c1a;
+  --panel-text: #e7e5e4;
+  --panel-text-muted: #8d8b89;
+
   --ink: var(--t-9);
   --ink-soft: var(--t-7);
   --ink-muted: var(--t-6);
