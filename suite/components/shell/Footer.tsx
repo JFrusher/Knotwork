@@ -29,6 +29,12 @@ export function Footer() {
           >
             Terms
           </Link>
+          <Link
+            href="/support"
+            className="inline-flex min-h-11 items-center px-2 underline underline-offset-2 hover:text-charcoal"
+          >
+            Support
+          </Link>
         </nav>
         <span className="ms-auto">
           Updated{" "}

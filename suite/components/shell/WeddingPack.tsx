@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FileDown } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { KO_FI_URL } from "@/lib/support";
 import type { PackSection } from "@/lib/export/weddingPack";
 import { readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 
@@ -102,6 +103,16 @@ export function WeddingPack() {
         </p>
       )}
       {note && <p className="mt-3 text-xs text-slate">{note}</p>}
+      {/* Said only once something has been made, and never in the way of it. */}
+      {note && (
+        <p className="mt-2 text-xs text-slate">
+          If Trousseau saved you some work,{" "}
+          <a href={KO_FI_URL} className="underline underline-offset-2 hover:text-charcoal">
+            a coffee on Ko-fi
+          </a>{" "}
+          helps keep it free.
+        </p>
+      )}
       {problem && (
         <p role="alert" className="mt-3 text-xs text-danger">
           {problem}
