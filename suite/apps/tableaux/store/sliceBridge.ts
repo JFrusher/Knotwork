@@ -189,6 +189,6 @@ export function writeDoc(doc: TableauxDoc): void {
         },
       ],
     ],
-    { label: 'the room', silent: true },
+    { label: 'the room', silent: true, by: 'tableaux' },
   )
 }

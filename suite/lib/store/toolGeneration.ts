@@ -1,3 +1,4 @@
+import type { SliceName } from "@jfrusher/trousseau";
 import { useTrousseauStore } from "./useTrousseauStore";
 
 /**
@@ -19,7 +20,30 @@ import { useTrousseauStore } from "./useTrousseauStore";
  * So a tool records which generation it read, and its writes are refused if the
  * document has moved on. Refused rather than merged: what it is holding is not
  * a newer version of the wedding, it is an older one that has not noticed.
+ *
+ * A whole document is not the only thing that can move underneath a tool. The
+ * Data panel opens over whichever tool is on screen and writes the guest list
+ * and the wedding's names directly — and Seating's next save put its own copy
+ * of both straight back. So the store also starts a new generation when
+ * anything other than the tool itself writes a slice the tool holds. `HOLDS`
+ * is what each one holds.
  */
+
+/**
+ * The slices each tool copies into its own store when it mounts — everything it
+ * reads into that copy, whether or not it writes it all back.
+ *
+ * Delegation writes only the crew, but shows the day and guests' names from its
+ * copy, so a change to either would otherwise leave it showing the old ones.
+ */
+export const HOLDS = {
+  tableaux: ["guests", "seating", "event"],
+  cadence: ["timeline", "event"],
+  plaque: ["stationery"],
+  brigade: ["crew", "day", "guests"],
+} as const satisfies Record<string, readonly SliceName[]>;
+
+export type ToolId = keyof typeof HOLDS;
 
 const readAt = new Map<string, number>();
 

@@ -33,3 +33,42 @@ export async function unassignedCount(page: Page): Promise<number> {
   const text = await page.getByText(/\d+ guests · \d+ unassigned/).first().textContent();
   return Number(/(\d+) unassigned/.exec(text ?? "")?.[1]);
 }
+
+interface StoredWedding {
+  guests: number;
+  tables: string[];
+  names: string;
+}
+
+/**
+ * The wedding as this browser has stored it — what a reload will read.
+ *
+ * For waiting until an edit has actually landed, rather than reloading into
+ * the moment the last one is still on its way to IndexedDB.
+ */
+export async function storedWedding(page: Page): Promise<StoredWedding> {
+  return page.evaluate(
+    () =>
+      new Promise<StoredWedding>((resolve, reject) => {
+        const open = indexedDB.open("keyval-store");
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const read = open.result
+            .transaction("keyval")
+            .objectStore("keyval")
+            .get("trousseau.document");
+          read.onerror = () => reject(read.error);
+          read.onsuccess = () => {
+            const wedding = read.result ?? {};
+            resolve({
+              guests: Object.keys(wedding.guests ?? {}).length,
+              tables: Object.values(wedding.seating?.tables ?? {}).map(
+                (table) => (table as { label: string }).label,
+              ),
+              names: wedding.event?.coupleNames ?? "",
+            });
+          };
+        };
+      }),
+  );
+}

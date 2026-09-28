@@ -79,3 +79,46 @@ test("every other field on the guest survives untouched", () => {
     tags: ["usher"],
   });
 });
+
+/**
+ * What the Data panel writes while Seating is open must outlive Seating's next
+ * autosave.
+ *
+ * Seating copies the guests, the room and the wedding's names into its own
+ * store when it mounts, and writes that copy back after every edit. The Data
+ * panel sits over it in a dialog and writes the shared wedding directly, so
+ * Seating's copy never saw the import: the next table rename put the old guest
+ * list and the old names back, with "3 new" still on screen.
+ */
+test("a guest import and a rename made in the Data panel survive Seating's next save", async () => {
+  const { useStore } = await import("./useStore.js");
+  const { saveNow } = await import("../hooks/useAutoSave.js");
+  const { HOLDS } = await import("@/lib/store/toolGeneration");
+
+  withGuests({ g1: { id: "g1", firstName: "Ada", lastName: "Test" } });
+  useTrousseauStore.getState().setSlice("event", { ...emptyTrousseau().event, coupleNames: "Old Names" });
+
+  // Seating opens: the gate declares what it holds, the tool takes its copy.
+  useTrousseauStore.getState().hold("tableaux", HOLDS.tableaux);
+  useStore.getState().hydrate(readDoc());
+
+  // The Data panel, over the top of it.
+  const shared = useTrousseauStore.getState();
+  shared.setSlice("guests", {
+    ...shared.raw["guests"] as Record<string, unknown>,
+    g2: { id: "g2", firstName: "Bea", lastName: "Test" },
+    g3: { id: "g3", firstName: "Cy", lastName: "Test" },
+  });
+  const named = useTrousseauStore.getState();
+  named.setSlice("event", { ...named.doc.event, coupleNames: "New Names" });
+
+  // Back in Seating, one ordinary edit and its autosave.
+  useStore.getState().addTable({ type: "round", x: 100, y: 100 });
+  saveNow({ manual: false });
+
+  const after = useTrousseauStore.getState().doc;
+  expect(Object.keys(after.guests).sort()).toEqual(["g1", "g2", "g3"]);
+  expect(after.event.coupleNames).toBe("New Names");
+
+  useTrousseauStore.getState().release("tableaux");
+});

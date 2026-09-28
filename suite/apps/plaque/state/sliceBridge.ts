@@ -36,5 +36,5 @@ export function writeSlice(record: Persisted): void {
   if (!mayWrite("plaque")) return;
   useTrousseauStore
     .getState()
-    .setSlice("stationery", record, { label: "the stationery", silent: true });
+    .setSlice("stationery", record, { label: "the stationery", silent: true, by: "plaque" });
 }

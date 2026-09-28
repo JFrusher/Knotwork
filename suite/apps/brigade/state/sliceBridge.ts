@@ -76,6 +76,6 @@ export function writeSlice(doc: BrigadeDoc): void {
     .setSlice(
       "crew",
       { teams: doc.teams, people: doc.people, jobs: doc.jobs, budget: doc.budget },
-      { label: "the crew", silent: true },
+      { label: "the crew", silent: true, by: "brigade" },
     );
 }

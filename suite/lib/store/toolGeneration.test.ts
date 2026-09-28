@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
 import { useTrousseauStore } from "./useTrousseauStore";
-import { mayWrite, noteRead } from "./toolGeneration";
+import { HOLDS, mayWrite, noteRead } from "./toolGeneration";
 import { readDoc, writeDoc } from "@/apps/tableaux/store/sliceBridge";
 
 /**
@@ -63,5 +63,49 @@ describe("a tool holding a replaced wedding", () => {
     writeDoc(before);
 
     expect(guestsIn()).toBe(97);
+  });
+});
+
+/**
+ * The same bug, arriving by a slice rather than a whole document:
+ *
+ *   Open Seating, then import three guests from the Data panel. The panel says
+ *   "3 new" and the header says 103 — and the next table rename in Seating
+ *   writes its own copy of the 100 back over them.
+ */
+describe("a tool holding a slice somebody else writes", () => {
+  beforeEach(() => {
+    useTrousseauStore.getState().release("tableaux");
+  });
+
+  it("is sent back to re-read when anyone else writes a slice it holds", () => {
+    useTrousseauStore.getState().hold("tableaux", HOLDS.tableaux);
+    noteRead("tableaux");
+    useTrousseauStore.getState().setSlice("guests", { g1: { id: "g1" } });
+    expect(mayWrite("tableaux")).toBe(false);
+  });
+
+  it("is not sent back by its own write", () => {
+    useTrousseauStore.getState().hold("tableaux", HOLDS.tableaux);
+    noteRead("tableaux");
+    useTrousseauStore.getState().setSlice("guests", { g1: { id: "g1" } }, { by: "tableaux" });
+    expect(mayWrite("tableaux")).toBe(true);
+  });
+
+  it("is not sent back by a write to a slice it does not hold", () => {
+    useTrousseauStore.getState().hold("tableaux", HOLDS.tableaux);
+    noteRead("tableaux");
+    useTrousseauStore.getState().setSlice("shots", { sections: [] });
+    expect(mayWrite("tableaux")).toBe(true);
+  });
+
+  it("stops holding anything once it has closed", () => {
+    // Seating visited earlier and since left must not remount whatever tool
+    // is on screen now every time the Data panel touches the guest list.
+    useTrousseauStore.getState().hold("tableaux", HOLDS.tableaux);
+    useTrousseauStore.getState().release("tableaux");
+    const before = useTrousseauStore.getState().generation;
+    useTrousseauStore.getState().setSlice("guests", { g1: { id: "g1" } });
+    expect(useTrousseauStore.getState().generation).toBe(before);
   });
 });

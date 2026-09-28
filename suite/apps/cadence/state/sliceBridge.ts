@@ -58,6 +58,6 @@ export function writeSlice(next: TimelineDoc): void {
         },
       ],
     ],
-    { label: "the day", silent: true },
+    { label: "the day", silent: true, by: "cadence" },
   );
 }

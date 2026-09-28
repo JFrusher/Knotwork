@@ -1,7 +1,8 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { HOLDS, type ToolId } from "@/lib/store/toolGeneration";
 
 /**
  * Holds a tool back until the stored wedding has actually been read.
@@ -27,11 +28,22 @@ import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
  * showing the previous wedding. Keying the children on the generation remounts
  * the tool, which sends it back down the path that already works rather than
  * teaching each of the four to re-read.
+ *
+ * The same remount handles one slice changing rather than all of them. While
+ * the tool is open the gate tells the store what it copied, so a write to any
+ * of that from outside — the Data panel, over the top of it — starts a new
+ * generation too, instead of being overwritten by the tool's next save.
  */
-export function WhenDocumentReady({ children }: { children: React.ReactNode }) {
+export function WhenDocumentReady({ tool, children }: { tool: ToolId; children: React.ReactNode }) {
   const status = useTrousseauStore((s) => s.status);
   const error = useTrousseauStore((s) => s.error);
   const generation = useTrousseauStore((s) => s.generation);
+
+  useEffect(() => {
+    const { hold, release } = useTrousseauStore.getState();
+    hold(tool, HOLDS[tool]);
+    return () => release(tool);
+  }, [tool]);
 
   if (status === "error") {
     return (
