@@ -1,5 +1,6 @@
 import { del as idbDel, get as idbGet, set as idbSet } from "idb-keyval";
 import type { SliceName } from "@jfrusher/trousseau";
+import type { WeddingListing } from "@/lib/accounts/handlers";
 
 /**
  * The cloud transport, and what this device remembers about the wedding it
@@ -38,15 +39,32 @@ export async function forgetLink(): Promise<void> {
   await idbDel(LINK_KEY);
 }
 
+export type WeddingsResult =
+  | { ok: true; weddings: WeddingListing[] }
+  | { ok: false; reason: "unreachable" | "unavailable" };
+
+/** Every wedding the signed-in account is on. Never throws. */
+export async function fetchWeddings(): Promise<WeddingsResult> {
+  let response: Response;
+  try {
+    response = await fetch("/api/accounts/weddings");
+  } catch {
+    return { ok: false, reason: "unreachable" };
+  }
+  if (!response.ok) return { ok: false, reason: "unavailable" };
+  const body = (await response.json()) as { weddings: WeddingListing[] };
+  return { ok: true, weddings: body.weddings };
+}
+
 export type FetchResult =
   | { ok: true; weddingId: string; document: unknown; version: number }
   | { ok: false; reason: "unreachable" | "unavailable" };
 
-/** Reads the caller's current cloud document. Never throws. */
-export async function fetchCloudDocument(): Promise<FetchResult> {
+/** Reads one wedding's document from the account. Never throws. */
+export async function fetchCloudDocument(weddingId: string): Promise<FetchResult> {
   let response: Response;
   try {
-    response = await fetch("/api/documents", { method: "GET" });
+    response = await fetch(`/api/documents?wedding=${encodeURIComponent(weddingId)}`, { method: "GET" });
   } catch {
     return { ok: false, reason: "unreachable" };
   }
@@ -70,10 +88,10 @@ export type PushResult =
  * real answer from the server and is surfaced as-is: retrying a rejected write
  * without the user reapplying anything would just be rejected again.
  */
-export async function pushDocument(document: unknown, expectedVersion: number): Promise<PushResult> {
+export async function pushDocument(weddingId: string, document: unknown, expectedVersion: number): Promise<PushResult> {
   let response: Response;
   try {
-    response = await fetch("/api/documents", {
+    response = await fetch(`/api/documents?wedding=${encodeURIComponent(weddingId)}`, {
       method: "PUT",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ document, expectedVersion }),

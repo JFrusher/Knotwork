@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { Download, LogOut, Trash2, UserPlus } from "lucide-react";
 import { browserClient } from "@/lib/accounts/browserClient";
-import { Button, TextField } from "@/components/ui/controls";
+import { Button } from "@/components/ui/controls";
 import { useConfirm } from "@/components/ui/Confirm";
 import { removeWeddingFromDevice } from "@/lib/store/removeFromDevice";
 import { SignInFailed } from "@/components/shell/SignInFailed";
+import { WeddingPeople } from "@/components/shell/WeddingPeople";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import type { WeddingListing } from "@/lib/accounts/handlers";
 
-interface AccountState {
-  signedIn: boolean;
-  weddingId: string | null;
-}
+type AccountState = { signedIn: false } | { signedIn: true; me: string; weddings: WeddingListing[] };
 
 interface Notice {
   text: string;
@@ -30,39 +31,42 @@ async function readJson<T>(response: Response): Promise<T | null> {
 
 export default function AccountPage() {
   const [state, setState] = useState<AccountState | null>(null);
-  const [inviteEmail, setInviteEmail] = useState("");
   const [notice, setNotice] = useState<Notice | null>(null);
   const client = browserClient();
   const confirm = useConfirm();
+  // The wedding open on this device — the one "who has access" is about.
+  const open = useTrousseauStore((s) => s.weddingId);
+  const say = useCallback((text: string, tone: "ok" | "error") => setNotice({ text, tone }), []);
 
   useEffect(() => {
     if (!client) {
-      setState({ signedIn: false, weddingId: null });
+      setState({ signedIn: false });
       return;
     }
     client
       .auth.getUser()
       .then(async ({ data }) => {
         if (!data.user) {
-          setState({ signedIn: false, weddingId: null });
+          setState({ signedIn: false });
           return;
         }
-        // Ask which wedding this account already belongs to, rather than
-        // assuming none: without this, a returning member is offered "create
-        // your wedding" on every reload and can never reach the invite form.
-        const response = await fetch("/api/accounts/wedding");
-        const body = await readJson<{ weddingId?: string | null }>(response);
-        setState({ signedIn: true, weddingId: (response.ok && body?.weddingId) || null });
+        const response = await fetch("/api/accounts/weddings");
+        const body = await readJson<{ weddings?: WeddingListing[] }>(response);
+        setState({ signedIn: true, me: data.user.id, weddings: (response.ok && body?.weddings) || [] });
       })
       .catch(() => {
         // Never leave the page on "Loading…" because a request threw.
-        setState({ signedIn: true, weddingId: null });
-        setNotice({ text: "Could not load your wedding. Please try again.", tone: "error" });
+        setState({ signedIn: false });
+        setNotice({ text: "Could not load your account. Please try again.", tone: "error" });
       });
   }, [client]);
 
   async function createWedding() {
-    const response = await fetch("/api/accounts/wedding", { method: "POST" });
+    const response = await fetch("/api/accounts/weddings", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ role: "partner" }),
+    });
     const body = await readJson<{ weddingId?: string; error?: string }>(response);
     if (!response.ok) {
       setNotice({ text: body?.error ?? "Could not create a wedding.", tone: "error" });
@@ -72,22 +76,6 @@ export default function AccountPage() {
     // wedding for it to start with. Without it nothing reached the account
     // until the next visit.
     window.location.reload();
-  }
-
-  async function invitePartner() {
-    if (!state?.weddingId) return;
-    const response = await fetch("/api/accounts/invite", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email: inviteEmail }),
-    });
-    const body = await readJson<{ error?: string }>(response);
-    if (!response.ok) {
-      setNotice({ text: body?.error ?? "Could not send the invite.", tone: "error" });
-      return;
-    }
-    setNotice({ text: `Invite sent to ${inviteEmail}.`, tone: "ok" });
-    setInviteEmail("");
   }
 
   const [signingOut, setSigningOut] = useState(false);
@@ -103,7 +91,7 @@ export default function AccountPage() {
   async function deleteAccount() {
     const confirmed = await confirm({
       title: "Delete your account?",
-      body: "If your partner is still on the wedding, it stays with them. If you are the last one on it, the wedding is deleted too. This cannot be undone.",
+      body: "You leave every wedding you are on. Each one stays with anyone else on it; any you are the last one on is deleted. This cannot be undone.",
       action: "Delete my account",
       tone: "danger",
     });
@@ -146,56 +134,50 @@ export default function AccountPage() {
             </p>
           )}
 
-          {!state.weddingId ? (
+          {state.weddings.length === 0 ? (
             <section className="space-y-3">
               <p className="text-sm text-slate">
-                You&rsquo;re not part of a wedding yet. If your partner invited you, open the link in
-                their email instead — an account is in one wedding at a time, so starting your own
-                now means you cannot join theirs.
+                You&rsquo;re not on a wedding yet. If your partner invited you, open the link in
+                their email instead — one of the couple is on one wedding at a time, so starting
+                your own now means you cannot join theirs.
               </p>
               <Button onClick={() => void createWedding()} icon={UserPlus}>
                 Start our wedding
               </Button>
+              <p className="text-sm text-slate">
+                Planning weddings for clients? <Link href="/weddings" className="underline">Your weddings</Link>
+              </p>
             </section>
           ) : (
-            <section className="space-y-3 border-t border-charcoal/10 pt-6 first:border-t-0 first:pt-0">
-              <h2 className="text-xs tracking-widest text-slate uppercase">Invite your partner</h2>
-              <form
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void invitePartner();
-                }}
-                className="space-y-3"
-              >
-                <TextField
-                  label="Their email"
-                  type="email"
-                  value={inviteEmail}
-                  onChange={setInviteEmail}
-                  placeholder="partner@example.com"
-                />
-                <Button onClick={() => void invitePartner()} tone="primary" icon={UserPlus} disabled={!inviteEmail}>
-                  Send invite
-                </Button>
-              </form>
-            </section>
-          )}
-
-          {state.weddingId && (
-            <section className="space-y-3 border-t border-charcoal/10 pt-6">
-              <h2 className="text-xs tracking-widest text-slate uppercase">Your data</h2>
-              <p className="text-sm text-slate">
-                Download everything saved to your account as one file — guests, seating, the day,
-                the crew and the stationery. It opens in Trousseau anywhere, including your own
-                copy if you ever run one.
-              </p>
-              <Button
-                onClick={() => window.location.assign("/api/documents/export")}
-                icon={Download}
-              >
-                Download my wedding
-              </Button>
-            </section>
+            <>
+              {state.weddings.length > 1 || open === null ? (
+                <p className="text-sm text-slate">
+                  You are on {state.weddings.length === 1 ? "one wedding" : `${state.weddings.length} weddings`}.{" "}
+                  <Link href="/weddings" className="underline">
+                    {open === null ? "Open one" : "See them all"}
+                  </Link>
+                </p>
+              ) : null}
+              {open !== null ? (
+                <>
+                  <WeddingPeople weddingId={open} me={state.me} onNotice={say} />
+                  <section className="space-y-3 border-t border-charcoal/10 pt-6">
+                    <h2 className="text-xs tracking-widest text-slate uppercase">Your data</h2>
+                    <p className="text-sm text-slate">
+                      Download the wedding open here as one file — guests, seating, the day, the
+                      crew and the stationery. It opens in Trousseau anywhere, including your own
+                      copy if you ever run one.
+                    </p>
+                    <Button
+                      onClick={() => window.location.assign(`/api/documents/export?wedding=${encodeURIComponent(open)}`)}
+                      icon={Download}
+                    >
+                      Download this wedding
+                    </Button>
+                  </section>
+                </>
+              ) : null}
+            </>
           )}
 
           <section className="flex flex-wrap gap-2 border-t border-charcoal/10 pt-6">

@@ -1,20 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { check, inviteEmailSchema, tokenSchema } from "./schemas";
+import { check, inviteSchema, tokenSchema } from "./schemas";
 
-describe("inviteEmailSchema", () => {
-  it("accepts a plain email", () => {
-    const result = check(inviteEmailSchema, { email: "partner@example.com" });
-    expect(result.ok).toBe(true);
+const invite = { weddingId: "0b7c2d36-5a3e-4f0e-9d1a-2c6b8e4f1a90", email: "partner@example.com", role: "partner" };
+
+describe("inviteSchema", () => {
+  it("accepts a wedding, an address and a role", () => {
+    expect(check(inviteSchema, invite).ok).toBe(true);
+    expect(check(inviteSchema, { ...invite, role: "planner" }).ok).toBe(true);
   });
 
   it("rejects something that is not an email", () => {
-    const result = check(inviteEmailSchema, { email: "not-an-email" });
-    expect(result.ok).toBe(false);
+    expect(check(inviteSchema, { ...invite, email: "not-an-email" }).ok).toBe(false);
   });
 
-  it("rejects a missing email field", () => {
-    const result = check(inviteEmailSchema, {});
-    expect(result.ok).toBe(false);
+  it("rejects a role that is not one", () => {
+    expect(check(inviteSchema, { ...invite, role: "bride" }).ok).toBe(false);
+  });
+
+  it("rejects an invite that names no wedding", () => {
+    const { weddingId: _, ...rest } = invite;
+    expect(check(inviteSchema, rest).ok).toBe(false);
   });
 });
 

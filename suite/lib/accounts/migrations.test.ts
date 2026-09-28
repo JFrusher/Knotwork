@@ -8,6 +8,8 @@ vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const SYNC_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260830000001_suite_sync.sql");
 const ACCOUNTS_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260902000001_accounts.sql");
+const DOCUMENTS_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260903000001_wedding_documents.sql");
+const ROLES_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260928000001_roles.sql");
 
 /**
  * A minimal stand-in for Supabase's own `auth` schema: just enough for
@@ -33,6 +35,10 @@ async function databaseWith(): Promise<PGlite> {
   // migration file in order against one real database.
   await db.exec(readFileSync(SYNC_MIGRATION, "utf8"));
   await db.exec(readFileSync(ACCOUNTS_MIGRATION, "utf8"));
+  await db.exec(readFileSync(DOCUMENTS_MIGRATION, "utf8"));
+  // Every test here runs on the schema as it is now: the partner rules the
+  // tests above were written for must still hold with roles added.
+  await db.exec(readFileSync(ROLES_MIGRATION, "utf8"));
   return db;
 }
 
@@ -280,4 +286,180 @@ test("deleting one of two members leaves the wedding intact for the other", asyn
   await asUser(alice);
   const stillThere = await db.query("select * from account_weddings where id = $1", [weddingId]);
   expect(stillThere.rows).toHaveLength(1);
+});
+
+// Roles ---------------------------------------------------------------------
+
+async function newWedding(role: "partner" | "planner" = "partner"): Promise<string> {
+  const { rows } = await db.query<{ create_wedding: string }>("select create_wedding($1)", [role]);
+  return rows[0]!.create_wedding;
+}
+
+async function invite(weddingId: string, email: string, role: "partner" | "planner"): Promise<string> {
+  const { rows } = await db.query<{ token: string }>("select * from create_invite($1, $2, $3)", [weddingId, email, role]);
+  return rows[0]!.token;
+}
+
+async function accept(token: string): Promise<{ accepted: boolean; reason: string | null }> {
+  const { rows } = await db.query<{ accepted: boolean; reason: string | null }>("select * from accept_invite($1)", [token]);
+  return rows[0]!;
+}
+
+test("a planner can start a wedding for each of their clients", async () => {
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  await newWedding("planner");
+  await newWedding("planner");
+  await newWedding("planner");
+  const { rows } = await db.query("select * from wedding_members where user_id = $1 and role = 'planner'", [pat]);
+  expect(rows).toHaveLength(3);
+});
+
+test("one of a couple can also plan other people's weddings, but has only one of their own", async () => {
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  await newWedding("partner");
+  await newWedding("planner");
+  await expect(newWedding("partner")).rejects.toThrow();
+});
+
+test("a wedding takes two partners and one planner, and no more", async () => {
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  const wedding = await newWedding("partner");
+  const toBob = await invite(wedding, "bob@example.com", "partner");
+  const toPat = await invite(wedding, "pat@planners.example", "planner");
+
+  await expect(invite(wedding, "quinn@planners.example", "planner")).resolves.toBeTruthy();
+
+  const bob = await userExists("bob@example.com");
+  await asUser(bob);
+  expect(await accept(toBob)).toMatchObject({ accepted: true });
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  expect(await accept(toPat)).toMatchObject({ accepted: true });
+
+  await asUser(alice);
+  await expect(invite(wedding, "carol@example.com", "partner")).rejects.toThrow(/two partners/);
+  await expect(invite(wedding, "quinn@planners.example", "planner")).rejects.toThrow(/a planner/);
+});
+
+test("a second planner invite sent before the first was accepted finds the place taken", async () => {
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  const wedding = await newWedding("partner");
+  const toPat = await invite(wedding, "pat@planners.example", "planner");
+  const toQuinn = await invite(wedding, "quinn@planners.example", "planner");
+
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  expect(await accept(toPat)).toMatchObject({ accepted: true });
+  const quinn = await userExists("quinn@planners.example");
+  await asUser(quinn);
+  expect(await accept(toQuinn)).toMatchObject({ accepted: false, reason: "wedding-full" });
+});
+
+test("a planner already in other weddings can join another; one of a couple cannot join a second as a partner", async () => {
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  await newWedding("planner");
+
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  const wedding = await newWedding("partner");
+  const toPat = await invite(wedding, "pat@planners.example", "planner");
+  const toBob = await invite(wedding, "bob@example.com", "partner");
+
+  await asUser(pat);
+  expect(await accept(toPat)).toMatchObject({ accepted: true });
+
+  const bob = await userExists("bob@example.com");
+  await asUser(bob);
+  await newWedding("partner");
+  expect(await accept(toBob)).toMatchObject({ accepted: false, reason: "already-in-a-wedding" });
+});
+
+test("someone already on the wedding is told so, not added twice", async () => {
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  const wedding = await newWedding("partner");
+  const toAlice = await invite(wedding, "alice@example.com", "planner");
+  expect(await accept(toAlice)).toMatchObject({ accepted: false, reason: "already-a-member" });
+});
+
+test("the couple can remove their planner, who then cannot read the wedding at all", async () => {
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  const wedding = await newWedding("partner");
+  await db.query("select * from save_wedding_document($1, $2, 0)", [wedding, JSON.stringify({ guests: { g1: {} } })]);
+  const toPat = await invite(wedding, "pat@planners.example", "planner");
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  await accept(toPat);
+  expect((await db.query("select * from wedding_documents where wedding_id = $1", [wedding])).rows).toHaveLength(1);
+
+  await asUser(alice);
+  await db.query("select remove_member($1, $2)", [wedding, pat]);
+
+  await asUser(pat);
+  expect((await db.query("select * from wedding_documents where wedding_id = $1", [wedding])).rows).toHaveLength(0);
+  await expect(db.query("select * from save_wedding_document($1, $2, 1)", [wedding, "{}"])).rejects.toThrow();
+});
+
+test("a planner cannot remove one of the couple", async () => {
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  const wedding = await newWedding("partner");
+  const toPat = await invite(wedding, "pat@planners.example", "planner");
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  await accept(toPat);
+
+  await expect(db.query("select remove_member($1, $2)", [wedding, alice])).rejects.toThrow(/only the couple/);
+});
+
+test("a planner can leave a client's wedding, and the last one out takes the wedding with them", async () => {
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  const wedding = await newWedding("planner");
+  await db.query("select remove_member($1, $2)", [wedding, pat]);
+  await asSuperuser();
+  expect((await db.query("select * from account_weddings where id = $1", [wedding])).rows).toHaveLength(0);
+});
+
+test("who has access is listed with addresses and roles, for members only", async () => {
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  const wedding = await newWedding("partner");
+  const toPat = await invite(wedding, "pat@planners.example", "planner");
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  await accept(toPat);
+
+  const { rows } = await db.query<{ email: string; role: string }>("select email, role from wedding_people($1)", [wedding]);
+  expect(rows).toEqual([
+    { email: "alice@example.com", role: "partner" },
+    { email: "pat@planners.example", role: "planner" },
+  ]);
+
+  const eve = await userExists("eve@example.com");
+  await asUser(eve);
+  await expect(db.query("select * from wedding_people($1)", [wedding])).rejects.toThrow(/not a member/);
+});
+
+test("deleting a planner's account leaves each client's wedding with its couple, and removes the planner's own", async () => {
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  const clients = await newWedding("partner");
+  const toPat = await invite(clients, "pat@planners.example", "planner");
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  await accept(toPat);
+  const started = await newWedding("planner");
+
+  await db.query("select delete_my_account()");
+
+  await asSuperuser();
+  const left = await db.query<{ id: string }>("select id from account_weddings where id = any($1)", [[clients, started]]);
+  expect(left.rows.map((row) => row.id)).toEqual([clients]);
 });

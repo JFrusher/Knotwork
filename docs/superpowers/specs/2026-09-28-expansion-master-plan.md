@@ -215,6 +215,27 @@ replaced silently when both sides have work in them.**
 - **Local copies are kept per wedding**, keyed by id, so switching clients is a
   document swap and never a merge.
 
+**Built 2026-09-28 (1.2).**
+- `20260928000001_roles.sql`: membership keyed by (wedding, user) with a
+  `role`. The partner-in-one and one-planner rules are partial unique indexes;
+  the two-partner cap is counted under the wedding's row lock. Also adds
+  `remove_member` (yourself, or the planner by one of the couple) and
+  `wedding_people`. Proved against PGlite, including every earlier partner
+  rule and a second application of the migration.
+- Every document request names its wedding (`?wedding=`), and membership is
+  checked per request. Nothing is inferred from "the" wedding.
+- Switching is a full load of `/open/<id>`, a page outside the app layout. The
+  page being left hands over its tools' last edits as it unloads, and the swap
+  then runs with no store or tool loaded that could write the old wedding over
+  the new one. The open wedding is put aside with its link and comes back as
+  it was, unsent edits included, which are pushed once it is open again.
+  Which wedding to open is stored apart from the link's baseline.
+- Sign-in starts a couple's wedding only for an account on none. Planners
+  come in through `/weddings`, which starts nothing.
+- Leaving a wedding also removes its copy from the device.
+- Known until 2.1: the switcher adds to the header's overflow at 1024px, for
+  accounts on more than one wedding.
+
 ## Phases
 
 Each phase ends with the suite's own gate green — typecheck, every Vitest

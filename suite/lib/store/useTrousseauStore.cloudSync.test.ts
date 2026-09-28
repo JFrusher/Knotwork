@@ -8,12 +8,15 @@ vi.mock("idb-keyval", () => ({
 
 const pushDocumentMock = vi.fn();
 const fetchCloudDocumentMock = vi.fn();
+const fetchWeddingsMock = vi.fn();
 vi.mock("@/lib/documents/cloudSync", () => ({
+  fetchWeddings: () => fetchWeddingsMock(),
   fetchCloudDocument: (...args: unknown[]) => fetchCloudDocumentMock(...args),
   pushDocument: (...args: unknown[]) => pushDocumentMock(...args),
   readLink: async () => null,
   writeLink: async () => undefined,
 }));
+vi.mock("./openWedding", () => ({ readOpenChoice: async () => null }));
 
 // Mocked rather than left to run: the real module reaches for browserClient
 // and IndexedDB, and *when* it is called is the assertion in two tests below.
@@ -42,6 +45,10 @@ afterEach(async () => {
 beforeEach(() => {
   pushDocumentMock.mockReset();
   fetchCloudDocumentMock.mockReset();
+  fetchWeddingsMock.mockReset();
+  // The couple's own wedding, and nothing else: which wedding to open is
+  // tested with the rest of signing in, in signingIn.test.ts.
+  fetchWeddingsMock.mockResolvedValue({ ok: true, weddings: [{ weddingId: "w1", role: "partner", names: "", date: "" }] });
   syncAssetsMock.mockClear();
   const doc = emptyTrousseau();
   useTrousseauStore.setState({
@@ -63,7 +70,7 @@ beforeEach(() => {
 });
 
 test("startCloudSync stays disabled when the cloud reports unavailable", async () => {
-  fetchCloudDocumentMock.mockResolvedValue({ ok: false, reason: "unavailable" });
+  fetchWeddingsMock.mockResolvedValue({ ok: false, reason: "unavailable" });
   await useTrousseauStore.getState().startCloudSync();
   expect(useTrousseauStore.getState().cloudStatus).toBe("disabled");
 });
@@ -228,6 +235,7 @@ test("startCloudSync pushes the local wedding up on first sign-in, when the clou
   await useTrousseauStore.getState().startCloudSync();
 
   expect(pushDocumentMock).toHaveBeenCalledWith(
+    "w1",
     expect.objectContaining({ guests }),
     0,
   );
@@ -290,7 +298,7 @@ test("a surfaced conflict pushes nothing until it is resolved, then pushes the r
   await settle();
 
   expect(pushDocumentMock).toHaveBeenCalledTimes(2);
-  expect(pushDocumentMock.mock.calls[1][0]).toMatchObject({
+  expect(pushDocumentMock.mock.calls[1][1]).toMatchObject({
     event: { coupleNames: "theirs" },
   });
   expect(useTrousseauStore.getState().cloudStatus).toBe("idle");
@@ -406,7 +414,7 @@ test("assets sync on a pull, not on every document push", async () => {
   expect(syncAssetsMock).toHaveBeenCalledWith("w1");
 });
 
-test("a pull that finds a different wedding hands the decision back to a start", async () => {
+test("a pull refused for a wedding this account was taken off hands the decision back to a start", async () => {
   const base = emptyTrousseau() as unknown as Record<string, unknown>;
   const mine = { ...base, guests: { r1: { id: "r1", firstName: "Robin" } } };
   useTrousseauStore.setState({
@@ -416,17 +424,13 @@ test("a pull that finds a different wedding hands the decision back to a start",
     raw: mine,
     weddingId: "w1",
   });
-  fetchCloudDocumentMock.mockResolvedValue({
-    ok: true,
-    weddingId: "w2",
-    document: { ...base, guests: { a1: { id: "a1", firstName: "Alex" } } },
-    version: 9,
-  });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: false, reason: "unavailable" });
+  fetchWeddingsMock.mockResolvedValue({ ok: true, weddings: [] });
 
   await useTrousseauStore.getState().pullFromCloud();
 
-  // Merging one wedding into another would be the worst thing a poll could do.
-  expect(useTrousseauStore.getState().cloudStatus).toBe("choosing");
+  // Nothing left to sync with, and nothing on the device touched.
+  expect(useTrousseauStore.getState().cloudStatus).toBe("disabled");
   expect(Object.keys(useTrousseauStore.getState().raw["guests"] as object)).toEqual(["r1"]);
 });
 

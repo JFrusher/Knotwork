@@ -66,7 +66,9 @@ export default function LoginPage() {
           <p className="text-sm text-slate">
             {next?.startsWith("/invite/")
               ? "Use the address your invite was sent to. We’ll email you a link that brings you back to it."
-              : "We’ll email you a link — no password to remember."}
+              : next === "/weddings"
+                ? "Sign in to see your clients’ weddings. We’ll email you a link — no password to remember."
+                : "We’ll email you a link — no password to remember."}
           </p>
           <TextField label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" />
           <Button onClick={() => void sendLink()} tone="primary" icon={Mail} disabled={busy || !email}>

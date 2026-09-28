@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { serverClient } from "@/lib/accounts/serverClient";
 import { accountsStore } from "@/lib/accounts/supabaseStore";
-import { createWeddingHandler } from "@/lib/accounts/handlers";
+import { firstSignInHandler } from "@/lib/accounts/handlers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,12 +41,14 @@ export function sameOriginPath(next: string | null, origin: string): string {
 /**
  * Whether signing in should start a wedding for someone who has none.
  *
- * Yes, except on the way to an invite: someone arriving to join their
- * partner's wedding who was handed one of their own first could never join
- * — an account is in one wedding at a time.
+ * Yes, except on the way to an invite — someone arriving to join their
+ * partner's wedding who was handed one of their own first could never join,
+ * a partner being on one wedding at a time — and except for a planner
+ * arriving at their weddings, who has clients rather than a wedding of their
+ * own.
  */
 export function startsAWedding(destination: string): boolean {
-  return !destination.startsWith("/invite/");
+  return !destination.startsWith("/invite/") && !destination.startsWith("/weddings");
 }
 
 export async function GET(request: Request) {
@@ -89,9 +91,7 @@ export async function GET(request: Request) {
     // link that did not work, and must not be reported as one. The account
     // page offers to start it by hand.
     try {
-      // "You already have a wedding" is the answer for everyone but the
-      // first sign-in, and exactly what should happen.
-      await createWeddingHandler(accountsStore(client), userId);
+      await firstSignInHandler(accountsStore(client), userId);
     } catch (error) {
       console.error("[accounts] GET /auth/callback: starting a wedding", error);
     }

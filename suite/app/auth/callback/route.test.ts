@@ -45,4 +45,8 @@ describe("startsAWedding", () => {
   it("does not on the way to an invite, which would block joining it", () => {
     expect(startsAWedding("/invite/abc123")).toBe(false);
   });
+
+  it("does not for a planner arriving at their clients' weddings", () => {
+    expect(startsAWedding("/weddings")).toBe(false);
+  });
 });

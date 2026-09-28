@@ -23,7 +23,10 @@ vi.mock("@/lib/accounts/serverClient", () => ({
 }));
 
 vi.mock("@/lib/accounts/supabaseStore", () => ({
-  accountsStore: () => ({ memberOf: async () => membership }),
+  accountsStore: () => ({
+    membersOf: async (weddingId: string) =>
+      membership?.weddingId === weddingId && currentUserResult ? [{ userId: currentUserResult.id }] : [],
+  }),
 }));
 
 vi.mock("@/lib/documents/supabaseStore", () => ({
@@ -34,7 +37,7 @@ const route = await import("./route");
 
 const put = (document: unknown, expectedVersion: number) =>
   route.PUT(
-    new Request("http://localhost/api/documents", {
+    new Request(`http://localhost/api/documents?wedding=${membership?.weddingId ?? "not-mine"}`, {
       method: "PUT",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ document, expectedVersion }),
@@ -67,7 +70,7 @@ test("a signed-out caller is refused before any document work", async () => {
   expect(response.status).toBe(401);
 });
 
-test("an account with no wedding gets 404, not a crash", async () => {
+test("a wedding the caller is not on gets 404, not a crash", async () => {
   membership = null;
   const response = await put({ kind: "trousseau", version: 1 }, 0);
   expect(response.status).toBe(404);
@@ -88,4 +91,15 @@ test("writes past the limit are throttled, and the budget is per account", async
   membership = { weddingId: "someone-elses-wedding" };
   const other = await put({ kind: "trousseau", version: 1 }, 0);
   expect(other.status).toBe(200);
+});
+
+test("a request that names no wedding gets 404 — an account may be on several", async () => {
+  const response = await route.GET(new Request("http://localhost/api/documents"));
+  expect(response.status).toBe(404);
+});
+
+test("the wedding travels with its document", async () => {
+  await put({ kind: "trousseau", version: 1 }, 0);
+  const response = await route.GET(new Request(`http://localhost/api/documents?wedding=${membership!.weddingId}`));
+  expect(await response.json()).toMatchObject({ weddingId: membership!.weddingId, version: 1 });
 });

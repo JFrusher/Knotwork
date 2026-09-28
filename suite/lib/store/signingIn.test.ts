@@ -17,9 +17,12 @@ vi.mock("idb-keyval", () => ({
 const server = {
   reachable: true,
   offline: false,
+  weddings: [{ weddingId: "w1", role: "partner" }] as Array<{ weddingId: string; role: string }>,
   weddingId: "w1",
   document: null as Record<string, unknown> | null,
   version: 0,
+  /** Every other wedding the account is on, by id. */
+  others: {} as Record<string, { document: Record<string, unknown> | null; version: number }>,
 };
 const pushDocumentMock = vi.fn(async (document: unknown, expectedVersion: number) => {
   if (expectedVersion !== server.version) {
@@ -32,17 +35,31 @@ const pushDocumentMock = vi.fn(async (document: unknown, expectedVersion: number
 // The transport is faked; the link it stores is the real one, in the Map.
 vi.mock("@/lib/documents/cloudSync", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/documents/cloudSync")>()),
-  fetchCloudDocument: async () =>
+  fetchWeddings: async () =>
     server.reachable
-      ? { ok: true, document: structuredClone(server.document), version: server.version, weddingId: server.weddingId }
+      ? { ok: true, weddings: server.weddings.map((w) => ({ names: "", date: "", ...w })) }
       : { ok: false, reason: server.offline ? "unreachable" : "unavailable" },
-  pushDocument: (document: unknown, expectedVersion: number) =>
-    server.offline ? { ok: false, reason: "queued" } : pushDocumentMock(document, expectedVersion),
+  fetchCloudDocument: async (weddingId: string) => {
+    if (!server.reachable) return { ok: false, reason: server.offline ? "unreachable" : "unavailable" };
+    const held = weddingId === server.weddingId ? server : server.others[weddingId];
+    return { ok: true, document: structuredClone(held?.document ?? null), version: held?.version ?? 0, weddingId };
+  },
+  pushDocument: async (weddingId: string, document: unknown, expectedVersion: number) => {
+    if (server.offline) return { ok: false, reason: "queued" };
+    if (weddingId === server.weddingId) return pushDocumentMock(document, expectedVersion);
+    const held = (server.others[weddingId] ??= { document: null, version: 0 });
+    if (expectedVersion !== held.version) return { ok: false, reason: "conflict", version: held.version, document: held.document };
+    held.document = structuredClone(document) as Record<string, unknown>;
+    held.version += 1;
+    return { ok: true, version: held.version, warnings: [] };
+  },
 }));
 vi.mock("@/lib/documents/assets", () => ({ syncAssets: async () => ({ uploaded: 0, downloaded: 0 }) }));
 
 const { useTrousseauStore, flushPersist, STORAGE_KEY } = await import("./useTrousseauStore");
 const { COPIES_KEY } = await import("./copies");
+const { openWedding } = await import("./openWedding");
+const { weddingToOpen } = await import("./useTrousseauStore");
 const { emptyTrousseau } = await import("@jfrusher/trousseau");
 
 type Raw = Record<string, unknown>;
@@ -85,7 +102,15 @@ const guestsOnDevice = () => Object.keys((useTrousseauStore.getState().raw["gues
 beforeEach(() => {
   idb.clear();
   pushDocumentMock.mockClear();
-  Object.assign(server, { reachable: true, offline: false, weddingId: "w1", document: null, version: 0 });
+  Object.assign(server, {
+    reachable: true,
+    offline: false,
+    weddings: [{ weddingId: "w1", role: "partner" }],
+    weddingId: "w1",
+    document: null,
+    version: 0,
+    others: {},
+  });
 });
 
 afterEach(async () => {
@@ -223,4 +248,81 @@ test("an edit made while the account could not be reached survives the next sign
   await reload();
 
   expect(guestsOnDevice().sort()).toEqual(["a1", "a2"]);
+});
+
+// Many weddings --------------------------------------------------------------
+
+const names = () => (useTrousseauStore.getState().raw["event"] as { coupleNames: string }).coupleNames;
+
+function plannerWithClients() {
+  server.weddings = [
+    { weddingId: "c1", role: "planner" },
+    { weddingId: "c2", role: "planner" },
+  ];
+  server.weddingId = "none";
+  server.others = {
+    c1: { document: wedding("Alex & Sam", { a1: { id: "a1", firstName: "Alex" } }), version: 3 },
+    c2: { document: wedding("Robin & Kit", { r1: { id: "r1", firstName: "Robin" } }), version: 5 },
+  };
+}
+
+test("which wedding opens: the one opened here, then the one last synced, then the couple's own, then the only one", () => {
+  const link = { weddingId: "b", version: 1, agreed: {} };
+  const list = (...ids: string[]) => ids.map((weddingId, i) => ({ weddingId, role: i === 0 ? ("partner" as const) : ("planner" as const), names: "", date: "" }));
+  expect(weddingToOpen(list("a", "b", "c"), "c", link)).toBe("c");
+  expect(weddingToOpen(list("a", "b", "c"), null, link)).toBe("b");
+  expect(weddingToOpen(list("a", "b", "c"), "gone", null)).toBe("a");
+  expect(weddingToOpen(list("a"), null, null)).toBe("a");
+  expect(weddingToOpen(list("x", "y").map((w) => ({ ...w, role: "planner" as const })), null, null)).toBeNull();
+});
+
+test("a planner with several clients and none opened here is not handed one", async () => {
+  plannerWithClients();
+  await reload();
+  expect(useTrousseauStore.getState().cloudStatus).toBe("disabled");
+  expect(names()).toBe("");
+});
+
+test("opening a client's wedding brings it to this device", async () => {
+  plannerWithClients();
+  await reload();
+  await openWedding("c2");
+  await reload();
+  expect(useTrousseauStore.getState().cloudStatus).toBe("idle");
+  expect(names()).toBe("Robin & Kit");
+});
+
+test("switching between clients is a swap: each comes back exactly as it was, edits not yet sent included", async () => {
+  plannerWithClients();
+  await openWedding("c1");
+  await reload();
+
+  // An edit that never reached the account before the switch.
+  server.offline = true;
+  const guests = useTrousseauStore.getState().raw["guests"] as Raw;
+  useTrousseauStore.getState().setSlice("guests", { ...guests, a2: { id: "a2", firstName: "Sam" } });
+  await flushPersist();
+  server.offline = false;
+
+  await openWedding("c2");
+  await reload();
+  expect(names()).toBe("Robin & Kit");
+
+  await openWedding("c1");
+  await reload();
+  expect(names()).toBe("Alex & Sam");
+  expect(guestsOnDevice().sort()).toEqual(["a1", "a2"]);
+  // And the edit went up once this wedding was open again.
+  expect(Object.keys(server.others["c1"]!.document!["guests"] as object).sort()).toEqual(["a1", "a2"]);
+  // Nothing was asked, and nothing was kept as a copy: a swap is not a replacement.
+  expect(kept()).toEqual([]);
+});
+
+test("a wedding on this device that no account holds is asked about, not put aside, when another is opened", async () => {
+  plannerWithClients();
+  idb.set(STORAGE_KEY, wedding("Jo & Lee", { j1: { id: "j1", firstName: "Jo" } }));
+  await openWedding("c1");
+  await reload();
+  expect(useTrousseauStore.getState().cloudStatus).toBe("choosing");
+  expect(names()).toBe("Jo & Lee");
 });

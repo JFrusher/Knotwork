@@ -31,14 +31,13 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
         // An unhandled server error comes back as HTML, and parsing that would
         // reject inside this callback — leaving the page stuck on "One moment…"
         // with nothing on screen to explain why.
-        const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        if (response.ok) {
+        const body = (await response.json().catch(() => null)) as { error?: string; weddingId?: string } | null;
+        if (response.ok && body?.weddingId) {
           setStatus("done");
-          // A full load, not a client-side one: sync starts as the app loads,
-          // and this is the moment it has a wedding to sync with. It is also
-          // where a wedding already on this device is asked about rather than
-          // replaced.
-          window.location.assign("/");
+          // Through `/open`, a full load: this device opens the wedding just
+          // joined, sync starts with it, and a wedding already on this device
+          // is asked about rather than replaced.
+          window.location.assign(`/open/${body.weddingId}`);
         } else {
           setStatus("error");
           setMessage(body?.error ?? "That invite could not be accepted.");

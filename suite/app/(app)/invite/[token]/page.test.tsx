@@ -48,5 +48,5 @@ test("accepting opens the wedding afresh, so it starts syncing at once", async (
   user = { id: "u1" };
   vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ weddingId: "w1" }), { status: 200 })));
   await open("abc123");
-  await vi.waitFor(() => expect(assign).toHaveBeenCalledWith("/"));
+  await vi.waitFor(() => expect(assign).toHaveBeenCalledWith("/open/w1"));
 });

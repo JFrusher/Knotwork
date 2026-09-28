@@ -3,7 +3,7 @@ import { accountsConfigured } from "@/lib/env";
 import { createInviteHandler } from "@/lib/accounts/handlers";
 import { accountsStore } from "@/lib/accounts/supabaseStore";
 import { currentUser, serverClient } from "@/lib/accounts/serverClient";
-import { check, inviteEmailSchema } from "@/lib/accounts/schemas";
+import { check, inviteSchema } from "@/lib/accounts/schemas";
 import { allow, INVITE_LIMIT } from "@/lib/sync/rateLimit";
 
 export const runtime = "nodejs";
@@ -36,19 +36,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "That was not JSON." }, { status: 400 });
     }
 
-    const input = check(inviteEmailSchema, body);
+    const input = check(inviteSchema, body);
     if (!input.ok) return NextResponse.json({ error: input.error }, { status: 400 });
 
     const client = await serverClient();
     if (!client) return unconfigured();
 
-    const store = accountsStore(client);
-    const membership = await store.memberOf(user.id);
-    if (!membership) {
-      return NextResponse.json({ error: "You don't have a wedding yet." }, { status: 404 });
-    }
-
-    const reply = await createInviteHandler(store, membership.weddingId, user.id, input.value.email);
+    const { weddingId, email, role } = input.value;
+    const reply = await createInviteHandler(accountsStore(client), weddingId, user.id, email, role);
     if (reply.status !== 200) return NextResponse.json(reply.body, { status: reply.status });
 
     const { token } = reply.body as { token: string };
@@ -59,7 +54,7 @@ export async function POST(request: Request) {
     const origin = new URL(request.url).origin;
     const next = encodeURIComponent(`/invite/${token}`);
     const { error: sendError } = await client.auth.signInWithOtp({
-      email: input.value.email,
+      email,
       options: { emailRedirectTo: `${origin}/auth/callback?next=${next}` },
     });
     if (sendError) {

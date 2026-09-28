@@ -8,6 +8,7 @@ import { Users } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { TOOLS } from "@/lib/tools";
 import { AccountStatus } from "./AccountStatus";
+import { WeddingSwitcher } from "./WeddingSwitcher";
 import { HowThisWorks } from "./TourButtons";
 import { ChromeSlot } from "./chrome";
 import { DataButton } from "./DataButton";
@@ -109,6 +110,7 @@ export function Header() {
           <DataButton onOpen={showData} />
 
           <HowThisWorks />
+          <WeddingSwitcher />
           <AccountStatus />
         </div>
       </header>

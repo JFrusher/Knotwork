@@ -149,6 +149,10 @@ against, not a discussion to reopen without a reason.
   not per part), and the one not chosen is kept as a copy on the device. A
   wedding is created at sign-in, except on the way to an invite. Replaces the
   offline write queue.
+- **2026-09-28** — Roles: a wedding has up to two partners and one planner; an
+  account is a partner in one wedding and a planner in any number. The couple
+  sees who has access and can remove their planner. Each device holds one
+  wedding at a time and switching is a swap through `/open`, never a merge.
 
 ## Subsystem H — Guided tour & example wedding
 
