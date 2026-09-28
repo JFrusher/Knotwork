@@ -3,6 +3,7 @@ import { QuickStats } from "@/components/shell/QuickStats";
 import { WhatIsLeft } from "@/components/shell/WhatIsLeft";
 import { Countdown } from "@/components/shell/Countdown";
 import { WeddingPack } from "@/components/shell/WeddingPack";
+import { SetupPrompt } from "@/components/shell/SetupPrompt";
 
 export const metadata: Metadata = {
   // `absolute` so the root template does not append the suffix to the name it
@@ -27,6 +28,7 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
       <Countdown />
+      <SetupPrompt />
 
       <section className="mt-10">
         <QuickStats />

@@ -264,7 +264,13 @@ project, the build, and the Playwright run — and gets its own plan first.
    (import, paste, or later) → *the room* (a starting layout, or later) →
    *together* (account, partner, planner). Staged as a draft and committed as
    one change — one undo step, one push. The front page's primary action until
-   it is done.
+   it is done. **Built 2026-09-28.** The one importer takes a target: the
+   wedding, or setup's draft. Pasted names go through the same matching. The
+   starting room is made with Seating's own `addTable`, spaced from what
+   Seating actually draws. The example wedding's 160px spacing makes
+   neighbouring chairs collide, which is for 1.5 to fix. The draft starts from
+   the wedding as it is, so setup can be run again without losing anything.
+   The commit comes before *together*, which may leave the page to sign in.
 4. **Guest link on the account**, live (decision 12). Then `lib/sync` and its
    tables are deleted — nothing else uses them.
 5. **Tour and example wedding:** "Take a tour" runs every chapter; the example

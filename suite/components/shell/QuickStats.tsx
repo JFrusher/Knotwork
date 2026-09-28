@@ -48,9 +48,8 @@ export function QuickStats() {
       <SignInFailed />
       {empty ? (
         <p data-tour="shell.stats" className="text-sm text-slate">
-          Nothing saved here yet. Open{" "}
-          <span className="text-charcoal">Data</span> in the header to upload a guest list, or
-          start in <Link href="/seating" className="text-charcoal underline decoration-gold">Seating</Link>.
+          {/* Setup above is the way in; this says what else there is. */}
+          Nothing saved here yet. Or look around first — every part opens on its own.
         </p>
       ) : (
         <ul data-tour="shell.stats" className="grid grid-cols-2 gap-4 sm:grid-cols-4">

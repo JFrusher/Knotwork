@@ -8,7 +8,7 @@ import { seedExampleWedding } from "./wedding";
  * included: landmarks and headings are how a screen reader user finds their
  * way around, and they are what these pages got wrong.
  */
-const PAGES = ["/", "/seating", "/place-cards", "/timeline", "/delegation", "/group-shots", "/account", "/login", "/support"];
+const PAGES = ["/", "/seating", "/place-cards", "/timeline", "/delegation", "/group-shots", "/account", "/login", "/support", "/setup", "/weddings"];
 
 for (const path of PAGES) {
   test(`${path} has no accessibility violations`, async ({ page }) => {
@@ -99,4 +99,23 @@ test("the tour takes focus, keeps it, and gives it back", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(start).toBeFocused();
+});
+
+test("the front page of a new wedding, with setup leading, has no accessibility violations", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Set up your wedding" })).toBeVisible();
+  await noViolations(page);
+});
+
+test("every setup step has no accessibility violations", async ({ page }) => {
+  await page.goto("/setup");
+  await expect(page.getByRole("heading", { name: "The two of you" })).toBeVisible();
+  await noViolations(page);
+  await page.getByRole("button", { name: "Next" }).click();
+  await page.getByRole("button", { name: "Paste names" }).click();
+  await noViolations(page);
+  await page.getByRole("button", { name: "Later — next" }).click();
+  await noViolations(page);
+  await page.getByRole("button", { name: "Save and continue" }).click();
+  await noViolations(page);
 });

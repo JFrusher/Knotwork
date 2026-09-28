@@ -19,7 +19,7 @@ import {
   type FieldMapping,
 } from "@/lib/data/guestImport";
 import { partnerNames } from "@/lib/model/partners";
-import { guestName, readGuests } from "@/lib/model/slices";
+import { guestName } from "@/lib/model/slices";
 import type { Guest, RsvpStatus, Side } from "@/lib/model/types";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { useGuestImport } from "./guestImportPanel";
@@ -59,7 +59,11 @@ function Steps({ onClose }: { onClose: () => void }) {
   const [mapping, setMapping] = useState<FieldMapping | null>(null);
   const [meaning, setMeaning] = useState<Record<string, RsvpStatus>>({});
   const [sideMeaning, setSideMeaning] = useState<Record<string, Side>>({});
-  const event = useTrousseauStore((s) => s.doc.event);
+  const target = useGuestImport((s) => s.target);
+  // Re-read on every render the store causes, so a name typed in the Data
+  // panel meanwhile names the sides here too.
+  useTrousseauStore((s) => s.doc.event);
+  const { event } = target.read();
   const [nameA, nameB] = partnerNames(event);
   const [step, setStep] = useState<"file" | "columns" | "check" | "done">("file");
   const [problem, setProblem] = useState<string | null>(null);
@@ -95,18 +99,13 @@ function Steps({ onClose }: { onClose: () => void }) {
       loaded.table,
       mapping,
       { rsvp: meaning, side: sideMeaning },
-      readGuests(useTrousseauStore.getState().doc),
+      target.read().guests,
     );
-  }, [step, loaded, mapping, meaning, sideMeaning]);
+  }, [step, loaded, mapping, meaning, sideMeaning, target]);
 
   function commit() {
     if (!plan) return;
-    const store = useTrousseauStore.getState();
-    const written = applyImport(plan, { add, remove }, store.raw["seating"]);
-    store.setSlices(
-      written.seating ? [["guests", written.guests], ["seating", written.seating]] : [["guests", written.guests]],
-      { label: "the guest import" },
-    );
+    target.commit(applyImport(plan, { add, remove }, target.read().seating));
     const parts = [
       `${plan.added.length + add.size} new`,
       `${plan.updated.length} updated`,
