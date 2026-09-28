@@ -272,20 +272,5 @@ export function Notice({ tone, children }: { tone: "danger" | "ok"; children: Re
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-/** A message about what just happened: something went wrong, or it worked. */
-export function Notice({ tone, children }: { tone: "danger" | "ok"; children: ReactNode }) {
-  return (
-    <p
-      role={tone === "danger" ? "alert" : "status"}
-      className={`mb-4 flex gap-2 rounded border px-3 py-2 text-sm text-charcoal ${
-        tone === "danger" ? "border-danger/40 bg-danger-soft" : "border-ok/40 bg-ok-soft"
-      }`}
-    >
-      {tone === "danger" ? <AlertTriangle size={16} className="mt-0.5 shrink-0 text-danger" /> : null}
-      <span>{children}</span>
-    </p>
-  );
-}
-
   return <p className="text-sm text-slate">{children}</p>;
 }
