@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowDown, ArrowUp, FileUp, Trash2 } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { DIETARY_KEYS, dietaryLabel, type DietaryKey } from "@/lib/model/dietary";
@@ -49,6 +50,15 @@ export function GuestsPage() {
   const confirm = useConfirm();
 
   const [filter, setFilter] = useState<ListFilter>(NO_FILTER);
+  // A link to one guest — the command palette's — opens the list found to them.
+  const asked = useSearchParams().get("q");
+  const router = useRouter();
+  const pathname = usePathname();
+  useEffect(() => {
+    if (asked === null) return;
+    setFilter({ ...NO_FILTER, text: asked });
+    router.replace(pathname, { scroll: false });
+  }, [asked, pathname, router]);
   const [sort, setSort] = useState<ListSort>({ key: "name", direction: "ascending" });
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSelectFromAddress } from "@/components/shell/useSelectFromAddress";
 import { Presentation } from "./render/screen/Presentation";
 import { Timeline } from "./render/screen/Timeline";
 import { formatDuration } from "./core/time/minutes";
@@ -60,6 +61,8 @@ export function App() {
     });
     setRestored(true);
   }, [setNotice]);
+  // A link to one block — the command palette's — opens on it, after the load.
+  useSelectFromAddress(useStore.getState().select);
 
   // Autosave into the shared wedding, debounced, and flushed if the window goes
   // away mid-edit.

@@ -375,6 +375,14 @@ project, the build, and the Playwright run — and gets its own plan first.
    is published again from a merged one. What is still changed on both sides
    is laid out field by field — yours, theirs — to choose between.
 6. **Command palette** — any guest, table, block, job or page by name.
+   **Built 2026-09-28**: Ctrl/⌘ K anywhere, or the header's search button. A
+   combobox over what matches — names that start with the words first —
+   each with a second line (a guest's table, a block's time, who does a job).
+   Each opens where it lives and on the record itself: a table in Seating, a
+   block in Timeline, a job in Delegation, through one `?select=` the tools
+   read after they load (and again while open, so the palette works on the
+   tool already on screen); a guest opens the Guests page found to them; a
+   task opens the Checklist.
 
 ### Phase 3 — Beyond the couple
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { GuestsPage } from "@/components/guests/GuestsPage";
 
 export const metadata: Metadata = {
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function Guests() {
-  return <GuestsPage />;
+  // The page reads `?q=` from the address, which waits for the browser.
+  return (
+    <Suspense>
+      <GuestsPage />
+    </Suspense>
+  );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSelectFromAddress } from "@/components/shell/useSelectFromAddress";
 import { Board } from "./render/screen/Board";
 import { createPersister, restore } from "./state/persist";
 import { getDoc, useStore } from "./state/store";
@@ -46,6 +47,8 @@ export function App() {
     useStore.getState().loadDoc(restore());
     setRestored(true);
   }, []);
+  // A link to one job — the command palette's — opens on it, after the load.
+  useSelectFromAddress(useStore.getState().select);
 
   // Autosave into the shared wedding, debounced, and flushed if the window goes
   // away mid-edit.

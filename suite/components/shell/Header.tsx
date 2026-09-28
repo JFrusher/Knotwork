@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Search } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { TOOLS } from "@/lib/tools";
 import { AccountStatus } from "./AccountStatus";
@@ -14,6 +15,7 @@ import { DataButton } from "./DataButton";
 import { useDataPanel } from "./dataPanel";
 import { useGuestImport } from "./guestImportPanel";
 import { useSyncPanel } from "./syncPanel";
+import { usePalette } from "./CommandPalette";
 
 const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataManager), {
   ssr: false,
@@ -22,6 +24,9 @@ const GuestImport = dynamic(() => import("./GuestImport").then((m) => m.GuestImp
   ssr: false,
 });
 const SyncHistory = dynamic(() => import("./SyncHistory").then((m) => m.SyncHistory), {
+  ssr: false,
+});
+const CommandPalette = dynamic(() => import("./CommandPalette").then((m) => m.CommandPalette), {
   ssr: false,
 });
 
@@ -57,6 +62,21 @@ export function Header() {
   const [syncEverOpened, setSyncEverOpened] = useState(false);
   if (syncOpen && !syncEverOpened) setSyncEverOpened(true);
   useEffect(() => useSyncPanel.getState().fromAddress(), []);
+  // The palette: its button, and Ctrl/⌘ K from anywhere.
+  const paletteOpen = usePalette((s) => s.open);
+  const showPalette = usePalette((s) => s.show);
+  const [paletteEverOpened, setPaletteEverOpened] = useState(false);
+  if (paletteOpen && !paletteEverOpened) setPaletteEverOpened(true);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        usePalette.getState().show();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   // A conflict is settled there, so the button that says so opens it.
   const conflict = useTrousseauStore((s) => s.cloudStatus === "conflict");
   // The one question that stops sync opens the panel that asks it.
@@ -114,6 +134,16 @@ export function Header() {
             <ChromeSlot name="tool-undo" />
           </div>
 
+          <button
+            type="button"
+            onClick={showPalette}
+            aria-label="Find anything"
+            title="Find anything (Ctrl K)"
+            aria-keyshortcuts="Control+K Meta+K"
+            className="shrink-0 rounded border border-charcoal/15 p-1.5 text-slate transition hover:border-gold hover:text-charcoal"
+          >
+            <Search size={15} aria-hidden />
+          </button>
           <DataButton onOpen={conflict ? showSync : showData} />
 
           <HowThisWorks />
@@ -124,6 +154,7 @@ export function Header() {
       {dataEverOpened ? <DataManager open={dataOpen} onClose={hideData} /> : null}
       {importEverOpened ? <GuestImport /> : null}
       {syncEverOpened ? <SyncHistory open={syncOpen} onClose={hideSync} /> : null}
+      {paletteEverOpened ? <CommandPalette /> : null}
     </>
   );
 }

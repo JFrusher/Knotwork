@@ -18,10 +18,16 @@ import AppShell from './components/layout/AppShell.jsx'
 import ModalRoot from './components/layout/ModalRoot.jsx'
 import ToastViewport from './components/ui/Toast.jsx'
 import DragPreview from './components/canvas/DragPreview.jsx'
+import { useStore } from './store/useStore.js'
+import { useSelectFromAddress } from '@/components/shell/useSelectFromAddress'
+
+/** A link to one table — the command palette's — opens on it. */
+const selectTable = (id) => useStore.getState().select('table', id)
 
 export default function App() {
   useAutoSave()
   useKeyboardShortcuts()
+  useSelectFromAddress(selectTable)
 
   // Touch uses a press-and-hold to start a drag so a quick swipe still scrolls
   // the guest list / pans the canvas. Mouse keeps the small distance threshold.
