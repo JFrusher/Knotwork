@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import clsx from 'clsx'
 import { useStore } from '../../store/useStore.js'
 import { DIETARY_META, normaliseDietary } from '../../utils/dietary.js'
@@ -25,12 +25,28 @@ export default function GuestInspector({ guestId }) {
   const createGroup = useStore((s) => s.createGroup)
   const removeFromGroup = useStore((s) => s.removeFromGroup)
   const unassignGuest = useStore((s) => s.unassignGuest)
+  const assignGuest = useStore((s) => s.assignGuest)
+  const tables = useStore((s) => s.tables)
   const removeGuest = useStore((s) => s.removeGuest)
   const select = useStore((s) => s.select)
   const clearSelection = useStore((s) => s.clearSelection)
   const openModal = useStore((s) => s.openModal)
 
   const [tagDraft, setTagDraft] = useState('')
+
+  // Every table, by its label, with how many seats are left. The way to seat
+  // someone without dragging — which is the only way from a keyboard.
+  const tableChoices = useMemo(
+    () =>
+      Object.values(tables)
+        .map((t) => ({
+          id: t.id,
+          label: t.label,
+          free: t.capacity - (t.assignedGuestIds || []).filter(Boolean).length,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })),
+    [tables]
+  )
 
   if (!guest) return null
 
@@ -207,8 +223,28 @@ export default function GuestInspector({ guestId }) {
             />
           </div>
         ) : (
-          <p className={styles.unassigned}>Not seated. Drag onto a table to assign.</p>
+          <p className={styles.unassigned}>Not seated. Drag onto a table, or choose one below.</p>
         )}
+        <select
+          className={f.select}
+          aria-label="Seat at table"
+          value={guest.assignedTableId || ''}
+          onChange={(e) => {
+            if (e.target.value) assignGuest(guestId, e.target.value)
+            else unassignGuest(guestId)
+          }}
+        >
+          <option value="">No table</option>
+          {tableChoices.map((t) => (
+            <option
+              key={t.id}
+              value={t.id}
+              disabled={t.free <= 0 && t.id !== guest.assignedTableId}
+            >
+              {t.label} — {t.free <= 0 ? 'full' : `${t.free} free`}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className={f.group}>

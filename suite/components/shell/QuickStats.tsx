@@ -53,12 +53,14 @@ export function QuickStats() {
           start in <Link href="/seating" className="text-charcoal underline decoration-gold">Seating</Link>.
         </p>
       ) : (
-        <dl data-tour="shell.stats" className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <ul data-tour="shell.stats" className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {/* A list of links, not a <dl>: each tile is a link, and a link
+              cannot wrap a term and its description. */}
           <Stat label="Guests" value={stats.guests} href="/seating" />
           <Stat label="Seated" value={`${stats.seated} / ${stats.guests}`} href="/place-cards" />
           <Stat label="Tables" value={stats.tables} href="/seating" />
           <Stat label="Day blocks" value={stats.blocks} href="/timeline" />
-        </dl>
+        </ul>
       )}
 
       <p className="mt-5 border-t border-charcoal/10 pt-4 text-xs text-slate">
@@ -69,7 +71,7 @@ export function QuickStats() {
         browser.
       </p>
 
-      <nav data-tour="shell.tools" className="mt-5 grid gap-2 sm:grid-cols-2">
+      <nav aria-label="Open a tool" data-tour="shell.tools" className="mt-5 grid gap-2 sm:grid-cols-2">
         {TOOLS.map((tool) => (
           <Link
             key={tool.href}
@@ -92,9 +94,13 @@ export function QuickStats() {
 
 function Stat({ label, value, href }: { label: string; value: number | string; href: string }) {
   return (
-    <Link href={href} className="block">
-      <dt className="text-xs tracking-widest text-slate uppercase">{label}</dt>
-      <dd className="font-display text-3xl text-charcoal">{value}</dd>
-    </Link>
+    <li>
+      <Link href={href} className="block">
+        <span className="block text-xs tracking-widest text-slate uppercase">{label}</span>
+        {/* Lato, not Marcellus: the display face draws 1 and 0 like I and O, so
+            "100" read as "IOO". */}
+        <span className="block text-3xl text-charcoal tabular-nums">{value}</span>
+      </Link>
+    </li>
   );
 }

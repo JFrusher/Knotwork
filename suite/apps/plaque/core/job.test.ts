@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { BUNDLED_FONTS } from "../assets/fonts";
-import { parseCsv } from "./csv/parse";
+import { parseCsv } from "@/lib/data/csv";
 import { buildJob } from "./job";
 import { defaultCard, defaultSheet, defaultTemplate } from "./template/defaults";
 import { makeResolveOptions } from "./template/resolve";

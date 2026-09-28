@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import clsx from 'clsx'
-import { useStore, selectCanUndo, selectCanRedo } from '../../store/useStore.js'
+import { useStore } from '../../store/useStore.js'
 import { useCanvasPanZoom } from '../../hooks/useCanvasPanZoom.js'
 import CanvasGrid from './CanvasGrid.jsx'
 import RoomSpaces from './RoomSpaces.jsx'
@@ -28,10 +28,6 @@ function CanvasControls({ zoomIn, zoomOut, fitToScreen }) {
   const setActiveTool = useStore((s) => s.setActiveTool)
   const addSpace = useStore((s) => s.addSpace)
   const select = useStore((s) => s.select)
-  const undo = useStore((s) => s.undo)
-  const redo = useStore((s) => s.redo)
-  const canUndo = useStore(selectCanUndo)
-  const canRedo = useStore(selectCanRedo)
 
   const addRectSpace = () => {
     const cmd = addSpace({ x: 80, y: 80, width: 400, height: 300 })
@@ -96,10 +92,6 @@ function CanvasControls({ zoomIn, zoomOut, fitToScreen }) {
           active={activeTool === 'pillar'}
           onClick={() => toggle('pillar')}
         />
-      </div>
-      <div className={styles.controlGroup}>
-        <IconButton icon="undo" label="Undo" disabled={!canUndo} onClick={undo} />
-        <IconButton icon="redo" label="Redo" disabled={!canRedo} onClick={redo} />
       </div>
     </div>
   )

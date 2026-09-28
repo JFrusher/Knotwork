@@ -17,14 +17,12 @@ export default function AppShell() {
 
   return (
     <div className={styles.shell}>
-      <a href="#main-content" className="skip-link">
-        Skip to content
-      </a>
       <ErrorBoundary label="The toolbar hit a snag">
         <Toolbar />
       </ErrorBoundary>
       <div className={styles.body}>
         <aside
+          aria-label="Guests"
           className={clsx('panel-dark', styles.left, !panels.left && styles.collapsedLeft)}
         >
           <ErrorBoundary label="The guest panel hit a snag">
@@ -32,13 +30,16 @@ export default function AppShell() {
           </ErrorBoundary>
         </aside>
 
-        <main id="main-content" className={styles.center}>
+        <div className={styles.center}>
           <ErrorBoundary label="The canvas hit a snag">
             <RoomCanvas />
           </ErrorBoundary>
-        </main>
+        </div>
 
-        <aside className={clsx(styles.right, !panels.right && styles.collapsedRight)}>
+        <aside
+          aria-label="Details"
+          className={clsx(styles.right, !panels.right && styles.collapsedRight)}
+        >
           <ErrorBoundary label="The inspector hit a snag">
             <RightSidebar />
           </ErrorBoundary>

@@ -5,7 +5,6 @@ import WarningsPanel from './WarningsPanel.jsx'
 import ConstraintsModal from './ConstraintsModal.jsx'
 import SnapshotsModal from './SnapshotsModal.jsx'
 import ExportModal from './ExportModal.jsx'
-import PlaqueExportModal from './PlaqueExportModal.jsx'
 import SettingsModal from './SettingsModal.jsx'
 import CalibrationModal from './CalibrationModal.jsx'
 import CustomTableModal from './CustomTableModal.jsx'
@@ -33,8 +32,6 @@ export default function ModalRoot() {
       return <SnapshotsModal />
     case 'export':
       return <ExportModal />
-    case 'plaqueExport':
-      return <PlaqueExportModal />
     case 'settings':
       return <SettingsModal />
     case 'calibrate':

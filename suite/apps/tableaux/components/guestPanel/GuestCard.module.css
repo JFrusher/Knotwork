@@ -50,7 +50,7 @@
   width: 18px;
   height: 24px;
   margin-left: -2px;
-  color: rgba(231, 229, 228, 0.4);
+  color: var(--panel-text-muted);
   cursor: grab;
   border-radius: var(--radius-sm);
   touch-action: none;

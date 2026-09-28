@@ -45,7 +45,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
   }, [client, token]);
 
   return (
-    <main className="mx-auto max-w-md px-6 py-12 text-center sm:py-16">
+    <div className="mx-auto max-w-md px-6 py-12 text-center sm:py-16">
       <p className="text-sm tracking-[0.14em] text-slate uppercase">Trousseau</p>
       <h1 className="mt-3 font-display text-3xl text-charcoal">You&rsquo;re invited</h1>
 
@@ -68,7 +68,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
 
         {status === "done" && (
           <div className="space-y-4">
-            <p className="rounded border border-sage/50 bg-sage/10 px-3 py-2 text-sm text-charcoal">
+            <p className="rounded border border-ok/40 bg-ok-soft px-3 py-2 text-sm text-charcoal">
               You&rsquo;re in — welcome to the wedding.
             </p>
             <Link
@@ -81,11 +81,11 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
         )}
 
         {status === "error" && (
-          <p role="alert" className="rounded border border-rose/40 bg-rose/10 px-3 py-2 text-sm text-charcoal">
+          <p role="alert" className="rounded border border-danger/40 bg-danger-soft px-3 py-2 text-sm text-charcoal">
             {message}
           </p>
         )}
       </div>
-    </main>
+    </div>
   );
 }

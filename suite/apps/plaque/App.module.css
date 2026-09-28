@@ -85,7 +85,7 @@
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--grey-5);
+  color: var(--text-muted);
 }
 
 .paneBody {

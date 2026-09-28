@@ -19,7 +19,6 @@
 }
 
 .button,
-.primary,
 .danger {
   padding: 4px var(--sp-2);
   border: 1px solid var(--border);
@@ -27,12 +26,6 @@
   background: var(--surface);
   font-size: var(--text-xs);
   cursor: pointer;
-}
-
-.primary {
-  border-color: var(--danger);
-  font-weight: 600;
-  color: var(--danger);
 }
 
 .danger {
@@ -43,7 +36,6 @@
 }
 
 .button:hover,
-.primary:hover,
 .danger:hover {
   border-color: var(--border-strong);
 }

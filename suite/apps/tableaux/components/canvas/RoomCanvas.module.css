@@ -64,7 +64,7 @@
   transform: rotate(180deg);
 }
 .emptyText {
-  font-size: var(--text-base);
+  font-size: var(--text-md);
   color: var(--ink-muted);
   max-width: 28ch;
 }

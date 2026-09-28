@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentType, ReactNode } from "react";
+import { AlertTriangle } from "lucide-react";
 
 /**
  * The controls every panel is built from.
@@ -184,7 +185,7 @@ export function Button({
   const tones = {
     quiet: "border-charcoal/15 text-slate hover:border-gold hover:text-charcoal",
     primary: "border-gold bg-gold/15 text-charcoal hover:bg-gold/25",
-    danger: "border-charcoal/15 text-slate hover:border-rose hover:text-rose",
+    danger: "border-charcoal/15 text-slate hover:border-danger hover:text-danger",
   };
   return (
     <button
@@ -218,7 +219,7 @@ export function IconButton({
       aria-label={label}
       title={label}
       className={`shrink-0 rounded p-1 text-slate transition ${
-        tone === "danger" ? "hover:text-rose" : "hover:bg-stone hover:text-charcoal"
+        tone === "danger" ? "hover:text-danger" : "hover:bg-stone hover:text-charcoal"
       }`}
     >
       <Icon size={14} />
@@ -252,6 +253,21 @@ export function Segmented<T extends string>({
         </button>
       ))}
     </div>
+  );
+}
+
+/** A message about what just happened: something went wrong, or it worked. */
+export function Notice({ tone, children }: { tone: "danger" | "ok"; children: ReactNode }) {
+  return (
+    <p
+      role={tone === "danger" ? "alert" : "status"}
+      className={`mb-4 flex gap-2 rounded border px-3 py-2 text-sm text-charcoal ${
+        tone === "danger" ? "border-danger/40 bg-danger-soft" : "border-ok/40 bg-ok-soft"
+      }`}
+    >
+      {tone === "danger" ? <AlertTriangle size={16} className="mt-0.5 shrink-0 text-danger" /> : null}
+      <span>{children}</span>
+    </p>
   );
 }
 

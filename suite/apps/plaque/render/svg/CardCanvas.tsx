@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { GuestRow } from "../../core/csv/parse";
+import type { GuestRow } from "../../core/data/rows";
 import { foldSegment } from "../../core/geometry/fold";
 import { resolveCard, type ResolveOptions } from "../../core/template/bindings";
 import { fitImage, MAX_ZOOM } from "../../core/template/imageFit";

@@ -15,8 +15,8 @@ import type { Persisted } from "./persist";
  * only edit to `persist.ts` is which two functions the bytes pass through.
  *
  * Synchronous on purpose: `persist.save` is called from an unload handler,
- * where a promise is not guaranteed to settle. The shared store's own write is
- * debounced and flushed on unload, so handing it the value is enough.
+ * where a promise is not guaranteed to settle. The shared store starts its
+ * IndexedDB write the moment it is handed the value, so that is enough.
  */
 
 /** The autosave, or null when this wedding has no stationery yet. */
@@ -30,11 +30,11 @@ export function readSlice(): Persisted | null {
   return "version" in raw ? (raw as unknown as Persisted) : null;
 }
 
-export function writeSlice(record: Persisted | null): void {
+export function writeSlice(record: Persisted): void {
   // Refused when the document has been replaced since this was read — see
   // `toolGeneration`. Writing here would put the previous wedding back.
   if (!mayWrite("plaque")) return;
   useTrousseauStore
     .getState()
-    .setSlice("stationery", record ?? {}, { label: "the stationery", silent: true });
+    .setSlice("stationery", record, { label: "the stationery", silent: true });
 }

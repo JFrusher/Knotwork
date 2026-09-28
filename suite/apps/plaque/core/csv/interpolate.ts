@@ -1,4 +1,4 @@
-import type { GuestRow } from "./parse";
+import type { GuestRow } from "../data/rows";
 
 /** `{{ Column Name }}` — whitespace inside the braces is ignored. */
 const TOKEN = /\{\{\s*([^{}]*?)\s*\}\}/g;

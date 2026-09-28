@@ -108,7 +108,7 @@ export default function AccountPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md px-6 py-12 sm:py-16">
+    <div className="mx-auto max-w-md px-6 py-12 sm:py-16">
       <p className="text-sm tracking-[0.14em] text-slate uppercase">Trousseau</p>
       <h1 className="mt-3 font-display text-3xl text-charcoal">Your account</h1>
 
@@ -121,7 +121,7 @@ export default function AccountPage() {
       ) : !state.signedIn ? (
         <div className="mt-6 space-y-4">
           {signinFailed && (
-            <div className="rounded border border-rose/40 bg-rose/10 px-3 py-2 text-sm text-charcoal">
+            <div className="rounded border border-danger/40 bg-danger-soft px-3 py-2 text-sm text-charcoal">
               <p className="font-medium">That link did not sign you in.</p>
               <p className="mt-1 text-slate">
                 Two things stop one working. It has to be opened in the same browser that asked
@@ -143,7 +143,7 @@ export default function AccountPage() {
           {notice && (
             <p
               className={`rounded border px-3 py-2 text-sm text-charcoal ${
-                notice.tone === "ok" ? "border-sage/50 bg-sage/10" : "border-rose/40 bg-rose/10"
+                notice.tone === "ok" ? "border-ok/40 bg-ok-soft" : "border-danger/40 bg-danger-soft"
               }`}
             >
               {notice.text}
@@ -210,6 +210,6 @@ export default function AccountPage() {
           </section>
         </div>
       )}
-    </main>
+    </div>
   );
 }

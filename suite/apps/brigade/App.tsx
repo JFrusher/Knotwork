@@ -8,18 +8,14 @@ import { Announcer } from "./ui/Announcer";
 import { Button } from "@/components/ui/fields";
 import { ChromeFill } from "@/components/shell/chrome";
 import { ToolUndo } from "@/components/shell/ToolUndo";
-import { DesktopGate, useIsDesktop } from "./ui/DesktopGate";
 import { ExportBar } from "./ui/ExportBar";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
-import { serialise } from "./core/project/file";
-import { write as writeLinkedFile } from "./state/fileSink";
 import styles from "./App.module.css";
 
 const persister = createPersister();
 
 export function App() {
-  const isDesktop = useIsDesktop();
   const doc = useStore(getDoc);
   const notice = useStore((state) => state.notice);
   const filter = useStore((state) => state.filter);
@@ -47,20 +43,15 @@ export function App() {
   const canRedo = useStore((state) => state.canRedo());
 
   useEffect(() => {
-    const { doc: saved, notice: problem } = restore();
-    if (saved) useStore.getState().loadDoc(saved);
-    if (problem) setNotice(problem);
+    useStore.getState().loadDoc(restore());
     setRestored(true);
-  }, [setNotice]);
+  }, []);
 
-  // Autosave, debounced, and flushed if the window goes away mid-edit.
-  // localStorage is the source of truth for this browser; the linked file, when
-  // there is one, is a second write so a synced folder always holds the current
-  // crew. A failure there never loses work, so it is not worth interrupting for.
+  // Autosave into the shared wedding, debounced, and flushed if the window goes
+  // away mid-edit.
   useEffect(() => {
     if (!restored) return;
     persister.schedule(doc);
-    void writeLinkedFile(serialise(doc));
   }, [doc, restored]);
   useEffect(() => {
     const flush = () => persister.flush();
@@ -75,8 +66,6 @@ export function App() {
       flush();
     };
   }, []);
-
-  if (!isDesktop) return <DesktopGate />;
 
   const unassigned = doc.jobs.filter((job) => job.personIds.length === 0).length;
 
@@ -125,13 +114,13 @@ export function App() {
 
       <div className={styles.body}>
         <Sidebar />
-        <main className={styles.canvas}>
+        <div className={styles.canvas}>
           <Board />
           <div className={styles.foot}>
             <WarningsList />
             <ExportBar />
           </div>
-        </main>
+        </div>
       </div>
 
       <Announcer />

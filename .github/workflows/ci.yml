@@ -36,8 +36,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Ignore unfixable high vulnerabilities from xlsx by raising threshold to critical, or set continue-on-error
-      - run: npm audit --audit-level=critical
+      - run: npm audit --audit-level=high
 
   test:
     runs-on: ubuntu-latest
@@ -76,3 +75,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
       - run: npm run build -w suite
+      # Against the build just made: axe on every page, the tools from a
+      # keyboard, where drops land, and whether an edit survives a reload.
+      - run: npx playwright install --with-deps chromium
+        working-directory: suite
+      - run: npm run e2e -w suite

@@ -29,12 +29,12 @@ const { emptyTrousseau } = await import("@jfrusher/trousseau");
 const { fingerprintAllSlices } = await import("@/lib/documents/mergeCloudDocument");
 const { fingerprint } = await import("@/lib/documents/fingerprint");
 
-/** Long enough for the 250ms persist timer, and the push it ends in, to run. */
+/** Long enough for the 250ms cloud-push timer, and the push it ends in, to run. */
 const PAST_THE_PERSIST_DELAY_MS = 400;
 const settle = () => new Promise((resolve) => setTimeout(resolve, PAST_THE_PERSIST_DELAY_MS));
 
 // resolveConflict and replaceDocument both schedule a real, un-awaited
-// persist timer. Left pending, it fires mid-way through a later test with
+// cloud-push timer. Left pending, it fires mid-way through a later test with
 // whatever mock the *next* test happened to configure - flushing it here
 // cancels that timer before it can fire against a stale mock.
 afterEach(async () => {
@@ -242,7 +242,7 @@ test("startCloudSync pushes the local wedding up on first sign-in, when the clou
 
 /**
  * The one test that crosses every task boundary this feature was built
- * across: the store's conflict handling, `schedulePersist`'s real 250ms
+ * across: the store's conflict handling, the real 250ms cloud-push
  * timer, and `toolGeneration`'s remount signal.
  *
  * Deliberately on real timers. Both bugs it covers lived *in* the timer:

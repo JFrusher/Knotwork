@@ -21,7 +21,7 @@
 
 .icon {
   flex: none;
-  color: rgba(231, 229, 228, 0.5);
+  color: var(--panel-text-muted);
 }
 
 .input {
@@ -34,14 +34,14 @@
   color: var(--panel-text);
 }
 .input::placeholder {
-  color: rgba(231, 229, 228, 0.4);
+  color: var(--panel-text-muted);
 }
 
 .clear {
   display: flex;
   flex: none;
   padding: 2px;
-  color: rgba(231, 229, 228, 0.5);
+  color: var(--panel-text-muted);
   border-radius: var(--radius-sm);
 }
 .clear:hover {

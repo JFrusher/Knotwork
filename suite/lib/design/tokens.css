@@ -13,11 +13,10 @@
  * onto it: change a colour here and all four move together, while every
  * `var(--grey-3)` and `var(--ink-soft)` already written keeps working untouched.
  *
- * Sizes are deliberately left alone. Tableaux sets 16px body against the other
- * three at 13px, and that difference is not an inconsistency to be corrected —
- * it is the difference between a canvas you arrange a room on and a panel of
- * numbered fields. Unifying the typeface is a face swap; unifying the scale
- * would be a redesign of tools that are already good at their jobs.
+ * Sizes are one scale too, under Tailwind's own names. Each tool used to
+ * declare `--text-sm` for itself — 12px in three tools, 13px in Seating — and
+ * Tailwind's `text-sm` reads the same variable, so a nav tab carrying a tool's
+ * token class came out at that tool's size: five tabs at three sizes.
  */
 
 :root {
@@ -34,7 +33,7 @@
   --t-3: #e9e4da; /* canvas behind the work */
   --t-4: #d8d2c6; /* borders */
   --t-5: #a8a29a; /* strong borders, disabled ink */
-  --t-6: #726b67; /* muted text — 4.6:1 on --t-1 */
+  --t-6: #6b6561; /* muted text — clears 4.5:1 on every ground, --t-3 included */
   --t-7: #57534e; /* secondary text */
   --t-8: #44403c; /* muted slate */
   --t-9: #1c1917; /* deep charcoal, primary text */
@@ -59,6 +58,18 @@
   --t-font-ui: var(--font-lato), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --t-font-display: var(--font-marcellus), Georgia, "Times New Roman", serif;
   --t-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+
+  /*
+   * The type scale. Declared here, unlayered, so it wins over Tailwind's
+   * defaults for the same names: `text-sm` in the shell and `var(--text-sm)` in
+   * a tool are the same size. Anything larger is Tailwind's own, used only by
+   * the shell's headings.
+   */
+  --text-xs: 0.6875rem; /* 11px: labels, meta */
+  --text-sm: 0.8125rem; /* 13px: controls, secondary text */
+  --text-md: 0.875rem; /* 14px: body text in a panel */
+  --text-lg: 1rem; /* 16px: panel headings */
+  --text-xl: 1.25rem; /* 20px: page headings inside a tool */
 
   --t-radius-sm: 4px;
   --t-radius-md: 6px;
@@ -177,12 +188,6 @@
   --font-ui: var(--t-font-ui);
   --font-mono: var(--t-font-mono);
 
-  --text-xs: 11px;
-  --text-sm: 12px;
-  --text-md: 13px;
-  --text-lg: 15px;
-  --text-xl: 19px;
-
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -204,6 +209,12 @@
  */
 .tableaux-scope,
 .tableaux-tokens {
+  /* The dark left panel. Its secondary text is one colour that clears 4.5:1
+     on it, not a spread of transparent greys. */
+  --panel-bg: #1e1c1a;
+  --panel-text: #e7e5e4;
+  --panel-text-muted: #8d8b89;
+
   --ink: var(--t-9);
   --ink-soft: var(--t-7);
   --ink-muted: var(--t-6);
@@ -223,13 +234,7 @@
   --font-ui: var(--t-font-ui);
   --font-display: var(--t-font-display);
 
-  --text-xs: 11px;
-  --text-sm: 13px;
-  --text-base: 16px;
-  --text-ui: 13px;
-  --text-label: 11px;
   --text-display: 22px;
-  --text-table: 13px;
 
   --weight-regular: 400;
   --weight-medium: 500;
@@ -271,11 +276,11 @@
  *
  * Handing headings back means a tool looks like a tool inside its own frame.
  * What identifies it is the accent and the tab, which was the decision.
+ *
+ * Unlayered, so it beats the shell's rule in the base layer; `:where()`, so a
+ * tool's own heading class still beats it.
  */
-.plaque-scope :is(h1, h2, h3, h4, h5, h6),
-.cadence-scope :is(h1, h2, h3, h4, h5, h6),
-.brigade-scope :is(h1, h2, h3, h4, h5, h6),
-.tableaux-scope :is(h1, h2, h3, h4, h5, h6) {
+:where(.plaque-scope, .cadence-scope, .brigade-scope, .tableaux-scope) :is(h1, h2, h3, h4, h5, h6) {
   font-family: inherit;
   color: inherit;
 }

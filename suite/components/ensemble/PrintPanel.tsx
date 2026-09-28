@@ -88,7 +88,7 @@ export function PrintPanel({
         ) : (
           <ul className="flex flex-col gap-1">
             {problems.map((problem, index) => (
-              <li key={index} className="text-sm text-rose">
+              <li key={index} className="text-sm text-danger">
                 "{problem.shotLabel}" — {problem.text}
               </li>
             ))}
@@ -117,7 +117,7 @@ export function PrintPanel({
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-rose">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       )}

@@ -23,9 +23,9 @@ export function SignInFailed() {
   if (!failed) return null;
 
   return (
-    <div className="mb-5 rounded border border-rose/40 bg-rose/10 px-3 py-2 text-sm">
+    <div className="mb-5 rounded border border-danger/40 bg-danger-soft px-3 py-2 text-sm">
       <p className="flex items-center gap-1.5 font-medium text-charcoal">
-        <AlertTriangle size={15} className="shrink-0 text-rose" />
+        <AlertTriangle size={15} className="shrink-0 text-danger" />
         That link did not sign you in.
       </p>
       <p className="mt-1 text-slate">

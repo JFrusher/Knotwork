@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import zlib from "node:zlib";
 import { describe, expect, it } from "vitest";
 import { BUNDLED_FONTS } from "../../assets/fonts";
-import { parseCsv } from "../../core/csv/parse";
+import { parseCsv } from "@/lib/data/csv";
 import { buildArtefacts } from "../../core/data/artefacts";
 import { paginate } from "../../core/imposition/paginate";
 import { loadFont, type LoadedFont } from "../../core/text/measure";
