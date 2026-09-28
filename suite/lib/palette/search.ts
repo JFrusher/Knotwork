@@ -1,7 +1,7 @@
 import type { Trousseau } from "@jfrusher/trousseau";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { guestName, readCrew, readGuests, readSeating, readTimeline, resolvedDay } from "@/lib/model/slices";
-import { longDate } from "@/lib/money/money";
+import { longDate } from "@/lib/dates";
 import { TOOLS, WEDDING_PAGES } from "@/lib/tools";
 
 /**

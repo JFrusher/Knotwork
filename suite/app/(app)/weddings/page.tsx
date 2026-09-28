@@ -7,9 +7,9 @@ import { browserClient } from "@/lib/accounts/browserClient";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import type { WeddingListing } from "@/lib/accounts/handlers";
 import { Button } from "@/components/ui/controls";
+import { todayIso } from "@/lib/dates";
+import { WeddingList } from "@/components/weddings/WeddingList";
 
-const longDate = (iso: string) =>
-  iso ? new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }) : "";
 
 /**
  * Every wedding the account is on — for a planner, one per client.
@@ -30,7 +30,8 @@ export default function WeddingsPage() {
         setWeddings("signed-out");
         return;
       }
-      const response = await fetch("/api/accounts/weddings");
+      // Our own date, for what has fallen due.
+      const response = await fetch(`/api/accounts/weddings?today=${todayIso()}`);
       const body = (await response.json().catch(() => null)) as { weddings?: WeddingListing[]; error?: string } | null;
       if (response.ok && body?.weddings) setWeddings(body.weddings);
       else setProblem(body?.error ?? "Your weddings could not be loaded.");
@@ -80,29 +81,7 @@ export default function WeddingsPage() {
           {weddings.length === 0 ? (
             <p className="text-slate">None yet. Start one for a client, and invite the couple to it.</p>
           ) : (
-            <ul className="divide-y divide-charcoal/10 rounded-lg border border-charcoal/10">
-              {weddings.map((wedding) => (
-                <li key={wedding.weddingId} className="flex flex-wrap items-center justify-between gap-3 p-4">
-                  <div>
-                    <p className="text-charcoal">{wedding.names || "A wedding with no names yet"}</p>
-                    <p className="text-sm text-slate">
-                      {[longDate(wedding.date), wedding.role === "planner" ? "Client" : "Yours"].filter(Boolean).join(" · ")}
-                    </p>
-                  </div>
-                  {wedding.weddingId === open ? (
-                    <span className="text-sm text-slate">Open here</span>
-                  ) : (
-                    // A full load, never a client-side one — see `/open`.
-                    <a
-                      href={`/open/${wedding.weddingId}`}
-                      className="rounded border border-charcoal/15 px-3 py-1.5 text-sm text-charcoal transition hover:border-gold"
-                    >
-                      Open
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <WeddingList weddings={weddings} open={open} />
           )}
           <Button tone="primary" icon={Plus} onClick={() => void startClientWedding()}>
             Start a client’s wedding

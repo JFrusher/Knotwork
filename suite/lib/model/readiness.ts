@@ -1,7 +1,8 @@
 import type { Trousseau } from "@jfrusher/trousseau";
 import { guestName, isComing, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
 import { resolveShot } from "@/lib/ensemble/resolve";
-import { daysUntil, DUE_SOON_DAYS, longDate, money, todayIso } from "@/lib/money/money";
+import { DUE_SOON_DAYS, money } from "@/lib/money/money";
+import { daysUntil, longDate, todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
 
 /**

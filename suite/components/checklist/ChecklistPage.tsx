@@ -8,7 +8,7 @@ import { readCrew } from "@/lib/model/slices";
 import { addTask, assigneeNames, patchJob, removeJob, setJobStatus } from "@/lib/model/crewActions";
 import type { Crew, Job } from "@/lib/model/types";
 import { checklist, isTask, USUAL_TASKS, withUsualTasks } from "@/lib/checklist/checklist";
-import { longDate, todayIso } from "@/lib/money/money";
+import { longDate, todayIso } from "@/lib/dates";
 import { Button, Empty } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 

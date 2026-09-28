@@ -1,3 +1,4 @@
+import { weddingState, type WeddingState } from "@/lib/model/weddingState";
 import type { DocumentStore } from "@/lib/documents/store";
 import { ROLE_CAP, type AccountsStore, type Role } from "./store";
 
@@ -38,20 +39,35 @@ export interface WeddingListing {
   role: Role;
   names: string;
   date: string;
+  /** When its document was last saved, or null before the first save. */
+  savedAt: string | null;
+  /** How it stands, for a planner's list of clients. */
+  state: WeddingState;
 }
 
-/** Every wedding the account is on, named from its own document. */
+/**
+ * Every wedding the account is on, named from its own document, with how
+ * each stands — What is left and money owed, as of `today`.
+ */
 export async function listWeddingsHandler(
   accounts: AccountsStore,
   documents: DocumentStore,
   userId: string,
+  today: string,
 ): Promise<Reply> {
   const memberships = await accounts.membershipsOf(userId);
   const weddings: WeddingListing[] = await Promise.all(
     memberships.map(async (m) => {
       const record = await documents.getDocument(m.weddingId);
       const event = (record?.document as { event?: { coupleNames?: string; date?: string } } | undefined)?.event;
-      return { weddingId: m.weddingId, role: m.role, names: event?.coupleNames ?? "", date: event?.date ?? "" };
+      return {
+        weddingId: m.weddingId,
+        role: m.role,
+        names: event?.coupleNames ?? "",
+        date: event?.date ?? "",
+        savedAt: record?.updatedAt ?? null,
+        state: weddingState(record?.document ?? null, today),
+      };
     }),
   );
   return ok({ weddings });

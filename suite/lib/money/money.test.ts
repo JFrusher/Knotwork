@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 import type { Crew, Team } from "@/lib/model/types";
-import { daysUntil, money } from "./money";
+import { money } from "./money";
 
 const team = (id: string, over: Partial<Team>): Team => ({
   id,
@@ -57,10 +57,5 @@ describe("money", () => {
 
   it("says a budget is overspent as a negative left", () => {
     expect(money(crew([team("Band", { cost: 1400 })], 1000)).left).toBe(-400);
-  });
-
-  it("counts days to a date, negative once passed", () => {
-    expect(daysUntil("2028-05-18", "2028-05-01")).toBe(17);
-    expect(daysUntil("2028-03-26", "2028-03-27")).toBe(-1);
   });
 });

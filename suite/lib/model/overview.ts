@@ -1,7 +1,8 @@
 import type { Trousseau } from "@jfrusher/trousseau";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { resolveShot } from "@/lib/ensemble/resolve";
-import { money, todayIso } from "@/lib/money/money";
+import { money } from "@/lib/money/money";
+import { todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
 import { stationery } from "./readiness";
 import { isComing, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";

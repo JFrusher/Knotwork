@@ -5,10 +5,12 @@ import {
   createWeddingHandler,
   deleteAccountHandler,
   firstSignInHandler,
+  listWeddingsHandler,
   peopleHandler,
   removeMemberHandler,
 } from "./handlers";
 import { memoryStore } from "./store";
+import { memoryStore as memoryDocuments } from "@/lib/documents/store";
 
 function seededStore() {
   const store = memoryStore() as ReturnType<typeof memoryStore> & {
@@ -255,5 +257,38 @@ describe("roles", () => {
     const { store, weddingId } = await weddingWithPlanner();
     expect((await removeMemberHandler(store, weddingId, "pat", "pat")).status).toBe(200);
     expect(await store.membershipsOf("pat")).toEqual([]);
+  });
+});
+
+describe("listWeddingsHandler", () => {
+  it("lists a planner's clients with how each stands: what is left, what is next, what is owed", async () => {
+    const accounts = seededStore();
+    const documents = memoryDocuments();
+    const client = ((await createWeddingHandler(accounts, "planner-1", "planner")).body as { weddingId: string }).weddingId;
+    await documents.saveDocument(
+      client,
+      {
+        event: { coupleNames: "Robin & Kit", date: "2028-06-01" },
+        guests: { r1: { id: "r1", firstName: "Robin", assignedTableId: null } },
+        seating: { tables: { t1: { id: "t1", label: "Table 1", assignedGuestIds: [] } } },
+        crew: { teams: [{ id: "band", name: "The Sundays", cost: 2200, deposit: 500, depositPaidOn: "2027-01-01" }] },
+      },
+      0,
+    );
+
+    const reply = await listWeddingsHandler(accounts, documents, "planner-1", "2026-09-28");
+
+    expect(reply.body).toEqual({
+      weddings: [
+        {
+          weddingId: client,
+          role: "planner",
+          names: "Robin & Kit",
+          date: "2028-06-01",
+          savedAt: expect.any(String),
+          state: { left: 1, blocking: 0, next: "Robin has no table yet.", owed: 1700 },
+        },
+      ],
+    });
   });
 });

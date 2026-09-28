@@ -27,8 +27,11 @@ const failed = (where: string, error: unknown) => {
   return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
 };
 
-/** Every wedding this account is on — the couple's own, and a planner's clients. */
-export async function GET() {
+/**
+ * Every wedding this account is on — the couple's own, and a planner's
+ * clients. `?today=` is the asker's own date, for what has fallen due.
+ */
+export async function GET(request: Request) {
   try {
     if (!accountsConfigured()) return unconfigured();
     const user = await currentUser();
@@ -36,7 +39,9 @@ export async function GET() {
     const client = await serverClient();
     if (!client) return unconfigured();
 
-    const reply = await listWeddingsHandler(accountsStore(client), documentStore(client), user.id);
+    const asked = new URL(request.url).searchParams.get("today") ?? "";
+    const today = /^\d{4}-\d{2}-\d{2}$/.test(asked) ? asked : new Date().toISOString().slice(0, 10);
+    const reply = await listWeddingsHandler(accountsStore(client), documentStore(client), user.id, today);
     return NextResponse.json(reply.body, { status: reply.status });
   } catch (error) {
     return failed("GET /api/accounts/weddings", error);

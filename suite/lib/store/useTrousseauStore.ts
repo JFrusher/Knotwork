@@ -689,7 +689,11 @@ function scheduleCloudPush(): void {
  * else the couple's own; else the only one. A planner with several clients
  * and none opened here chooses.
  */
-export function weddingToOpen(weddings: WeddingListing[], chosen: string | null, link: CloudLink | null): string | null {
+export function weddingToOpen(
+  weddings: ReadonlyArray<Pick<WeddingListing, "weddingId" | "role">>,
+  chosen: string | null,
+  link: CloudLink | null,
+): string | null {
   const on = (weddingId: string | undefined) => weddings.some((w) => w.weddingId === weddingId);
   if (chosen && on(chosen)) return chosen;
   if (link && on(link.weddingId)) return link.weddingId;
