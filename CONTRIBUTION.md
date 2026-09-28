@@ -20,7 +20,7 @@ Please treat everyone with respect, patience, and kindness. We want this project
 1. **Fork and clone the repository:**
 
    ```bash
-   git clone [https://github.com/YOUR-USERNAME/Trousseau.git](https://github.com/YOUR-USERNAME/Trousseau.git)
+   git clone [https://github.com/JFrusher/Trousseau.git](https://github.com/JFrusher/Trousseau.git)
    cd Trousseau
     ```
 
