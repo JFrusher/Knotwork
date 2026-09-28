@@ -45,7 +45,7 @@ export default function LoginPage() {
           Accounts are not set up on this deployment. Everything still works without one.
         </p>
       ) : sent ? (
-        <p className="mt-6 rounded border border-sage/50 bg-sage/10 px-3 py-2 text-sm text-charcoal">
+        <p className="mt-6 rounded border border-ok/40 bg-ok-soft px-3 py-2 text-sm text-charcoal">
           Check <span className="font-medium">{email}</span> for a sign-in link.
         </p>
       ) : (
@@ -62,7 +62,7 @@ export default function LoginPage() {
             {busy ? "Sending…" : "Send me a sign-in link"}
           </Button>
           {error && (
-            <p role="alert" className="rounded border border-rose/40 bg-rose/10 px-3 py-2 text-sm text-charcoal">
+            <p role="alert" className="rounded border border-danger/40 bg-danger-soft px-3 py-2 text-sm text-charcoal">
               {error}
             </p>
           )}

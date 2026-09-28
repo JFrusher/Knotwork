@@ -30,9 +30,9 @@ export function WhatIsLeft() {
     return (
       <p
         data-tour="shell.whatisleft"
-        className="flex items-center gap-2 rounded border border-sage/40 bg-sage/10 px-4 py-3 text-sm text-charcoal"
+        className="flex items-center gap-2 rounded border border-ok/40 bg-ok-soft px-4 py-3 text-sm text-charcoal"
       >
-        <Check size={16} className="shrink-0 text-sage" />
+        <Check size={16} className="shrink-0 text-ok" />
         Nothing left that spans the tools. Each one will tell you about its own work.
       </p>
     );
@@ -48,13 +48,13 @@ export function WhatIsLeft() {
               href={item.href}
               className={`${tool?.tokens ?? ""} group flex items-center gap-3 rounded border px-4 py-3 transition ${
                 item.severity === "blocking"
-                  ? "border-rose/40 bg-rose/10 hover:border-rose"
+                  ? "border-danger/40 bg-danger-soft hover:border-danger"
                   : "border-charcoal/10 bg-stone/50 hover:border-charcoal/25"
               }`}
             >
               <AlertTriangle
                 size={16}
-                className={`shrink-0 ${item.severity === "blocking" ? "text-rose" : "text-slate"}`}
+                className={`shrink-0 ${item.severity === "blocking" ? "text-danger" : "text-slate"}`}
               />
               <span className="min-w-0 flex-1 text-sm text-charcoal">{item.message}</span>
               <span className="hidden shrink-0 items-center gap-1 text-xs text-slate group-hover:text-charcoal sm:flex">

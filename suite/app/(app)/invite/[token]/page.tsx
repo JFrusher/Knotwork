@@ -68,7 +68,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
 
         {status === "done" && (
           <div className="space-y-4">
-            <p className="rounded border border-sage/50 bg-sage/10 px-3 py-2 text-sm text-charcoal">
+            <p className="rounded border border-ok/40 bg-ok-soft px-3 py-2 text-sm text-charcoal">
               You&rsquo;re in — welcome to the wedding.
             </p>
             <Link
@@ -81,7 +81,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
         )}
 
         {status === "error" && (
-          <p role="alert" className="rounded border border-rose/40 bg-rose/10 px-3 py-2 text-sm text-charcoal">
+          <p role="alert" className="rounded border border-danger/40 bg-danger-soft px-3 py-2 text-sm text-charcoal">
             {message}
           </p>
         )}

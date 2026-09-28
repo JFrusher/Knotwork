@@ -17,13 +17,27 @@
   --color-charcoal: #1c1917; /* deep charcoal — headings, borders */
   --color-slate: #44403c; /* muted slate — body copy, secondary rules */
 
-  /* Accents */
-  --color-gold: #d4af37; /* warm champagne — primary action, focus */
-  --color-sage: #849e86; /* sage — confirmations, "resolved" states */
-  --color-rose: #c48b8b; /* dusty rose — warnings, clashes */
+  /* Accent */
+  --color-gold: #d4af37; /* warm champagne — the shell's own accent: primary action */
 
   --font-display: var(--font-marcellus), Georgia, "Times New Roman", serif;
   --font-body: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
+}
+
+/**
+ * States — ok, warning, danger — as the same colours the tools use, decided once
+ * in `lib/design/tokens.css`. `inline` so each utility reads the token itself:
+ * a warning is one colour on every page, and the ink variants clear 4.5:1 on
+ * both their own tint and the page. The shell used to use dusty rose for
+ * errors, whose text sat at about 2.6:1.
+ */
+@theme inline {
+  --color-ok: var(--t-ok);
+  --color-ok-soft: var(--t-ok-soft);
+  --color-warn: var(--t-warn);
+  --color-warn-soft: var(--t-warn-soft);
+  --color-danger: var(--t-danger);
+  --color-danger-soft: var(--t-danger-soft);
 }
 
 /**

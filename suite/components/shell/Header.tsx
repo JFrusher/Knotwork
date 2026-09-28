@@ -98,7 +98,7 @@ export function Header() {
             }}
             className={`inline-flex shrink-0 items-center gap-1.5 rounded border px-2.5 py-1.5 text-sm transition ${
               dirty
-                ? "border-rose bg-rose/15 text-charcoal"
+                ? "border-danger bg-danger-soft text-charcoal"
                 : "border-charcoal/15 text-slate hover:border-gold hover:text-charcoal"
             }`}
           >

@@ -28,7 +28,7 @@ export default function AppError({
 
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-xl flex-col justify-center px-6 py-16 text-center">
-      <p className="text-sm tracking-[0.14em] text-rose uppercase">Something broke</p>
+      <p className="text-sm tracking-[0.14em] text-danger uppercase">Something broke</p>
       <h1 className="mt-4 text-3xl">This part of the app stopped</h1>
       <p className="mt-4 text-slate">
         Your wedding is still saved on this device. Nothing has been lost, and nothing has been

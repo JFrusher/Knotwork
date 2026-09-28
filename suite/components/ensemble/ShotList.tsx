@@ -224,7 +224,7 @@ function ShotRow({
       <button type="button" onClick={onSelect} className="min-w-0 flex-1 text-left">
         <div className="truncate text-sm text-charcoal">
           {number}. {resolved.label}
-          {resolved.problems.length > 0 && <span className="ml-1 text-rose">●</span>}
+          {resolved.problems.length > 0 && <span className="ml-1 text-danger">●</span>}
         </div>
         <div className="truncate text-xs text-slate">
           {resolved.people.map((p) => p.name).join(", ") || "Nobody yet"}

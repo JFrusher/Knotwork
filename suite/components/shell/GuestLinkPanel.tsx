@@ -95,7 +95,7 @@ export function GuestLinkPanel({ onProblem }: { onProblem: (message: string | nu
   return (
     <Panel title="A link for the guests">
       {notice ? (
-        <p className="mb-2 rounded border border-sage/50 bg-sage/10 px-2 py-1.5 text-xs text-charcoal">
+        <p className="mb-2 rounded border border-ok/40 bg-ok-soft px-2 py-1.5 text-xs text-charcoal">
           {notice}
         </p>
       ) : null}
@@ -145,7 +145,7 @@ export function GuestLinkPanel({ onProblem }: { onProblem: (message: string | nu
 
           {shareToken && !shareLink ? (
             <p className="flex gap-1.5 text-xs text-slate">
-              <AlertTriangle size={12} className="mt-0.5 shrink-0 text-gold" />A link is live from an
+              <AlertTriangle size={12} className="mt-0.5 shrink-0 text-warn" />A link is live from an
               earlier session. The key that opens it was only ever in that link, so it cannot be
               shown again — press <em>Update the link</em> to publish the current plan to a fresh
               one, or take it down.
@@ -175,7 +175,7 @@ export function GuestLinkPanel({ onProblem }: { onProblem: (message: string | nu
                 />
               </div>
               <p className="flex gap-1.5 text-xs text-slate">
-                <AlertTriangle size={12} className="mt-0.5 shrink-0 text-gold" />
+                <AlertTriangle size={12} className="mt-0.5 shrink-0 text-warn" />
                 Anybody with this link can see the names and tables on it. There is only ever one
                 live link — updating replaces what it shows, so a link you have already given out
                 stays correct.
@@ -191,7 +191,7 @@ export function GuestLinkPanel({ onProblem }: { onProblem: (message: string | nu
           */}
           <div className="border-t border-charcoal/10 pt-2">
             {erasing ? (
-              <div className="space-y-2 rounded border border-rose/50 bg-rose/10 p-2">
+              <div className="space-y-2 rounded border border-danger/40 bg-danger-soft p-2">
                 <p className="text-xs text-charcoal">
                   This removes the wedding from the server for good — every slice, every uploaded
                   font and picture, and the guest link. Anyone holding that link will find nothing

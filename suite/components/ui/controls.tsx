@@ -184,7 +184,7 @@ export function Button({
   const tones = {
     quiet: "border-charcoal/15 text-slate hover:border-gold hover:text-charcoal",
     primary: "border-gold bg-gold/15 text-charcoal hover:bg-gold/25",
-    danger: "border-charcoal/15 text-slate hover:border-rose hover:text-rose",
+    danger: "border-charcoal/15 text-slate hover:border-danger hover:text-danger",
   };
   return (
     <button
@@ -218,7 +218,7 @@ export function IconButton({
       aria-label={label}
       title={label}
       className={`shrink-0 rounded p-1 text-slate transition ${
-        tone === "danger" ? "hover:text-rose" : "hover:bg-stone hover:text-charcoal"
+        tone === "danger" ? "hover:text-danger" : "hover:bg-stone hover:text-charcoal"
       }`}
     >
       <Icon size={14} />

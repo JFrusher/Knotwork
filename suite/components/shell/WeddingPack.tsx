@@ -103,7 +103,7 @@ export function WeddingPack() {
       )}
       {note && <p className="mt-3 text-xs text-slate">{note}</p>}
       {problem && (
-        <p role="alert" className="mt-3 text-xs text-rose">
+        <p role="alert" className="mt-3 text-xs text-danger">
           {problem}
         </p>
       )}
