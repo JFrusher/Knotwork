@@ -1,10 +1,7 @@
 import clsx from 'clsx'
 import { useStore, selectCanUndo, selectCanRedo } from '../../store/useStore.js'
 import { useWarnings } from '../../store/warningsContext.jsx'
-import { saveNow } from '../../hooks/useAutoSave.js'
 import IconButton from '../ui/IconButton.jsx'
-import Button from '../ui/Button.jsx'
-import { ChromeFill } from '@/components/shell/chrome'
 import { ToolUndo } from '@/components/shell/ToolUndo'
 import Icon from '../ui/Icon.jsx'
 import TablePalette from '../toolbar/TablePalette.jsx'
@@ -59,16 +56,10 @@ export default function Toolbar() {
   return (
     <header className={styles.toolbar}>
       {/*
-        * Unlike the other three, this bar is not chrome: it holds the table
-        * palette you drag a room out of, so it stays. Only the parts that were
-        * a second copy of something the shell already offers went up — undo,
-        * redo, save, and a wordmark repeating the tab you clicked to get here.
+        * Unlike the other tools, this bar is not chrome: it holds the table
+        * palette you drag a room out of, so it stays. Undo and redo went up
+        * into the shell's header. There is no Save: the plan saves itself.
         */}
-      <ChromeFill name="tool-actions" tokens="tableaux-tokens">
-        <Button variant="secondary" size="sm" onClick={() => saveNow({ manual: true })}>
-          Save
-        </Button>
-      </ChromeFill>
       <ToolUndo canUndo={canUndo} canRedo={canRedo} onUndo={undo} onRedo={redo} />
 
       <div className={styles.center}>

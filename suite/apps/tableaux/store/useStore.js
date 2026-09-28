@@ -419,24 +419,6 @@ export const useStore = create(
           return Object.keys(guests).length
         },
 
-        // ── full-plan import (from an exported JSON backup) ────────────────
-        // Replaces the whole document and bumps _rev so the next auto-save
-        // persists it. Only known DOC_KEYS are taken from the incoming file.
-        importPlan: (doc) => {
-          const clean = {}
-          DOC_KEYS.forEach((k) => {
-            if (doc && doc[k] !== undefined) clean[k] = doc[k]
-          })
-          set({
-            ...emptyDoc(),
-            ...normalizeDoc(clean),
-            _history: { past: [], future: [] },
-            _rev: (get()._rev || 0) + 1,
-            selection: { type: null, id: null },
-            selectedGuestIds: [],
-            loaded: true,
-          })
-        },
 
         // ── snapshots (kept in the document, persisted via normal save) ────
         saveSnapshot: (name) => {

@@ -1,7 +1,7 @@
 import { DIETARY_META } from './dietary.js'
 import { getTableType } from './tableTypes.js'
 import { toCsv } from './exportCsv.js'
-import { downloadFile, slug } from './exportJson.js'
+import { downloadFile, slug } from './download.js'
 
 /**
  * Vendor/caterer reporting built purely from the live document — works in both

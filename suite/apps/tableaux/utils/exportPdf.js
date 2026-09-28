@@ -1,6 +1,6 @@
 import { buildFloorPlanSvg, measureFloorPlan } from './floorPlanSvg.js'
 import { CARD_TEMPLATES } from './cardTemplates.js'
-import { slug } from './exportJson.js'
+import { slug } from './download.js'
 
 // jsPDF + svg2pdf are heavy and only needed on export, so they are dynamically
 // imported (kept out of the main bundle).
