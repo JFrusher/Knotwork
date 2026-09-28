@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   pointerWithin,
+  getClientRect,
 } from '@dnd-kit/core'
 import { useAutoSave } from './hooks/useAutoSave.js'
 import { useCanvasDnd } from './hooks/useCanvasDnd.js'
@@ -52,6 +53,12 @@ export default function App() {
   return (
     <DndContext
       sensors={sensors}
+      // Measure drop targets as they are drawn. The default ignores each
+      // element's own transform, and every table is centred on its position
+      // with `translate(-50%, -50%)`: the hit area sat half a table down and
+      // to the right, so a guest dropped on a table's top-left half missed,
+      // and one dropped on the floor beside it was seated.
+      measuring={{ droppable: { measure: getClientRect } }}
       collisionDetection={innermostFirstCollision}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
