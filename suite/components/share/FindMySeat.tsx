@@ -130,7 +130,7 @@ function Match({ guest }: { guest: SharedGuest }) {
       <span className="block text-lg text-charcoal">{guest.name}</span>
       {guest.table ? (
         <>
-          <span className="mt-1 block font-display text-2xl text-charcoal">{guest.table}</span>
+          <span className="mt-1 block text-2xl text-charcoal tabular-nums">{guest.table}</span>
           {guest.seat !== null ? (
             <span className="block text-sm text-slate">Seat {guest.seat}</span>
           ) : null}

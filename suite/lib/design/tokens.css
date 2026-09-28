@@ -13,11 +13,10 @@
  * onto it: change a colour here and all four move together, while every
  * `var(--grey-3)` and `var(--ink-soft)` already written keeps working untouched.
  *
- * Sizes are deliberately left alone. Tableaux sets 16px body against the other
- * three at 13px, and that difference is not an inconsistency to be corrected —
- * it is the difference between a canvas you arrange a room on and a panel of
- * numbered fields. Unifying the typeface is a face swap; unifying the scale
- * would be a redesign of tools that are already good at their jobs.
+ * Sizes are one scale too, under Tailwind's own names. Each tool used to
+ * declare `--text-sm` for itself — 12px in three tools, 13px in Seating — and
+ * Tailwind's `text-sm` reads the same variable, so a nav tab carrying a tool's
+ * token class came out at that tool's size: five tabs at three sizes.
  */
 
 :root {
@@ -59,6 +58,18 @@
   --t-font-ui: var(--font-lato), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --t-font-display: var(--font-marcellus), Georgia, "Times New Roman", serif;
   --t-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+
+  /*
+   * The type scale. Declared here, unlayered, so it wins over Tailwind's
+   * defaults for the same names: `text-sm` in the shell and `var(--text-sm)` in
+   * a tool are the same size. Anything larger is Tailwind's own, used only by
+   * the shell's headings.
+   */
+  --text-xs: 0.6875rem; /* 11px: labels, meta */
+  --text-sm: 0.8125rem; /* 13px: controls, secondary text */
+  --text-md: 0.875rem; /* 14px: body text in a panel */
+  --text-lg: 1rem; /* 16px: panel headings */
+  --text-xl: 1.25rem; /* 20px: page headings inside a tool */
 
   --t-radius-sm: 4px;
   --t-radius-md: 6px;
@@ -177,12 +188,6 @@
   --font-ui: var(--t-font-ui);
   --font-mono: var(--t-font-mono);
 
-  --text-xs: 11px;
-  --text-sm: 12px;
-  --text-md: 13px;
-  --text-lg: 15px;
-  --text-xl: 19px;
-
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -223,13 +228,7 @@
   --font-ui: var(--t-font-ui);
   --font-display: var(--t-font-display);
 
-  --text-xs: 11px;
-  --text-sm: 13px;
-  --text-base: 16px;
-  --text-ui: 13px;
-  --text-label: 11px;
   --text-display: 22px;
-  --text-table: 13px;
 
   --weight-regular: 400;
   --weight-medium: 500;

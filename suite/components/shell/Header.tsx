@@ -38,7 +38,7 @@ export function Header() {
     <>
       <header className="sticky top-0 z-40 border-b border-charcoal/10 bg-parchment/95 backdrop-blur">
         <div className="mx-auto flex h-[var(--shell-header-h)] max-w-7xl items-center gap-2 px-4 sm:gap-6">
-          <Link href="/" className="shrink-0 font-display text-lg text-charcoal">
+          <Link href="/" className="shrink-0 font-display text-xl text-charcoal">
             Trousseau
           </Link>
 

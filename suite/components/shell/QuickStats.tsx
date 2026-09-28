@@ -94,7 +94,9 @@ function Stat({ label, value, href }: { label: string; value: number | string; h
   return (
     <Link href={href} className="block">
       <dt className="text-xs tracking-widest text-slate uppercase">{label}</dt>
-      <dd className="font-display text-3xl text-charcoal">{value}</dd>
+      {/* Lato, not Marcellus: the display face draws 1 and 0 like I and O, so
+          "100" read as "IOO". */}
+      <dd className="text-3xl text-charcoal tabular-nums">{value}</dd>
     </Link>
   );
 }
