@@ -1,26 +1,3 @@
-.drop {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-4);
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-lg);
-  background: var(--surface-sunken);
-  text-align: center;
-}
-
-.over {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.dropText {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}
-
 .button {
   padding: var(--sp-1) var(--sp-3);
   border: 1px solid var(--border-strong);
@@ -30,18 +7,7 @@
   cursor: pointer;
 }
 
-.hidden {
-  display: none;
-}
 
-.error {
-  margin: 0;
-  padding: var(--sp-2);
-  border-radius: var(--radius);
-  background: var(--danger-soft);
-  color: var(--danger);
-  font-size: var(--text-xs);
-}
 
 .tokens {
   display: flex;
@@ -72,4 +38,38 @@
 
 .issues li {
   margin-bottom: 2px;
+}
+
+.button:disabled {
+  cursor: default;
+  color: var(--text-muted);
+}
+
+.search {
+  width: 100%;
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--grey-0);
+  font-size: var(--text-sm);
+}
+
+.picker {
+  max-height: 14rem;
+  margin: var(--sp-2) 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--grey-0);
+}
+
+.pick {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 3px var(--sp-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
 }

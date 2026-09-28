@@ -1,13 +1,8 @@
-import { del, get, set } from "idb-keyval";
 import { readSlice, writeSlice } from "./sliceBridge";
-import type { CsvIssue, GuestRow } from "../core/csv/parse";
+import type { RowIssue, GuestRow } from "../core/data/rows";
 import type { CardSpec, SheetSpec, Template } from "../core/types";
 import type { Snapshot } from "./history";
 
-/** IndexedDB, via idb-keyval — the same store the font and image blobs use. */
-export const STORAGE_KEY = "plaque.autosave";
-/** Where the autosave lived before it moved to IndexedDB. Read once, then removed. */
-export const LEGACY_STORAGE_KEY = "plaque.v1";
 const VERSION = 2;
 
 /**
@@ -35,7 +30,7 @@ export interface Persisted {
   /** Row identity and combines, without which per-row overrides lose their anchor. */
   rowIds: string[];
   merged: Record<string, { indexes: number[]; ids: string[]; rows: GuestRow[] }>;
-  csvIssues: CsvIssue[];
+  csvIssues: RowIssue[];
   fileName: string | null;
   uploadedIcons: Record<string, string>;
   snapEnabled: boolean;
@@ -90,43 +85,10 @@ export function saveFailureReason(e: unknown): string {
   return e instanceof Error && e.message ? e.message : "This browser refused to save.";
 }
 
-/**
- * Reads the autosave, migrating older homes on the way through.
- *
- * Three places, newest first: the shared document's `stationery` slice, the
- * IndexedDB key Plaque used when it was its own app, and the localStorage key
- * before that. Each is migrated forward on read, so no version of this app
- * leaves work behind.
- */
-export async function read(): Promise<LoadResult> {
+/** Reads the design from the shared wedding's `stationery` slice. */
+export function read(): LoadResult {
   const fromSlice = readSlice();
-  if (fromSlice) return load(JSON.stringify(fromSlice));
-
-  const stored = await readIdb();
-  if (stored) {
-    // Standalone Plaque's own autosave. Adopted into the shared document, and
-    // left where it is — the standalone app may still be installed.
-    const result = load(stored);
-    if (result.status === "ok") writeSlice(result.data);
-    return result;
-  }
-
-  // The autosave used to live in localStorage. Migrating it matters: an upgrade
-  // that starts the user fresh is exactly the data loss this area prevents.
-  const legacy = readLegacy();
-  if (!legacy) return { status: "empty" };
-
-  const result = load(legacy);
-  if (result.status === "ok") {
-    try {
-      await set(STORAGE_KEY, JSON.stringify({ ...result.data, version: VERSION }));
-      removeLegacy();
-    } catch {
-      // Migration can wait for the next autosave; the localStorage copy stays
-      // put until one succeeds, so nothing is lost by failing here.
-    }
-  }
-  return result;
+  return fromSlice ? load(JSON.stringify(fromSlice)) : { status: "empty" };
 }
 
 /**
@@ -189,57 +151,6 @@ export function load(raw: string | null): LoadResult {
 }
 
 /**
- * The original text of a project file that had to be migrated, kept so a
- * migration this build got wrong is recoverable (S-D1.3).
- *
- * Cleared when the user next saves a project file — at that point they hold a
- * file in the new format and the old one is superseded. Deliberately NOT
- * cleared by the autosave, which would fire 400ms after opening and throw the
- * safety net away before anyone could look at it.
- */
-export const PRE_MIGRATION_KEY = "plaque.premigration";
-
-export interface PreMigration {
-  fileName: string;
-  fromVersion: number;
-  text: string;
-}
-
-export async function retainPreMigration(entry: PreMigration): Promise<void> {
-  try {
-    await set(PRE_MIGRATION_KEY, entry);
-  } catch {
-    // The project still opened; the user just has no undo of the migration.
-  }
-}
-
-export async function readPreMigration(): Promise<PreMigration | null> {
-  try {
-    return (await get<PreMigration>(PRE_MIGRATION_KEY)) ?? null;
-  } catch {
-    return null;
-  }
-}
-
-export async function clearPreMigration(): Promise<void> {
-  try {
-    await del(PRE_MIGRATION_KEY);
-  } catch {
-    // Nothing to do; it is a copy, not the work.
-  }
-}
-
-export async function clear(): Promise<void> {
-  writeSlice(null);
-  try {
-    await del(STORAGE_KEY);
-  } catch {
-    // Nothing useful to do; the caller is already wiping in-memory state.
-  }
-  removeLegacy();
-}
-
-/**
  * Returns a message naming the offending field, or null when the design is
  * usable. Shared by the top-level check and every history entry, because an
  * unusable snapshot breaks undo the same way an unusable design breaks load.
@@ -288,31 +199,6 @@ function firstBadNumber(source: Record<string, unknown>, keys: readonly string[]
     if (typeof value !== "number" || !Number.isFinite(value)) return key;
   }
   return null;
-}
-
-async function readIdb(): Promise<string | null> {
-  try {
-    return (await get<string>(STORAGE_KEY)) ?? null;
-  } catch {
-    // Private mode, or storage blocked entirely. The legacy read gets a turn.
-    return null;
-  }
-}
-
-function readLegacy(): string | null {
-  try {
-    return localStorage.getItem(LEGACY_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function removeLegacy(): void {
-  try {
-    localStorage.removeItem(LEGACY_STORAGE_KEY);
-  } catch {
-    // Blocked storage. Nothing to remove that could be read anyway.
-  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

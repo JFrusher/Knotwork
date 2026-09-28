@@ -30,11 +30,11 @@ export function readSlice(): Persisted | null {
   return "version" in raw ? (raw as unknown as Persisted) : null;
 }
 
-export function writeSlice(record: Persisted | null): void {
+export function writeSlice(record: Persisted): void {
   // Refused when the document has been replaced since this was read — see
   // `toolGeneration`. Writing here would put the previous wedding back.
   if (!mayWrite("plaque")) return;
   useTrousseauStore
     .getState()
-    .setSlice("stationery", record ?? {}, { label: "the stationery", silent: true });
+    .setSlice("stationery", record, { label: "the stationery", silent: true });
 }

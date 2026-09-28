@@ -20,28 +20,15 @@ import { loadFonts as loadStoredFonts } from "./state/blobStore";
 import { loadImages, toSource } from "./state/imageStore";
 import { loadPrinters } from "./state/printerStore";
 import { loadBundledFonts, registerFont } from "./state/fontLoader";
-import {
-  clear as clearSaved,
-  clearPreMigration,
-  read as readSaved,
-  readPreMigration,
-  save,
-  type SaveInput,
-} from "./state/persist";
-import { buildProjectText } from "./state/saveProjectFile";
-import { write as writeLinkedFile } from "./state/fileSink";
-import { downloadJson } from "./state/saveProjectFile";
+import { read as readSaved, save, type SaveInput } from "./state/persist";
 import { usePlaque } from "./state/store";
 import { useKeyboard } from "./state/useKeyboard";
 import { Announcer } from "./ui/Announcer";
-import { ChromeFill } from "@/components/shell/chrome";
 import { ToolUndo } from "@/components/shell/ToolUndo";
-import { ClearDataButton } from "./ui/ClearDataButton";
 import { ExportBar } from "./ui/ExportBar";
 import { MissingAssets } from "./ui/MissingAssets";
 import { Pagination } from "./ui/Pagination";
 import { PersistenceBar } from "./ui/PersistenceBar";
-import { ProjectButtons } from "./ui/ProjectButtons";
 import { RowsDrawer } from "./ui/RowsDrawer";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
@@ -76,20 +63,6 @@ function autosavePayload(): SaveInput {
     past: s.past,
     future: s.future,
   };
-}
-
-/** "13:42" — the restore notice says when, not how long ago. */
-function clockTime(iso: string): string {
-  const at = new Date(iso);
-  return Number.isNaN(at.getTime())
-    ? "earlier"
-    : at.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-/** Throws away what was restored without touching uploaded fonts or images. */
-function discardRestore(): void {
-  usePlaque.getState().clearAll();
-  void clearSaved();
 }
 
 export function App() {
@@ -201,37 +174,15 @@ export function App() {
         Object.fromEntries(storedImages.map((i) => [i.id, i.name])),
       );
 
-      const saved = await readSaved();
+      const saved = readSaved();
       const queued: Notice[] = [];
       if (saved.status === "ok") {
         // version and savedAt describe the record, not the design; they have no
         // business in the store.
-        const { version: _version, savedAt, ...restored } = saved.data;
+        const { version: _version, savedAt: _savedAt, ...restored } = saved.data;
         usePlaque.getState().hydrate({ ...restored, uploadedFontIds: stored.map((f) => f.id) });
-        queued.push({
-          text: savedAt
-            ? `Restored your work from ${clockTime(savedAt)}.`
-            : "Restored your last design.",
-          actions: [{ label: "Discard restore", onClick: discardRestore }],
-        });
       } else if (saved.status === "discarded") {
         queued.push({ text: `${saved.reason} Starting fresh.` });
-      }
-
-      // A project file that had to be migrated left its original here. Offer it
-      // back rather than storing something nobody can reach (S-D1.3).
-      const original = await readPreMigration();
-      if (original) {
-        queued.push({
-          text: `The original of "${original.fileName}" (project format v${original.fromVersion}) is still kept on this device.`,
-          actions: [
-            {
-              label: "Download original",
-              onClick: () => downloadJson(original.fileName, original.text),
-            },
-            { label: "Discard original", onClick: () => void clearPreMigration() },
-          ],
-        });
       }
       setNotices(queued);
 
@@ -271,19 +222,6 @@ export function App() {
     past,
     future,
   ]);
-
-  // The linked file, when the user has set one up. Debounced far behind the
-  // localStorage autosave because a project file embeds every font and image
-  // binary, so writing one is orders of magnitude more work than saving the
-  // design. localStorage has already taken the edit by then, so a slow or
-  // failed write here never loses anything.
-  useEffect(() => {
-    if (!ready) return;
-    const timer = setTimeout(() => {
-      void buildProjectText().then((text) => writeLinkedFile(text));
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [ready, card, sheet, template, headers, rows, uploadedIcons, snapEnabled, fileName]);
 
   // The debounce above means a tab killed within 400ms of the last edit would
   // lose it, so a tab going away flushes immediately.
@@ -425,16 +363,6 @@ export function App() {
 
   return (
     <div className={styles.app}>
-      {/*
-        * Plaque's own header used to sit here, under the suite's, carrying a
-        * second wordmark and its own copy of the document controls. There is
-        * one header now; these go into it. The tool is identified by the tab
-        * and by its accent colour, which is what a tab bar is for.
-        */}
-      <ChromeFill name="tool-actions" tokens="plaque-tokens">
-        <ProjectButtons />
-        <ClearDataButton />
-      </ChromeFill>
       <ToolUndo
         canUndo={past.length > 0}
         canRedo={future.length > 0}

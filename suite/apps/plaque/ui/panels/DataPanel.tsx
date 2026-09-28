@@ -1,11 +1,12 @@
-import { useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { parseCsv } from "../../core/csv/parse";
 import { buildArtefacts } from "../../core/data/artefacts";
 import type { RowScope } from "../../core/types";
 import { usePlaque } from "../../state/store";
 import { Hint, SelectField, SubGroup } from "../controls";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { guestName, readGuests } from "@/lib/model/slices";
+import type { Guest } from "@/lib/model/types";
 import { rowsFromRoom } from "../../state/fromRoom";
 import styles from "./DataPanel.module.css";
 
@@ -29,7 +30,13 @@ function scopeHint(scope: RowScope, rowCount: number, artefactCount: number): st
   return `${rowCount} rows fall into ${artefactCount} groups by "${scope.byColumn}" — one artefact each.`;
 }
 
-/** FR-STA-01. Drag-and-drop or pick a CSV; every column becomes a bindable token. */
+/**
+ * The guest list the cards print from: the room, all of it or a chosen few.
+ *
+ * There is no file import. A CSV exported before the last three people moved
+ * prints three wrong tables and looks perfectly fine doing it; the room is
+ * always current.
+ */
 export function DataPanel() {
   const { headers, rows, csvIssues, fileName, setCsv, rowScope, setRowScope } = usePlaque(
     useShallow((s) => ({
@@ -44,68 +51,21 @@ export function DataPanel() {
   );
   // Counting is cheap and it is the only honest way to say what the scope did.
   const artefactCount = buildArtefacts(rows, rowScope, headers).length;
-  const input = useRef<HTMLInputElement>(null);
-  const [over, setOver] = useState(false);
   // Subscribed to the shared wedding, not to Plaque's own store: seat someone
-  // in the room next door and this count has to move, and Plaque's store has no
-  // reason to re-render when it does. A number, so the comparison is by value.
-  const roomGuests = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
-  const [error, setError] = useState<string | null>(null);
-
-  async function accept(file: File | undefined) {
-    setError(null);
-    if (!file) return;
-    if (!/\.(csv|txt)$/i.test(file.name)) {
-      setError(`"${file.name}" is not a CSV file.`);
-      return;
-    }
-    const parsed = parseCsv(await file.text());
-    if (parsed.headers.length === 0) {
-      setError(parsed.issues[0]?.message ?? "That file had no columns.");
-      return;
-    }
-    setCsv({ ...parsed, fileName: file.name });
-  }
+  // in the room next door and this list has to move. Read through the
+  // per-document cache, so the selector returns the same record until the
+  // document changes and never allocates.
+  const roomGuests = useTrousseauStore((s) => readGuests(s.doc));
+  const roomCount = Object.keys(roomGuests).length;
 
   return (
     <>
-      <div
-        className={over ? `${styles.drop} ${styles.over}` : styles.drop}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setOver(true);
-        }}
-        onDragLeave={() => setOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setOver(false);
-          void accept(e.dataTransfer.files[0]);
-        }}
-      >
-        <p className={styles.dropText}>Drop a CSV here</p>
-        <button type="button" className={styles.button} onClick={() => input.current?.click()}>
-          Choose file
-        </button>
-        <input
-          ref={input}
-          type="file"
-          accept=".csv,text/csv"
-          className={styles.hidden}
-          onChange={(e) => {
-            void accept(e.target.files?.[0]);
-            e.target.value = "";
-          }}
-        />
-      </div>
-
-      {/*
-        * The room next door usually already holds this list, with the table
-        * numbers these cards are for. Taking it from there means the cards
-        * cannot disagree with the seating plan, which is the failure this app
-        * used to have no defence against: a CSV exported before the last three
-        * people were moved prints three wrong tables and looks perfectly fine.
-        */}
-      {roomGuests > 0 && (
+      {roomCount === 0 ? (
+        <Hint>
+          No guests yet. Add them in Seating, or import a list from the Data button, and they
+          appear here.
+        </Hint>
+      ) : (
         <button
           type="button"
           data-tour="placecards.useroom"
@@ -113,16 +73,19 @@ export function DataPanel() {
           onClick={() => setCsv(rowsFromRoom())}
           title="Take the guest list and table numbers from the seating plan"
         >
-          Use the room — {roomGuests} {roomGuests === 1 ? "guest" : "guests"}
+          Use the room — {roomCount} {roomCount === 1 ? "guest" : "guests"}
         </button>
       )}
 
-      {error && <p className={styles.error}>{error}</p>}
+      {roomCount > 0 && (
+        <FewGuests guests={roomGuests} onUse={(ids) => setCsv(rowsFromRoom(ids))} />
+      )}
 
       {fileName && (
         <Hint>
-          <strong>{fileName}</strong> — {rows.length} {rows.length === 1 ? "guest" : "guests"},{" "}
-          {headers.length} columns.
+          {rows.length === roomCount
+            ? `Printing all ${rows.length} guests from the room.`
+            : `Printing ${rows.length} of the room's ${roomCount} guests.`}
         </Hint>
       )}
 
@@ -170,5 +133,70 @@ export function DataPanel() {
         </details>
       )}
     </>
+  );
+}
+
+/**
+ * Reprinting a handful — a misspelt name, a late change of table — without
+ * running the whole list through the printer again.
+ */
+function FewGuests({
+  guests,
+  onUse,
+}: {
+  guests: Record<string, Guest>;
+  onUse: (ids: ReadonlySet<string>) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set());
+  const everyone = useMemo(
+    () =>
+      Object.values(guests)
+        .map((guest) => ({ id: guest.id, name: guestName(guest) }))
+        .sort((a, b) => a.name.localeCompare(b.name, "en")),
+    [guests],
+  );
+  const needle = query.trim().toLowerCase();
+  const shown = needle ? everyone.filter((guest) => guest.name.toLowerCase().includes(needle)) : everyone;
+
+  const toggle = (id: string) =>
+    setChosen((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  return (
+    <SubGroup title="Reprint just a few" open={false}>
+      <input
+        type="search"
+        className={styles.search}
+        placeholder="Find a guest"
+        aria-label="Find a guest"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+      />
+      <ul className={styles.picker} aria-label="Guests to print">
+        {shown.map((guest) => (
+          <li key={guest.id}>
+            <label className={styles.pick}>
+              <input type="checkbox" checked={chosen.has(guest.id)} onChange={() => toggle(guest.id)} />
+              {guest.name || "Unnamed guest"}
+            </label>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        className={styles.button}
+        disabled={chosen.size === 0}
+        onClick={() => onUse(chosen)}
+      >
+        {chosen.size === 0
+          ? "Choose guests to print"
+          : `Print just these ${chosen.size}`}
+      </button>
+    </SubGroup>
   );
 }

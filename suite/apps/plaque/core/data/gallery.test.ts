@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { BUNDLED_FONTS } from "../../assets/fonts";
-import { parseCsv } from "../csv/parse";
+import { parseCsv } from "@/lib/data/csv";
 import { hasErrors, validateGeometry } from "../geometry/validate";
 import { paginate } from "../imposition/paginate";
 import { defaultCard, defaultSheet } from "../template/defaults";

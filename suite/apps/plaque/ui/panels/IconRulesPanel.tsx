@@ -130,7 +130,7 @@ export function IconRulesPanel() {
             })}
           </ul>
 
-          {rows.length === 0 && <Hint>Upload a guest list to see that column's values here.</Hint>}
+          {rows.length === 0 && <Hint>Use the room to see that column's values here.</Hint>}
           </SubGroup>
         </>
       )}

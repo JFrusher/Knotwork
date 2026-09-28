@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCsv } from "../csv/parse";
+import { parseCsv } from "@/lib/data/csv";
 import { buildArtefacts } from "../data/artefacts";
 import { paginate } from "../imposition/paginate";
 import { noFit } from "../template/bindings";

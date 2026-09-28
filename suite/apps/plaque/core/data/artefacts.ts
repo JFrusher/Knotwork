@@ -1,4 +1,4 @@
-import type { GuestRow } from "../csv/parse";
+import type { GuestRow } from "./rows";
 import type { RowScope } from "../types";
 
 /**
