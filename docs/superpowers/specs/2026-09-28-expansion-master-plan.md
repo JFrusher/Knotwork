@@ -152,8 +152,11 @@ thing on a screen is the thing that needs a decision.
   screenshots of all five tools before it lands.
 - **Navigation.** The header keeps the five tools. The wedding's own pages —
   Overview, Guests, Money, Checklist, Binder — sit under the wedding's name,
-  which for a planner is also the switcher between client weddings. To be
-  settled with a mock in the Phase 0 plan.
+  which for a planner is also the switcher between client weddings. Built
+  with Overview (2.1), because that is when the header changes shape anyway.
+  It must also fix what the header does at 1024px today: the tools' own
+  controls (Timeline's zoom, Fit day and Present) do not fit and scroll out of
+  sight inside it.
 
 ## Signing in safely
 

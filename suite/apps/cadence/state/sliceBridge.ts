@@ -23,11 +23,16 @@ import type { TimelineDoc } from "../core/model/types";
  *    delegation board reads the second, so leaving it stale would have it
  *    handing out yesterday's times.
  *
- *  - Five fields are mirrored back into `event`. The date, the couple, the
- *    venue, the curfew and the UTC offset belong to the wedding rather than to
- *    Cadence, which keeps an echo of them for its own resolver. The envelope's
- *    copy wins on read, so without this the Day panel would appear to accept an
- *    edit and then quietly revert to the old date on the next load.
+ *  - The curfew and the UTC offset are mirrored back into `event`. They
+ *    belong to the wedding rather than to Cadence, which keeps an echo of them
+ *    for its own resolver, and Timeline is where they are edited. The
+ *    envelope's copy wins on read, so without this the Day panel would appear
+ *    to accept an edit and then quietly revert on the next load.
+ *
+ * The date, the couple and the venue are not written back. They used to be —
+ * Timeline had its own fields for them — and so did Seating, and each tool's
+ * copy wrote itself over the others. They are edited in the Data panel only,
+ * and Timeline shows them.
  */
 
 /** The day as Cadence wants it, with the envelope's own fields already applied. */
@@ -50,9 +55,6 @@ export function writeSlice(next: TimelineDoc): void {
         "event",
         {
           ...doc.event,
-          date: next.day.date,
-          coupleNames: next.day.coupleNames,
-          venueName: next.day.venueName,
           curfewMin: next.day.curfewMin,
           utcOffsetMin: next.day.utcOffsetMin,
         },

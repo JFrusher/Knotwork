@@ -52,9 +52,9 @@ type _DateExists = Assert<'date' extends EventKeys ? true : false>
  * called, where it is and when — the same three facts the `event` slice holds
  * for everything else, and they had already drifted apart: Tableaux showed "Our
  * Wedding" while Cadence showed the couple's names. There is one answer to each
- * of those questions, so `meta` is overlaid from `event` on the way in and
- * written back on the way out, and Tableaux's copy is an echo rather than a
- * second opinion.
+ * of those questions, so `meta` is overlaid from `event` on the way in, and
+ * Tableaux's copy is an echo rather than a second opinion. It is not written
+ * back: those facts are edited in the Data panel and nowhere else.
  */
 
 /** Everything Tableaux keeps out of its own document, minus the guest list. */
@@ -142,11 +142,13 @@ export function readDoc(): TableauxDoc {
     guests,
     meta: {
       ...meta,
-      // These three names are held to the contract by the assertions at the
-      // top of this file, not by `Event` itself — see the comment there.
-      weddingName: doc.event.coupleNames || meta.weddingName || UNNAMED,
-      venue: doc.event.venueName || meta.venue || '',
-      date: doc.event.date || meta.date || '',
+      // The wedding's facts, from the wedding: Seating shows them and no
+      // longer edits them, so an older copy kept in `meta` is never preferred.
+      // The three names are held to the contract by the assertions at the top
+      // of this file, not by `Event` itself — see the comment there.
+      weddingName: doc.event.coupleNames || UNNAMED,
+      venue: doc.event.venueName,
+      date: doc.event.date,
     },
   }
 }
@@ -166,28 +168,13 @@ export function writeDoc(doc: TableauxDoc): void {
     if (doc[key] !== undefined) seating[key] = doc[key]
   }
 
-  // `meta` was overlaid from `event` on the way in, so writing it back is a
-  // no-op unless it was edited here — in which case the edit is meant, and the
-  // rest of the suite should see it.
-  const { event } = useTrousseauStore.getState().doc
-  const meta = isRecord(doc.meta) ? doc.meta : {}
-  // The `typeof` check is what the JavaScript's truthiness already meant: a
-  // non-empty string. Made explicit because `meta` is a Record of `unknown`.
-  const named = typeof meta.weddingName === 'string' && meta.weddingName !== UNNAMED
-
+  // Not `event`: the names, venue and date are edited in the Data panel only.
+  // Seating used to write its copy of them back here, over whatever the panel
+  // had just set.
   useTrousseauStore.getState().setSlices(
     [
       ['guests', doc.guests ?? {}],
       ['seating', seating],
-      [
-        'event',
-        {
-          ...event,
-          coupleNames: named ? meta.weddingName : event.coupleNames,
-          venueName: meta.venue || event.venueName,
-          date: meta.date || event.date,
-        },
-      ],
     ],
     { label: 'the room', silent: true, by: 'tableaux' },
   )

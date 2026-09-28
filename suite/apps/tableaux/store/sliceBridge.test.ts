@@ -7,7 +7,7 @@ vi.mock("idb-keyval", () => ({
 }));
 
 const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
-const { readDoc } = await import("./sliceBridge");
+const { readDoc, writeDoc } = await import("./sliceBridge");
 const { emptyTrousseau } = await import("@jfrusher/trousseau");
 
 /**
@@ -121,4 +121,26 @@ test("a guest import and a rename made in the Data panel survive Seating's next 
   expect(after.event.coupleNames).toBe("New Names");
 
   useTrousseauStore.getState().release("tableaux");
+});
+
+/**
+ * One editor per fact: Seating shows the wedding's names, venue and date and
+ * never writes them. Its `meta` copy, however stale, stays in Seating.
+ */
+test("Seating never writes the wedding's names, venue or date", () => {
+  withGuests({});
+  useTrousseauStore
+    .getState()
+    .setSlice("event", { ...emptyTrousseau().event, coupleNames: "Robin & Kit", venueName: "The Barn", date: "2029-01-01" });
+
+  const doc = readDoc();
+  expect(doc.meta).toMatchObject({ weddingName: "Robin & Kit", venue: "The Barn", date: "2029-01-01" });
+
+  writeDoc({ ...doc, meta: { ...doc.meta, weddingName: "Old Names", venue: "Elsewhere", date: "2000-01-01" } });
+
+  expect(useTrousseauStore.getState().doc.event).toMatchObject({
+    coupleNames: "Robin & Kit",
+    venueName: "The Barn",
+    date: "2029-01-01",
+  });
 });

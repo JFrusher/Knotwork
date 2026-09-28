@@ -50,3 +50,34 @@ test("a date set in the Data panel survives the next Timeline edit", () => {
 
   useTrousseauStore.getState().release("cadence");
 });
+
+/**
+ * One editor per fact. The names, the venue and the date are the Data panel's;
+ * the curfew and the clocks are Timeline's. Timeline's copy of the first three
+ * is never written back, whatever it holds — and its own two always are.
+ */
+test("Timeline writes its curfew into the wedding, and never the names, venue or date", () => {
+  const doc = emptyTrousseau();
+  const raw = {
+    ...doc,
+    event: { ...doc.event, date: "2029-01-01", coupleNames: "Robin & Kit", venueName: "The Barn" },
+  };
+  useTrousseauStore.setState({
+    status: "ready",
+    error: null,
+    generation: 0,
+    raw: raw as unknown as Record<string, unknown>,
+    doc: raw,
+    past: [],
+    future: [],
+  });
+  useStore.getState().loadDoc(restore());
+
+  // A copy that disagrees, however it came to — and a curfew edit, which is Timeline's own.
+  useStore.getState().setDay({ date: "2000-01-01", coupleNames: "Old Names", venueName: "Elsewhere", curfewMin: 1380 });
+  persist(getDoc(useStore.getState()));
+
+  const event = useTrousseauStore.getState().doc.event;
+  expect(event).toMatchObject({ date: "2029-01-01", coupleNames: "Robin & Kit", venueName: "The Barn" });
+  expect(event.curfewMin).toBe(1380);
+});

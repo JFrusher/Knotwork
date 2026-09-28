@@ -1852,7 +1852,6 @@ const patchSingleton = (key, type, label) => (patch) => (state) => {
   return { type, label, payload: { [key]: patch }, inverse: { [key]: inverse } }
 }
 
-export const updateMeta = patchSingleton('meta', 'UPDATE_META', 'Edit plan details')
 export const updateSettings = patchSingleton('settings', 'UPDATE_SETTINGS', 'Change settings')
 
 // `constraints` is a whole-array slice in applyPatch, so the inverse is simply
@@ -1947,7 +1946,6 @@ export const actionCreators = {
   updateWallElement,
   addPillar,
   removePillar,
-  updateMeta,
   updateSettings,
   addConstraint,
   removeConstraint,

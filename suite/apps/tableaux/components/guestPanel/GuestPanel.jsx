@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import { useStore } from '../../store/useStore.js'
 import Icon from '../ui/Icon.jsx'
 import IconButton from '../ui/IconButton.jsx'
@@ -11,55 +11,14 @@ import ContextMenu from '../ui/ContextMenu.jsx'
 import { matchesSearch, matchesFilters } from '../../utils/guestFilters.js'
 import styles from './GuestPanel.module.css'
 
+/**
+ * The wedding's names, shown. They are changed in the Data panel only: this
+ * used to rename the wedding in place, and so did Timeline and the Data panel,
+ * each writing its own copy back over the others.
+ */
 function WeddingName() {
   const name = useStore((s) => s.meta.weddingName)
-  const updateMeta = useStore((s) => s.updateMeta)
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(name)
-  const inputRef = useRef(null)
-
-  useEffect(() => {
-    if (editing) inputRef.current?.select()
-  }, [editing])
-
-  const commit = () => {
-    const v = draft.trim()
-    if (v) updateMeta({ weddingName: v })
-    else setDraft(name)
-    setEditing(false)
-  }
-
-  if (editing) {
-    return (
-      <input
-        ref={inputRef}
-        className={styles.nameInput}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') commit()
-          if (e.key === 'Escape') {
-            setDraft(name)
-            setEditing(false)
-          }
-        }}
-      />
-    )
-  }
-  return (
-    <button
-      type="button"
-      className={styles.name}
-      onClick={() => {
-        setDraft(name)
-        setEditing(true)
-      }}
-      title="Rename wedding"
-    >
-      {name}
-    </button>
-  )
+  return <p className={styles.name}>{name}</p>
 }
 
 export default function GuestPanel() {

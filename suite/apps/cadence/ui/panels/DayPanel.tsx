@@ -1,6 +1,8 @@
 import { formatClock } from "../../core/time/minutes";
 import { getDoc, selectSchedule, useStore } from "../../state/store";
-import { Field, NumberField, Panel, Row, TextField, TimeField } from "@/components/ui/fields";
+import { Button, Field, NumberField, Panel, Row, TimeField } from "@/components/ui/fields";
+import { useDataPanel } from "@/components/shell/dataPanel";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import styles from "./DayPanel.module.css";
 
 const OFFSETS = [
@@ -11,33 +13,34 @@ const OFFSETS = [
   { value: -240, label: "UTC-4 (EDT)" },
 ];
 
+/**
+ * The day's settings: the facts of the wedding, shown, and Timeline's own
+ * inputs, edited.
+ *
+ * The couple, the venue and the date belong to the wedding, and are changed in
+ * one place — the Data panel. They used to be editable here as well, and in
+ * Seating, and each copy wrote itself back over the others. The curfew, the
+ * clocks and the venue's coordinates are the schedule's alone, and stay here.
+ */
 export function DayPanel() {
   const doc = useStore(getDoc);
   const setDay = useStore((state) => state.setDay);
   const sun = useStore(selectSchedule).sun;
+  // Live from the wedding rather than from Timeline's copy of it.
+  const event = useTrousseauStore((state) => state.doc.event);
+  const showData = useDataPanel((state) => state.show);
 
   return (
     <Panel title="The day">
-      <TextField
-        label="Couple"
-        value={doc.day.coupleNames}
-        onChange={(coupleNames) => setDay({ coupleNames })}
-        placeholder="Charis & Jacob"
-      />
-      <TextField
-        label="Venue"
-        value={doc.day.venueName}
-        onChange={(venueName) => setDay({ venueName })}
-        placeholder="Oving Jubilee Hall"
-      />
-      <Field label="Date">
-        <input
-          className={styles.date}
-          type="date"
-          value={doc.day.date}
-          onChange={(event) => setDay({ date: event.target.value })}
-        />
-      </Field>
+      <div className={styles.facts}>
+        <p className={styles.couple}>{event.coupleNames || "No names yet"}</p>
+        <p className={styles.where}>
+          {[event.venueName, event.date ? longDate(event.date) : "No date yet"].filter(Boolean).join(" · ")}
+        </p>
+        <Button onClick={showData}>
+          Change names, date or venue
+        </Button>
+      </div>
 
       <TimeField
         label="Curfew"
@@ -86,4 +89,10 @@ export function DayPanel() {
       </p>
     </Panel>
   );
+}
+
+function longDate(iso: string): string {
+  const when = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(when.getTime())) return iso;
+  return when.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }

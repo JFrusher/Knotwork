@@ -137,13 +137,6 @@ describe('plan details, settings and seating rules', () => {
     expect(s()._history.past).toHaveLength(before)
   })
 
-  it('undoes a wedding-name edit', () => {
-    s().updateMeta({ weddingName: 'Renamed' })
-    expect(s().meta.weddingName).toBe('Renamed')
-    s().undo()
-    expect(s().meta.weddingName).toBe('Test')
-  })
-
   it('adds and removes a seating rule undoably', () => {
     const id = s().addConstraint({ kind: 'apart', guestIds: ['g1', 'g2'] }).meta.newConstraintId
     expect(s().constraints).toHaveLength(1)

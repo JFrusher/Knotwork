@@ -11,6 +11,7 @@ import { AccountStatus } from "./AccountStatus";
 import { HowThisWorks } from "./TourButtons";
 import { ChromeSlot } from "./chrome";
 import { DataButton } from "./DataButton";
+import { useDataPanel } from "./dataPanel";
 
 const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataManager), {
   ssr: false,
@@ -24,19 +25,18 @@ const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataMana
  * seating changes is the cheapest possible proof that they are.
  */
 export function Header() {
-  const [dataOpen, setDataOpen] = useState(false);
+  const dataOpen = useDataPanel((s) => s.open);
+  const showData = useDataPanel((s) => s.show);
+  const hideData = useDataPanel((s) => s.hide);
   // DataManager's chunk (CSV and guest-import parsing, the guest link panel)
   // is dynamically imported — keep it out of the tree entirely until the user
   // has opened it once, so the chunk isn't fetched on every route's first
   // render. Once opened, its dialog element stays mounted and is opened and
   // closed in place.
   const [dataEverOpened, setDataEverOpened] = useState(false);
+  if (dataOpen && !dataEverOpened) setDataEverOpened(true);
   const pathname = usePathname();
   const guestCount = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
-  const openData = () => {
-    setDataEverOpened(true);
-    setDataOpen(true);
-  };
 
   return (
     <>
@@ -93,14 +93,14 @@ export function Header() {
             {guestCount}
           </span>
 
-          <DataButton onOpen={openData} />
+          <DataButton onOpen={showData} />
 
           <HowThisWorks />
           <AccountStatus />
         </div>
       </header>
 
-      {dataEverOpened ? <DataManager open={dataOpen} onClose={() => setDataOpen(false)} /> : null}
+      {dataEverOpened ? <DataManager open={dataOpen} onClose={hideData} /> : null}
     </>
   );
 }

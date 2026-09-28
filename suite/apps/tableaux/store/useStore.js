@@ -282,7 +282,7 @@ export const useStore = create(
         // call it once per pointermove and dispatch a single EDIT_SPACE
         // command on pointer-up (RoomSpaces.jsx). Routing either through
         // dispatch would push one undo entry per animation frame.
-        // updateMeta/updateSettings/addConstraint/removeConstraint are now
+        // updateSettings/addConstraint/removeConstraint are now
         // undoable action creators in actions.js.
         updateRoom: (patch) => get()._touch({ room: { ...get().room, ...patch } }),
         setCanvas: (patch) => get()._touch({ canvas: { ...get().canvas, ...patch } }),
