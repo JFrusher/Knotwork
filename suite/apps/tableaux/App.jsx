@@ -5,7 +5,6 @@ import {
   DragOverlay,
   PointerSensor,
   TouchSensor,
-  KeyboardSensor,
   useSensor,
   useSensors,
   pointerWithin,
@@ -26,10 +25,15 @@ export default function App() {
 
   // Touch uses a press-and-hold to start a drag so a quick swipe still scrolls
   // the guest list / pans the canvas. Mouse keeps the small distance threshold.
+  //
+  // No keyboard sensor. Every drop here is found with `pointerWithin`, which
+  // returns nothing when there is no pointer, so a keyboard drag could never
+  // land — and the sensor took Enter and Space from every draggable button.
+  // Each drag has a direct equivalent instead: pressing a table in the palette
+  // adds it, pressing a guest opens them, and the guest's panel seats them.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
-    useSensor(KeyboardSensor)
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
   )
 
   const { activeDrag, onDragStart, onDragEnd, onDragCancel } = useCanvasDnd()
@@ -59,6 +63,15 @@ export default function App() {
       // to the right, so a guest dropped on a table's top-left half missed,
       // and one dropped on the floor beside it was seated.
       measuring={{ droppable: { measure: getClientRect } }}
+      // Read out for every draggable. The library's default tells people to
+      // press Space and use the arrow keys, which is exactly what does not work
+      // here — see the sensors above.
+      accessibility={{
+        screenReaderInstructions: {
+          draggable:
+            'Drag with a mouse or finger to move it. From the keyboard, press Enter on a table or a guest and use its panel.',
+        },
+      }}
       collisionDetection={innermostFirstCollision}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}

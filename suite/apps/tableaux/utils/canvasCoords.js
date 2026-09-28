@@ -56,6 +56,13 @@ export function zoomCanvasBy(factor) {
   zoomCanvasAt(vp.left + vp.width / 2, vp.top + vp.height / 2, factor)
 }
 
+/** The canvas point at the centre of what is on screen. */
+export function viewportCentre() {
+  const r = viewportRect()
+  if (!r) return { x: 0, y: 0 }
+  return screenToCanvas(r.left + r.width / 2, r.top + r.height / 2)
+}
+
 /** Pan so that canvas point (x, y) sits at the centre of the viewport. */
 export function centerCanvasOn(x, y) {
   const r = viewportRect()

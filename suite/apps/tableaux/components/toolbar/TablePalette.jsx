@@ -5,21 +5,27 @@ import { useStore } from '../../store/useStore.js'
 import Icon from '../ui/Icon.jsx'
 import IconButton from '../ui/IconButton.jsx'
 import TableThumbnail from './TableThumbnail.jsx'
+import { addTableFromPalette } from '../../hooks/useCanvasDnd.js'
+import { viewportCentre } from '../../utils/canvasCoords.js'
 import styles from './TablePalette.module.css'
 
 function PaletteItem({ def }) {
+  const data = { type: 'palette', tableType: def.id }
   const { listeners, attributes, setNodeRef, isDragging } = useDraggable({
     id: `palette_${def.id}`,
-    data: { type: 'palette', tableType: def.id },
+    data,
   })
   return (
     <button
       ref={setNodeRef}
       type="button"
       className={clsx(styles.item, isDragging && styles.dragging)}
-      title={`Drag a ${def.label.toLowerCase()} table onto the canvas`}
+      title={`Add a ${def.label.toLowerCase()} table, or drag it where you want it`}
       {...listeners}
       {...attributes}
+      // A drag starts only after the pointer moves, so a press is a click:
+      // the table goes in the middle of the view, from the keyboard too.
+      onClick={() => addTableFromPalette(data, viewportCentre())}
     >
       <span className={styles.thumb}>
         <TableThumbnail type={def.id} size={30} />
@@ -30,9 +36,10 @@ function PaletteItem({ def }) {
 }
 
 function PresetItem({ preset, onDelete }) {
+  const data = { type: 'palette-preset', presetId: preset.id }
   const { listeners, attributes, setNodeRef, isDragging } = useDraggable({
     id: `palette_preset_${preset.id}`,
-    data: { type: 'palette-preset', presetId: preset.id },
+    data,
   })
   return (
     <div className={clsx(styles.item, styles.presetItem, isDragging && styles.dragging)}>
@@ -40,9 +47,10 @@ function PresetItem({ preset, onDelete }) {
         ref={setNodeRef}
         type="button"
         className={styles.presetGrab}
-        title={`Drag "${preset.name}" onto the canvas`}
+        title={`Add "${preset.name}", or drag it where you want it`}
         {...listeners}
         {...attributes}
+        onClick={() => addTableFromPalette(data, viewportCentre())}
       >
         <span className={styles.thumb}>
           <TableThumbnail type={preset.type} size={30} />
@@ -69,8 +77,8 @@ export default function TablePalette() {
     <div
       data-tour="seating.toolbar"
       className={styles.palette}
-      role="list"
-      aria-label="Table types — drag onto the canvas"
+      role="group"
+      aria-label="Add a table"
     >
       {TABLE_TYPE_LIST.map((def) => (
         <PaletteItem key={def.id} def={def} />

@@ -61,10 +61,15 @@ function GuestCardBase({ guest, selected = false, multiSelected = false, onConte
         ref={setActivatorNodeRef}
         type="button"
         className={styles.handle}
-        aria-label={`Drag ${guest.fullName}`}
-        onClick={(e) => e.stopPropagation()}
+        // Drags from a pointer; a press opens the guest, which is also the way
+        // in from the keyboard — the guest's panel is where they are seated.
+        aria-label={`${guest.fullName}${assigned ? '' : ', no table'}`}
         {...listeners}
         {...attributes}
+        onClick={(e) => {
+          e.stopPropagation()
+          handleClick(e)
+        }}
       >
         <Icon name="grip" size={16} />
       </button>
