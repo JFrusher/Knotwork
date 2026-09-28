@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Presentation } from "./render/screen/Presentation";
 import { Timeline } from "./render/screen/Timeline";
-import { serialise } from "./core/project/file";
 import { formatDuration } from "./core/time/minutes";
 import { restoreFonts } from "./state/fontLoader";
 import { createPersister, restore } from "./state/persist";
@@ -15,10 +14,8 @@ import { Button } from "@/components/ui/fields";
 import { ChromeFill } from "@/components/shell/chrome";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 import { ExportBar } from "./ui/ExportBar";
-import { ProjectButtons } from "./ui/ProjectButtons";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
-import { write as writeLinkedFile } from "./state/fileSink";
 import styles from "./App.module.css";
 
 const persister = createPersister();
@@ -56,25 +53,19 @@ export function App() {
   const canRedo = useStore((state) => state.canRedo());
 
   useEffect(() => {
-    const { doc: saved, notice: problem } = restore();
-    if (saved) {
-      useStore.getState().loadDoc(saved);
-      void restoreFonts(saved.fonts).then((missing) => {
-        if (missing.length > 0) setNotice(`Missing font${missing.length === 1 ? "" : "s"}: ${missing.join(", ")}.`);
-      });
-    }
-    if (problem) setNotice(problem);
+    const saved = restore();
+    useStore.getState().loadDoc(saved);
+    void restoreFonts(saved.fonts).then((missing) => {
+      if (missing.length > 0) setNotice(`Missing font${missing.length === 1 ? "" : "s"}: ${missing.join(", ")}.`);
+    });
     setRestored(true);
   }, [setNotice]);
 
-  // Autosave, debounced, and flushed if the window goes away mid-edit.
-  // localStorage is the source of truth for this browser; the linked file, when
-  // there is one, is a second write so a synced folder always holds the current
-  // day. A failure there never loses work, so it is not worth interrupting for.
+  // Autosave into the shared wedding, debounced, and flushed if the window goes
+  // away mid-edit.
   useEffect(() => {
     if (!restored) return;
     persister.schedule(doc);
-    void writeLinkedFile(serialise(doc));
   }, [doc, restored]);
   useEffect(() => {
     const flush = () => persister.flush();
@@ -133,7 +124,6 @@ export function App() {
           </Button>
         </span>
         <Button onClick={() => setUi({ presentation: true })}>Present</Button>
-        <ProjectButtons />
       </ChromeFill>
       <ToolUndo
         canUndo={canUndo}
