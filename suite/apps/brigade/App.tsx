@@ -11,8 +11,6 @@ import { ToolUndo } from "@/components/shell/ToolUndo";
 import { ExportBar } from "./ui/ExportBar";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
-import { serialise } from "./core/project/file";
-import { write as writeLinkedFile } from "./state/fileSink";
 import styles from "./App.module.css";
 
 const persister = createPersister();
@@ -45,20 +43,15 @@ export function App() {
   const canRedo = useStore((state) => state.canRedo());
 
   useEffect(() => {
-    const { doc: saved, notice: problem } = restore();
-    if (saved) useStore.getState().loadDoc(saved);
-    if (problem) setNotice(problem);
+    useStore.getState().loadDoc(restore());
     setRestored(true);
-  }, [setNotice]);
+  }, []);
 
-  // Autosave, debounced, and flushed if the window goes away mid-edit.
-  // localStorage is the source of truth for this browser; the linked file, when
-  // there is one, is a second write so a synced folder always holds the current
-  // crew. A failure there never loses work, so it is not worth interrupting for.
+  // Autosave into the shared wedding, debounced, and flushed if the window goes
+  // away mid-edit.
   useEffect(() => {
     if (!restored) return;
     persister.schedule(doc);
-    void writeLinkedFile(serialise(doc));
   }, [doc, restored]);
   useEffect(() => {
     const flush = () => persister.flush();
