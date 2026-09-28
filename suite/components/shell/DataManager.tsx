@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, CloudOff, Download, FileUp, RefreshCw, Upload, X } from "lucide-react";
 import { migrate, serialise, suggestedFilename } from "@jfrusher/trousseau";
-import { flushPersist, useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { readGuests } from "@/lib/model/slices";
 import { useWriters } from "@/lib/model/useSuite";
 import { reconcileLoadedDocument } from "@/lib/seating/normalise";
@@ -75,12 +75,9 @@ function Body({ onClose }: { onClose: () => void }) {
   const csvInput = useRef<HTMLInputElement>(null);
   const jsonInput = useRef<HTMLInputElement>(null);
 
-  const exportJson = useCallback(async () => {
+  const exportJson = useCallback(() => {
     setProblem(null);
     try {
-      // Flushed first: a backup taken while a write is still pending would be
-      // the version before whatever the user just did.
-      await flushPersist();
       const raw = useTrousseauStore.getState().raw;
       const doc = migrate(raw);
       download(suggestedFilename(doc), serialise(doc));
@@ -197,7 +194,7 @@ function Body({ onClose }: { onClose: () => void }) {
           stationery. It never leaves this machine unless you send it somewhere.
         </p>
         <div className="flex flex-wrap gap-2">
-          <Action onClick={() => void exportJson()} icon={Download} primary>
+          <Action onClick={exportJson} icon={Download} primary>
             Export backup
           </Action>
           <Action onClick={() => jsonInput.current?.click()} icon={Upload}>
