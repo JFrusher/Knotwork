@@ -307,7 +307,19 @@ project, the build, and the Playwright run — and gets its own plan first.
 ### Phase 2 — Windows around the tools
 
 1. **Overview** — the front page as the wedding's state: progress per area and
-   one next step, replacing the tool grid that repeats the header.
+   one next step, replacing the tool grid that repeats the header. **Built
+   2026-09-28.** The next step is What is left's first item, a blocking one
+   before an advisory one; the rest follow quietly under *Also left*. Each
+   area — guests, seating, cards, the day, jobs, shots — says how much there
+   is and how much is done, and says "No … yet" rather than success when
+   there is nothing. The header's shape changed with it: the wedding's name
+   takes the wordmark's place and opens the wedding's pages (and, for a
+   planner, the other weddings, replacing the switcher). At 1024px Timeline's
+   zoom, Fit day and Present, and Delegation's filter, sat out of sight inside
+   the header (measured, and now a test at that width for every tool). Below
+   1280px the tool tabs are icons; the signed-in email is an icon at any width,
+   the widest thing the header held; and the guest count is gone — the front
+   page says what the tools share now.
 2. **Guests** — the whole list as a sortable, filterable, bulk-editable table:
    RSVP, side, dietary, table, plus-one, tags. Today the list exists only as a
    column inside the Seating canvas.

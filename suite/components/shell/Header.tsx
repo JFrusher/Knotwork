@@ -4,11 +4,10 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { TOOLS } from "@/lib/tools";
 import { AccountStatus } from "./AccountStatus";
-import { WeddingSwitcher } from "./WeddingSwitcher";
+import { WeddingMenu } from "./WeddingMenu";
 import { HowThisWorks } from "./TourButtons";
 import { ChromeSlot } from "./chrome";
 import { DataButton } from "./DataButton";
@@ -25,9 +24,12 @@ const GuestImport = dynamic(() => import("./GuestImport").then((m) => m.GuestImp
 /**
  * The one header, on every page.
  *
- * The guest count sits in it deliberately: four tools reading one list is the
- * whole point of putting them together, and a number that moves when the
- * seating changes is the cheapest possible proof that they are.
+ * One row, which has to hold the tool's own controls at 1024px, the narrowest
+ * width the tools support: Timeline's zoom, Fit day and Present once scrolled
+ * out of sight inside it there. So below 1280px the tabs are icons (named for
+ * a screen reader and on hover) and the gaps close up. The guest count that
+ * used to sit here went for the same room: the front page now says what the
+ * tools share, area by area.
  */
 export function Header() {
   const dataOpen = useDataPanel((s) => s.open);
@@ -50,15 +52,12 @@ export function Header() {
     if (choosing) showData();
   }, [choosing, showData]);
   const pathname = usePathname();
-  const guestCount = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
 
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-charcoal/10 bg-parchment/95 backdrop-blur">
-        <div className="mx-auto flex h-[var(--shell-header-h)] max-w-7xl items-center gap-2 px-4 sm:gap-6">
-          <Link href="/" className="shrink-0 font-display text-xl text-charcoal">
-            Trousseau
-          </Link>
+        <div className="mx-auto flex h-[var(--shell-header-h)] max-w-7xl items-center gap-2 px-4 xl:gap-3">
+          <WeddingMenu />
 
           {/* Scrolls within the header on a narrow screen, rather than making
               the whole page wider than it and pushing Data off the edge. */}
@@ -69,14 +68,17 @@ export function Header() {
                 <Link
                   key={tool.href}
                   href={tool.href}
+                  aria-label={tool.name}
+                  title={tool.name}
                   aria-current={active ? "page" : undefined}
-                  className={`${tool.tokens} shrink-0 rounded-t border-b-2 px-2.5 py-1.5 text-sm whitespace-nowrap transition ${
+                  className={`${tool.tokens} flex shrink-0 items-center rounded-t border-b-2 px-2.5 py-1.5 text-sm whitespace-nowrap transition ${
                     active
                       ? "border-[var(--accent-bright)] bg-stone text-charcoal"
                       : "border-transparent text-slate hover:bg-stone/60 hover:text-charcoal"
                   }`}
                 >
-                  {tool.name}
+                  <tool.icon size={16} aria-hidden className="xl:hidden" />
+                  <span className="hidden xl:inline">{tool.name}</span>
                 </Link>
               );
             })}
@@ -99,18 +101,9 @@ export function Header() {
             <ChromeSlot name="tool-undo" />
           </div>
 
-          <span
-            title={`${guestCount} guests on this device`}
-            className="hidden shrink-0 items-center gap-1.5 rounded-full border border-charcoal/10 bg-stone px-2.5 py-1 text-xs text-slate sm:inline-flex"
-          >
-            <Users size={13} />
-            {guestCount}
-          </span>
-
           <DataButton onOpen={showData} />
 
           <HowThisWorks />
-          <WeddingSwitcher />
           <AccountStatus />
         </div>
       </header>

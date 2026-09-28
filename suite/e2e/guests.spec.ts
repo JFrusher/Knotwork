@@ -56,7 +56,7 @@ test("Seating's import is the one importer, and removes only who is ticked", asy
   await importer.getByRole("button", { name: "Done" }).click();
 
   // 106, one in, one out — and Seating shows it without a reload.
-  await expect(page.getByTitle(/guests on this device$/)).toHaveText("106");
+  await expect(page.getByText(/^106 guests · /)).toBeVisible();
   await expect(page.getByRole("button", { name: "Zelda Newcomer, no table" })).toBeVisible();
   await expect(page.getByRole("button", { name: /^Devendra Raghunathan(, no table)?$/ })).toHaveCount(0);
 });

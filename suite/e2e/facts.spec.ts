@@ -9,8 +9,10 @@ import { openSeating, seedExampleWedding } from "./wedding";
 test("Timeline shows the wedding's facts and sends you to Data to change them", async ({ page }) => {
   await seedExampleWedding(page);
   await page.goto("/timeline");
+  // The tool's own panel; the header carries the names too, as a menu.
+  const tool = page.getByRole("main");
 
-  await expect(page.getByText("Alex & Sam", { exact: true })).toBeVisible();
+  await expect(tool.getByText("Alex & Sam", { exact: true })).toBeVisible();
   await expect(page.getByText("The Old Granary · 1 June 2028")).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Couple", exact: true })).toHaveCount(0);
 
@@ -20,15 +22,16 @@ test("Timeline shows the wedding's facts and sends you to Data to change them", 
   await data.getByLabel("The other").fill("Kit");
   await page.keyboard.press("Escape");
 
-  await expect(page.getByText("Robin & Kit", { exact: true })).toBeVisible();
+  await expect(tool.getByText("Robin & Kit", { exact: true })).toBeVisible();
 });
 
 test("Seating shows the wedding's names without offering to rename it", async ({ page }) => {
   await seedExampleWedding(page);
   await openSeating(page);
 
-  await expect(page.getByText("Alex & Sam", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Alex & Sam" })).toHaveCount(0);
+  const tool = page.getByRole("main");
+  await expect(tool.getByText("Alex & Sam", { exact: true })).toBeVisible();
+  await expect(tool.getByRole("button", { name: "Alex & Sam" })).toHaveCount(0);
 });
 
 /**

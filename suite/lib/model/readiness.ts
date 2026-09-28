@@ -50,7 +50,7 @@ function placeNames(raw: unknown): Set<string> {
 }
 
 /** Plaque's saved design, which knows what the printed list was drawn from. */
-function stationery(raw: unknown): Record<string, unknown> | null {
+export function stationery(raw: unknown): Record<string, unknown> | null {
   const slice = isRecord(raw) ? raw["stationery"] : null;
   return isRecord(slice) && "version" in slice ? slice : null;
 }

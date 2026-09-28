@@ -94,7 +94,7 @@ test("the tour takes focus, keeps it, and gives it back", async ({ page }) => {
   }
 
   await page.keyboard.press("ArrowRight");
-  await expect(page.getByRole("dialog", { name: /Where things stand/ })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: /What to do next/ })).toBeVisible();
 
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);

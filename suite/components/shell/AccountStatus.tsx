@@ -40,12 +40,17 @@ export function AccountStatus() {
   if (!client || email === undefined) return null;
 
   return (
+    // Signed in, the icon alone, named for a screen reader and on hover: an
+    // email address is the widest thing the header could hold, and it pushed
+    // the tool's own controls out of sight. It is on the account page.
     <Link
       href={email ? "/account" : "/login"}
+      aria-label={email ? `Your account, ${email}` : "Sign in"}
+      title={email ?? undefined}
       className="inline-flex shrink-0 items-center gap-1.5 rounded border border-charcoal/15 px-2.5 py-1.5 text-sm text-slate transition hover:border-gold hover:text-charcoal"
     >
-      <User size={15} />
-      <span className="hidden sm:inline">{email ?? "Sign in"}</span>
+      <User size={15} aria-hidden />
+      {email ? null : <span className="hidden sm:inline">Sign in</span>}
     </Link>
   );
 }

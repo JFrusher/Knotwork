@@ -28,8 +28,9 @@ test("a Seating edit survives an immediate reload", async ({ page }) => {
 test("a guest import and a rename in the Data panel survive editing in Seating", async ({ page }) => {
   await seedExampleWedding(page);
   await openSeating(page);
-  const guests = page.getByTitle(/guests on this device$/);
-  await expect(guests).toHaveText("106");
+  // Seating's own count, so what it shows is what the panel wrote.
+  const guests = page.getByText(/^\d+ guests · \d+ unassigned$/);
+  await expect(guests).toHaveText("106 guests · 3 unassigned");
 
   await page.getByRole("button", { name: "Data" }).click();
   const data = page.getByRole("dialog", { name: "Your data" });
@@ -47,10 +48,9 @@ test("a guest import and a rename in the Data panel survive editing in Seating",
   await expect(importer.getByText(/Imported: 3 new/)).toBeVisible();
   await importer.getByRole("button", { name: "Done" }).click();
   await page.keyboard.press("Escape");
-  await expect(guests).toHaveText("109");
+  await expect(guests).toHaveText("109 guests · 6 unassigned");
 
   // Seating shows what the panel wrote, and its own edits land on top of it.
-  await expect(page.getByText("109 guests · 6 unassigned")).toBeVisible();
   await page.getByRole("button", { name: /^Table 1, / }).click();
   await page.getByLabel("Table name").fill("Head table");
   await page.keyboard.press("Tab");
@@ -65,7 +65,7 @@ test("a guest import and a rename in the Data panel survive editing in Seating",
 
   await page.reload();
   await expect(page.getByRole("button", { name: /^Head table, / })).toBeVisible();
-  await expect(guests).toHaveText("109");
+  await expect(guests).toHaveText("109 guests · 6 unassigned");
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Robin & Kit");
 });

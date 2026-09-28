@@ -95,17 +95,24 @@ test("a planner switches between clients, and each comes back as it was", async 
 
   // Several clients and none opened here: nothing is picked for them.
   await page.goto("/");
-  const switcher = page.getByRole("combobox", { name: "Wedding" });
-  await expect(switcher).toHaveValue("");
+  const menu = (names: string) => page.getByRole("button", { name: new RegExp(`^${names}`) });
+  const weddings = page.getByRole("navigation", { name: "Your weddings" });
+  await menu("Trousseau").click();
+  await expect(weddings.getByRole("link")).toHaveCount(3);
+  await expect(weddings.locator("[aria-current]")).toHaveCount(0);
+  await page.keyboard.press("Escape");
 
-  // Each switch is a full load through /open; the switcher showing the
-  // wedding is the app having loaded again with it.
-  const open = async (label: string, id: string, names: string) => {
-    await page.getByRole("combobox", { name: "Wedding" }).selectOption({ label });
-    await expect(page.getByRole("combobox", { name: "Wedding" })).toHaveValue(id);
+  // Each switch is a full load through /open; the wedding's name heading the
+  // page, and marked in the menu, is the app having loaded again with it.
+  const open = async (label: string, from: string, names: string) => {
+    await menu(from).click();
+    await weddings.getByRole("link", { name: label }).click();
+    await menu(names).click();
+    await expect(weddings.getByRole("link", { name: label })).toHaveAttribute("aria-current", "true");
+    await page.keyboard.press("Escape");
     expect((await storedWedding(page)).names).toBe(names);
   };
-  await open("Alex & Sam · client", "c1", "Alex & Sam");
+  await open("Alex & Sam · client", "Trousseau", "Alex & Sam");
 
   // An edit that cannot reach the account before the switch.
   offline = true;
@@ -115,9 +122,9 @@ test("a planner switches between clients, and each comes back as it was", async 
   await page.getByRole("button", { name: "Close" }).click();
   offline = false;
 
-  await open("Robin & Kit · client", "c2", "Robin & Kit");
+  await open("Robin & Kit · client", "Alexa & Sam", "Robin & Kit");
   // Back, with the edit — and the edit goes up now that it can.
-  await open("Alex & Sam · client", "c1", "Alexa & Sam");
+  await open("Alex & Sam · client", "Robin & Kit", "Alexa & Sam");
   await expect.poll(() => (clients["c1"]!.document["event"] as { coupleNames: string }).coupleNames).toBe("Alexa & Sam");
   await expect(page.getByRole("dialog", { name: "Your data" })).toBeHidden();
 });

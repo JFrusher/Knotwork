@@ -45,21 +45,15 @@ export const CHAPTERS: readonly TourChapter[] = [
         route: "/",
       },
       {
-        anchor: "shell.stats",
+        anchor: "shell.next",
+        title: "What to do next",
+        body: "The one thing that most needs doing, picked from everything left across the tools — a problem before a nudge. The rest of the list is further down the page. Each tool reports its own problems itself.",
+        route: "/",
+      },
+      {
+        anchor: "shell.areas",
         title: "Where things stand",
-        body: "Guests, how many are seated, tables, and blocks of the day. These count the one shared wedding — not four separate copies of it.",
-        route: "/",
-      },
-      {
-        anchor: "shell.tools",
-        title: "Five tools, one wedding",
-        body: "Each tool owns one part of the day and reads what the others own. Seat someone in Seating and the place cards already know their table. You never type the same guest twice.",
-        route: "/",
-      },
-      {
-        anchor: "shell.whatisleft",
-        title: "What is left",
-        body: "Problems that no single tool can see on its own — a guest seated at a table that no longer exists, a job in a lane that was deleted. Each tool reports its own problems itself.",
+        body: "Each part of the wedding, how far along it is, and the way into it. They count one shared wedding: seat someone in Seating and the place cards already know their table. You never type the same guest twice.",
         route: "/",
       },
       {

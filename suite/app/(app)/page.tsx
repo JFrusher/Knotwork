@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { QuickStats } from "@/components/shell/QuickStats";
-import { WhatIsLeft } from "@/components/shell/WhatIsLeft";
+import { Overview } from "@/components/shell/Overview";
 import { Countdown } from "@/components/shell/Countdown";
 import { WeddingPack } from "@/components/shell/WeddingPack";
 import { SetupPrompt } from "@/components/shell/SetupPrompt";
@@ -30,14 +29,7 @@ export default function Home() {
       <Countdown />
       <SetupPrompt />
 
-      <section className="mt-10">
-        <QuickStats />
-      </section>
-
-      <section className="mt-12">
-        <h2 className="mb-4 text-sm tracking-[0.14em] text-slate uppercase">What is left</h2>
-        <WhatIsLeft />
-      </section>
+      <Overview />
 
       <section className="mt-12">
         <WeddingPack />
