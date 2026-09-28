@@ -143,6 +143,12 @@ against, not a discussion to reopen without a reason.
 - **2026-09-28** — Every tool converges on the live document (no private
   copies, one undo). Seating goes last and becomes TypeScript as part of it.
   Supersedes the incremental-only Tableaux migration for its store layer.
+- **2026-09-28** — Signing in never replaces a wedding silently. A device
+  stores which account wedding it belongs to and what the two last agreed;
+  two different weddings with work in both are asked about (whole weddings,
+  not per part), and the one not chosen is kept as a copy on the device. A
+  wedding is created at sign-in, except on the way to an invite. Replaces the
+  offline write queue.
 
 ## Subsystem H — Guided tour & example wedding
 

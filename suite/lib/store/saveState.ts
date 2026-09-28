@@ -48,6 +48,12 @@ export function saveState(s: Inputs): SaveState {
         tone: "warn",
         detail: "You and someone else changed the same part of the wedding. Choose which to keep.",
       };
+    case "choosing":
+      return {
+        label: "Needs you",
+        tone: "warn",
+        detail: "This device and your account hold different weddings. Choose which to keep.",
+      };
     case "error":
       return {
         label: "Not synced",

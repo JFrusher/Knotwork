@@ -14,7 +14,10 @@ const invalid = (body: unknown): Reply => ({ status: 422, body });
 
 export async function getDocumentHandler(store: DocumentStore, weddingId: string): Promise<Reply> {
   const record = await store.getDocument(weddingId);
-  return ok({ document: record?.document ?? null, version: record?.version ?? 0 });
+  // The wedding travels with its document, so a device can tell whether what
+  // it holds belongs to this wedding or another one without a second request
+  // that could answer about a different moment.
+  return ok({ weddingId, document: record?.document ?? null, version: record?.version ?? 0 });
 }
 
 /**

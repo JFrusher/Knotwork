@@ -26,10 +26,11 @@ several turned out differently once tested than they looked when read.
 |---|---|---|
 | S1 | The Data panel's edits (guest import, names, date) were written back over by whichever of Seating or Timeline was open, on that tool's next save. | Reproduced — unit, and Playwright against a production build. **Fixed 2026-09-28**, see below. |
 | S2 | A failed local save sets the store's `error`, but both components that read it render it only for a failed *read*. Nothing shows a failed save. | Traced |
-| S3 | Creating a wedding or accepting an invite does not start cloud sync until a full reload: `startCloudSync` has one caller, on mount. | Traced |
-| S4 | Accepting an invite silently replaces the invitee's local wedding on their next load. | Traced |
-| S5 | A magic link opened in the wrong browser sends an invitee to `/account`, whose main button is **Create your wedding** — which then blocks the invite for good (`already-in-a-wedding`). | Traced |
-| S6 | Loading the example wedding while signed in pushes it over the shared wedding; the confirmation says it replaces "the wedding in this browser". The emptiness check counts only guests and blocks. | Traced |
+| S3 | Creating a wedding or accepting an invite does not start cloud sync until a full reload: `startCloudSync` has one caller, on mount. | Traced. **Fixed 2026-09-28**: both now end in a full load, where sync starts. |
+| S4 | Accepting an invite silently replaces the invitee's local wedding on their next load. | Reproduced — unit, with storage that survives a reload. **Fixed 2026-09-28**, see *Signing in safely*. |
+| S5 | A magic link opened in the wrong browser sends an invitee to `/account`, whose main button is **Create your wedding** — which then blocks the invite for good (`already-in-a-wedding`). | Reproduced — component tests: `/login` dropped `next`, and the invite's "Sign in" linked to bare `/login`. **Fixed 2026-09-28**. |
+| S6 | Loading the example wedding while signed in pushes it over the shared wedding; the confirmation says it replaces "the wedding in this browser". The emptiness check counts only guests and blocks. | Reproduced — unit (a wedding of group shots only was replaced unasked). **Fixed 2026-09-28**. |
+| S12 | Found while reproducing S4: an edit made while the account answered "unavailable" (a 500, say) was lost at the next start, which replaced the device's document with the account's; an edit made offline went up on reconnect at version 0 and conflicted over every slice. The agreed baseline lived only in memory. | Reproduced — unit. **Fixed 2026-09-28**: the baseline is stored. |
 | S7 | Names, date and venue have three editors (Data panel, Timeline's Day panel, Seating's write-back). Guest import has two implementations with different rules. | Traced, seen |
 | S8 | The guest link needs a second credential — an unrecoverable passphrase — even for a signed-in couple, and goes stale silently when seats change. | Traced, seen |
 | S9 | "Take a tour" runs the six-step front-page chapter and stops; the other 23 steps are reachable only one tool at a time. | Traced |
@@ -164,20 +165,34 @@ thing on a screen is the thing that needs a decision.
 The rule: **nothing is replaced without a restorable copy, and nothing is
 replaced silently when both sides have work in them.**
 
-- A wedding "has content" if any slice has anything in it — not only guests and
-  day blocks (fixes S6's check).
+- A wedding "has content" if somebody entered something in it: names, date,
+  venue, guests, tables, blocks, crew, jobs, shots or card names. Not "any
+  slice is present" — measured in the browser, opening Timeline, Place cards
+  or Delegation stores that tool's empty defaults with nothing typed.
+  (`lib/model/content.ts`; fixes S6's check.)
 - Device empty → take the account's. Account empty → push the device's. Neither
   loses anything, so neither asks.
 - Both have content and the device last synced with *this* wedding → the
   ordinary per-slice merge.
 - Both have content and they are different weddings → **stop and ask**, with
   what each holds ("This device: Alex & Sam, 100 guests. Your account: Robin &
-  Kit, 80 guests"). Use the account's, use this device's, or choose per part.
-  The losing side survives: the account's in its server history, the device's
-  in a local copy — both restorable from Sync & history.
+  Kit, 80 guests"). Use the account's, or keep this device's. The losing side
+  is kept as a copy on this device and put back from Data (the account's is
+  also in its server history).
+  - *Built without "choose per part".* Parts of two different weddings do not
+    fit together: guests from one and seating from the other leaves every seat
+    pointing at nobody. Per-slice choice stays where it is sound — two partners
+    editing one wedding.
+- How a device knows "this wedding": the link (`trousseau.cloud.link`) —
+  wedding id, version and per-slice baseline — stored whenever the agreement
+  moves. It replaces the one-document write queue, which a start that merges
+  from a stored baseline made redundant.
 - The same screen handles accepting an invite (S4) and loading the example
   wedding over a synced one (S6), whose confirmation names who else it affects.
 - Creating or joining a wedding starts sync immediately (S3).
+- The wedding is created at sign-in (`/auth/callback`), except on the way to
+  an invite. `/login` carries `next` through the magic link, so an invitee who
+  has to sign in again comes back to the invite (S5).
 - Signing out asks whether to keep this wedding on the device or remove it —
   shared computers exist.
 

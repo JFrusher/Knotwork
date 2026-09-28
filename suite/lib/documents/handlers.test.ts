@@ -16,7 +16,7 @@ describe("getDocumentHandler", () => {
     const store = memoryStore();
     const reply = await getDocumentHandler(store, "w1");
     expect(reply.status).toBe(200);
-    expect(reply.body).toEqual({ document: null, version: 0 });
+    expect(reply.body).toEqual({ weddingId: "w1", document: null, version: 0 });
   });
 
   it("returns the stored document and version once one exists", async () => {

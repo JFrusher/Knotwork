@@ -8,13 +8,11 @@ vi.mock("idb-keyval", () => ({
 
 const pushDocumentMock = vi.fn();
 const fetchCloudDocumentMock = vi.fn();
-const fetchWeddingIdMock = vi.fn();
 vi.mock("@/lib/documents/cloudSync", () => ({
   fetchCloudDocument: (...args: unknown[]) => fetchCloudDocumentMock(...args),
   pushDocument: (...args: unknown[]) => pushDocumentMock(...args),
-  replayPendingWrite: async () => null,
-  getPendingWrite: async () => null,
-  fetchWeddingId: (...args: unknown[]) => fetchWeddingIdMock(...args),
+  readLink: async () => null,
+  writeLink: async () => undefined,
 }));
 
 // Mocked rather than left to run: the real module reaches for browserClient
@@ -45,10 +43,6 @@ beforeEach(() => {
   pushDocumentMock.mockReset();
   fetchCloudDocumentMock.mockReset();
   syncAssetsMock.mockClear();
-  fetchWeddingIdMock.mockReset();
-  // No wedding id by default: keeps the asset sync a no-op except in the two
-  // tests that ask about it.
-  fetchWeddingIdMock.mockResolvedValue({ ok: true, weddingId: null });
   const doc = emptyTrousseau();
   useTrousseauStore.setState({
     status: "ready",
@@ -63,7 +57,8 @@ beforeEach(() => {
     cloudConflicts: [],
     cloudAgreed: {},
     cloudError: null,
-    weddingId: null,
+    weddingId: "w1",
+    cloudChoice: null,
   });
 });
 
@@ -74,7 +69,7 @@ test("startCloudSync stays disabled when the cloud reports unavailable", async (
 });
 
 test("startCloudSync adopts the cloud document without creating an undo entry", async () => {
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: emptyTrousseau(), version: 4 });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: emptyTrousseau(), version: 4 });
   await useTrousseauStore.getState().startCloudSync();
   const state = useTrousseauStore.getState();
   expect(state.cloudStatus).toBe("idle");
@@ -177,6 +172,7 @@ test("pullFromCloud takes a slice that only changed on the server", async () => 
   });
   fetchCloudDocumentMock.mockResolvedValue({
     ok: true,
+    weddingId: "w1",
     document: { ...base, guests: { g1: { id: "g1" } } },
     version: 2,
   });
@@ -199,7 +195,7 @@ test("pullFromCloud does nothing when the server version hasn't moved", async ()
   // fetchCloudDocument has no way to report a version without a round trip,
   // so pullFromCloud always calls it - the "hasn't moved" short-circuit is
   // the version-equality check right after the response comes back.
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: raw, version: 5 });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: raw, version: 5 });
   await useTrousseauStore.getState().pullFromCloud();
   const state = useTrousseauStore.getState();
   expect(state.cloudVersion).toBe(5);
@@ -226,7 +222,7 @@ test("startCloudSync pushes the local wedding up on first sign-in, when the clou
     doc: { ...state.doc, guests } as never,
   }));
 
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: null, version: 0 });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: null, version: 0 });
   pushDocumentMock.mockResolvedValue({ ok: true, version: 1, warnings: [] });
 
   await useTrousseauStore.getState().startCloudSync();
@@ -326,7 +322,7 @@ test("pullFromCloud merges against the document as it is when the fetch lands", 
     useTrousseauStore.setState({
       raw: { ...useTrousseauStore.getState().raw, event: { coupleNames: "typed mid-fetch" } },
     });
-    return { ok: true, document: { ...base, guests: { g1: { id: "g1" } } }, version: 2 };
+    return { ok: true, weddingId: "w1", document: { ...base, guests: { g1: { id: "g1" } } }, version: 2 };
   });
   pushDocumentMock.mockResolvedValue({ ok: true, version: 3, warnings: [] });
 
@@ -349,7 +345,7 @@ test("a pull that brings back nothing new neither replaces the document nor push
     raw: base,
     generation: 3,
   });
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: base, version: 2 });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: base, version: 2 });
 
   await useTrousseauStore.getState().pullFromCloud();
 
@@ -402,6 +398,7 @@ test("assets sync on a pull, not on every document push", async () => {
 
   fetchCloudDocumentMock.mockResolvedValue({
     ok: true,
+    weddingId: "w1",
     document: { ...base, guests: { g1: { id: "g1" } } },
     version: 3,
   });
@@ -409,29 +406,35 @@ test("assets sync on a pull, not on every document push", async () => {
   expect(syncAssetsMock).toHaveBeenCalledWith("w1");
 });
 
-test("pullFromCloud resolves a wedding id startCloudSync could not", async () => {
+test("a pull that finds a different wedding hands the decision back to a start", async () => {
   const base = emptyTrousseau() as unknown as Record<string, unknown>;
+  const mine = { ...base, guests: { r1: { id: "r1", firstName: "Robin" } } };
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
-    raw: base,
-    weddingId: null,
+    cloudAgreed: fingerprintAllSlices(mine),
+    raw: mine,
+    weddingId: "w1",
   });
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: base, version: 2 });
-  fetchWeddingIdMock.mockResolvedValue({ ok: true, weddingId: "w2" });
+  fetchCloudDocumentMock.mockResolvedValue({
+    ok: true,
+    weddingId: "w2",
+    document: { ...base, guests: { a1: { id: "a1", firstName: "Alex" } } },
+    version: 9,
+  });
 
   await useTrousseauStore.getState().pullFromCloud();
 
-  expect(useTrousseauStore.getState().weddingId).toBe("w2");
-  expect(syncAssetsMock).toHaveBeenCalledWith("w2");
+  // Merging one wedding into another would be the worst thing a poll could do.
+  expect(useTrousseauStore.getState().cloudStatus).toBe("choosing");
+  expect(Object.keys(useTrousseauStore.getState().raw["guests"] as object)).toEqual(["r1"]);
 });
 
 test("startCloudSync does not push an empty wedding on first sign-in", async () => {
   // Nothing to lose here, and pushing an empty document would still be
   // correct -- but skipping it is one fewer network round trip for the
   // overwhelmingly common case of a brand-new account.
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: null, version: 0 });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: null, version: 0 });
 
   await useTrousseauStore.getState().startCloudSync();
 

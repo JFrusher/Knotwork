@@ -9,6 +9,8 @@ import { Dialog } from "@/components/ui/Dialog";
 import { useWriters } from "@/lib/model/useSuite";
 import { reconcileLoadedDocument } from "@/lib/seating/normalise";
 import { GuestLinkPanel } from "./GuestLinkPanel";
+import { KeptCopies } from "./KeptCopies";
+import { WeddingChoice } from "./WeddingChoice";
 import { useGuestImport } from "./guestImportPanel";
 import { download, readTextFile } from "@/lib/data/file";
 
@@ -116,6 +118,9 @@ function Body({ onClose }: { onClose: () => void }) {
       {problem ? <Notice tone="danger">{problem}</Notice> : null}
       {notice ? <Notice tone="ok">{notice}</Notice> : null}
 
+      {/* First, when it is asked: nothing syncs until it is answered. */}
+      <WeddingChoice />
+
       <Panel title="The wedding">
         <div className="grid gap-3 sm:grid-cols-2">
           {/* Each side of the family and every group shot is named after these. */}
@@ -178,7 +183,7 @@ function Body({ onClose }: { onClose: () => void }) {
         the local-only user never sees a section about a cloud they have not
         opted into.
       */}
-      {cloudStatus !== "disabled" ? (
+      {cloudStatus !== "disabled" && cloudStatus !== "choosing" ? (
         <Panel title="Cloud">
           {cloudStatus === "conflict" && cloudConflicts.length > 0 ? (
             <div className="space-y-4">
@@ -226,6 +231,8 @@ function Body({ onClose }: { onClose: () => void }) {
       {/* Titled by its own panel ("A link for the guests"); wrapping it in a
           second one printed two headings for one section. */}
       <GuestLinkPanel onProblem={setProblem} />
+
+      <KeptCopies onDone={setNotice} />
 
       <Panel title="Guest list">
         <p className="mb-3 text-sm text-slate">

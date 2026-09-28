@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { serverClient } from "@/lib/accounts/serverClient";
+import { accountsStore } from "@/lib/accounts/supabaseStore";
+import { createWeddingHandler } from "@/lib/accounts/handlers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,36 +38,65 @@ export function sameOriginPath(next: string | null, origin: string): string {
   }
 }
 
+/**
+ * Whether signing in should start a wedding for someone who has none.
+ *
+ * Yes, except on the way to an invite: someone arriving to join their
+ * partner's wedding who was handed one of their own first could never join
+ * — an account is in one wedding at a time.
+ */
+export function startsAWedding(destination: string): boolean {
+  return !destination.startsWith("/invite/");
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const tokenHash = url.searchParams.get("token_hash");
   const next = url.searchParams.get("next");
 
+  const destination = sameOriginPath(next, url.origin);
   let failed = false;
+  let client: Awaited<ReturnType<typeof serverClient>> = null;
+  let userId: string | null = null;
 
   try {
-    const client = await serverClient();
+    client = await serverClient();
     if (!client) {
       failed = Boolean(code || tokenHash);
     } else if (tokenHash) {
       // The email template can send a token hash instead of a PKCE code. This
       // one carries everything needed with it, so the link works in whatever
       // browser it is opened in — including the one inside a mail app.
-      const { error } = await client.auth.verifyOtp({ token_hash: tokenHash, type: "email" });
+      const { data, error } = await client.auth.verifyOtp({ token_hash: tokenHash, type: "email" });
       failed = Boolean(error);
+      userId = data.user?.id ?? null;
     } else if (code) {
       // PKCE. The verifier lives in a cookie set when the link was requested,
       // so this only succeeds in the browser that asked for it.
-      const { error } = await client.auth.exchangeCodeForSession(code);
+      const { data, error } = await client.auth.exchangeCodeForSession(code);
       failed = Boolean(error);
+      userId = data.user?.id ?? null;
     }
+
   } catch (error) {
     console.error("[accounts] GET /auth/callback", error);
     failed = true;
   }
 
-  const destination = sameOriginPath(next, url.origin);
+  if (client && userId && !failed && startsAWedding(destination)) {
+    // Apart from the sign-in: a wedding that could not be started is not a
+    // link that did not work, and must not be reported as one. The account
+    // page offers to start it by hand.
+    try {
+      // "You already have a wedding" is the answer for everyone but the
+      // first sign-in, and exactly what should happen.
+      await createWeddingHandler(accountsStore(client), userId);
+    } catch (error) {
+      console.error("[accounts] GET /auth/callback: starting a wedding", error);
+    }
+  }
+
   const target = new URL(destination, url.origin);
   // A silent failure here is the worst outcome: the user clicked a link, was
   // returned to a page saying "sign in", and had no way to know the link had

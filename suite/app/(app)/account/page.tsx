@@ -5,6 +5,8 @@ import { Download, LogOut, Trash2, UserPlus } from "lucide-react";
 import { browserClient } from "@/lib/accounts/browserClient";
 import { Button, TextField } from "@/components/ui/controls";
 import { useConfirm } from "@/components/ui/Confirm";
+import { removeWeddingFromDevice } from "@/lib/store/removeFromDevice";
+import { SignInFailed } from "@/components/shell/SignInFailed";
 
 interface AccountState {
   signedIn: boolean;
@@ -32,10 +34,6 @@ export default function AccountPage() {
   const [notice, setNotice] = useState<Notice | null>(null);
   const client = browserClient();
   const confirm = useConfirm();
-  const [signinFailed, setSigninFailed] = useState(false);
-  useEffect(() => {
-    setSigninFailed(new URLSearchParams(window.location.search).get("signin") === "failed");
-  }, []);
 
   useEffect(() => {
     if (!client) {
@@ -70,8 +68,10 @@ export default function AccountPage() {
       setNotice({ text: body?.error ?? "Could not create a wedding.", tone: "error" });
       return;
     }
-    setState((prev) => (prev ? { ...prev, weddingId: body?.weddingId ?? null } : prev));
-    setNotice({ text: "Wedding created.", tone: "ok" });
+    // A full load: sync starts as the app loads, and only now is there a
+    // wedding for it to start with. Without it nothing reached the account
+    // until the next visit.
+    window.location.reload();
   }
 
   async function invitePartner() {
@@ -90,8 +90,13 @@ export default function AccountPage() {
     setInviteEmail("");
   }
 
-  async function signOut() {
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function signOut(remove: boolean) {
     await client?.auth.signOut();
+    // Shared computers exist. Kept, the wedding stays on this device and
+    // picks up where it left off at the next sign-in.
+    if (remove) await removeWeddingFromDevice();
     window.location.href = "/login";
   }
 
@@ -126,22 +131,7 @@ export default function AccountPage() {
         <p className="mt-6 text-slate">Loading…</p>
       ) : !state.signedIn ? (
         <div className="mt-6 space-y-4">
-          {signinFailed && (
-            <div className="rounded border border-danger/40 bg-danger-soft px-3 py-2 text-sm text-charcoal">
-              <p className="font-medium">That link did not sign you in.</p>
-              <p className="mt-1 text-slate">
-                Two things stop one working. It has to be opened in the same browser that asked
-                for it — a phone, or an email app opening its own window, will not do. And it has
-                to come back to the same address you started on: a link that returns you to a
-                different one cannot carry your session, and will not show your wedding either.
-              </p>
-              <p className="mt-1 text-slate">
-                You are on <strong>{typeof window === "undefined" ? "" : window.location.origin}</strong>.
-                If that is not where you were planning, go back to the address you were using —
-                your wedding is stored per address and is still there, untouched.
-              </p>
-            </div>
-          )}
+          <SignInFailed />
           <p className="text-slate">Sign in to manage your wedding account.</p>
         </div>
       ) : (
@@ -159,10 +149,12 @@ export default function AccountPage() {
           {!state.weddingId ? (
             <section className="space-y-3">
               <p className="text-sm text-slate">
-                You haven&rsquo;t created a wedding yet — this is where you and your partner will share one.
+                You&rsquo;re not part of a wedding yet. If your partner invited you, open the link in
+                their email instead — an account is in one wedding at a time, so starting your own
+                now means you cannot join theirs.
               </p>
-              <Button onClick={() => void createWedding()} tone="primary" icon={UserPlus}>
-                Create your wedding
+              <Button onClick={() => void createWedding()} icon={UserPlus}>
+                Start our wedding
               </Button>
             </section>
           ) : (
@@ -207,9 +199,27 @@ export default function AccountPage() {
           )}
 
           <section className="flex flex-wrap gap-2 border-t border-charcoal/10 pt-6">
-            <Button onClick={() => void signOut()} icon={LogOut}>
-              Sign out
-            </Button>
+            {signingOut ? (
+              <div className="w-full space-y-3">
+                <p className="text-sm text-slate">
+                  Keep the wedding on this device, or remove it? On a computer that isn&rsquo;t
+                  yours, remove it — it stays on your account either way.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={() => void signOut(false)} icon={LogOut}>
+                    Sign out and keep it here
+                  </Button>
+                  <Button onClick={() => void signOut(true)} icon={Trash2} tone="danger">
+                    Sign out and remove it
+                  </Button>
+                  <Button onClick={() => setSigningOut(false)}>Cancel</Button>
+                </div>
+              </div>
+            ) : (
+              <Button onClick={() => setSigningOut(true)} icon={LogOut}>
+                Sign out
+              </Button>
+            )}
             <Button onClick={() => void deleteAccount()} tone="danger" icon={Trash2}>
               Delete my account
             </Button>

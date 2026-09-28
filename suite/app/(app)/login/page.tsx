@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail } from "lucide-react";
 import { browserClient } from "@/lib/accounts/browserClient";
 import { Button, TextField } from "@/components/ui/controls";
@@ -12,6 +12,12 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   const client = browserClient();
+  // Where the person was going — an invite, usually. Carried through the
+  // link, or it lands on /account, which for an invitee is the wrong door.
+  const [next, setNext] = useState<string | null>(null);
+  useEffect(() => {
+    setNext(new URLSearchParams(window.location.search).get("next"));
+  }, []);
 
   async function sendLink() {
     setError(null);
@@ -23,9 +29,10 @@ export default function LoginPage() {
     // The link has to come back through `/auth/callback`, which exchanges its
     // code for a real session; without a redirect target there is nowhere for
     // that exchange to happen and signing in never takes effect.
+    const callback = `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`;
     const { error: sendError } = await client.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { emailRedirectTo: callback },
     });
     setBusy(false);
     if (sendError) {
@@ -56,7 +63,11 @@ export default function LoginPage() {
           }}
           className="mt-6 space-y-4"
         >
-          <p className="text-sm text-slate">We&rsquo;ll email you a link — no password to remember.</p>
+          <p className="text-sm text-slate">
+            {next?.startsWith("/invite/")
+              ? "Use the address your invite was sent to. We’ll email you a link that brings you back to it."
+              : "We’ll email you a link — no password to remember."}
+          </p>
           <TextField label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" />
           <Button onClick={() => void sendLink()} tone="primary" icon={Mail} disabled={busy || !email}>
             {busy ? "Sending…" : "Send me a sign-in link"}

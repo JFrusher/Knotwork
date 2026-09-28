@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -43,6 +43,11 @@ export function Header() {
   const importOpen = useGuestImport((s) => s.open);
   const [importEverOpened, setImportEverOpened] = useState(false);
   if (importOpen && !importEverOpened) setImportEverOpened(true);
+  // The one question that stops sync opens the panel that asks it.
+  const choosing = useTrousseauStore((s) => s.cloudStatus === "choosing");
+  useEffect(() => {
+    if (choosing) showData();
+  }, [choosing, showData]);
   const pathname = usePathname();
   const guestCount = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
 
