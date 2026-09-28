@@ -33,6 +33,7 @@ several turned out differently once tested than they looked when read.
 | S7 | Names, date and venue have three editors (Data panel, Timeline's Day panel, Seating's write-back). Guest import has two implementations with different rules. | Traced, seen |
 | S8 | The guest link needs a second credential — an unrecoverable passphrase — even for a signed-in couple, and goes stale silently when seats change. | Traced, seen |
 | S9 | "Take a tour" runs the six-step front-page chapter and stops; the other 23 steps are reachable only one tool at a time. | Traced |
+| S11 | Found while merging the importers: the Data panel's importer stored diets as the file's words ("Vegetarian", "None") where Seating reads a key ("vegetarian"). Seating's Vegetarian filter found none of the example wedding's thirteen vegetarians, and its breakdown listed "None" as a diet. | Reproduced — Playwright. **Fixed 2026-09-28** with the one importer. |
 | S10 | The example wedding has 0 of 100 guests seated, no crew, no jobs, no shots and no card design. The promise it exists to demonstrate cannot be shown from it. | Reproduced (fixture counted), seen |
 
 ### Architecture

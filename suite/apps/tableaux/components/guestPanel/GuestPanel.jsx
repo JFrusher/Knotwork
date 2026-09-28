@@ -8,6 +8,7 @@ import GroupBlock from './GroupBlock.jsx'
 import FamilyBlock from './FamilyBlock.jsx'
 import GuestSearch from './GuestSearch.jsx'
 import ContextMenu from '../ui/ContextMenu.jsx'
+import { useGuestImport } from '@/components/shell/guestImportPanel'
 import { matchesSearch, matchesFilters } from '../../utils/guestFilters.js'
 import styles from './GuestPanel.module.css'
 
@@ -22,6 +23,8 @@ function WeddingName() {
 }
 
 export default function GuestPanel() {
+  // The suite's one importer — Seating's own was removed with its different rules.
+  const showImport = useGuestImport((s) => s.show)
   const guests = useStore((s) => s.guests)
   const groups = useStore((s) => s.groups)
   const subgroups = useStore((s) => s.subgroups)
@@ -285,7 +288,7 @@ export default function GuestPanel() {
               icon="upload"
               label="Import guests"
               onDark
-              onClick={() => openModal('import')}
+              onClick={showImport}
             />
           </div>
         </div>
@@ -311,7 +314,7 @@ export default function GuestPanel() {
               <Icon name="users" size={28} />
             </div>
             <p className={styles.emptyTitle}>Start by importing your guest list</p>
-            <Button variant="primary" icon="upload" onClick={() => openModal('import')}>
+            <Button variant="primary" icon="upload" onClick={showImport}>
               Import CSV
             </Button>
             <p className={styles.emptyNote}>

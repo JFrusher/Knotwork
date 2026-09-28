@@ -6,18 +6,11 @@ import { migrate, serialise, suggestedFilename } from "@jfrusher/trousseau";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { Button, Notice, Panel, TextField } from "@/components/ui/controls";
 import { Dialog } from "@/components/ui/Dialog";
-import { readGuests } from "@/lib/model/slices";
 import { useWriters } from "@/lib/model/useSuite";
 import { reconcileLoadedDocument } from "@/lib/seating/normalise";
-import { parseCsv, type CsvTable } from "@/lib/data/csv";
 import { GuestLinkPanel } from "./GuestLinkPanel";
+import { useGuestImport } from "./guestImportPanel";
 import { download, readTextFile } from "@/lib/data/file";
-import {
-  guessMapping,
-  MAPPABLE_FIELDS,
-  rowsToGuests,
-  type FieldMapping,
-} from "@/lib/data/guestImport";
 
 /**
  * Everything that moves data in or out of the machine, in one place.
@@ -46,12 +39,11 @@ function Body({ onClose }: { onClose: () => void }) {
   const cloudError = useTrousseauStore((s) => s.cloudError);
   const cloudConflicts = useTrousseauStore((s) => s.cloudConflicts);
   const resolveConflict = useTrousseauStore((s) => s.resolveConflict);
-  const { setEvent, setGuests } = useWriters();
+  const { setEvent } = useWriters();
 
   const [notice, setNotice] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
-  const [pending, setPending] = useState<{ table: CsvTable; mapping: FieldMapping } | null>(null);
-  const csvInput = useRef<HTMLInputElement>(null);
+  const showImport = useGuestImport((s) => s.show);
   const jsonInput = useRef<HTMLInputElement>(null);
 
   const exportJson = useCallback(() => {
@@ -87,34 +79,6 @@ function Body({ onClose }: { onClose: () => void }) {
     },
     [replaceDocument],
   );
-
-  const stageCsv = useCallback(async (file: File) => {
-    setProblem(null);
-    setNotice(null);
-    try {
-      const table = parseCsv(await readTextFile(file));
-      if (table.rows.length === 0) {
-        setProblem(`${file.name} has a header row and nothing under it.`);
-        return;
-      }
-      setPending({ table, mapping: guessMapping(table.headers) });
-    } catch (cause) {
-      setProblem(cause instanceof Error ? cause.message : String(cause));
-    }
-  }, []);
-
-  const commitCsv = useCallback(() => {
-    if (!pending) return;
-    const existing = readGuests(useTrousseauStore.getState().doc);
-    const result = rowsToGuests(pending.table, pending.mapping, existing);
-    setGuests(result.guests);
-    const added = Object.keys(result.guests).length - Object.keys(existing).length;
-    setPending(null);
-    setNotice(
-      `${added} new, ${pending.table.rows.length - result.skipped - added} updated` +
-        (result.skipped > 0 ? `, ${result.skipped} skipped with no name.` : "."),
-    );
-  }, [pending, setGuests]);
 
   return (
     <div className="p-6 sm:p-8">
@@ -257,87 +221,14 @@ function Body({ onClose }: { onClose: () => void }) {
       <GuestLinkPanel onProblem={setProblem} />
 
       <Panel title="Guest list">
-        {pending ? (
-          <CsvMapping
-            table={pending.table}
-            mapping={pending.mapping}
-            onChange={(mapping) => setPending({ table: pending.table, mapping })}
-            onCancel={() => setPending(null)}
-            onCommit={commitCsv}
-          />
-        ) : (
-          <>
-            <p className="mb-3 text-sm text-slate">
-              A CSV from wherever the replies arrived. Columns are guessed and yours to correct.
-              People already on the list are matched by name and updated, never duplicated — and
-              a re-import never unseats anybody.
-            </p>
-            <Button onClick={() => csvInput.current?.click()} icon={FileUp}>
-              Upload CSV
-            </Button>
-            <input
-              ref={csvInput}
-              type="file"
-              accept=".csv,text/csv"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                e.target.value = "";
-                if (file) void stageCsv(file);
-              }}
-            />
-          </>
-        )}
-      </Panel>
-    </div>
-  );
-}
-
-function CsvMapping({
-  table,
-  mapping,
-  onChange,
-  onCancel,
-  onCommit,
-}: {
-  table: CsvTable;
-  mapping: FieldMapping;
-  onChange: (next: FieldMapping) => void;
-  onCancel: () => void;
-  onCommit: () => void;
-}) {
-  const named = table.rows.length;
-  return (
-    <div>
-      <p className="mb-3 text-sm text-slate">
-        {named} {named === 1 ? "row" : "rows"} read. Point each field at the right column — leave
-        one blank and it is simply not imported.
-      </p>
-      <div className="mb-4 grid gap-2 sm:grid-cols-2">
-        {MAPPABLE_FIELDS.map(({ key, label }) => (
-          <label key={key} className="flex items-center gap-2 text-sm">
-            <span className="w-24 shrink-0 text-slate">{label}</span>
-            <select
-              value={mapping[key] ?? ""}
-              onChange={(e) => onChange({ ...mapping, [key]: e.target.value || null })}
-              className="min-w-0 flex-1 rounded border border-charcoal/15 bg-parchment px-2 py-1 text-charcoal"
-            >
-              <option value="">—</option>
-              {table.headers.map((header) => (
-                <option key={header} value={header}>
-                  {header}
-                </option>
-              ))}
-            </select>
-          </label>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <Button onClick={onCommit} icon={FileUp} tone="primary">
-          Import {named} {named === 1 ? "row" : "rows"}
+        <p className="mb-3 text-sm text-slate">
+          A CSV from wherever the replies arrived. You see exactly what changes before anything
+          does — nobody is duplicated, and nobody is unseated.
+        </p>
+        <Button onClick={showImport} icon={FileUp}>
+          Import guests
         </Button>
-        <Button onClick={onCancel}>Cancel</Button>
-      </div>
+      </Panel>
     </div>
   );
 }

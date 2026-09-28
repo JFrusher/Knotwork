@@ -1,4 +1,4 @@
-import { readGuests, readSeating } from "@/lib/model/slices";
+import { hasLegacyDietary, readGuests, readSeating } from "@/lib/model/slices";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { reconcile } from "./actions";
 
@@ -13,14 +13,21 @@ import { reconcile } from "./actions";
  *
  * Called after a load, never during editing: the actions keep both sides true
  * from then on. A no-op writes nothing, so a clean document is not touched.
+ *
+ * The same pass converts guests stored by the old importer, whose dietary
+ * field held the file's words rather than a key.
  */
 export function reconcileLoadedDocument(): void {
-  const { doc, status, setSlice } = useTrousseauStore.getState();
+  const { doc, raw, status, setSlice } = useTrousseauStore.getState();
   if (status !== "ready") return;
 
   const before = readGuests(doc);
   const after = reconcile({ guests: before, seating: readSeating(doc) });
   // Silent: the user did not make this change, and undoing back into a
-  // knowingly inconsistent document would help nobody.
-  if (after.guests !== before) setSlice("guests", after.guests, { silent: true });
+  // knowingly inconsistent document would help nobody. Also written when the
+  // stored guests still hold the old importer's dietary text, which reading
+  // them has already converted — see `coerceGuests`.
+  if (after.guests !== before || hasLegacyDietary(raw["guests"])) {
+    setSlice("guests", after.guests, { silent: true });
+  }
 }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import clsx from 'clsx'
 import { useStore } from '../../store/useStore.js'
-import { DIETARY_META, normaliseDietary } from '../../utils/dietary.js'
+import { DIETARY_META, normaliseDietary } from '@/lib/model/dietary'
 import Icon from '../ui/Icon.jsx'
 import IconButton from '../ui/IconButton.jsx'
 import Button from '../ui/Button.jsx'

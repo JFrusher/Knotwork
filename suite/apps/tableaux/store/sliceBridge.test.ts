@@ -70,14 +70,32 @@ test("a guest with no name at all is still listed rather than dropped", () => {
 
 test("every other field on the guest survives untouched", () => {
   withGuests({
-    g1: { id: "g1", firstName: "Tobias", lastName: "Wright", dietary: "Vegetarian", tags: ["usher"] },
+    g1: { id: "g1", firstName: "Tobias", lastName: "Wright", dietary: "vegetarian", tags: ["usher"], assignedSeatId: "seat-2" },
   });
 
   expect(readDoc().guests["g1"]).toMatchObject({
     id: "g1",
-    dietary: "Vegetarian",
+    dietary: "vegetarian",
     tags: ["usher"],
+    assignedSeatId: "seat-2",
   });
+});
+
+/**
+ * The old Data-panel importer stored the file's words as the diet. Seating's
+ * filters and badges read a key, so "Vegetarian" matched nothing and "None"
+ * was counted as a diet. Read through the suite's one definition of a guest,
+ * those become the key they mean, and the words are kept as what was said.
+ */
+test("a diet stored as the file's words arrives as the key it means", () => {
+  withGuests({
+    g1: { id: "g1", firstName: "Beatrix", lastName: "Lindqvist", dietary: "Vegetarian" },
+    g2: { id: "g2", firstName: "Priya", lastName: "Castellanos", dietary: "None" },
+  });
+
+  const { guests } = readDoc();
+  expect(guests["g1"]).toMatchObject({ dietary: "vegetarian", dietaryRaw: "Vegetarian" });
+  expect(guests["g2"]).toMatchObject({ dietary: "", dietaryRaw: "None" });
 });
 
 /**

@@ -1,4 +1,4 @@
-import { DIETARY_META } from './dietary.js'
+import { DIETARY_META } from '@/lib/model/dietary'
 import { getTableType } from './tableTypes.js'
 import { toCsv } from './exportCsv.js'
 import { downloadFile, slug } from './download.js'

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useStore } from '../../store/useStore.js'
-import { DIETARY_META, dietaryLabel } from '../../utils/dietary.js'
+import { DIETARY_META, dietaryLabel } from '@/lib/model/dietary'
 import { fillColour } from '../../utils/seatPositions.js'
 import styles from './StatsPanel.module.css'
 

@@ -10,6 +10,7 @@ const guest = (id: string, firstName: string, lastName: string): Guest => ({
   email: "",
   rsvpStatus: "confirmed",
   dietary: "",
+  dietaryRaw: "",
   entree: "",
   notes: "",
   side: "",

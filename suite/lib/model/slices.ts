@@ -1,4 +1,5 @@
 import { eventSchema, type Trousseau } from "@jfrusher/trousseau";
+import { isDietaryKey, normaliseDietary } from "./dietary";
 
 /**
  * A build-time check that the contract still has the `event` fields this file
@@ -132,6 +133,7 @@ export function coerceGuests(source: unknown): Record<string, Guest> {
     if (!isRecord(raw)) continue;
     const rsvp = raw["rsvpStatus"];
     const side = raw["side"];
+    const diet = legacyDietary(raw);
     out[id] = {
       // Keep every key the suite has no opinion about. Tools own fields this
       // model has never heard of — Tableaux's `fullName`, `dietaryRaw` and
@@ -144,7 +146,8 @@ export function coerceGuests(source: unknown): Record<string, Guest> {
       lastName: str(raw["lastName"]),
       email: str(raw["email"]),
       rsvpStatus: rsvp === "confirmed" || rsvp === "declined" ? rsvp : "pending",
-      dietary: str(raw["dietary"]),
+      dietary: diet.dietary,
+      dietaryRaw: diet.dietaryRaw,
       entree: str(raw["entree"]),
       notes: str(raw["notes"]),
       side: side === "bride" || side === "groom" || side === "both" ? side : "",
@@ -158,6 +161,32 @@ export function coerceGuests(source: unknown): Record<string, Guest> {
     };
   }
   return out;
+}
+
+/**
+ * A guest's dietary fields in the one shape every tool reads — see
+ * `lib/model/dietary`.
+ *
+ * The Data panel's importer used to store what the file said in `dietary`
+ * itself: "Vegetarian", "Gluten-Free", "None". A value that is not one of the
+ * keys is that, and becomes the key it means, with the words kept as what the
+ * guest said. `reconcileLoadedDocument` writes the result back, so a document
+ * is converted once.
+ */
+function legacyDietary(raw: Record<string, unknown>): { dietary: string; dietaryRaw: string } {
+  const dietary = str(raw["dietary"]);
+  const dietaryRaw = str(raw["dietaryRaw"]);
+  if (dietary === "" || isDietaryKey(dietary)) return { dietary, dietaryRaw };
+  return { dietary: normaliseDietary(dietary), dietaryRaw: dietaryRaw || dietary };
+}
+
+/** True when any stored guest still carries the old importer's dietary text. */
+export function hasLegacyDietary(source: unknown): boolean {
+  return Object.values(isRecord(source) ? source : {}).some((raw) => {
+    if (!isRecord(raw)) return false;
+    const dietary = str(raw["dietary"]);
+    return dietary !== "" && !isDietaryKey(dietary);
+  });
 }
 
 /** A guest's printed name. `firstName` may hold a whole name on a one-column import. */

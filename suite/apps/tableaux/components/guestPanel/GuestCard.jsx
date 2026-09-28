@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import { useStore } from '../../store/useStore.js'
 import Icon from '../ui/Icon.jsx'
 import { useGuestWarnings } from '../../store/warningsContext.jsx'
-import { dietaryMeta } from '../../utils/dietary.js'
+import { dietaryMeta } from '@/lib/model/dietary'
 import styles from './GuestCard.module.css'
 
 const SIDE = {

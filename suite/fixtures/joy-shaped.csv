@@ -1,0 +1,5 @@
+First Name,Last Name,Email,Party,Attending,Meal Choice,Dietary Restrictions
+Beatrix,Lindqvist,beatrix@example.com,Lindqvist Family,Accepted,Risotto,Vegetarian
+Otto,Lindqvist,,Lindqvist Family,Accepted,Beef,
+Priya,Castellanos,priya@example.com,Castellanos Party,Declined,,
+Devendra,Raghunathan,dev@example.com,Raghunathan Party,No Response,,Coeliac - severe

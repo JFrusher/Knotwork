@@ -12,8 +12,12 @@ import { HowThisWorks } from "./TourButtons";
 import { ChromeSlot } from "./chrome";
 import { DataButton } from "./DataButton";
 import { useDataPanel } from "./dataPanel";
+import { useGuestImport } from "./guestImportPanel";
 
 const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataManager), {
+  ssr: false,
+});
+const GuestImport = dynamic(() => import("./GuestImport").then((m) => m.GuestImport), {
   ssr: false,
 });
 
@@ -35,6 +39,10 @@ export function Header() {
   // closed in place.
   const [dataEverOpened, setDataEverOpened] = useState(false);
   if (dataOpen && !dataEverOpened) setDataEverOpened(true);
+  // The importer, loaded the same way: only once somebody has asked for it.
+  const importOpen = useGuestImport((s) => s.open);
+  const [importEverOpened, setImportEverOpened] = useState(false);
+  if (importOpen && !importEverOpened) setImportEverOpened(true);
   const pathname = usePathname();
   const guestCount = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
 
@@ -101,6 +109,7 @@ export function Header() {
       </header>
 
       {dataEverOpened ? <DataManager open={dataOpen} onClose={hideData} /> : null}
+      {importEverOpened ? <GuestImport /> : null}
     </>
   );
 }

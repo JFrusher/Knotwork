@@ -1,4 +1,5 @@
 import { eventSchema } from '@jfrusher/trousseau'
+import { coerceGuests } from '@/lib/model/slices'
 import { mayWrite, noteRead } from '@/lib/store/toolGeneration'
 import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
 import type { Guest, TableEntity } from './planSchema'
@@ -134,7 +135,10 @@ export function readDoc(): TableauxDoc {
   noteRead('tableaux')
   const { raw, doc } = useTrousseauStore.getState()
   const seating = isRecord(raw.seating) ? raw.seating : {}
-  const guests = named(isRecord(raw.guests) ? (raw.guests as Record<string, Guest>) : {})
+  // Through the suite's one definition of a guest, which keeps every field it
+  // has no opinion about and puts the dietary fields in the shape the filters
+  // and badges here expect.
+  const guests = named(coerceGuests(raw.guests) as unknown as Record<string, Guest>)
   const meta = isRecord(seating.meta) ? seating.meta : {}
 
   return {

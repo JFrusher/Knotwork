@@ -1,4 +1,5 @@
 import { guestName } from "@/lib/model/slices";
+import { dietaryLabel, dietaryText } from "@/lib/model/dietary";
 import type { Guest, Seating } from "@/lib/model/types";
 import { getTableType } from "./tableTypes";
 
@@ -53,7 +54,8 @@ export function computeStats(guests: Record<string, Guest>, seating: Seating): S
     capacity,
     spare: capacity - seated,
     // Declined guests are excluded: the kitchen cooks for who is coming.
-    dietary: tally(confirmed.map((g) => g.dietary.trim()).filter(Boolean)),
+    // By diet, not by wording: "V", "veggie" and "Vegetarian" are one line.
+    dietary: tally(confirmed.map((g) => (g.dietary ? dietaryLabel(g.dietary) : "")).filter(Boolean)),
     entrees: tally(confirmed.map((g) => g.entree.trim()).filter(Boolean)),
     sides: tally(
       confirmed.map((g) =>
@@ -107,7 +109,7 @@ export function tableReports(guests: Record<string, Guest>, seating: Seating): T
           {
             seat: table.seatMode === "seat" ? index + 1 : null,
             name: guestName(guest),
-            dietary: guest.dietary,
+            dietary: dietaryText(guest),
             entree: guest.entree,
           },
         ];

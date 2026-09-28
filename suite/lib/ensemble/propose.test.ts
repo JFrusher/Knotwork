@@ -9,6 +9,7 @@ const guest = (id: string, extra: Partial<Guest> = {}): Guest => ({
   email: "",
   rsvpStatus: "confirmed",
   dietary: "",
+  dietaryRaw: "",
   entree: "",
   notes: "",
   side: "",

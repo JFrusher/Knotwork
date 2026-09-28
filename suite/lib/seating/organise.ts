@@ -1,4 +1,5 @@
 import { newId } from "@/lib/model/ids";
+import { dietaryText } from "@/lib/model/dietary";
 import { guestName } from "@/lib/model/slices";
 import type { Constraint, ConstraintKind, Guest, NamedGroup, Seating } from "@/lib/model/types";
 import type { Plan } from "./actions";
@@ -196,7 +197,7 @@ export function filterGuests(guests: Guest[], filter: GuestFilter): Guest[] {
 
   return guests.filter((guest) => {
     if (q) {
-      const haystack = `${guestName(guest)} ${guest.dietary} ${guest.notes} ${guest.email}`;
+      const haystack = `${guestName(guest)} ${dietaryText(guest)} ${guest.notes} ${guest.email}`;
       if (!haystack.toLowerCase().includes(q)) return false;
     }
     if (filter.rsvp !== "all" && guest.rsvpStatus !== filter.rsvp) return false;

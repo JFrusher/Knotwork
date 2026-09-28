@@ -1,6 +1,5 @@
 import { useStore } from '../../store/useStore.js'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
-import ImportModal from '../guestPanel/ImportModal.jsx'
 import WarningsPanel from './WarningsPanel.jsx'
 import ConstraintsModal from './ConstraintsModal.jsx'
 import SnapshotsModal from './SnapshotsModal.jsx'
@@ -12,7 +11,7 @@ import PrintModal from './PrintModal.jsx'
 
 /**
  * Renders the single store-driven modal. New modal types are added to the
- * switch as their features are built (import, settings, snapshots, …).
+ * switch as their features are built (settings, snapshots, …).
  */
 export default function ModalRoot() {
   const modal = useStore((s) => s.modal)
@@ -22,8 +21,6 @@ export default function ModalRoot() {
   const { name, props = {} } = modal
 
   switch (name) {
-    case 'import':
-      return <ImportModal />
     case 'warnings':
       return <WarningsPanel />
     case 'constraints':

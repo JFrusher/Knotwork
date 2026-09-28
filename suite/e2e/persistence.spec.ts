@@ -34,13 +34,17 @@ test("a guest import and a rename in the Data panel survive editing in Seating",
   await page.getByRole("button", { name: "Data" }).click();
   const data = page.getByRole("dialog", { name: "Your data" });
   await data.getByLabel("Names").fill("Robin & Kit");
-  await data.locator('input[type="file"][accept^=".csv"]').setInputFiles({
+  await data.getByRole("button", { name: "Import guests" }).click();
+  const importer = page.getByRole("dialog", { name: "Import guests" });
+  await importer.getByLabel("Guest list CSV").setInputFiles({
     name: "three.csv",
     mimeType: "text/csv",
     buffer: Buffer.from("First Name,Last Name\nZelda,Newcomer\nYusuf,Newcomer\nXanthe,Newcomer\n"),
   });
-  await data.getByRole("button", { name: "Import 3 rows" }).click();
-  await expect(data.getByText(/^3 new/)).toBeVisible();
+  await importer.getByRole("button", { name: "See what will change" }).click();
+  await importer.getByRole("button", { name: "Import", exact: true }).click();
+  await expect(importer.getByText(/Imported: 3 new/)).toBeVisible();
+  await importer.getByRole("button", { name: "Done" }).click();
   await page.keyboard.press("Escape");
   await expect(guests).toHaveText("103");
 

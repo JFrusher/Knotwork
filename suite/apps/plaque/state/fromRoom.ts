@@ -1,4 +1,5 @@
 import { guestName, readGuests, readSeating } from "@/lib/model/slices";
+import { dietaryText } from "@/lib/model/dietary";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import type { RowIssue, GuestRow } from "../core/data/rows";
 
@@ -57,7 +58,8 @@ export function rowsFromRoom(only?: ReadonlySet<string>): RoomRows {
     "Last Name": guest.lastName,
     Name: guestName(guest),
     Table: guest.assignedTableId ? (tableLabel.get(guest.assignedTableId) ?? "") : "",
-    Dietary: guest.dietary,
+    // What the guest said, so the card reads "Coeliac" rather than "gluten-free".
+    Dietary: dietaryText(guest),
     Side: guest.side,
   }));
 

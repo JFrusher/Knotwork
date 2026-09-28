@@ -20,7 +20,10 @@ export interface Guest {
   lastName: string;
   email: string;
   rsvpStatus: RsvpStatus;
+  /** A key from `lib/model/dietary` — "vegetarian", "other" — or "" for none. */
   dietary: string;
+  /** What the guest actually said, for the caterer and the card. */
+  dietaryRaw: string;
   /** The chosen main course, when the couple asked. Read by the place cards. */
   entree: string;
   notes: string;

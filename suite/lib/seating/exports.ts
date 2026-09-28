@@ -1,4 +1,5 @@
 import { toCsv } from "@/lib/data/csv";
+import { dietaryText } from "@/lib/model/dietary";
 import { guestName } from "@/lib/model/slices";
 import type { Guest, Seating } from "@/lib/model/types";
 import { computeStats, tableReports } from "./stats";
@@ -57,7 +58,7 @@ export function guestListCsv(guests: Record<string, Guest>, seating: Seating): s
         at?.table ?? "",
         at?.seat ?? "",
         guest.rsvpStatus,
-        guest.dietary,
+        dietaryText(guest),
         guest.entree,
         guest.side,
         seating.groups[guest.groupId ?? ""]?.name ?? "",
