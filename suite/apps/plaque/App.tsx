@@ -37,7 +37,6 @@ import { Announcer } from "./ui/Announcer";
 import { ChromeFill } from "@/components/shell/chrome";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 import { ClearDataButton } from "./ui/ClearDataButton";
-import { DesktopGate, useIsDesktop } from "./ui/DesktopGate";
 import { ExportBar } from "./ui/ExportBar";
 import { MissingAssets } from "./ui/MissingAssets";
 import { Pagination } from "./ui/Pagination";
@@ -94,7 +93,6 @@ function discardRestore(): void {
 }
 
 export function App() {
-  const isDesktop = useIsDesktop();
   const [ready, setReady] = useState(false);
   // Selected one at a time: an action's identity is stable, so these never
   // hand back a new reference and never re-render on their own account.
@@ -425,7 +423,6 @@ export function App() {
     return [...geometryIssues, ...contrast, ...overflow, ...unbound];
   }, [geometryIssues, template, headers, card]);
 
-  if (!isDesktop) return <DesktopGate />;
   if (!ready) return <p className={styles.status}>Loading fonts…</p>;
 
   return (

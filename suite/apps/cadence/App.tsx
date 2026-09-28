@@ -14,7 +14,6 @@ import { Announcer } from "./ui/Announcer";
 import { Button } from "@/components/ui/fields";
 import { ChromeFill } from "@/components/shell/chrome";
 import { ToolUndo } from "@/components/shell/ToolUndo";
-import { DesktopGate, useIsDesktop } from "./ui/DesktopGate";
 import { ExportBar } from "./ui/ExportBar";
 import { ProjectButtons } from "./ui/ProjectButtons";
 import { Sidebar } from "./ui/Sidebar";
@@ -25,7 +24,6 @@ import styles from "./App.module.css";
 const persister = createPersister();
 
 export function App() {
-  const isDesktop = useIsDesktop();
   const doc = useStore(getDoc);
   const schedule = useStore(selectSchedule);
   const presentation = useStore((state) => state.ui.presentation);
@@ -92,7 +90,6 @@ export function App() {
     };
   }, []);
 
-  if (!isDesktop) return <DesktopGate />;
   if (presentation) return <Presentation />;
 
   const curfew = schedule.slack.toCurfewMin;

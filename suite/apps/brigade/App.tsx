@@ -8,7 +8,6 @@ import { Announcer } from "./ui/Announcer";
 import { Button } from "@/components/ui/fields";
 import { ChromeFill } from "@/components/shell/chrome";
 import { ToolUndo } from "@/components/shell/ToolUndo";
-import { DesktopGate, useIsDesktop } from "./ui/DesktopGate";
 import { ExportBar } from "./ui/ExportBar";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
@@ -19,7 +18,6 @@ import styles from "./App.module.css";
 const persister = createPersister();
 
 export function App() {
-  const isDesktop = useIsDesktop();
   const doc = useStore(getDoc);
   const notice = useStore((state) => state.notice);
   const filter = useStore((state) => state.filter);
@@ -75,8 +73,6 @@ export function App() {
       flush();
     };
   }, []);
-
-  if (!isDesktop) return <DesktopGate />;
 
   const unassigned = doc.jobs.filter((job) => job.personIds.length === 0).length;
 

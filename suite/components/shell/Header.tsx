@@ -42,7 +42,9 @@ export function Header() {
             Trousseau
           </Link>
 
-          <nav className="flex shrink-0 items-center gap-1">
+          {/* Scrolls within the header on a narrow screen, rather than making
+              the whole page wider than it and pushing Data off the edge. */}
+          <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">
             {TOOLS.map((tool) => {
               const active = pathname === tool.href;
               return (
@@ -101,7 +103,8 @@ export function Header() {
             }`}
           >
             <Database size={15} />
-            <span className="hidden sm:inline">Data</span>
+            {/* Still the button's name when the word does not fit on screen. */}
+            <span className="sr-only sm:not-sr-only">Data</span>
           </button>
 
           <HowThisWorks />
