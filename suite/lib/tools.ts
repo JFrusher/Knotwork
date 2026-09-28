@@ -1,4 +1,4 @@
-import { Armchair, Camera, ClipboardList, Clock, Contact, LayoutDashboard, type LucideIcon } from "lucide-react";
+import { Armchair, Camera, ClipboardList, Clock, Contact, LayoutDashboard, Users, type LucideIcon } from "lucide-react";
 
 /** The five tools, in the order the day is planned in. Nav and landing share this. */
 export interface Tool {
@@ -66,4 +66,7 @@ export interface WeddingPage {
   icon: LucideIcon;
 }
 
-export const WEDDING_PAGES: readonly WeddingPage[] = [{ href: "/", name: "Overview", icon: LayoutDashboard }];
+export const WEDDING_PAGES: readonly WeddingPage[] = [
+  { href: "/", name: "Overview", icon: LayoutDashboard },
+  { href: "/guests", name: "Guests", icon: Users },
+];

@@ -10,9 +10,9 @@ import { TOOLS } from "@/lib/tools";
 import { SignInFailed } from "./SignInFailed";
 import { TakeTheTour } from "./TourButtons";
 
-/** Where each area is worked on, and how it is drawn. The guest list lives in Seating for now. */
+/** Where each area is worked on, and how it is drawn. */
 const PLACES: Record<AreaId, { name: string; href: string; icon: LucideIcon; tokens: string }> = {
-  guests: { name: "Guests", href: "/seating", icon: Users, tokens: "tableaux-tokens" },
+  guests: { name: "Guests", href: "/guests", icon: Users, tokens: "tableaux-tokens" },
   ...(Object.fromEntries(
     TOOLS.map((tool) => [tool.href.slice(1), { name: tool.name, href: tool.href, icon: tool.icon, tokens: tool.tokens }]),
   ) as Record<Exclude<AreaId, "guests">, { name: string; href: string; icon: LucideIcon; tokens: string }>),

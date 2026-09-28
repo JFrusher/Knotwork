@@ -45,7 +45,8 @@ test("Take a tour runs every chapter, one after another", async () => {
 
   const front = CHAPTERS[0]!.steps.length;
   for (let i = 0; i < front; i += 1) fireEvent.click(screen.getByRole("button", { name: "tour next" }));
-  expect(screen.getByTestId("at").textContent).toBe(`/seating ${front + 1}/${ALL}`);
+  // Across into the next chapter, on its own page, rather than stopping.
+  expect(screen.getByTestId("at").textContent).toBe(`${CHAPTERS[1]!.steps[0]!.route} ${front + 1}/${ALL}`);
 
   for (let i = front; i < ALL; i += 1) fireEvent.click(screen.getByRole("button", { name: "tour next" }));
   expect(screen.getByTestId("at").textContent).toBe("closed");

@@ -322,7 +322,16 @@ project, the build, and the Playwright run — and gets its own plan first.
    page says what the tools share now.
 2. **Guests** — the whole list as a sortable, filterable, bulk-editable table:
    RSVP, side, dietary, table, plus-one, tags. Today the list exists only as a
-   column inside the Seating canvas.
+   column inside the Seating canvas. **Built 2026-09-28** at `/guests`, under
+   the wedding's name. It keeps no copy: it reads the wedding and writes it,
+   so its changes are on the one undo stack. Replies, sides, food and tables
+   change in the row or for everyone ticked; tags are added and taken off in
+   bulk. Table moves run Seating's own commands over the stored slices, so a
+   guest and a table's list cannot disagree and a seat-level table keeps its
+   holes; food is typed in the guest's words and read the way Seating's
+   inspector reads it. Only what the filter shows is acted on. The tour has a
+   chapter for it; the rule on chapter length became "at most six, under
+   thirty in all", which is what the four-to-six rule was for.
 3. **Money** — a view over what the crew slice already holds (cost, deposit,
    paid-on, balance due, budget). Adds one field, `balancePaidOn`, because
    today nothing records that a balance was paid. Due-soon balances join What

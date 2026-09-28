@@ -27,6 +27,7 @@ export interface TourChapter {
 
 export type ChapterId =
   | "shell"
+  | "guests"
   | "seating"
   | "timeline"
   | "place-cards"
@@ -67,6 +68,24 @@ export const CHAPTERS: readonly TourChapter[] = [
         title: "Your data lives here",
         body: "Everything is saved in this browser as you work. Export a backup from here — without an account, it is the only copy that survives clearing your browser.",
         route: "/",
+      },
+    ],
+  },
+  {
+    id: "guests",
+    title: "Everyone on the list",
+    steps: [
+      {
+        anchor: "guests.filters",
+        title: "Find anyone",
+        body: "Search by name, table, what they eat or a tag, and narrow the list by reply, side, table or dietary requirement.",
+        route: "/guests",
+      },
+      {
+        anchor: "guests.list",
+        title: "Change them where they are",
+        body: "A reply, a side, what someone eats and where they sit can all be changed in their row. Tick several to change them at once — a family to one table, a batch of replies in. It is the same list Seating, the place cards and the group shots read.",
+        route: "/guests",
       },
     ],
   },
@@ -235,6 +254,7 @@ export const CHAPTERS: readonly TourChapter[] = [
 ];
 
 const BY_ROUTE = new Map<string, ChapterId>([
+  ["/guests", "guests"],
   ["/seating", "seating"],
   ["/timeline", "timeline"],
   ["/place-cards", "place-cards"],

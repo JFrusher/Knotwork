@@ -3,12 +3,13 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CHAPTERS, chapterForRoute } from "./steps";
 
-const ROUTES = new Set(["/", "/seating", "/place-cards", "/timeline", "/delegation", "/group-shots"]);
+const ROUTES = new Set(["/", "/guests", "/seating", "/place-cards", "/timeline", "/delegation", "/group-shots"]);
 
 describe("the chapters", () => {
-  it("has one chapter per tool, plus the shell", () => {
+  it("has the front page, then the wedding's own pages, then one chapter per tool", () => {
     expect(CHAPTERS.map((c) => c.id)).toEqual([
       "shell",
+      "guests",
       "seating",
       "timeline",
       "place-cards",
@@ -17,11 +18,14 @@ describe("the chapters", () => {
     ]);
   });
 
-  it("gives every chapter between four and six steps", () => {
+  // Longer tours get abandoned, usually partway through the first chapter —
+  // see the 2026-09-07 tour design. The whole walk stays near five minutes.
+  it("keeps every chapter to six steps, and the whole tour under thirty", () => {
     for (const chapter of CHAPTERS) {
-      expect(chapter.steps.length, chapter.id).toBeGreaterThanOrEqual(4);
+      expect(chapter.steps.length, chapter.id).toBeGreaterThanOrEqual(2);
       expect(chapter.steps.length, chapter.id).toBeLessThanOrEqual(6);
     }
+    expect(CHAPTERS.reduce((sum, chapter) => sum + chapter.steps.length, 0)).toBeLessThan(30);
   });
 
   it("gives every step words to say and a route that exists", () => {
@@ -41,7 +45,8 @@ describe("the chapters", () => {
 });
 
 describe("chapterForRoute", () => {
-  it("maps each tool route to its own chapter", () => {
+  it("maps each page with a chapter to its own", () => {
+    expect(chapterForRoute("/guests")).toBe("guests");
     expect(chapterForRoute("/seating")).toBe("seating");
     expect(chapterForRoute("/group-shots")).toBe("group-shots");
   });
