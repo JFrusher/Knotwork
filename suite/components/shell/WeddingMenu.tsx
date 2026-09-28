@@ -77,6 +77,11 @@ export function WeddingMenu() {
                 All weddings
               </Link>
             </li>
+            <li>
+              <Link href="/library" aria-current={pathname === "/library" ? "page" : undefined} className={item}>
+                Library
+              </Link>
+            </li>
           </ul>
         </nav>
       ) : null}

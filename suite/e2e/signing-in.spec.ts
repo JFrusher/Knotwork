@@ -98,7 +98,7 @@ test("a planner switches between clients, and each comes back as it was", async 
   const menu = (names: string) => page.getByRole("button", { name: new RegExp(`^${names}`) });
   const weddings = page.getByRole("navigation", { name: "Your weddings" });
   await menu("Trousseau").click();
-  await expect(weddings.getByRole("link")).toHaveCount(3);
+  await expect(weddings.getByRole("link")).toHaveText(["Alex & Sam · client", "Robin & Kit · client", "All weddings", "Library"]);
   await expect(weddings.locator("[aria-current]")).toHaveCount(0);
   await page.keyboard.press("Escape");
 

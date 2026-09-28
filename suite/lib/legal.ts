@@ -39,7 +39,7 @@ export const RETENTION_MONTHS = 24;
 export const PRIVACY: Policy = {
   title: "Privacy",
   updated: "2026-09-28",
-  digest: "179d3f1701b5e34b",
+  digest: "06973fd3d66fee62",
   intro:
     "Trousseau is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
   sections: [
@@ -65,6 +65,7 @@ export const PRIVACY: Policy = {
         "Your wedding is then stored in a database as one document, encrypted at rest, with database rules that make it unreadable to any other account. Inviting your partner or your planner adds exactly that person, by the email address you name. Either of you can see everyone who has access, and remove your planner at any time.",
         "Being straight about it: this is ordinary, well-guarded storage, not encryption I cannot undo. I do not read your wedding and there is no support tool that would let me browse it, but I administer the database, so I could. If that matters more to you than planning across devices does, use the app without an account — it is the default, and nothing leaves your browser.",
         "Every version you save is kept alongside the current one, so a mistake can be recovered rather than being final.",
+        "A planner can also keep a library of their own — card designs, rooms, running orders and checklists — to use again for other weddings. It is theirs alone: no other account can see it, and nothing personal goes into it, so no guests, no dates and no suppliers' names or numbers. It stays until they remove it or delete their account.",
       ],
     },
     {
@@ -87,7 +88,7 @@ export const PRIVACY: Policy = {
       heading: "Deleting it yourself",
       paragraphs: [
         "Deleting your account is on the account page — signing in is what proves it is yours. It takes you off every wedding you are on, and deletes each one nobody else is still on, with its history, its files and its guest link, immediately. A wedding someone else is on stays with them, because it is their wedding too.",
-        "Leaving one wedding works the same way, for that wedding alone.",
+        "Leaving one wedding works the same way, for that wedding alone. Deleting your account also deletes your library, if you kept one.",
         "Your own browser keeps its copy unless you choose otherwise, because withdrawing from a server is not the same as wanting to lose your seating plan. Signing out asks whether to remove it from the device; clearing this site's data in your browser removes it too.",
       ],
     },

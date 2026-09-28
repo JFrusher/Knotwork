@@ -386,7 +386,21 @@ project, the build, and the Playwright run — and gets its own plan first.
 
 ### Phase 3 — Beyond the couple
 
-1. **Planners:** Weddings page and library.
+1. **Planners:** Weddings page and library. **Built 2026-09-28.** The
+   Weddings page lists each client soonest first with how long to go, the
+   next thing to do (What is left, run over the stored document on the
+   server, which already read it to name the wedding), what is still to pay
+   and when it was last saved. The **library** (`/library`, and from the
+   wedding menu for a planner) keeps a card design, a running order, a room
+   or a checklist on the account, built from a whitelist of what each is:
+   a design without its rows or per-row tweaks, a day without its date or
+   suppliers' names and numbers, a room with every chair empty, a checklist
+   as days before the day. Putting one into a wedding is one undoable change
+   and says first what it replaces — a room unseats everyone. Its own table,
+   `library_items`, is readable, addable and removable only by its owner and
+   never edited in place (proved against PGlite); the Privacy Policy says
+   so. Uploaded card artwork is referred to, not copied, so a design used in
+   another wedding shows artwork only once it is uploaded there too.
 2. **Binder** (`/binder`): now and next against the clock, the run sheet, who to
    ring, find a guest's table, the shot list to tick off. Works offline from the
    last synced copy — venues have bad signal.

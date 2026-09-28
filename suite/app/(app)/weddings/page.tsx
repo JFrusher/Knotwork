@@ -83,9 +83,14 @@ export default function WeddingsPage() {
           ) : (
             <WeddingList weddings={weddings} open={open} />
           )}
-          <Button tone="primary" icon={Plus} onClick={() => void startClientWedding()}>
-            Start a client’s wedding
-          </Button>
+          <div className="flex flex-wrap items-center gap-4">
+            <Button tone="primary" icon={Plus} onClick={() => void startClientWedding()}>
+              Start a client’s wedding
+            </Button>
+            <Link href="/library" className="text-sm text-charcoal underline">
+              Your library of designs to use again
+            </Link>
+          </div>
         </div>
       )}
     </div>
