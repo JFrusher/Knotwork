@@ -38,7 +38,11 @@ export default function TableGuestBox({ tableId, guestId, charsPerLine, maxLines
   )
   const { menu, openAt, close } = useContextMenu()
 
-  const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
+  // Pointer listeners only, not dnd-kit's `attributes`: those made this a
+  // focusable role=button inside the table's own button — a nested control,
+  // and a Tab stop that did nothing, as Seating registers no keyboard sensor.
+  // Keyboard users reach a seated guest through the guest list.
+  const { setNodeRef, listeners, isDragging } = useDraggable({
     id: `tableguest_${tableId}_${guestId}`,
     data: { type: 'guest', guestId },
   })
@@ -66,7 +70,6 @@ export default function TableGuestBox({ tableId, guestId, charsPerLine, maxLines
               : null),
           }}
           data-canvas-item
-          {...attributes}
           {...listeners}
           onPointerDown={(e) => {
             // Don't let the table-move handler on the node fire — grab the guest.

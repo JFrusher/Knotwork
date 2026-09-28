@@ -7,7 +7,7 @@ function withJobs(doc: BrigadeDoc, jobs: Job[]): BrigadeDoc {
   return { ...doc, jobs };
 }
 
-function job(id: string, blockId: string, personIds: string[], teamId: string | null = null): Job {
+function job(id: string, blockId: string | null, personIds: string[], teamId: string | null = null): Job {
   return { id, blockId, label: id, notes: "", teamId, personIds };
 }
 
@@ -84,5 +84,10 @@ describe("coverage", () => {
 
     expect(found[0]?.kind).toBe("orphaned");
     expect(blocking(found)).toHaveLength(1);
+  });
+
+  it("leaves a job that was never on the day alone: it is a task, not a lost one", () => {
+    const doc = withJobs(sampleDoc(), [job("job-a", null, ["per-ana"])]);
+    expect(coverage(doc)).toEqual([]);
   });
 });

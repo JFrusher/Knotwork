@@ -1,4 +1,5 @@
 import { sideShort } from '@/lib/model/partners'
+import { isComing } from '@/lib/model/slices'
 import { downloadFile, slug } from './download.js'
 
 // Cells beginning with these characters can be executed as formulas by Excel /
@@ -49,7 +50,7 @@ export function buildAssignmentTable(state) {
   }
 
   Object.values(guests)
-    .filter((g) => !seated.has(g.id) && g.rsvpStatus !== 'declined')
+    .filter((g) => !seated.has(g.id) && isComing(g))
     .sort((a, b) => String(a.fullName).localeCompare(b.fullName))
     .forEach((g) => {
       rows.push([

@@ -1,4 +1,4 @@
-import { guestName } from "@/lib/model/slices";
+import { guestName, isComing } from "@/lib/model/slices";
 import type { Guest, Seating } from "@/lib/model/types";
 
 /**
@@ -75,7 +75,7 @@ export function shareSnapshot(
   for (const guest of Object.values(guests)) {
     // Somebody who has declined is not at the wedding, and publishing that they
     // were invited and said no is not the couple's to publish.
-    if (guest.rsvpStatus === "declined") continue;
+    if (!isComing(guest)) continue;
     const at = seatOf.get(guest.id);
     const name = guestName(guest);
     if (!name) continue;

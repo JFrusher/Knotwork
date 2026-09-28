@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useShallow } from "zustand/shallow";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
-import { readCrew, readGuests, readSeating, readTimeline } from "@/lib/model/slices";
+import { isComing, readCrew, readGuests, readSeating, readTimeline } from "@/lib/model/slices";
 import { TOOLS } from "@/lib/tools";
 import { TakeTheTour } from "./TourButtons";
 import { SignInFailed } from "./SignInFailed";
@@ -28,6 +28,8 @@ export function QuickStats() {
       couple: s.doc.event.coupleNames,
       date: s.doc.event.date,
       guests: Object.keys(guests).length,
+      // Seated out of those coming: someone who declined is not a seat to fill.
+      coming: Object.values(guests).filter(isComing).length,
       seated,
       tables: Object.keys(readSeating(s.doc).tables).length,
       blocks: readTimeline(s.doc).blocks.length,
@@ -56,7 +58,7 @@ export function QuickStats() {
           {/* A list of links, not a <dl>: each tile is a link, and a link
               cannot wrap a term and its description. */}
           <Stat label="Guests" value={stats.guests} href="/seating" />
-          <Stat label="Seated" value={`${stats.seated} / ${stats.guests}`} href="/place-cards" />
+          <Stat label="Seated" value={`${stats.seated} / ${stats.coming}`} href="/place-cards" />
           <Stat label="Tables" value={stats.tables} href="/seating" />
           <Stat label="Day blocks" value={stats.blocks} href="/timeline" />
         </ul>

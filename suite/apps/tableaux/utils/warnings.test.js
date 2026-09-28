@@ -42,6 +42,18 @@ describe('computeWarnings', () => {
     expect(computeWarnings(state).some((x) => x.kind === 'dietary-check')).toBe(true)
   })
 
+  it('counts a guest who answered "None" as having a note, not as one to check', () => {
+    const state = {
+      guests: {
+        a: guest('a', { dietary: 'vegan', assignedTableId: 't' }),
+        b: guest('b', { dietaryRaw: 'None', assignedTableId: 't' }),
+      },
+      tables: { t: table('t', { assignedGuestIds: ['a', 'b'] }) },
+      constraints: [],
+    }
+    expect(computeWarnings(state).some((x) => x.kind === 'dietary-check')).toBe(false)
+  })
+
   it('warns when more than 30% of guests are unseated', () => {
     const guests = {}
     for (let i = 0; i < 10; i++) guests[`g${i}`] = guest(`g${i}`, { assignedTableId: i < 6 ? 't' : null })

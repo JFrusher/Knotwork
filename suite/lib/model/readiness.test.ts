@@ -30,6 +30,11 @@ describe("what is left to do", () => {
     expect(ids({ guests: GUESTS, ...TABLES })).toEqual([]);
   });
 
+  it("does not count someone who is not coming as having no table", () => {
+    const guests = { ...GUESTS, g2: { id: "g2", firstName: "Tobias", rsvpStatus: "declined" } };
+    expect(ids({ guests, ...TABLES })).toEqual([]);
+  });
+
   it("does not mention unseated guests before there are any tables", () => {
     // Nobody is seated on the day the guest list arrives, and saying so then is
     // just restating that the work has not been done yet.
@@ -71,6 +76,21 @@ describe("what is left to do", () => {
             fileName: "the room",
             rows: [{}],
             template: { elements: [{ text: "{{Name}} · {{Dietary}}" }] },
+          },
+        }),
+      ).not.toContain("dietary-unprinted");
+    });
+
+    it("is satisfied by an icon drawn from the dietary column, as Plaque's own design does it", () => {
+      expect(
+        ids({
+          guests: { g1: { ...GUESTS.g1, dietary: "coeliac" } },
+          ...TABLES,
+          stationery: {
+            version: 1,
+            fileName: "the room",
+            rows: [{}],
+            template: { elements: [{ kind: "icon", sourceField: "Dietary", rules: [] }] },
           },
         }),
       ).not.toContain("dietary-unprinted");

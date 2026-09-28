@@ -11,12 +11,12 @@ test("a Seating edit survives an immediate reload", async ({ page }) => {
   await openSeating(page);
 
   await page.getByRole("button", { name: /^Table 1, / }).click();
-  await page.getByLabel("Table name").fill("Top table");
+  await page.getByLabel("Table name").fill("Head table");
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("button", { name: /^Top table, / })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Head table, / })).toBeVisible();
 
   await page.reload();
-  await expect(page.getByRole("button", { name: /^Top table, / })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Head table, / })).toBeVisible();
 });
 
 /**
@@ -29,7 +29,7 @@ test("a guest import and a rename in the Data panel survive editing in Seating",
   await seedExampleWedding(page);
   await openSeating(page);
   const guests = page.getByTitle(/guests on this device$/);
-  await expect(guests).toHaveText("100");
+  await expect(guests).toHaveText("106");
 
   await page.getByRole("button", { name: "Data" }).click();
   const data = page.getByRole("dialog", { name: "Your data" });
@@ -47,25 +47,25 @@ test("a guest import and a rename in the Data panel survive editing in Seating",
   await expect(importer.getByText(/Imported: 3 new/)).toBeVisible();
   await importer.getByRole("button", { name: "Done" }).click();
   await page.keyboard.press("Escape");
-  await expect(guests).toHaveText("103");
+  await expect(guests).toHaveText("109");
 
   // Seating shows what the panel wrote, and its own edits land on top of it.
-  await expect(page.getByText("103 guests · 103 unassigned")).toBeVisible();
+  await expect(page.getByText("109 guests · 6 unassigned")).toBeVisible();
   await page.getByRole("button", { name: /^Table 1, / }).click();
-  await page.getByLabel("Table name").fill("Top table");
+  await page.getByLabel("Table name").fill("Head table");
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("button", { name: /^Top table, / })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Head table, / })).toBeVisible();
 
   // All three stored together: the import, the names, and Seating's own edit.
   // Waited for rather than reloaded into, so this is about what was written —
   // an edit caught mid-save by a reload is the test above's business.
   await expect
     .poll(() => storedWedding(page))
-    .toMatchObject({ guests: 103, names: "Robin & Kit", tables: expect.arrayContaining(["Top table"]) });
+    .toMatchObject({ guests: 109, names: "Robin & Kit", tables: expect.arrayContaining(["Head table"]) });
 
   await page.reload();
-  await expect(page.getByRole("button", { name: /^Top table, / })).toBeVisible();
-  await expect(guests).toHaveText("103");
+  await expect(page.getByRole("button", { name: /^Head table, / })).toBeVisible();
+  await expect(guests).toHaveText("109");
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Robin & Kit");
 });

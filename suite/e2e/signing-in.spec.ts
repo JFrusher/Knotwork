@@ -38,7 +38,7 @@ test("a device with its own wedding is asked which to keep, and the other can be
 
   const data = page.getByRole("dialog", { name: "Your data" });
   await expect(data.getByText("Two different weddings")).toBeVisible();
-  await expect(data.getByText("Alex & Sam — 100 guests", { exact: false })).toBeVisible();
+  await expect(data.getByText("Alex & Sam — 106 guests", { exact: false })).toBeVisible();
   await expect(data.getByText("Robin & Kit — 2 guests")).toBeVisible();
   // Nothing replaced while the question is open.
   expect((await storedWedding(page)).names).toBe("Alex & Sam");
@@ -49,7 +49,7 @@ test("a device with its own wedding is asked which to keep, and the other can be
 
   // This device's wedding was kept, and goes back in one step.
   const copies = data.getByRole("list");
-  await expect(copies.getByText(/^Alex & Sam — 100 guests/)).toBeVisible();
+  await expect(copies.getByText(/^Alex & Sam — 106 guests/)).toBeVisible();
   await copies.getByRole("button", { name: "Put it back" }).click();
   await page.getByRole("dialog", { name: "Put this wedding back?" }).getByRole("button", { name: "Put it back" }).click();
   await expect.poll(async () => (await storedWedding(page)).names).toBe("Alex & Sam");

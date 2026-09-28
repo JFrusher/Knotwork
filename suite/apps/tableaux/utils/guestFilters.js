@@ -1,4 +1,5 @@
 import { sideShort } from '@/lib/model/partners'
+import { isComing } from '@/lib/model/slices'
 
 // TODO(family-ux): no "in a family" (or per-family) filter chip exists —
 // would need an entry here AND in PREDICATES below, and a predicate can't
@@ -23,7 +24,8 @@ export function filterDefs(meta) {
 }
 
 const PREDICATES = {
-  unassigned: (g) => !g.assignedTableId,
+  // Who still needs a seat: someone who declined does not.
+  unassigned: (g) => isComing(g) && !g.assignedTableId,
   a: (g) => g.side === 'a' || g.side === 'both',
   b: (g) => g.side === 'b' || g.side === 'both',
   vegetarian: (g) => g.dietary === 'vegetarian',

@@ -1,3 +1,4 @@
+import { isComing } from '@/lib/model/slices'
 import { getTableType } from './tableTypes.js'
 
 /**
@@ -27,8 +28,11 @@ export function computeWarnings(state) {
     }
 
     const gs = ids.map((id) => guests[id]).filter(Boolean)
-    const withDiet = gs.filter((g) => g.dietary).length
-    const without = gs.filter((g) => !g.dietary).length
+    // A note is anything the guest said: "None" is an answer, and is kept in
+    // `dietaryRaw` while `dietary` holds only a requirement.
+    const noted = (g) => Boolean(g.dietary || g.dietaryRaw?.trim())
+    const withDiet = gs.filter(noted).length
+    const without = gs.filter((g) => !noted(g)).length
     if (withDiet > 0 && without > 0) {
       out.push({
         id: `diet_${t.id}`,
@@ -54,7 +58,7 @@ export function computeWarnings(state) {
     }
   }
 
-  const eligible = guestList.filter((g) => g.rsvpStatus !== 'declined')
+  const eligible = guestList.filter(isComing)
   const unassigned = eligible.filter((g) => !g.assignedTableId).length
   if (eligible.length > 0 && unassigned / eligible.length > 0.3) {
     out.push({

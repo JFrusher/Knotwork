@@ -7,6 +7,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 const tables = (page: Page) => page.getByRole("button", { name: / seats taken$/ });
+/**
+ * Coming, and not yet seated, in the example wedding. Drops go to the top
+ * table, which has free seats and is in full view — the bottom row sits under
+ * the canvas's own toolbar at this size, and a drop there lands on the toolbar.
+ */
+const UNSEATED = "Zainab Thistlewood";
 const palette = (page: Page) => page.getByRole("group", { name: "Add a table" });
 
 /** Tab until `name` has focus. Fails rather than looping for ever. */
@@ -45,10 +51,10 @@ test.describe("from the keyboard", () => {
 
   test("a guest can be opened and seated", async ({ page }) => {
     const before = await unassignedCount(page);
-    await tabTo(page, /^Alexander Dubois/);
+    await tabTo(page, new RegExp(`^${UNSEATED}`));
     await page.keyboard.press("Enter");
     const seat = page.getByLabel("Seat at table");
-    await seat.selectOption({ index: 1 });
+    await seat.selectOption({ label: "Table 13 — 8 free" });
     await expect.poll(() => unassignedCount(page)).toBe(before - 1);
   });
 });
@@ -65,21 +71,24 @@ test.describe("with a pointer", () => {
   }
 
   async function guestHandle(page: Page) {
-    const box = (await page.getByRole("button", { name: /^Alexander Dubois/ }).boundingBox())!;
+    // Scrolled to first, as a person would: the list is longer than the screen.
+    const card = page.getByRole("button", { name: new RegExp(`^${UNSEATED}`) });
+    await card.scrollIntoViewIfNeeded();
+    const box = (await card.boundingBox())!;
     return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
   }
 
   // The drop target once sat half a table down and to the right of the table
   // drawn, so the top-left half missed and the floor beside it caught drops.
   test("a guest dropped on the top-left of a table is seated at it", async ({ page }) => {
-    const box = (await page.getByRole("button", { name: /^Table 2, / }).boundingBox())!;
+    const box = (await page.getByRole("button", { name: /^Top table, / }).boundingBox())!;
     const before = await unassignedCount(page);
     await drag(page, await guestHandle(page), { x: box.x + box.width * 0.35, y: box.y + box.height * 0.35 });
     await expect.poll(() => unassignedCount(page)).toBe(before - 1);
   });
 
   test("a guest dropped on the floor beside a table is not seated", async ({ page }) => {
-    const box = (await page.getByRole("button", { name: /^Table 2, / }).boundingBox())!;
+    const box = (await page.getByRole("button", { name: /^Top table, / }).boundingBox())!;
     const before = await unassignedCount(page);
     await drag(page, await guestHandle(page), { x: box.x + box.width + 12, y: box.y + box.height * 0.75 });
     await page.waitForTimeout(300);

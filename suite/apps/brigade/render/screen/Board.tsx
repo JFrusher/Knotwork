@@ -63,8 +63,8 @@ export function Board() {
   return (
     <div className={styles.board}>
       {tasks.length > 0 && (
-        <section className={styles.orphans}>
-          <h2 className={styles.orphanHead}>
+        <section className={styles.tasks}>
+          <h2 className={styles.tasksHead}>
             Not tied to the day — {tasks.length} job{tasks.length === 1 ? "" : "s"}
           </h2>
           <ul className={styles.jobs}>

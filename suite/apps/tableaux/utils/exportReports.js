@@ -1,5 +1,6 @@
 import { DIETARY_META } from '@/lib/model/dietary'
 import { sideShort } from '@/lib/model/partners'
+import { isComing } from '@/lib/model/slices'
 import { getTableType } from './tableTypes.js'
 import { toCsv } from './exportCsv.js'
 import { downloadFile, slug } from './download.js'
@@ -11,8 +12,6 @@ import { downloadFile, slug } from './download.js'
  * CSV report and the XLSX workbook (single source of truth).
  */
 
-const isCounted = (g) => g.rsvpStatus !== 'declined'
-
 /** Headcount by dietary requirement among non-declined guests. */
 export function buildDietaryTotals(state) {
   const { guests = {} } = state
@@ -20,7 +19,7 @@ export function buildDietaryTotals(state) {
   let standard = 0
   let total = 0
   for (const g of Object.values(guests)) {
-    if (!isCounted(g)) continue
+    if (!isComing(g)) continue
     total++
     const key = g.dietary || ''
     if (!key) standard++

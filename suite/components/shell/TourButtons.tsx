@@ -17,7 +17,7 @@ import { useConfirm } from "@/components/ui/Confirm";
 
 /** The front page: start at the beginning, optionally on the example wedding. */
 export function TakeTheTour() {
-  const { start, hasSeenTour } = useTour();
+  const { startAll, hasSeenTour } = useTour();
   const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
 
@@ -25,7 +25,7 @@ export function TakeTheTour() {
     setBusy(true);
     try {
       if (withExample && (await loadExampleWedding(confirm)) === "cancelled") return;
-      start("shell");
+      startAll();
     } finally {
       setBusy(false);
     }

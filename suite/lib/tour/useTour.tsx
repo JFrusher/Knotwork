@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CHAPTERS, type ChapterId, type TourStep } from "./steps";
+import { CHAPTERS, type ChapterId, type TourChapter, type TourStep } from "./steps";
 
 /**
  * Which chapter and step are open.
@@ -39,7 +39,10 @@ export interface TourState {
   /** One-based, for "3 of 5". */
   index: number;
   total: number;
+  /** One chapter: "How this page works". */
   start: (chapter: ChapterId) => void;
+  /** Every chapter, one after another: "Take a tour". */
+  startAll: () => void;
   next: () => void;
   back: () => void;
   stop: () => void;
@@ -48,63 +51,68 @@ export interface TourState {
 
 const TourContext = createContext<TourState | null>(null);
 
+/** A walk through the tour: its steps in order, each with the chapter it belongs to. */
+type Walk = Array<{ chapter: TourChapter; step: TourStep }>;
+
+const walkOf = (chapters: readonly TourChapter[]): Walk =>
+  chapters.flatMap((chapter) => chapter.steps.map((step) => ({ chapter, step })));
+
 export function TourProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [open, setOpen] = useState<{ chapter: ChapterId; index: number } | null>(null);
+  // "How this page works" walks one chapter and stops — somebody who asked
+  // about Place cards asked about Place cards. "Take a tour" walks them all.
+  const [open, setOpen] = useState<{ walk: Walk; index: number } | null>(null);
   const [seen, setSeen] = useState(false);
-
-  const chapter = open ? CHAPTERS.find((c) => c.id === open.chapter) : undefined;
-  const step = chapter?.steps[open?.index ?? 0] ?? null;
+  const at = open ? open.walk[open.index] : undefined;
 
   const go = useCallback(
-    (next: { chapter: ChapterId; index: number } | null) => {
-      setOpen(next);
-      if (!next) return;
-      const target = CHAPTERS.find((c) => c.id === next.chapter)?.steps[next.index];
-      // Steps carry their own route so a chapter can walk between tools.
-      if (target && window.location.pathname !== target.route) router.push(target.route);
+    (next: { walk: Walk; index: number } | null) => {
+      const target = next?.walk[next.index];
+      setOpen(target ? next : null);
+      // Steps carry their own route so a walk can move between tools.
+      if (target && window.location.pathname !== target.step.route) router.push(target.step.route);
     },
     [router],
   );
 
-  const start = useCallback(
-    (id: ChapterId) => {
+  const begin = useCallback(
+    (walk: Walk) => {
       setSeen(true);
       writeSeen();
-      go({ chapter: id, index: 0 });
+      go({ walk, index: 0 });
     },
     [go],
   );
+  const start = useCallback(
+    (id: ChapterId) => begin(walkOf(CHAPTERS.filter((chapter) => chapter.id === id))),
+    [begin],
+  );
+  const startAll = useCallback(() => begin(walkOf(CHAPTERS)), [begin]);
 
   const next = useCallback(() => {
-    if (!open || !chapter) return;
-    // The last step of a chapter ends the tour rather than rolling into the
-    // next one. Somebody who opened "How this works" on Place cards asked
-    // about Place cards, not about everything.
-    if (open.index + 1 >= chapter.steps.length) go(null);
-    else go({ chapter: open.chapter, index: open.index + 1 });
-  }, [chapter, go, open]);
+    if (open) go({ walk: open.walk, index: open.index + 1 });
+  }, [go, open]);
 
   const back = useCallback(() => {
-    if (!open || open.index === 0) return;
-    go({ chapter: open.chapter, index: open.index - 1 });
+    if (open && open.index > 0) go({ walk: open.walk, index: open.index - 1 });
   }, [go, open]);
 
   const stop = useCallback(() => go(null), [go]);
 
   const value = useMemo<TourState>(
     () => ({
-      step,
-      chapterTitle: chapter?.title ?? "",
+      step: at?.step ?? null,
+      chapterTitle: at?.chapter.title ?? "",
       index: (open?.index ?? 0) + 1,
-      total: chapter?.steps.length ?? 0,
+      total: open?.walk.length ?? 0,
       start,
+      startAll,
       next,
       back,
       stop,
       hasSeenTour: seen || (typeof window !== "undefined" && readSeen()),
     }),
-    [back, chapter, next, open, seen, start, step, stop],
+    [at, back, next, open, seen, start, startAll, stop],
   );
 
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;

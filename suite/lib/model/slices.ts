@@ -209,6 +209,14 @@ export function guestName(guest: Guest): string {
   return [guest.firstName, guest.lastName].filter(Boolean).join(" ").trim();
 }
 
+/**
+ * Everyone on the list who has not said no: who needs a seat, a card and a
+ * meal. Someone who declined stays on the list, and is none of those.
+ */
+export function isComing(guest: Pick<Guest, "rsvpStatus">): boolean {
+  return guest.rsvpStatus !== "declined";
+}
+
 // seating --------------------------------------------------------------------
 
 /**

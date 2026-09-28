@@ -104,10 +104,11 @@ export interface BrigadeDoc {
 
 /**
  * A job whose block is no longer in the day. Derived, never stored: the day is
- * what changes, and a stored flag would go stale the moment it did.
+ * what changes, and a stored flag would go stale the moment it did. A job with
+ * no block was never on the day, and is a task, not an orphan.
  */
 export function isOrphan(doc: BrigadeDoc, job: Job): boolean {
-  return !doc.day?.blocks.some((block) => block.id === job.blockId);
+  return job.blockId !== null && !doc.day?.blocks.some((block) => block.id === job.blockId);
 }
 
 /** The block a job hangs off, or null if the day no longer has it. */

@@ -10,6 +10,7 @@ import GuestSearch from './GuestSearch.jsx'
 import ContextMenu from '../ui/ContextMenu.jsx'
 import { useGuestImport } from '@/components/shell/guestImportPanel'
 import { matchesSearch, matchesFilters } from '../../utils/guestFilters.js'
+import { isComing } from '@/lib/model/slices'
 import styles from './GuestPanel.module.css'
 
 /**
@@ -169,7 +170,7 @@ export default function GuestPanel() {
       standaloneFamilies: standalone,
       ungrouped: ung,
       total: list.length,
-      unassigned: list.filter((g) => !g.assignedTableId).length,
+      unassigned: list.filter((g) => isComing(g) && !g.assignedTableId).length,
     }
   }, [guests, groups, subgroups, families, search, filters])
 

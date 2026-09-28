@@ -1,4 +1,4 @@
-import { guestName } from "@/lib/model/slices";
+import { guestName, isComing } from "@/lib/model/slices";
 import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import { roleLabel } from "@/lib/model/partners";
 import type { Cast, CustomRole, Guest, RsvpStatus, Seating, Shot, ShotMember } from "@/lib/model/types";
@@ -79,7 +79,7 @@ export function resolveShot(
     seen.add(guestId);
     const name = guestName(guest) || "Unnamed guest";
     people.push({ guestId, name, rsvpStatus: guest.rsvpStatus });
-    if (guest.rsvpStatus === "declined") problems.push({ kind: "declined", name });
+    if (!isComing(guest)) problems.push({ kind: "declined", name });
   };
 
   for (const member of shot.members) {

@@ -44,10 +44,13 @@ export default function SeatSlot({ tableId, index, x, y, occupantId, rotation = 
 
   // An occupied seat is itself draggable, so guests can be moved or swapped
   // directly between seats on the canvas (not only from the guest panel).
+  // Pointer listeners only, not dnd-kit's `attributes`: those made this a
+  // focusable role=button inside the table's own button — a nested control,
+  // and a Tab stop that did nothing, as Seating registers no keyboard sensor.
+  // Keyboard users reach a seated guest through the guest list.
   const {
     setNodeRef: setDragRef,
     listeners,
-    attributes,
     isDragging,
   } = useDraggable({
     id: `seatguest_${tableId}_${index}`,
@@ -108,7 +111,6 @@ export default function SeatSlot({ tableId, index, x, y, occupantId, rotation = 
               : null),
           }}
           data-canvas-item
-          {...(occupant ? attributes : {})}
           {...(occupant ? listeners : {})}
           onPointerDown={(e) => {
             e.stopPropagation()

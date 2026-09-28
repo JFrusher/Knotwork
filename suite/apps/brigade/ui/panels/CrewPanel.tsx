@@ -136,7 +136,8 @@ export function CrewPanel() {
         <section key={team.id} className={styles.team}>
           <div className={styles.teamHead}>
             <TextField
-              label=""
+              label="Team name"
+              hideLabel
               value={team.name}
               onChange={(name) => updateTeam(team.id, { name })}
             />

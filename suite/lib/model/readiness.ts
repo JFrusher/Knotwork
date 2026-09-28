@@ -1,5 +1,5 @@
 import type { Trousseau } from "@jfrusher/trousseau";
-import { guestName, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
+import { guestName, isComing, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
 import { resolveShot } from "@/lib/ensemble/resolve";
 
 /**
@@ -55,13 +55,20 @@ function stationery(raw: unknown): Record<string, unknown> | null {
   return isRecord(slice) && "version" in slice ? slice : null;
 }
 
-/** Every token the card design binds, so we can tell what it can and cannot show. */
+/**
+ * Every column the card design binds, so we can tell what it can and cannot
+ * show: the tokens in its text, and the column an icon is drawn from — the
+ * same two Plaque's own `unboundTokens` counts.
+ */
 function boundTokens(design: Record<string, unknown> | null): Set<string> {
   const tokens = new Set<string>();
   const template = design && isRecord(design["template"]) ? design["template"] : null;
   const elements = template && Array.isArray(template["elements"]) ? template["elements"] : [];
   for (const element of elements) {
     if (!isRecord(element)) continue;
+    if (element["kind"] === "icon" && typeof element["sourceField"] === "string") {
+      tokens.add(element["sourceField"].trim().toLowerCase());
+    }
     for (const value of Object.values(element)) {
       if (typeof value !== "string") continue;
       for (const match of value.matchAll(/\{\{([^}]+)\}\}/g)) {
@@ -97,7 +104,9 @@ export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
     ];
   }
 
-  const unseated = people.filter((guest) => guest.assignedTableId === null);
+  // Somebody who is not coming has no seat to find, and no card to print.
+  const coming = people.filter(isComing);
+  const unseated = coming.filter((guest) => guest.assignedTableId === null);
   if (unseated.length > 0 && Object.keys(seating.tables).length > 0) {
     out.push({
       id: "unseated",
@@ -129,7 +138,7 @@ export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
     });
   }
 
-  const withDietary = people.filter((guest) => guest.dietary.trim() !== "");
+  const withDietary = coming.filter((guest) => guest.dietary.trim() !== "");
   if (design && withDietary.length > 0 && !boundTokens(design).has("dietary")) {
     out.push({
       id: "dietary-unprinted",

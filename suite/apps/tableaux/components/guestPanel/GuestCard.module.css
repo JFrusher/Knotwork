@@ -30,10 +30,10 @@
   background: rgba(124, 111, 91, 0.18);
 }
 
-.assigned {
-  opacity: 0.4;
-}
+/* Seated: struck through and quieter, but still readable. The whole card at
+   40% opacity took every seated name, diet and side below legible contrast. */
 .assigned .name {
+  opacity: 0.75;
   text-decoration: line-through;
   text-decoration-color: rgba(231, 229, 228, 0.6);
 }

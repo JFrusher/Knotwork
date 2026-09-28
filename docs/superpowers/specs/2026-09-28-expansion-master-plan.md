@@ -33,9 +33,14 @@ several turned out differently once tested than they looked when read.
 | S12 | Found while reproducing S4: an edit made while the account answered "unavailable" (a 500, say) was lost at the next start, which replaced the device's document with the account's; an edit made offline went up on reconnect at version 0 and conflicted over every slice. The agreed baseline lived only in memory. | Reproduced — unit. **Fixed 2026-09-28**: the baseline is stored. |
 | S7 | Names, date and venue have three editors (Data panel, Timeline's Day panel, Seating's write-back). Guest import has two implementations with different rules. | Traced, seen |
 | S8 | The guest link needs a second credential — an unrecoverable passphrase — even for a signed-in couple, and goes stale silently when seats change. | Traced, seen |
-| S9 | "Take a tour" runs the six-step front-page chapter and stops; the other 23 steps are reachable only one tool at a time. | Traced |
+| S9 | "Take a tour" runs the six-step front-page chapter and stops; the other 23 steps are reachable only one tool at a time. | Traced. **Fixed 2026-09-28**: the tour walks every chapter. |
 | S11 | Found while merging the importers: the Data panel's importer stored diets as the file's words ("Vegetarian", "None") where Seating reads a key ("vegetarian"). Seating's Vegetarian filter found none of the example wedding's thirteen vegetarians, and its breakdown listed "None" as a diet. | Reproduced — Playwright. **Fixed 2026-09-28** with the one importer. |
-| S10 | The example wedding has 0 of 100 guests seated, no crew, no jobs, no shots and no card design. The promise it exists to demonstrate cannot be shown from it. | Reproduced (fixture counted), seen |
+| S10 | The example wedding has 0 of 100 guests seated, no crew, no jobs, no shots and no card design. The promise it exists to demonstrate cannot be shown from it. | Reproduced (fixture counted), seen. **Fixed 2026-09-28**, see Phase 1.5. |
+| S13 | Found with the fuller example: a guest who declined was still a guest to seat and feed. Place cards printed them a card; What is left, Seating's header, its Overview and the Unassigned chip counted them unseated; Seating's dietary tally counted their meal; the front page's Seated figure counted them in the total. Seating's own exports already left them out, so the screen disagreed with the printout. | Reproduced — unit, and seen (9 unseated, 97 / 106, and 3 left to do, on one wedding). **Fixed 2026-09-28**: one `isComing`, used everywhere. |
+| S14 | Delegation called a job with no block — a task, as the 2026-09-08 design made them — an orphan: a clash that held the print run, drawn in red. | Reproduced — unit. **Fixed 2026-09-28**. |
+| S15 | What is left said the card design had "nowhere to show" 83 dietary requirements that the design drew as icons: it counted text tokens and not the column an icon is drawn from, which Plaque itself counts. | Reproduced — unit. **Fixed 2026-09-28**. |
+| S16 | Since sides were named after the partners, the place cards' Side column carried the stored "a" and "b": a card binding `{{Side}}` printed a letter. | Reproduced — unit. **Fixed 2026-09-28**: "Alex’s side". |
+| S17 | Seating's "worth checking" note counted a guest who answered "None" as having no dietary note. Six of its seven notes on the example were those guests. | Reproduced — unit. **Fixed 2026-09-28**. |
 
 ### Architecture
 
@@ -287,7 +292,17 @@ project, the build, and the Playwright run — and gets its own plan first.
    to `lib/documents`.
 5. **Tour and example wedding:** "Take a tour" runs every chapter; the example
    gains seats, crew, jobs, shots and a card design so every chapter has
-   something real to point at.
+   something real to point at. **Built 2026-09-28.** The tour is one walk
+   through all 28 steps (S9); "How this page works" still runs one chapter.
+   The example has 106 guests with sides, replies, ten families and three
+   groups; 97 seated, with families kept together and three left to seat;
+   rounds spaced as setup spaces them; a crew of six suppliers with jobs on
+   the day and two tasks off it; 26 group shots; and a card design made by
+   Place cards from the room. One copy of it, the one the app serves; a test
+   holds it to all of that, and to Seating finding nothing wrong. Walking it
+   in every tool found S13–S17 and three accessibility faults — an unlabelled
+   team name, seated guests' cards at 40% opacity, and tables and seats that
+   nested a button in a button — all fixed.
 
 ### Phase 2 — Windows around the tools
 
@@ -326,7 +341,9 @@ stale-copy class of bug S1 belonged to, the remount on every partner change,
 the five undo systems (one history, labelled), and the 400ms window in which a
 committed edit lives only in a tool's own store. Tool by tool, smallest first:
 Delegation, Place cards, Timeline, then Seating — converted to TypeScript as
-part of it.
+part of it. `lib/seating`'s `organise`, `warnings`, `roomActions` and
+`alignmentSnap` are an earlier TypeScript port nothing calls; they go then,
+replaced by the converted originals rather than kept beside them.
 
 **Real-time sync** (Supabase Realtime in place of the 20-second poll, and
 presence) lands after this, not before: an instant pull into a tool that still

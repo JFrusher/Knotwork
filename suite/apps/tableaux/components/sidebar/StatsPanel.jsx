@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useStore } from '../../store/useStore.js'
 import { DIETARY_META, dietaryLabel } from '@/lib/model/dietary'
+import { isComing } from '@/lib/model/slices'
 import { fillColour } from '../../utils/seatPositions.js'
 import styles from './StatsPanel.module.css'
 
@@ -13,8 +14,10 @@ export default function StatsPanel() {
     const list = Object.values(guests)
     const total = list.length
     const seated = list.filter((g) => g.assignedTableId).length
+    // Someone who declined needs neither a seat nor a meal.
+    const coming = list.filter(isComing)
     const diet = {}
-    list.forEach((g) => {
+    coming.forEach((g) => {
       if (g.dietary) diet[g.dietary] = (diet[g.dietary] || 0) + 1
     })
     const dietEntries = Object.entries(diet).sort((a, b) => b[1] - a[1])
@@ -24,7 +27,7 @@ export default function StatsPanel() {
     return {
       total,
       seated,
-      unassigned: total - seated,
+      unassigned: coming.filter((g) => !g.assignedTableId).length,
       dietEntries,
       maxDiet: Math.max(1, ...dietEntries.map((e) => e[1])),
       tableList,
