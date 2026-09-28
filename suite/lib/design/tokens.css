@@ -34,7 +34,7 @@
   --t-3: #e9e4da; /* canvas behind the work */
   --t-4: #d8d2c6; /* borders */
   --t-5: #a8a29a; /* strong borders, disabled ink */
-  --t-6: #726b67; /* muted text — 4.6:1 on --t-1 */
+  --t-6: #6b6561; /* muted text — clears 4.5:1 on every ground, --t-3 included */
   --t-7: #57534e; /* secondary text */
   --t-8: #44403c; /* muted slate */
   --t-9: #1c1917; /* deep charcoal, primary text */
@@ -271,11 +271,11 @@
  *
  * Handing headings back means a tool looks like a tool inside its own frame.
  * What identifies it is the accent and the tab, which was the decision.
+ *
+ * Unlayered, so it beats the shell's rule in the base layer; `:where()`, so a
+ * tool's own heading class still beats it.
  */
-.plaque-scope :is(h1, h2, h3, h4, h5, h6),
-.cadence-scope :is(h1, h2, h3, h4, h5, h6),
-.brigade-scope :is(h1, h2, h3, h4, h5, h6),
-.tableaux-scope :is(h1, h2, h3, h4, h5, h6) {
+:where(.plaque-scope, .cadence-scope, .brigade-scope, .tableaux-scope) :is(h1, h2, h3, h4, h5, h6) {
   font-family: inherit;
   color: inherit;
 }

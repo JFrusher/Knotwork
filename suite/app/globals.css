@@ -47,22 +47,31 @@
 }
 
 /**
- * Painted explicitly rather than left to the browser: the tools render print
- * previews, and a page that inherits a dark UA background makes a white A4
- * sheet look like the artwork rather than the paper.
+ * Element defaults, in the base layer where Tailwind expects them.
+ *
+ * Unlayered, these out-ranked every utility: `<h2 class="text-slate">` still
+ * came out charcoal, because a bare `h2` rule outside a layer beats anything
+ * inside one. In the base layer, a class always wins over them.
  */
-html,
-body {
-  background-color: var(--color-parchment);
-  color: var(--color-slate);
-  font-family: var(--font-body);
-}
+@layer base {
+  /**
+   * Painted explicitly rather than left to the browser: the tools render print
+   * previews, and a page that inherits a dark UA background makes a white A4
+   * sheet look like the artwork rather than the paper.
+   */
+  html,
+  body {
+    background-color: var(--color-parchment);
+    color: var(--color-slate);
+    font-family: var(--font-body);
+  }
 
-h1,
-h2,
-h3 {
-  color: var(--color-charcoal);
-  font-family: var(--font-display);
+  h1,
+  h2,
+  h3 {
+    color: var(--color-charcoal);
+    font-family: var(--font-display);
+  }
 }
 
 /**

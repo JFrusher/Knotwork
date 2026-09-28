@@ -91,7 +91,9 @@ describe("the shared ramp", () => {
     expect(Object.keys(root).length).toBeGreaterThan(20);
   });
 
-  const GROUNDS = ["--t-0", "--t-1", "--t-2"];
+  // `--t-3` included: the canvas behind the work carries labels too, and muted
+  // text there sat at 4.1:1 while every check here passed.
+  const GROUNDS = ["--t-0", "--t-1", "--t-2", "--t-3"];
   const TEXT = ["--t-9", "--t-7", "--t-6"];
 
   for (const ink of TEXT) {
