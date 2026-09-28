@@ -54,7 +54,7 @@ export default function Toolbar() {
   const togglePanel = useStore((s) => s.togglePanel)
 
   return (
-    <header className={styles.toolbar}>
+    <div className={styles.toolbar}>
       {/*
         * Unlike the other tools, this bar is not chrome: it holds the table
         * palette you drag a room out of, so it stays. Undo and redo went up
@@ -95,6 +95,6 @@ export default function Toolbar() {
           />
         </div>
       </div>
-    </header>
+    </div>
   )
 }

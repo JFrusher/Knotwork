@@ -158,24 +158,6 @@
   border: 0;
 }
 
-/* Skip link: off-screen until focused, then pinned top-left for keyboard users. */
-.skip-link {
-  position: absolute;
-  left: var(--space-2);
-  top: -48px;
-  z-index: var(--z-toast, 1000);
-  padding: 8px 14px;
-  background: var(--surface, #fff);
-  color: var(--ink);
-  border: 1px solid var(--border);
-  border-radius: var(--radius, 8px);
-  box-shadow: var(--shadow-2, 0 12px 32px rgba(0, 0, 0, 0.12));
-  transition: top 0.15s ease;
-}
-.skip-link:focus {
-  top: var(--space-2);
-}
-
 /*
  * ── Respect reduced-motion preferences ──
  *

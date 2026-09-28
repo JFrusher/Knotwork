@@ -143,13 +143,13 @@ export function App() {
 
       <div className={styles.body}>
         <Sidebar />
-        <main className={styles.canvas}>
+        <div className={styles.canvas}>
           <Timeline />
           <div className={styles.foot}>
             <WarningsList />
             <ExportBar />
           </div>
-        </main>
+        </div>
       </div>
 
       <Announcer />

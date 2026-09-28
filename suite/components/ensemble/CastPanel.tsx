@@ -66,7 +66,7 @@ export function CastPanel({
               aria-label="Role name"
               value={role.name}
               onChange={(e) => onChange(renameCustomRole(shots, role.id, e.target.value))}
-              className="min-w-0 flex-1 bg-transparent text-xs tracking-widest text-slate uppercase focus:outline-none"
+              className="min-w-0 flex-1 bg-transparent text-xs tracking-widest text-slate uppercase"
             />
             <IconButton icon={Trash2} label={`Remove ${role.name}`} tone="danger" onClick={() => onChange(removeCustomRole(shots, role.id))} />
           </div>

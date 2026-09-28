@@ -94,7 +94,7 @@ export function ShotList({
               aria-label="Section name"
               value={section.name}
               onChange={(e) => onChange(renameSection(shots, section.id, e.target.value))}
-              className="min-w-0 flex-1 bg-transparent text-sm text-charcoal focus:outline-none"
+              className="min-w-0 flex-1 bg-transparent text-sm text-charcoal"
             />
             <span className="shrink-0 text-xs text-slate">{section.shots.length}</span>
             <IconButton

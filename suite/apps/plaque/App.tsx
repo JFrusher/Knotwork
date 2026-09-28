@@ -373,7 +373,7 @@ export function App() {
       <Announcer />
       <Sidebar />
 
-      <main className={styles.main}>
+      <div className={styles.main}>
         {saveError && <PersistenceBar reason={saveError} onRetry={attemptSave} />}
 
         {notices.map((notice) => {
@@ -459,6 +459,7 @@ export function App() {
               index={previewGuestIndex}
               count={artefacts.length}
               onChange={setPreviewGuestIndex}
+              noun={{ one: "Card", many: "Cards" }}
             />
           </section>
 
@@ -490,7 +491,12 @@ export function App() {
                   <p className={styles.empty}>Nothing to impose yet.</p>
                 )}
               </div>
-              <Pagination index={pageIndex} count={sheetCount} onChange={setPage} />
+              <Pagination
+                index={pageIndex}
+                count={sheetCount}
+                onChange={setPage}
+                noun={{ one: "Sheet", many: "Sheets" }}
+              />
             </section>
           )}
         </div>
@@ -510,7 +516,7 @@ export function App() {
           warnings={warnings}
           missing={missing}
         />
-      </main>
+      </div>
     </div>
   );
 }

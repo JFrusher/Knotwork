@@ -41,10 +41,19 @@ export function LandscapeGate({ children }: { children: ReactNode }) {
 
   const tool = TOOLS.find((candidate) => candidate.href === pathname);
   if (!tool) throw new Error(`LandscapeGate wraps the tools only, not ${pathname}.`);
-  if (wide) return children;
+  if (wide) {
+    return (
+      <>
+        {/* Every page gets a first-level heading. The tool's name is already on
+            screen as the current tab, so this one is for screen readers. */}
+        <h1 className="sr-only">{tool.name}</h1>
+        {children}
+      </>
+    );
+  }
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-3 px-6 py-20">
+    <div className="mx-auto flex max-w-md flex-col gap-3 px-6 py-20">
       <h1 className="text-2xl">{tool.name} needs a wider screen</h1>
       <p>It is built for a laptop or a desktop, or a tablet turned on its side.</p>
       <p>
@@ -52,6 +61,6 @@ export function LandscapeGate({ children }: { children: ReactNode }) {
           Back to the overview
         </Link>
       </p>
-    </main>
+    </div>
   );
 }

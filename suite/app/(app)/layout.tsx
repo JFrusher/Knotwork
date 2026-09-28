@@ -21,8 +21,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Above the route content, so a chapter that walks from Seating to
           Timeline keeps its place across the navigation. */}
       <TourProvider>
+        {/* Before the header, so it is the first thing Tab reaches. */}
+        <a
+          href="#main"
+          className="sr-only z-50 rounded bg-parchment px-3 py-2 text-sm text-charcoal focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+        >
+          Skip to content
+        </a>
         <Header />
-        {children}
+        {/* The page's one main landmark. The tools and pages inside render into
+            it rather than each bringing their own, which put two mains, or
+            none, on a page. */}
+        <main id="main">{children}</main>
         <Footer />
         <TourOverlay />
       </TourProvider>

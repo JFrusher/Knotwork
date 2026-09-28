@@ -44,7 +44,7 @@ export function Header() {
 
           {/* Scrolls within the header on a narrow screen, rather than making
               the whole page wider than it and pushing Data off the edge. */}
-          <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">
+          <nav aria-label="Tools" className="flex min-w-0 items-center gap-1 overflow-x-auto">
             {TOOLS.map((tool) => {
               const active = pathname === tool.href;
               return (

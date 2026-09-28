@@ -45,7 +45,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
   }, [client, token]);
 
   return (
-    <main className="mx-auto max-w-md px-6 py-12 text-center sm:py-16">
+    <div className="mx-auto max-w-md px-6 py-12 text-center sm:py-16">
       <p className="text-sm tracking-[0.14em] text-slate uppercase">Trousseau</p>
       <h1 className="mt-3 font-display text-3xl text-charcoal">You&rsquo;re invited</h1>
 
@@ -86,6 +86,6 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
           </p>
         )}
       </div>
-    </main>
+    </div>
   );
 }
