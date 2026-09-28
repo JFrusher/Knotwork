@@ -15,7 +15,6 @@ import { del, get, keys, set } from "idb-keyval";
 
 const MOVES: Array<[from: string, to: string]> = [
   ["tableaux.suite.document", "trousseau.document"],
-  ["tableaux.suite.sync", "trousseau.sync"],
 ];
 
 /** Uploaded fonts and artwork, which are one key each. */

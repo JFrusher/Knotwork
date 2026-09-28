@@ -6,9 +6,8 @@ import { accountsConfigured, env } from "@/lib/env";
 /**
  * A Supabase client carrying the calling request's own session, for use in
  * Route Handlers and Server Components. Returns null when accounts aren't
- * configured on this deployment — every caller must handle that the same way
- * `lib/sync`'s routes handle an unconfigured backend: the feature is simply
- * unavailable, not an error.
+ * configured on this deployment — every caller must handle that the same way:
+ * the feature is simply unavailable, not an error.
  */
 export async function serverClient(): Promise<SupabaseClient | null> {
   if (!accountsConfigured()) return null;

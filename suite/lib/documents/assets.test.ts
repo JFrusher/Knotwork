@@ -1,5 +1,5 @@
 // Node, not jsdom: jsdom's `Blob` has no `arrayBuffer`, and the download test
-// below needs a real one. Same rationale as lib/sync/migrations.test.ts.
+// below needs a real one.
 // @vitest-environment node
 import { beforeEach, expect, test, vi } from "vitest";
 
@@ -21,7 +21,7 @@ vi.mock("@/lib/accounts/browserClient", () => ({
 const collectAssetsMock = vi.fn();
 const heldAssetIdsMock = vi.fn();
 const acceptAssetMock = vi.fn();
-vi.mock("@/lib/sync/assets", () => ({
+vi.mock("@/lib/documents/portableAssets", () => ({
   collectAssets: (...args: unknown[]) => collectAssetsMock(...args),
   heldAssetIds: (...args: unknown[]) => heldAssetIdsMock(...args),
   acceptAsset: (...args: unknown[]) => acceptAssetMock(...args),

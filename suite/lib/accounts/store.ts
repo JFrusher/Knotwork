@@ -1,8 +1,8 @@
 /**
- * Where account/wedding membership lives, behind an interface — exactly the
- * `lib/sync/store.ts` pattern: one real implementation (Postgres, via the SQL
- * functions in the accounts and roles migrations) and one in-memory fake, so
- * the rules in `handlers.ts` can be tested without a database.
+ * Where account/wedding membership lives, behind an interface: one real
+ * implementation (Postgres, via the SQL functions in the accounts and roles
+ * migrations) and one in-memory fake, so the rules in `handlers.ts` can be
+ * tested without a database.
  *
  * The rules both hold to (20260928000001_roles.sql): a wedding has up to two
  * partners and one planner; an account is a partner in one wedding at most

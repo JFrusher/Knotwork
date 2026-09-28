@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { expect, test } from "vitest";
-import { RETENTION_MONTHS as HANDLER_RETENTION } from "./sync/handlers";
+import { RETENTION_MONTHS as HANDLER_RETENTION } from "./documents/retention";
 import { CONTROLLER, POLICIES, policyText, PRIVACY, RETENTION_MONTHS } from "./legal";
 
 const digestOf = (text: string) => createHash("sha256").update(text).digest("hex").slice(0, 16);
@@ -56,4 +56,6 @@ test("nothing claims an absence that is no longer true", () => {
   expect(text).toContain("no analytics");
   expect(text).toContain("cookie");
   expect(text).not.toContain("no cookies are set");
+  // The passphrase sync is gone; nothing may still describe it.
+  expect(text).not.toContain("passphrase");
 });

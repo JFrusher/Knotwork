@@ -153,6 +153,11 @@ against, not a discussion to reopen without a reason.
   account is a partner in one wedding and a planner in any number. The couple
   sees who has access and can remove their planner. Each device holds one
   wedding at a time and switching is a swap through `/open`, never a merge.
+- **2026-09-28** — The guest link moved onto the account and keeps itself
+  current; the passphrase sync is deleted. The link's key is stored with the
+  wedding, so it is as readable to the server's operator as the wedding is —
+  stated in the Privacy Policy, which no longer describes the passphrase
+  system.
 
 ## Subsystem H — Guided tour & example wedding
 

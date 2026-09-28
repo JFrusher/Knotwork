@@ -4,7 +4,7 @@ import { currentUser, serverClient } from "@/lib/accounts/serverClient";
 import { requestedWedding } from "@/lib/accounts/requestedWedding";
 import { documentStore } from "@/lib/documents/supabaseStore";
 import { getDocumentHandler, saveDocumentHandler } from "@/lib/documents/handlers";
-import { allow, WRITE_LIMIT } from "@/lib/sync/rateLimit";
+import { allow, WRITE_LIMIT } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

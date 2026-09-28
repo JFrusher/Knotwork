@@ -1,6 +1,7 @@
 import { Footer } from "@/components/shell/Footer";
 import { Header } from "@/components/shell/Header";
 import { StoreHydrator } from "@/lib/store/StoreHydrator";
+import { GuestLinkKeeper } from "@/components/shell/GuestLinkKeeper";
 import { TourProvider } from "@/lib/tour/useTour";
 import { TourOverlay } from "@/components/tour/TourOverlay";
 import { ConfirmProvider } from "@/components/ui/Confirm";
@@ -19,6 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     // to fill what is left of the viewport, so the two can never disagree.
     <div className="[--shell-header-h:3.5rem]">
       <StoreHydrator />
+      <GuestLinkKeeper />
       {/* One confirmation dialog for the whole app — see `components/ui/Confirm`. */}
       <ConfirmProvider>
         {/* Above the route content, so a chapter that walks from Seating to

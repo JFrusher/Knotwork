@@ -16,6 +16,7 @@ const DOCUMENTS_MIGRATION = join(
   "20260903000001_wedding_documents.sql",
 );
 const ROLES_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260928000001_roles.sql");
+const GUEST_LINK_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260928000002_guest_link.sql");
 
 async function authStub(db: PGlite): Promise<void> {
   await db.exec(`
@@ -253,7 +254,7 @@ test("every migration can be applied twice", async () => {
   await authStub(twice);
 
   for (const pass of [1, 2]) {
-    for (const file of [SYNC_MIGRATION, ACCOUNTS_MIGRATION, DOCUMENTS_MIGRATION, ROLES_MIGRATION]) {
+    for (const file of [SYNC_MIGRATION, ACCOUNTS_MIGRATION, DOCUMENTS_MIGRATION, ROLES_MIGRATION, GUEST_LINK_MIGRATION]) {
       await expect(
         twice.exec(readFileSync(file, "utf8")),
         `${file} failed on pass ${pass}`,

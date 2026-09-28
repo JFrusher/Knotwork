@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { newGuest, newTable } from "@/lib/model/factories";
 import { emptySeating } from "@/lib/model/slices";
 import type { Guest } from "@/lib/model/types";
-import { findSeat, shareSnapshot } from "./shareSnapshot";
+import { findSeat, shareSnapshot } from "./snapshot";
 
 /**
  * The redaction, as tests.

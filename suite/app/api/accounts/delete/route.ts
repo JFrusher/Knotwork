@@ -4,7 +4,7 @@ import { env, accountsConfigured } from "@/lib/env";
 import { deleteAccountHandler } from "@/lib/accounts/handlers";
 import { accountsStore } from "@/lib/accounts/supabaseStore";
 import { currentUser, serverClient } from "@/lib/accounts/serverClient";
-import { allow, CREATE_LIMIT } from "@/lib/sync/rateLimit";
+import { allow, CREATE_LIMIT } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

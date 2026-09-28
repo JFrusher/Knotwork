@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
-import { sweepAbandoned } from "@/lib/sync/handlers";
-import { supabaseStore } from "@/lib/sync/supabaseStore";
 import { sweepAbandonedDocuments } from "@/lib/documents/handlers";
 import { adminDocumentsClient, documentStore } from "@/lib/documents/supabaseStore";
 
 /**
- * Retention, once a day.
- *
- * The only endpoint here that deletes without a passphrase, which is the point:
- * it exists for weddings whose passphrase is gone, and which therefore nobody
- * can ask to have removed. Everything about it is written to fail closed.
+ * Retention, once a day: account weddings nobody has written to inside the
+ * period the Privacy Policy states. It deletes unattended, so everything about
+ * it is written to fail closed.
  *
  * No `CRON_SECRET` means every request is refused, including Vercel's. An
  * endpoint that deletes and has no credential configured must do nothing rather
@@ -31,24 +27,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "No." }, { status: 401 });
   }
 
-  const db = supabaseStore();
-  if (!db) return NextResponse.json({ error: "No backend." }, { status: 501 });
+  const adminClient = adminDocumentsClient();
+  if (!adminClient) return NextResponse.json({ error: "No backend." }, { status: 501 });
 
   try {
-    const { deleted } = await sweepAbandoned(db);
-
-    const adminClient = adminDocumentsClient();
-    const documentsDeleted = adminClient
-      ? (await sweepAbandonedDocuments(documentStore(adminClient))).deleted
-      : [];
-
-    // Ids only. They identify a row, not a person, and the server could not say
-    // whose wedding it was even if it wanted to.
-    const total = deleted.length + documentsDeleted.length;
-    console.info(
-      `[Trousseau] retention sweep removed ${deleted.length} passphrase wedding(s), ${documentsDeleted.length} account wedding(s)`,
-    );
-    return NextResponse.json({ deleted: total });
+    const { deleted } = await sweepAbandonedDocuments(documentStore(adminClient));
+    // A count only: ids identify rows, and a log is no place for them.
+    console.info(`[Trousseau] retention sweep removed ${deleted.length} wedding(s)`);
+    return NextResponse.json({ deleted: deleted.length });
   } catch (cause) {
     // A failed sweep must be loud: it deletes, it runs unattended, and silence
     // here means data kept past the period the Privacy Policy states.

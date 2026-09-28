@@ -1,288 +1,125 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import {
-  AlertTriangle,
-  Check as CheckIcon,
-  Copy,
-  Link2,
-  Trash2,
-  Unlink,
-} from "lucide-react";
-import { readGuests, readSeating } from "@/lib/model/slices";
+import { useState } from "react";
+import Link from "next/link";
+import { Check as CheckIcon, Copy, Link2, Unlink } from "lucide-react";
+import { browserClient } from "@/lib/accounts/browserClient";
+import { linkUrl, useGuestLink } from "@/lib/share/guestLink";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
-import { newShareKey, seal } from "@/lib/sync/crypto";
-import { shareSnapshot } from "@/lib/sync/shareSnapshot";
-import {
-  createShared,
-  currentSession,
-  deleteFromServer,
-  membership,
-  publishShare,
-  takeDownShare,
-  unlockShare,
-} from "@/lib/sync/client";
-import { Button, Check, Panel, TextField } from "@/components/ui/controls";
+import { Button, Check, Panel } from "@/components/ui/controls";
+import { useConfirm } from "@/components/ui/Confirm";
 
 /**
- * The guest link, and only the guest link.
+ * The guest link: names and table numbers, for guests to find their seat.
  *
- * What is left of the old Sharing panel now that the account-based sync in
- * `useTrousseauStore` has replaced whole-document passphrase sync. This is a
- * different thing on purpose: it publishes a *reduced* snapshot — names and
- * table numbers, nothing else — under its own one-off key that lives in the
- * link's fragment and never reaches a server.
- *
- * It still rides on `lib/sync`'s wedding row for storage and authorisation,
- * which is why a passphrase is still asked for here. Re-pointing it at
- * `account_weddings.id` so it needs no passphrase at all is the follow-up the
- * design doc records; until then, removing this panel is what leaves a
- * published link on the internet with no way to take it down.
+ * On the account, like the wedding: no second passphrase, and any of the
+ * couple or their planner can publish it. Once published it keeps itself
+ * current (`GuestLinkKeeper`), because a link that sends a guest to the table
+ * they used to be at is worse than none.
  */
-export function GuestLinkPanel({ onProblem }: { onProblem: (message: string | null) => void }) {
-  const [shareToken, setShareToken] = useState<string | null>(null);
-  const [enrolled, setEnrolled] = useState(false);
-  const [unlocked, setUnlocked] = useState(currentSession() !== null);
-  const [passphrase, setPassphrase] = useState("");
-  const [busy, setBusy] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [shareLink, setShareLink] = useState<string | null>(null);
+export function GuestLinkPanel() {
+  const weddingId = useTrousseauStore((s) => s.weddingId);
+  const link = useGuestLink((s) => s.link);
+  const problem = useGuestLink((s) => s.problem);
+  const publish = useGuestLink((s) => s.publish);
+  const takeDown = useGuestLink((s) => s.takeDown);
+  const confirm = useConfirm();
   const [showPlan, setShowPlan] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [erasing, setErasing] = useState(false);
-  const [erasePhrase, setErasePhrase] = useState("");
 
-  const refresh = useCallback(async () => {
-    const known = await membership();
-    setEnrolled(known !== null);
-    setShareToken(known?.shareToken ?? null);
-  }, []);
+  // No accounts on this deployment, so nowhere for a link to live.
+  if (!browserClient()) return null;
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  const run = async (work: () => Promise<void>) => {
+    setBusy(true);
+    try {
+      await work();
+    } finally {
+      setBusy(false);
+    }
+  };
 
-  const run = useCallback(
-    async (id: string, work: () => Promise<string>) => {
-      setBusy(id);
-      onProblem(null);
-      setNotice(null);
-      try {
-        setNotice(await work());
-      } catch (cause) {
-        onProblem(cause instanceof Error ? cause.message : String(cause));
-      } finally {
-        setBusy(null);
-      }
-    },
-    [onProblem],
-  );
-
-  const publish = useCallback(async () => {
-    const { doc } = useTrousseauStore.getState();
-    const snapshot = shareSnapshot(readGuests(doc), readSeating(doc), doc.event, { showPlan });
-
-    // A fresh key every publish, carried in the fragment. The server storing the
-    // ciphertext never sees it, and neither does anything in a server log.
-    const { key, encoded } = await newShareKey();
-    const token = await publishShare(await seal(key, snapshot));
-
-    setShareLink(`${window.location.origin}/seat/${token}#k=${encoded}`);
-    await refresh();
-    return `${snapshot.guests.length} names published. The previous link now shows this plan.`;
-  }, [showPlan, refresh]);
+  const url = link ? linkUrl(link, window.location.origin) : null;
 
   return (
     <Panel title="A link for the guests">
-      {notice ? (
-        <p className="mb-2 rounded border border-ok/40 bg-ok-soft px-2 py-1.5 text-xs text-charcoal">
-          {notice}
-        </p>
-      ) : null}
-
       <p className="text-xs text-slate">
         Names and table numbers only. No email addresses, no phone numbers, no dietary requirements,
         no notes — and nobody who declined. The key that reads it sits in the link after the{" "}
         <span className="text-charcoal">#</span>, which browsers never send to a server.
       </p>
 
-      {unlocked ? (
+      {weddingId === null ? (
+        <p className="mt-2 text-sm text-slate">
+          It lives on your account, so it can keep itself up to date as seats change.{" "}
+          <Link href="/login" className="text-charcoal underline decoration-gold">
+            Sign in
+          </Link>{" "}
+          to publish one.
+        </p>
+      ) : link === undefined ? (
+        <p className="mt-2 text-sm text-slate">Checking for a link…</p>
+      ) : link === null ? (
         <div className="mt-2 space-y-2">
-          <Check
-            label="Show the room, not just the search"
-            checked={showPlan}
-            onChange={setShowPlan}
-          />
-
-          <div className="flex flex-wrap gap-2">
-            <Button
-              icon={Link2}
-              tone="primary"
-              disabled={busy !== null}
-              onClick={() => void run("share", publish)}
-            >
-              {busy === "share" ? "Publishing…" : shareToken ? "Update the link" : "Publish a link"}
-            </Button>
-
-            {shareToken ? (
-              <Button
-                icon={Unlink}
-                tone="danger"
-                disabled={busy !== null}
-                onClick={() =>
-                  void run("down", async () => {
-                    await takeDownShare();
-                    setShareLink(null);
-                    await refresh();
-                    return "Link taken down. It no longer opens for anybody.";
-                  })
-                }
-              >
-                Take it down
-              </Button>
-            ) : null}
-          </div>
-
-          {shareToken && !shareLink ? (
-            <p className="flex gap-1.5 text-xs text-slate">
-              <AlertTriangle size={12} className="mt-0.5 shrink-0 text-warn" />A link is live from an
-              earlier session. The key that opens it was only ever in that link, so it cannot be
-              shown again — press <em>Update the link</em> to publish the current plan to a fresh
-              one, or take it down.
-            </p>
-          ) : null}
-
-          {shareLink ? (
-            <div className="space-y-1.5">
-              <div className="flex gap-2">
-                <input
-                  readOnly
-                  value={shareLink}
-                  onFocus={(e) => e.currentTarget.select()}
-                  className="min-w-0 flex-1 rounded border border-charcoal/15 bg-stone px-2 py-1.5 text-xs text-charcoal"
-                />
-                <Button
-                  icon={copied ? CheckIcon : Copy}
-                  onClick={() => {
-                    void navigator.clipboard.writeText(shareLink).then(
-                      () => {
-                        setCopied(true);
-                        setTimeout(() => setCopied(false), 1500);
-                      },
-                      () => onProblem("The link could not be copied. Select it and copy by hand."),
-                    );
-                  }}
-                />
-              </div>
-              <p className="flex gap-1.5 text-xs text-slate">
-                <AlertTriangle size={12} className="mt-0.5 shrink-0 text-warn" />
-                Anybody with this link can see the names and tables on it. There is only ever one
-                live link — updating replaces what it shows, so a link you have already given out
-                stays correct.
-              </p>
-            </div>
-          ) : null}
-
-          {/*
-            Erasure, kept behind a typed confirmation rather than a second
-            click. It removes the wedding from the legacy passphrase server —
-            not the copy on this device — so it stays reversible right up to
-            the moment "delete" is typed.
-          */}
-          <div className="border-t border-charcoal/10 pt-2">
-            {erasing ? (
-              <div className="space-y-2 rounded border border-danger/40 bg-danger-soft p-2">
-                <p className="text-xs text-charcoal">
-                  This removes the wedding from the server for good — every slice, every uploaded
-                  font and picture, and the guest link. Anyone holding that link will find nothing
-                  there. The copy on this device is untouched.
-                </p>
-                <TextField
-                  label='Type "delete" to confirm'
-                  value={erasePhrase}
-                  onChange={setErasePhrase}
-                  placeholder="delete"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    icon={Trash2}
-                    tone="danger"
-                    disabled={erasePhrase.trim().toLowerCase() !== "delete" || busy !== null}
-                    onClick={() =>
-                      void run("erase", async () => {
-                        await deleteFromServer();
-                        setUnlocked(false);
-                        setShareLink(null);
-                        setErasing(false);
-                        setErasePhrase("");
-                        await refresh();
-                        return "Erased from the server. The wedding is still here on this device.";
-                      })
-                    }
-                  >
-                    {busy === "erase" ? "Erasing…" : "Erase from server"}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setErasing(false);
-                      setErasePhrase("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="text-xs text-slate underline underline-offset-2 hover:text-charcoal"
-                onClick={() => setErasing(true)}
-              >
-                Erase this wedding from the server
-              </button>
-            )}
-          </div>
+          <Check label="Show the room, not just the search" checked={showPlan} onChange={setShowPlan} />
+          <Button icon={Link2} tone="primary" disabled={busy} onClick={() => void run(() => publish(showPlan))}>
+            Publish a link
+          </Button>
         </div>
       ) : (
-        /*
-          The passphrase is not asked for again to sync anything — the wedding
-          itself now travels with the account. It is what the link's own server
-          checks before it will publish or, more to the point, take a published
-          link down. Held in memory only, so a reload asks once more.
-        */
         <div className="mt-2 space-y-2">
-          <TextField
-            label={enrolled ? "Passphrase for the guest link" : "Choose a passphrase for the link"}
-            type="password"
-            value={passphrase}
-            onChange={setPassphrase}
-            placeholder="four random words"
+          <div className="flex gap-2">
+            <input
+              readOnly
+              value={url ?? ""}
+              aria-label="The guest link"
+              className="min-w-0 flex-1 rounded border border-charcoal/15 bg-parchment px-2 py-1.5 text-xs text-charcoal"
+              onFocus={(event) => event.target.select()}
+            />
+            <Button
+              icon={copied ? CheckIcon : Copy}
+              onClick={() =>
+                void navigator.clipboard.writeText(url ?? "").then(() => {
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                })
+              }
+            >
+              {copied ? "Copied" : "Copy"}
+            </Button>
+          </div>
+          <p role="status" className="text-xs text-slate">
+            Updated {new Date(link.publishedAt).toLocaleString()}. It updates itself as seats change.
+          </p>
+          <Check
+            label="Show the room, not just the search"
+            checked={link.showPlan}
+            onChange={(next) => void run(() => publish(next))}
           />
           <Button
-            tone="primary"
-            disabled={busy !== null || passphrase.length < 8}
+            icon={Unlink}
+            tone="danger"
+            disabled={busy}
             onClick={() =>
-              void run("unlock", async () => {
-                if (enrolled) {
-                  await unlockShare(passphrase);
-                } else {
-                  await createShared(passphrase);
-                }
-                setPassphrase("");
-                setUnlocked(true);
-                await refresh();
-                return "Unlocked. The link can be published, updated or taken down.";
-              })
+              void confirm({
+                title: "Take the guest link down?",
+                body: "Everyone who has it sees “This link is not live” instead. Publishing again makes a new link.",
+                action: "Take it down",
+                tone: "danger",
+              }).then((yes) => (yes ? run(takeDown) : undefined))
             }
           >
-            {busy === "unlock" ? "Unlocking…" : enrolled ? "Unlock" : "Set it up"}
+            Take it down
           </Button>
-          <p className="text-xs text-slate">
-            Eight characters or more. It is never sent anywhere and cannot be recovered, so write it
-            down — without it a published link cannot be taken down again.
-          </p>
         </div>
       )}
+
+      {problem ? (
+        <p role="alert" className="mt-2 text-sm text-danger">
+          {problem}
+        </p>
+      ) : null}
     </Panel>
   );
 }

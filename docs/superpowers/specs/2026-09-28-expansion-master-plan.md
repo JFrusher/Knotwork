@@ -272,7 +272,19 @@ project, the build, and the Playwright run — and gets its own plan first.
    the wedding as it is, so setup can be run again without losing anything.
    The commit comes before *together*, which may leave the page to sign in.
 4. **Guest link on the account**, live (decision 12). Then `lib/sync` and its
-   tables are deleted — nothing else uses them.
+   tables are deleted — nothing else uses them. **Built 2026-09-28.**
+   `wedding_shares` belongs to the account wedding, and any member publishes
+   without a passphrase. The token and key are fixed at the first publish; a
+   republish under another key changes nothing, so a race between two devices
+   can't break the links guests hold. The link republishes a few seconds after
+   what guests see changes. The fingerprint leaves out `publishedAt`, or every
+   check would count as a change. The key is now stored with the wedding, so
+   the server's operator can read the link, exactly as they can read the
+   wedding. The Privacy Policy says so, and no longer describes the passphrase
+   system (dated 2026-09-28). `lib/sync`, its API and its four tables are gone.
+   Its reusable parts moved: rate limiting and `check` to `lib/server`, the
+   share encryption and snapshot to `lib/share`, portable assets and retention
+   to `lib/documents`.
 5. **Tour and example wedding:** "Take a tour" runs every chapter; the example
    gains seats, crew, jobs, shots and a card design so every chapter has
    something real to point at.

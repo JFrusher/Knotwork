@@ -4,11 +4,9 @@ import type { AcceptResult, AccountsStore, MemberRecord, Role } from "./store";
 /**
  * The Postgres implementation, over a caller-scoped client.
  *
- * Unlike `lib/sync/supabaseStore.ts`, which uses one service-role client for
- * every caller (authorization there is a token hash checked by hand), this
- * takes a *different* client per call — one carrying the signed-in user's own
- * session — so Postgres RLS and the `security definer` functions in the
- * accounts migrations see the real caller via `auth.uid()`.
+ * It takes a client per call — one carrying the signed-in user's own session
+ * — so Postgres RLS and the `security definer` functions in the accounts
+ * migrations see the real caller via `auth.uid()`.
  *
  * The acting user's id arguments go unused wherever a function reads
  * `auth.uid()` itself: a caller can never act "as" someone else by passing a

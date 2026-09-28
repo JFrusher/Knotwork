@@ -2,11 +2,10 @@
  * A fixed-window rate limiter, in memory.
  *
  * This is a public URL that anyone who finds the domain can reach. Without a
- * limit, two things are free to a stranger: creating unlimited weddings, and
- * guessing a passphrase against the slice endpoints as fast as the network
- * allows. PBKDF2 makes each guess expensive for an honest client, but an
- * attacker writing their own client only pays it once per candidate — and the
- * server was paying nothing at all.
+ * limit, a signed-in stranger could create weddings, send invites and write
+ * documents as fast as the network allows, and every one costs the server.
+ * Keyed by account, so two couples behind one office network never share a
+ * budget.
  *
  * ponytail: in memory, so the window is per serverless instance rather than
  * global, and a determined attacker gets one window per instance Vercel happens
@@ -50,7 +49,7 @@ export const INVITE_LIMIT: Limit = { max: 5, windowMs: 60 * 60 * 1000 };
  */
 export const AUTH_LIMIT: Limit = { max: 20, windowMs: 15 * 60 * 1000 };
 
-/** Ordinary reads and writes by somebody already holding the passphrase. */
+/** Ordinary document writes by a signed-in member. */
 export const WRITE_LIMIT: Limit = { max: 600, windowMs: 60 * 1000 };
 
 /**
@@ -60,6 +59,13 @@ export const WRITE_LIMIT: Limit = { max: 600, windowMs: 60 * 1000 };
  * taking periodic backups, never notices it.
  */
 export const EXPORT_LIMIT: Limit = { max: 20, windowMs: 60 * 60 * 1000 };
+
+/**
+ * Publishing the guest link. It republishes itself as seats change, a few
+ * seconds after the last edit, so an evening of seating is dozens — not
+ * thousands.
+ */
+export const SHARE_LIMIT: Limit = { max: 300, windowMs: 60 * 60 * 1000 };
 
 export function allow(key: string, limit: Limit): boolean {
   const now = Date.now();
@@ -74,34 +80,4 @@ export function allow(key: string, limit: Limit): boolean {
   if (found.count >= limit.max) return false;
   found.count += 1;
   return true;
-}
-
-/**
- * Who is asking.
- *
- * Vercel sets `x-forwarded-for`, and the left-most entry is the client as its
- * edge saw it. Falls back to a single bucket rather than to something
- * spoofable: when the header is missing, everyone shares one window, which is
- * the safe direction to be wrong in.
- */
-export function callerKey(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  const first = forwarded?.split(",")[0]?.trim();
-  return first && first.length > 0 ? first : "unknown";
-}
-
-/**
- * Only failures count here, so a working session is never throttled by its
- * own use. (AUTH_LIMIT itself is also spent elsewhere on every attempt,
- * success included — see its own doc comment — this function is specifically
- * the failures-only path.)
- */
-export function noteAuthFailure(key: string): void {
-  allow(`auth:${key}`, AUTH_LIMIT);
-}
-
-export function authAttemptsRemain(key: string): boolean {
-  const found = windows.get(`auth:${key}`);
-  if (!found || found.resetAt <= Date.now()) return true;
-  return found.count < AUTH_LIMIT.max;
 }

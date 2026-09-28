@@ -223,14 +223,12 @@ function Body({ onClose }: { onClose: () => void }) {
       ) : null}
 
       {/*
-        The guest link outlives the passphrase sync it used to sit beside: it
-        publishes a reduced, separately-keyed snapshot for people with no
-        account. Without it on screen nobody can take down a link they have
-        already published, which is the half of it that matters.
+        The guest link publishes a reduced, separately-keyed snapshot for
+        people with no account — and here is where it is taken down.
       */}
       {/* Titled by its own panel ("A link for the guests"); wrapping it in a
           second one printed two headings for one section. */}
-      <GuestLinkPanel onProblem={setProblem} />
+      <GuestLinkPanel />
 
       <KeptCopies onDone={setNotice} />
 

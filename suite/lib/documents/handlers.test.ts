@@ -1,6 +1,6 @@
 import { describe, expect, it, test, vi } from "vitest";
 import { exportDocumentHandler, getDocumentHandler, saveDocumentHandler, sweepAbandonedDocuments } from "./handlers";
-import { RETENTION_MONTHS } from "@/lib/sync/handlers";
+import { RETENTION_MONTHS } from "./retention";
 import { memoryStore } from "./store";
 
 const validDoc = {

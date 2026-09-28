@@ -4,7 +4,7 @@ import { currentUser, serverClient } from "@/lib/accounts/serverClient";
 import { requestedWedding } from "@/lib/accounts/requestedWedding";
 import { documentStore } from "@/lib/documents/supabaseStore";
 import { exportDocumentHandler } from "@/lib/documents/handlers";
-import { allow, EXPORT_LIMIT } from "@/lib/sync/rateLimit";
+import { allow, EXPORT_LIMIT } from "@/lib/server/rateLimit";
 
 /**
  * "Download my wedding" — the honest answer to "can I get my data out".

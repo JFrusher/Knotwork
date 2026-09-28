@@ -1,5 +1,5 @@
 import { z } from "zod";
-export { check } from "@/lib/sync/schemas";
+export { check } from "@/lib/server/check";
 
 const role = z.enum(["partner", "planner"], "A role is partner or planner.");
 
