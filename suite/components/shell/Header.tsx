@@ -67,8 +67,12 @@ export function Header() {
             * are editing in — it is the only thing that knows what your last
             * change was — and its document controls sit beside it rather than
             * on a second bar of their own.
+            *
+            * `safe` end alignment: plain `justify-end` pushes overflow out of
+            * the start edge, where no scrollbar can reach it, and Timeline's
+            * zoom and Present buttons sat there invisible at 1440px.
             */}
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-1 overflow-x-auto [&_button]:whitespace-nowrap [&>*]:shrink-0">
+          <div className="flex min-w-0 flex-1 items-center justify-end-safe gap-1 overflow-x-auto [&_button]:whitespace-nowrap [&>*]:shrink-0">
             <ChromeSlot name="tool-actions" />
           </div>
           <div className="hidden shrink-0 items-center sm:flex">
