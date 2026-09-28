@@ -27,7 +27,7 @@ vi.mock("@/lib/documents/assets", () => ({
 
 const { useTrousseauStore, flushPersist } = await import("./useTrousseauStore");
 const { emptyTrousseau } = await import("@jfrusher/trousseau");
-const { fingerprintAllSlices } = await import("@/lib/documents/mergeCloudDocument");
+const { fingerprintParts } = await import("@/lib/documents/mergeCloudDocument");
 const { fingerprint } = await import("@/lib/documents/fingerprint");
 
 /** Long enough for the 250ms cloud-push timer, and the push it ends in, to run. */
@@ -90,7 +90,7 @@ test("a rejected write surfaces per-slice conflicts, not an auto-merge", async (
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: { ...base, event: { coupleNames: "mine" } },
   });
   pushDocumentMock.mockResolvedValue({
@@ -102,7 +102,9 @@ test("a rejected write surfaces per-slice conflicts, not an auto-merge", async (
   await useTrousseauStore.getState().syncToCloud();
   const state = useTrousseauStore.getState();
   expect(state.cloudStatus).toBe("conflict");
-  expect(state.cloudConflicts).toEqual([{ slice: "event", theirs: { coupleNames: "theirs" } }]);
+  expect(state.cloudConflicts).toEqual([
+    { key: "event", slice: "event", mine: { coupleNames: "mine" }, theirs: { coupleNames: "theirs" } },
+  ]);
   // The conflicting slice keeps the local value until resolved.
   expect((state.raw as Record<string, unknown>).event).toEqual({ coupleNames: "mine" });
 });
@@ -112,7 +114,7 @@ test("a rejected write with no actual slice overlap resolves itself and re-pushe
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: { ...base, guests: { g1: { id: "g1" } } },
   });
   pushDocumentMock
@@ -140,8 +142,8 @@ test("resolveConflict(theirs) applies the server's slice and clears that conflic
   useTrousseauStore.setState({
     cloudStatus: "conflict",
     cloudVersion: 2,
-    cloudAgreed: fingerprintAllSlices(base),
-    cloudConflicts: [{ slice: "event", theirs: { coupleNames: "theirs" } }],
+    cloudAgreed: fingerprintParts(base),
+    cloudConflicts: [{ key: "event", slice: "event", mine: { coupleNames: "mine" }, theirs: { coupleNames: "theirs" } }],
     raw: { ...base, event: { coupleNames: "mine" } },
   });
 
@@ -157,8 +159,8 @@ test("resolveConflict(mine) drops the conflict and keeps the local slice", async
   useTrousseauStore.setState({
     cloudStatus: "conflict",
     cloudVersion: 2,
-    cloudAgreed: fingerprintAllSlices(base),
-    cloudConflicts: [{ slice: "event", theirs: { coupleNames: "theirs" } }],
+    cloudAgreed: fingerprintParts(base),
+    cloudConflicts: [{ key: "event", slice: "event", mine: { coupleNames: "mine" }, theirs: { coupleNames: "theirs" } }],
     raw: { ...base, event: { coupleNames: "mine" } },
   });
 
@@ -174,7 +176,7 @@ test("pullFromCloud takes a slice that only changed on the server", async () => 
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: base,
   });
   fetchCloudDocumentMock.mockResolvedValue({
@@ -194,6 +196,38 @@ test("pullFromCloud takes a slice that only changed on the server", async () => 
   expect((state.raw as Record<string, unknown>).guests).toEqual({ g1: { id: "g1" } });
   expect(state.cloudVersion).toBe(2);
   expect(state.cloudConflicts).toEqual([]);
+});
+
+test("a partner's change to one guest and this device's to another both stand, with nothing to choose", async () => {
+  const guests = { ada: { id: "ada", firstName: "Ada", rsvpStatus: "pending" }, alan: { id: "alan", firstName: "Alan", rsvpStatus: "pending" } };
+  const base = { ...(emptyTrousseau() as unknown as Record<string, unknown>), guests };
+  useTrousseauStore.setState({
+    cloudStatus: "idle",
+    cloudVersion: 1,
+    cloudAgreed: fingerprintParts(base),
+    raw: { ...base, guests: { ...guests, ada: { ...guests.ada, rsvpStatus: "confirmed" } } },
+  });
+  fetchCloudDocumentMock.mockResolvedValue({
+    ok: true,
+    weddingId: "w1",
+    document: { ...base, guests: { ...guests, alan: { ...guests.alan, rsvpStatus: "declined" } } },
+    version: 2,
+  });
+  pushDocumentMock.mockResolvedValue({ ok: true, version: 3, warnings: [] });
+
+  await useTrousseauStore.getState().pullFromCloud();
+
+  const state = useTrousseauStore.getState();
+  expect(state.cloudConflicts).toEqual([]);
+  expect(state.cloudStatus).not.toBe("conflict");
+  expect((state.raw as { guests: typeof guests }).guests).toMatchObject({
+    ada: { rsvpStatus: "confirmed" },
+    alan: { rsvpStatus: "declined" },
+  });
+  // Both edits go up together.
+  await vi.waitFor(() => expect(pushDocumentMock).toHaveBeenCalled());
+  const pushed = pushDocumentMock.mock.calls.at(-1)![1] as { guests: typeof guests };
+  expect(pushed.guests).toMatchObject({ ada: { rsvpStatus: "confirmed" }, alan: { rsvpStatus: "declined" } });
 });
 
 test("pullFromCloud does nothing when the server version hasn't moved", async () => {
@@ -259,7 +293,7 @@ test("a surfaced conflict pushes nothing until it is resolved, then pushes the r
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: { ...base, event: { coupleNames: "mine" } },
   });
   pushDocumentMock.mockResolvedValue({
@@ -280,7 +314,7 @@ test("a surfaced conflict pushes nothing until it is resolved, then pushes the r
   expect(pushDocumentMock).toHaveBeenCalledTimes(1);
   expect(useTrousseauStore.getState().cloudStatus).toBe("conflict");
   expect(useTrousseauStore.getState().cloudConflicts).toEqual([
-    { slice: "event", theirs: { coupleNames: "theirs" } },
+    { key: "event", slice: "event", mine: { coupleNames: "mine" }, theirs: { coupleNames: "theirs" } },
   ]);
   expect((useTrousseauStore.getState().raw as Record<string, unknown>).event).toEqual({
     coupleNames: "mine",
@@ -320,7 +354,7 @@ test("pullFromCloud merges against the document as it is when the fetch lands", 
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: base,
   });
   fetchCloudDocumentMock.mockImplementation(async () => {
@@ -349,7 +383,7 @@ test("a pull that brings back nothing new neither replaces the document nor push
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: base,
     generation: 3,
   });
@@ -367,7 +401,7 @@ test("a successful push records agreement on what was pushed, not on a later edi
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: { ...base, event: { coupleNames: "pushed" } },
   });
   pushDocumentMock.mockImplementation(async () => {
@@ -392,7 +426,7 @@ test("assets sync on a pull, not on every document push", async () => {
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: base,
     weddingId: "w1",
   });
@@ -420,7 +454,7 @@ test("a pull refused for a wedding this account was taken off hands the decision
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(mine),
+    cloudAgreed: fingerprintParts(mine),
     raw: mine,
     weddingId: "w1",
   });

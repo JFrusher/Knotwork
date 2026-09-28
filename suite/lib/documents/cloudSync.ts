@@ -1,5 +1,5 @@
 import { del as idbDel, get as idbGet, set as idbSet } from "idb-keyval";
-import type { SliceName } from "@jfrusher/trousseau";
+import type { Agreed } from "./mergeCloudDocument";
 import type { WeddingListing } from "@/lib/accounts/handlers";
 
 /**
@@ -24,7 +24,8 @@ const LINK_KEY = "trousseau.cloud.link";
 export interface CloudLink {
   weddingId: string;
   version: number;
-  agreed: Partial<Record<SliceName, string>>;
+  /** Part by part — see `lib/documents/parts`. */
+  agreed: Agreed;
 }
 
 export async function readLink(): Promise<CloudLink | null> {
@@ -113,4 +114,27 @@ export async function pushDocument(weddingId: string, document: unknown, expecte
     return { ok: false, reason: "invalid", errors: body.errors };
   }
   return { ok: false, reason: "unavailable" };
+}
+
+/** One saved version in the account's history. */
+export interface HistoryListing {
+  id: string;
+  savedAt: string;
+  /** The email of whoever saved it, or null once they have left the wedding. */
+  savedBy: string | null;
+  yours: boolean;
+}
+
+export async function fetchHistory(weddingId: string): Promise<HistoryListing[]> {
+  const response = await fetch(`/api/documents/history?wedding=${encodeURIComponent(weddingId)}`);
+  const body = (await response.json().catch(() => null)) as { entries?: HistoryListing[]; error?: string } | null;
+  if (!response.ok || !body?.entries) throw new Error(body?.error ?? "The history could not be loaded.");
+  return body.entries;
+}
+
+export async function fetchHistoryDocument(weddingId: string, id: string): Promise<Record<string, unknown>> {
+  const response = await fetch(`/api/documents/history/${encodeURIComponent(id)}?wedding=${encodeURIComponent(weddingId)}`);
+  const body = (await response.json().catch(() => null)) as { document?: Record<string, unknown>; error?: string } | null;
+  if (!response.ok || !body?.document) throw new Error(body?.error ?? "That version could not be loaded.");
+  return body.document;
 }

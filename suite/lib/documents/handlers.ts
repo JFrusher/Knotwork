@@ -20,6 +20,37 @@ export async function getDocumentHandler(store: DocumentStore, weddingId: string
   return ok({ weddingId, document: record?.document ?? null, version: record?.version ?? 0 });
 }
 
+/** How many saved versions the history shows: weeks of editing, not years. */
+export const HISTORY_LIMIT = 50;
+
+/**
+ * The versions saved, newest first, each with who saved it — by email, from
+ * the wedding's people now, so someone who has since left is not named — and
+ * whether it was the person asking.
+ */
+export async function historyHandler(
+  store: DocumentStore,
+  people: ReadonlyArray<{ userId: string; email: string }>,
+  weddingId: string,
+  askingUserId: string,
+): Promise<Reply> {
+  const emails = new Map(people.map((person) => [person.userId, person.email]));
+  const entries = await store.history(weddingId, HISTORY_LIMIT);
+  return ok({
+    entries: entries.map((entry) => ({
+      id: entry.id,
+      savedAt: entry.savedAt,
+      savedBy: entry.savedBy === null ? null : (emails.get(entry.savedBy) ?? null),
+      yours: entry.savedBy === askingUserId,
+    })),
+  });
+}
+
+export async function historyDocumentHandler(store: DocumentStore, weddingId: string, id: string): Promise<Reply> {
+  const document = await store.historyDocument(weddingId, id);
+  return document === null ? { status: 404, body: { error: "That version is not in this wedding's history." } } : ok({ document });
+}
+
 /**
  * Validate first — pure, and depends only on the incoming document — then
  * attempt the compare-and-set write. An error-level cross-slice violation is

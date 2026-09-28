@@ -13,11 +13,15 @@ import { ChromeSlot } from "./chrome";
 import { DataButton } from "./DataButton";
 import { useDataPanel } from "./dataPanel";
 import { useGuestImport } from "./guestImportPanel";
+import { useSyncPanel } from "./syncPanel";
 
 const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataManager), {
   ssr: false,
 });
 const GuestImport = dynamic(() => import("./GuestImport").then((m) => m.GuestImport), {
+  ssr: false,
+});
+const SyncHistory = dynamic(() => import("./SyncHistory").then((m) => m.SyncHistory), {
   ssr: false,
 });
 
@@ -46,6 +50,15 @@ export function Header() {
   const importOpen = useGuestImport((s) => s.open);
   const [importEverOpened, setImportEverOpened] = useState(false);
   if (importOpen && !importEverOpened) setImportEverOpened(true);
+  // Sync & history, loaded the same way; `?panel=sync` opens it on arrival.
+  const syncOpen = useSyncPanel((s) => s.open);
+  const showSync = useSyncPanel((s) => s.show);
+  const hideSync = useSyncPanel((s) => s.hide);
+  const [syncEverOpened, setSyncEverOpened] = useState(false);
+  if (syncOpen && !syncEverOpened) setSyncEverOpened(true);
+  useEffect(() => useSyncPanel.getState().fromAddress(), []);
+  // A conflict is settled there, so the button that says so opens it.
+  const conflict = useTrousseauStore((s) => s.cloudStatus === "conflict");
   // The one question that stops sync opens the panel that asks it.
   const choosing = useTrousseauStore((s) => s.cloudStatus === "choosing");
   useEffect(() => {
@@ -101,7 +114,7 @@ export function Header() {
             <ChromeSlot name="tool-undo" />
           </div>
 
-          <DataButton onOpen={showData} />
+          <DataButton onOpen={conflict ? showSync : showData} />
 
           <HowThisWorks />
           <AccountStatus />
@@ -110,6 +123,7 @@ export function Header() {
 
       {dataEverOpened ? <DataManager open={dataOpen} onClose={hideData} /> : null}
       {importEverOpened ? <GuestImport /> : null}
+      {syncEverOpened ? <SyncHistory open={syncOpen} onClose={hideSync} /> : null}
     </>
   );
 }

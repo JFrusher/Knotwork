@@ -19,7 +19,9 @@ import {
   type PushResult,
 } from "@/lib/documents/cloudSync";
 import type { WeddingListing } from "@/lib/accounts/handlers";
-import { fingerprintAllSlices, mergeCloudDocument, type SliceConflict } from "@/lib/documents/mergeCloudDocument";
+import { fingerprintParts, mergeCloudDocument, type Agreed, type PartConflict } from "@/lib/documents/mergeCloudDocument";
+import { partInfo, partsOf, withPart } from "@/lib/documents/parts";
+import { publishDay, readTimeline } from "@/lib/model/slices";
 import { fingerprint } from "@/lib/documents/fingerprint";
 import { syncAssets } from "@/lib/documents/assets";
 import { hasContent, summarise } from "@/lib/model/content";
@@ -163,10 +165,10 @@ export interface TrousseauState {
   cloudError: string | null;
   /** The version this device last confirmed the cloud holds, or null before the first sync. */
   cloudVersion: number | null;
-  /** Fingerprint of each slice as last agreed with the server - the merge baseline. */
-  cloudAgreed: Partial<Record<SliceName, string>>;
-  /** Slices changed on both sides since the last agreement. Surfaced, never auto-merged. */
-  cloudConflicts: SliceConflict[];
+  /** Fingerprint of each part as last agreed with the server — the merge baseline. See `lib/documents/parts`. */
+  cloudAgreed: Agreed;
+  /** Parts changed on both sides since the last agreement. Surfaced, never auto-merged. */
+  cloudConflicts: PartConflict[];
   /**
    * The account wedding this device's document is synced with, once settled.
    * Also asset sync's Storage path. Stored with `cloudVersion` and
@@ -185,10 +187,16 @@ export interface TrousseauState {
   chooseWedding: (keep: "device" | "account") => Promise<void>;
   /** Push the current document now. Called after every local write, and on reconnect for the queue. */
   syncToCloud: () => Promise<void>;
-  /** Pull the server's current document and merge it in, per slice. Called on an interval and on focus. */
+  /** Pull the server's current document and merge it in, part by part. Called on an interval and on focus. */
   pullFromCloud: () => Promise<void>;
-  /** Settle one slice's conflict: take the server's value, or keep the local one. */
-  resolveConflict: (slice: SliceName, choice: "theirs" | "mine") => void;
+  /** Settle one part's conflict: take the server's value, or keep the local one. */
+  resolveConflict: (key: string, choice: "theirs" | "mine") => void;
+}
+
+/** The day as published from a document's own timeline and event. */
+function dayOf(raw: Record<string, unknown>): Record<string, unknown> {
+  const doc = migrate(raw);
+  return publishDay(doc, readTimeline(doc));
 }
 
 function freshDoc(): { raw: Record<string, unknown>; doc: Trousseau } {
@@ -426,7 +434,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
     } else if (link !== null && link.weddingId === result.weddingId) {
       // The same wedding: what changed here while the account was out of
       // reach, merged with what changed there, exactly as a poll would.
-      const merged = mergeCloudDocument(local, account, link.agreed);
+      const merged = mergeCloudDocument(local, account, link.agreed, dayOf);
       if (merged.adopted || merged.conflicts.length > 0) get().replaceDocument(merged.raw, { silent: true });
       set({
         weddingId: result.weddingId,
@@ -436,8 +444,8 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
         cloudConflicts: merged.conflicts,
         cloudError: null,
       });
-      const kept = fingerprintAllSlices(merged.raw);
-      const unpushed = Object.entries(kept).some(([slice, fp]) => merged.agreed[slice as SliceName] !== fp);
+      const kept = fingerprintParts(merged.raw);
+      const unpushed = Object.entries(kept).some(([key, fp]) => merged.agreed[key] !== fp);
       if (merged.conflicts.length === 0 && unpushed) void get().syncToCloud();
     } else {
       set({
@@ -551,7 +559,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
     if (result.version === state.cloudVersion) return;
 
     const serverRaw = (result.document ?? {}) as Record<string, unknown>;
-    const merged = mergeCloudDocument(state.raw, serverRaw, state.cloudAgreed);
+    const merged = mergeCloudDocument(state.raw, serverRaw, state.cloudAgreed, dayOf);
 
     if (merged.conflicts.length > 0) {
       get().replaceDocument(merged.raw, { silent: true });
@@ -578,13 +586,20 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
     if (weddingId) void syncAssets(weddingId);
   },
 
-  resolveConflict: (slice, choice) => {
+  resolveConflict: (key, choice) => {
     const state = get();
-    const conflict = state.cloudConflicts.find((c) => c.slice === slice);
+    const conflict = state.cloudConflicts.find((c) => c.key === key);
     if (!conflict) return;
-    const remaining = state.cloudConflicts.filter((c) => c.slice !== slice);
-    const raw = choice === "theirs" ? mergeSlice(state.raw, slice, conflict.theirs) : state.raw;
-    const resolvedValue = raw[slice];
+    const remaining = state.cloudConflicts.filter((c) => c.key !== key);
+    let raw = choice === "theirs" ? withPart(state.raw, key, conflict.theirs) : state.raw;
+    // The published day follows the timeline and the event it is made from.
+    const { slice } = partInfo(key);
+    if (choice === "theirs" && (slice === "timeline" || slice === "event")) raw = { ...raw, day: dayOf(raw) };
+    const resolved = partsOf(raw).get(key);
+    const cloudAgreed = { ...state.cloudAgreed };
+    // A part taken out on the side chosen is agreed as not there.
+    if (resolved === undefined) delete cloudAgreed[key];
+    else cloudAgreed[key] = fingerprint(resolved);
 
     set({
       raw,
@@ -595,7 +610,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
       // back — silently undoing the choice and pushing the undo to the cloud.
       generation: state.generation + 1,
       cloudConflicts: remaining,
-      cloudAgreed: { ...state.cloudAgreed, [slice]: fingerprint(resolvedValue) },
+      cloudAgreed,
       // Still "conflict" while any remain, which keeps `syncToCloud` refusing
       // to push a half-resolved document. The last resolution flips it to
       // "idle", and the persist scheduled below then pushes normally.
@@ -688,7 +703,7 @@ function agreeOn(raw: Record<string, unknown>, version: number): void {
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: version,
-    cloudAgreed: fingerprintAllSlices(raw),
+    cloudAgreed: fingerprintParts(raw),
     cloudConflicts: [],
     cloudError: null,
   });
@@ -733,7 +748,7 @@ function applyCloudResult(result: PushResult, pushed?: Record<string, unknown>):
       cloudStatus: "idle",
       cloudVersion: result.version,
       cloudConflicts: [],
-      cloudAgreed: fingerprintAllSlices(pushed ?? useTrousseauStore.getState().raw),
+      cloudAgreed: fingerprintParts(pushed ?? useTrousseauStore.getState().raw),
       cloudError: null,
     });
     // No asset sync here. This runs after every debounced edit burst, and
@@ -745,11 +760,7 @@ function applyCloudResult(result: PushResult, pushed?: Record<string, unknown>):
   }
   if (result.reason === "conflict") {
     const state = useTrousseauStore.getState();
-    const merged = mergeCloudDocument(
-      state.raw,
-      result.document as Record<string, unknown>,
-      state.cloudAgreed,
-    );
+    const merged = mergeCloudDocument(state.raw, result.document as Record<string, unknown>, state.cloudAgreed, dayOf);
     state.replaceDocument(merged.raw, { silent: true });
 
     if (merged.conflicts.length > 0) {

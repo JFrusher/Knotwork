@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { CloudOff, Download, FileUp, RefreshCw, Upload, X } from "lucide-react";
+import { CloudOff, Download, FileUp, History, Upload, X } from "lucide-react";
 import { migrate, serialise, suggestedFilename } from "@jfrusher/trousseau";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { Button, Notice, Panel, TextField } from "@/components/ui/controls";
@@ -12,6 +12,7 @@ import { GuestLinkPanel } from "./GuestLinkPanel";
 import { KeptCopies } from "./KeptCopies";
 import { WeddingChoice } from "./WeddingChoice";
 import { useGuestImport } from "./guestImportPanel";
+import { useSyncPanel } from "./syncPanel";
 import { download, readTextFile } from "@/lib/data/file";
 
 /**
@@ -40,7 +41,7 @@ function Body({ onClose }: { onClose: () => void }) {
   const cloudStatus = useTrousseauStore((s) => s.cloudStatus);
   const cloudError = useTrousseauStore((s) => s.cloudError);
   const cloudConflicts = useTrousseauStore((s) => s.cloudConflicts);
-  const resolveConflict = useTrousseauStore((s) => s.resolveConflict);
+  const showSync = useSyncPanel((s) => s.show);
   const { setEvent } = useWriters();
 
   const [notice, setNotice] = useState<string | null>(null);
@@ -186,29 +187,10 @@ function Body({ onClose }: { onClose: () => void }) {
       {cloudStatus !== "disabled" && cloudStatus !== "choosing" ? (
         <Panel title="Cloud">
           {cloudStatus === "conflict" && cloudConflicts.length > 0 ? (
-            <div className="space-y-4">
-              <p className="text-sm text-slate">
-                You and your partner both changed the same thing on different devices. Choose
-                which to keep for each — nothing else is affected.
-              </p>
-              {cloudConflicts.map((conflict) => (
-                <div key={conflict.slice} className="rounded border border-charcoal/10 p-3">
-                  <p className="mb-2 text-sm font-semibold capitalize">{conflict.slice}</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      onClick={() => resolveConflict(conflict.slice, "theirs")}
-                      icon={RefreshCw}
-                      tone="primary"
-                    >
-                      Use their version
-                    </Button>
-                    <Button onClick={() => resolveConflict(conflict.slice, "mine")} icon={Upload}>
-                      Keep mine
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p className="text-sm text-slate">
+              You and someone else changed the same {cloudConflicts.length === 1 ? "thing" : `${cloudConflicts.length} things`} at
+              once. Everything else is merged; choose between the two side by side in Sync &amp; history.
+            </p>
           ) : cloudStatus === "queued" ? (
             <p className="flex items-center gap-2 text-sm text-slate">
               <CloudOff size={16} /> You&rsquo;re offline. Changes will sync once you&rsquo;re back
@@ -219,6 +201,17 @@ function Body({ onClose }: { onClose: () => void }) {
           ) : (
             <p className="text-sm text-slate">Synced to your account.</p>
           )}
+          <div className="mt-3">
+            <Button
+              icon={History}
+              onClick={() => {
+                onClose();
+                showSync();
+              }}
+            >
+              Sync &amp; history
+            </Button>
+          </div>
         </Panel>
       ) : null}
 

@@ -13,6 +13,14 @@ export interface DocumentRecord {
   updatedAt: string;
 }
 
+/** One saved version, newest first in a listing. */
+export interface HistoryEntry {
+  id: string;
+  savedAt: string;
+  /** The account that saved it, or null once that account has gone. */
+  savedBy: string | null;
+}
+
 export interface SaveResult {
   accepted: boolean;
   record: DocumentRecord;
@@ -25,7 +33,15 @@ export interface DocumentStore {
    * Compare-and-set write. Always returns the true current record either
    * way — accepted or not — so a rejected write can show what it lost to.
    */
-  saveDocument(weddingId: string, document: unknown, expectedVersion: number): Promise<SaveResult>;
+  /**
+   * `savedBy` is for the in-memory store alone: the real one records the
+   * signed-in account itself, in `save_wedding_document`, from the session.
+   */
+  saveDocument(weddingId: string, document: unknown, expectedVersion: number, savedBy?: string): Promise<SaveResult>;
+  /** The versions saved, newest first — every accepted save keeps one. */
+  history(weddingId: string, limit: number): Promise<HistoryEntry[]>;
+  /** One saved version's document, or null if the wedding has no such version. */
+  historyDocument(weddingId: string, id: string): Promise<unknown | null>;
   /**
    * Weddings stale as of `before`, oldest first: either a document last saved
    * before that time, or (the Supabase-backed implementation only) a wedding
@@ -43,13 +59,14 @@ export interface DocumentStore {
 
 export function memoryStore(): DocumentStore {
   const documents = new Map<string, DocumentRecord>();
+  const versions: Array<HistoryEntry & { weddingId: string; document: unknown }> = [];
 
   return {
     async getDocument(weddingId) {
       return documents.get(weddingId) ?? null;
     },
 
-    async saveDocument(weddingId, document, expectedVersion) {
+    async saveDocument(weddingId, document, expectedVersion, savedBy) {
       const current = documents.get(weddingId);
       const currentVersion = current?.version ?? 0;
 
@@ -67,7 +84,20 @@ export function memoryStore(): DocumentStore {
         updatedAt: new Date().toISOString(),
       };
       documents.set(weddingId, record);
+      versions.push({ id: `v${versions.length + 1}`, weddingId, document, savedAt: record.updatedAt, savedBy: savedBy ?? null });
       return { accepted: true, record };
+    },
+
+    async history(weddingId, limit) {
+      return versions
+        .filter((version) => version.weddingId === weddingId)
+        .reverse()
+        .slice(0, limit)
+        .map(({ id, savedAt, savedBy }) => ({ id, savedAt, savedBy }));
+    },
+
+    async historyDocument(weddingId, id) {
+      return versions.find((version) => version.weddingId === weddingId && version.id === id)?.document ?? null;
     },
 
     async staleWeddings(before) {

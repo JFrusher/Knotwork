@@ -358,7 +358,22 @@ project, the build, and the Playwright run — and gets its own plan first.
    nobody named is the couple's own; all four now read the jobs on the day,
    and Delegation folds the tasks away, there only to hand one to somebody.
 5. **Sync & history** — what changed and who changed it, conflicts settled with
-   a real diff, and restore from the server's history.
+   a real diff, and restore from the server's history. **Built 2026-09-28**, as
+   the kit's first slide-over, addressable by `?panel=sync`; the Data button
+   opens it while something needs choosing. The account's saved versions are
+   listed newest first with who saved each — by email from the wedding's
+   people now, "You" for your own, and nobody named once they have left —
+   and "What changed" fetches that version and the one before it and says it
+   in words ("Guests: 2 added, 1 changed"). Putting one back keeps the
+   wedding as it is on this device first. Two read-only routes serve the
+   history under the members' own row-level security; the table already kept
+   every accepted save. With it, **per-record merging**: guests, tables,
+   blocks and jobs are merged one record at a time (`lib/documents/parts`),
+   so two people changing different guests both keep their change; a list's
+   order never conflicts, and a record added on the other side is woven in
+   where it was added; the published day follows whichever timeline won, or
+   is published again from a merged one. What is still changed on both sides
+   is laid out field by field — yours, theirs — to choose between.
 6. **Command palette** — any guest, table, block, job or page by name.
 
 ### Phase 3 — Beyond the couple
@@ -389,7 +404,7 @@ presence) lands after this, not before: an instant pull into a tool that still
 remounts on every change would make that remount constant.
 
 Per-record merging — two partners editing different guests do not conflict —
-lands with Sync & history, over keyed records (guests, tables, blocks, jobs).
+landed with Sync & history, over keyed records (guests, tables, blocks, jobs).
 
 ## Explicitly deferred
 
