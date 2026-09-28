@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertTriangle, CloudOff, Download, FileUp, RefreshCw, Upload, X } from "lucide-react";
 import { migrate, serialise, suggestedFilename } from "@jfrusher/trousseau";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
@@ -26,33 +25,34 @@ import {
  * and it writes the whole document rather than a slice.
  */
 export function DataManager({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+
+  // A native modal dialog, because it is the one that behaves as a dialog:
+  // the page behind goes inert so Tab stays inside, Escape closes it, and
+  // focus goes back to the Data button afterwards. The hand-built overlay
+  // this replaced said `aria-modal` and did none of those things.
+  useEffect(() => {
+    const element = dialog.current;
+    if (!element) return;
+    if (open && !element.open) element.showModal();
+    if (!open && element.open) element.close();
+  }, [open]);
+
   return (
-    <AnimatePresence>
-      {open ? (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-charcoal/40 p-4 sm:p-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          onClick={onClose}
-        >
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Data manager"
-            className="w-full max-w-2xl rounded-lg border border-charcoal/10 bg-parchment shadow-2xl"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <Body onClose={onClose} />
-          </motion.div>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
+    <dialog
+      ref={dialog}
+      aria-labelledby="data-manager-title"
+      // Fires for Escape as well as for `close()`, so the header's state
+      // follows however the dialog was dismissed.
+      onClose={onClose}
+      // A click on the backdrop lands on the dialog element itself.
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+      className="mx-auto my-8 w-[calc(100%-2rem)] max-w-2xl rounded-lg border border-charcoal/10 bg-parchment text-slate shadow-2xl backdrop:bg-charcoal/40"
+    >
+      {open ? <Body onClose={onClose} /> : null}
+    </dialog>
   );
 }
 
@@ -141,7 +141,9 @@ function Body({ onClose }: { onClose: () => void }) {
     <div className="p-6 sm:p-8">
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl">Your data</h2>
+          <h2 id="data-manager-title" className="text-2xl">
+            Your data
+          </h2>
           <p className="mt-1 text-sm text-slate">
             {guestCount} {guestCount === 1 ? "guest" : "guests"} on this device
             {savedAt ? `, saved ${new Date(savedAt).toLocaleTimeString()}` : ""}.

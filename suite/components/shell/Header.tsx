@@ -24,11 +24,11 @@ const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataMana
  */
 export function Header() {
   const [dataOpen, setDataOpen] = useState(false);
-  // DataManager's chunk (framer-motion, CSV/guest-import parsing, etc.) is
-  // dynamically imported — keep it out of the tree entirely until the user
+  // DataManager's chunk (CSV and guest-import parsing, the guest link panel)
+  // is dynamically imported — keep it out of the tree entirely until the user
   // has opened it once, so the chunk isn't fetched on every route's first
-  // render. Once opened, it stays mounted so its own AnimatePresence can
-  // still animate the close.
+  // render. Once opened, its dialog element stays mounted and is opened and
+  // closed in place.
   const [dataEverOpened, setDataEverOpened] = useState(false);
   const pathname = usePathname();
   const guestCount = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
