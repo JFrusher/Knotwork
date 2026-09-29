@@ -35,7 +35,7 @@ function resolveSpec(from: string, spec: string): string | null {
 function staticImports(file: string): string[] {
   const source = readFileSync(file, "utf8");
   const specs: string[] = [];
-  for (const match of source.matchAll(/^\s*(?:import|export)\s+(?!type\b)[^;]*?\bfrom\s+["']([^"']+)["']/gms)) specs.push(match[1]!);
+  for (const match of source.matchAll(/^\s*(?:import|export)\s+(?!type\b)[^;]*?\bfrom\s+["']([^"']+)["']/gm)) specs.push(match[1]!);
   for (const match of source.matchAll(/^\s*import\s+["']([^"']+)["']/gm)) specs.push(match[1]!);
   return specs;
 }
