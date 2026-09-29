@@ -1,7 +1,6 @@
 import { DEFAULT_FONT_ID } from "../../assets/fonts";
 import type { CardElement, CardSpec, ElementId } from "../types";
-import { DEFAULT_FIT } from "../text/fit";
-import { defaultIconRules } from "./defaults";
+import { DEFAULT_FIT, defaultIconRules } from "./defaults";
 
 /**
  * One table describing every element kind (F3).

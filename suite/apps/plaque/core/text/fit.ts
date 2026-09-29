@@ -123,10 +123,3 @@ export function fitBlock(font: LoadedFont, input: FitBlockInput): FitOutcome {
 function round(pt: Pt): Pt {
   return Math.round(pt * 100) / 100;
 }
-
-export const DEFAULT_FIT: FitConfig = {
-  mode: "shrink",
-  minFontSizePt: 8,
-  maxLines: 2,
-  anchor: "align",
-};
