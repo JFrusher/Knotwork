@@ -1413,12 +1413,18 @@ export const updateSettings =
     return { type: 'UPDATE_SETTINGS', label: 'Change settings', payload: { settings: patch } }
   }
 
-// TODO(ux-audit): no duplicate-pair or contradiction check — the same pair can
-// be added twice (double-counts warnings), and "A & B apart" + "A & B
-// together" can coexist silently. See tmp/ux-audit.md #G21.
+/** The rule already made about these two, in either order. */
+export const ruleFor = (constraints: Constraint[], a: string, b: string): Constraint | undefined =>
+  constraints.find(({ guestIds: [x, y] }) => (x === a && y === b) || (x === b && y === a))
+
+// One rule to a pair, and never about someone and themselves: a second rule
+// for a pair — the same again, or its opposite — only adds a warning that
+// cannot be cleared (ux-audit #G21).
 export const addConstraint =
   (c: Pick<Constraint, 'kind' | 'guestIds'> & Partial<Pick<Constraint, 'note'>>): Action =>
   (plan) => {
+    const [a, b] = c.guestIds
+    if (a === b || ruleFor(plan.constraints, a, b)) return null
     const cst: Constraint = { id: makeId('cst'), note: '', ...c }
     return {
       type: 'ADD_CONSTRAINT',

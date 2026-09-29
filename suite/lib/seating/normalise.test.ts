@@ -23,6 +23,19 @@ function load(raw: Record<string, unknown>) {
   return useTrousseauStore.getState().raw as Record<string, Record<string, unknown>>;
 }
 
+test("a seat the guest and the table disagree about is the table's", () => {
+  const doc = emptyTrousseau();
+  const table = (id: string, seated: string[]) => ({ id, label: id, type: "round", capacity: 8, x: 0, y: 0, rotation: 0, seatMode: "table", assignedGuestIds: seated });
+  const raw = load({
+    ...doc,
+    guests: { g1: { id: "g1", firstName: "Ann", assignedTableId: "t2" }, g2: { id: "g2", firstName: "Bo", assignedTableId: "t1" } },
+    seating: { ...(doc.seating as object), tables: { t1: table("t1", ["g1"]), t2: table("t2", []) } },
+  });
+  const guests = raw["guests"] as Record<string, { assignedTableId: string | null }>;
+  expect(guests["g1"]!.assignedTableId).toBe("t1");
+  expect(guests["g2"]!.assignedTableId).toBeNull();
+});
+
 test("a diet stored as the file's words is stored as its key", () => {
   const raw = load({ ...emptyTrousseau(), guests: { g1: { id: "g1", firstName: "Ann", dietary: "Vegetarian" } } });
   expect(raw["guests"]!["g1"]).toMatchObject({ dietary: "vegetarian", dietaryRaw: "Vegetarian" });

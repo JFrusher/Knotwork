@@ -1,7 +1,39 @@
 import { splitTitle } from "@/lib/model/partners";
 import { hasLegacyGuests, hasLegacyShots, readGuests, readSeating, readShots } from "@/lib/model/slices";
+import type { Guest, Seating } from "@/lib/model/types";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
-import { reconcile } from "./actions";
+
+interface Plan {
+  guests: Record<string, Guest>;
+  seating: Seating;
+}
+
+/**
+ * Rebuild the guests' side of each seat from the tables' own lists. The
+ * tables win, because a seat that exists on the plan is the one a person can
+ * point at in the room.
+ */
+function reconcile(plan: Plan): Plan {
+  const guests = { ...plan.guests };
+  const claimed = new Map<string, string>();
+
+  for (const table of Object.values(plan.seating.tables)) {
+    for (const id of table.assignedGuestIds) {
+      if (id !== null && !claimed.has(id)) claimed.set(id, table.id);
+    }
+  }
+
+  let changed = false;
+  for (const guest of Object.values(plan.guests)) {
+    const seat = claimed.get(guest.id) ?? null;
+    if (guest.assignedTableId !== seat) {
+      guests[guest.id] = { ...guest, assignedTableId: seat };
+      changed = true;
+    }
+  }
+
+  return changed ? { guests, seating: plan.seating } : plan;
+}
 
 /**
  * Bring a freshly loaded document's two records of a seat back into agreement.

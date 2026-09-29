@@ -44,6 +44,7 @@ several turned out differently once tested than they looked when read.
 | S18 | The Privacy Policy says "no analytics … and no third-party scripts", with Sentry the only third party; but on a Vercel deployment the root layout renders Vercel Web Analytics, added by Vercel's bot on 2026-09-08. The policy is false there. | Traced (`app/layout.tsx`, commit e63d4be). **Open — the maintainer's call**: remove the analytics, or say in the policy what it counts. Found with it, and fixed: the command palette put a guest's name in the address (`/guests?q=…`); it now goes by id. |
 | S19 | In Place cards, undoing any edit — even adding a rectangle — silently dropped the card's row scope (per-table menus went back to one card per guest) and every per-row tweak: its undo history kept only the elements and the background. | Reproduced against the old store. **Fixed** by Place cards moving onto the wedding's one history, which puts back the whole slice; the reproduction is now a test. |
 | S20 | In Seating, a zone, a pillar, a room shape or a calibration line could not be started on the floor of a room — only off it. The canvas gave every press on a room to the room before any tool ran, and the room took it as a click or a pan. | Reproduced with a browser test (no zone drawn inside the room; a pillar only off the floor). **Fixed**: the tools act wherever they are pressed, and a press on a room is the room's only for the select tool; the tests now draw a zone and put a pillar down on the floor. |
+| S21 | In Seating, a pair of guests could be given a second seating rule — the same one again, or its opposite ("apart" and "together") — which only ever added a warning that could not be cleared. Recorded in the ux audit (#G21); the unused earlier port had refused it. | Reproduced as a test against Seating's commands. **Fixed**: one rule to a pair, and none about someone and themselves; the rules window says why Add is off. |
 
 ### Architecture
 
@@ -510,6 +511,19 @@ replaced by the converted originals rather than kept beside them.
   it needs does not compile. The canvas's drags commit through the same
   commands as everything else, and are now tested end to end — which found
   S20.
+- **`lib/seating`'s earlier port: removed 2026-09-29.** Its actions,
+  geometry, table types, snapping, warnings, groups and room actions went,
+  and what used them now uses Seating's own: the guest's find-my-seat view
+  draws with Seating's geometry (the same for every table type there is),
+  the round-trip test seats its guest through Seating's store. What stays is
+  the load-time pass that brings a stored document up to date, with the seat
+  reconciliation it needed moved into it. Before its tests went, each of
+  their claims was put to Seating's own code: chairs clearing a crowded
+  edge, a top table facing the room, a family and a group each recorded on
+  both sides — all true, and now tested there — and one that was not: S21.
+  Where the port had simply chosen differently (numbering a new table from
+  the lowest free number, one warning per split family rather than one per
+  person), Seating's own behaviour stands.
 
 **Real-time sync** (Supabase Realtime in place of the 20-second poll, and
 presence) lands after this, not before: an instant pull into a tool that still

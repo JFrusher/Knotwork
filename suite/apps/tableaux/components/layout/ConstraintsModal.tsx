@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import type { ConstraintKind } from '@/lib/model/types'
+import { ruleFor } from '../../store/actions'
 import { useStore } from '../../store/useStore'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
@@ -29,8 +30,11 @@ export default function ConstraintsModal() {
   // an "apart" rule, this just clears the form; the only way to learn it's
   // already broken is closing the modal and separately noticing the warning
   // badge. See tmp/ux-audit.md #G22.
+  const paired = a && b ? ruleFor(constraints, a, b) : undefined
+  const ready = Boolean(a && b && a !== b && !paired)
+
   const add = () => {
-    if (!a || !b || a === b) return
+    if (!ready) return
     addConstraint({ kind, guestIds: [a, b] })
     setA('')
     setB('')
@@ -87,10 +91,15 @@ export default function ConstraintsModal() {
               </option>
             ))}
           </select>
-          <Button variant="secondary" icon="plus" disabled={!a || !b || a === b} onClick={add}>
+          <Button variant="secondary" icon="plus" disabled={!ready} onClick={add}>
             Add
           </Button>
         </div>
+        {paired && (
+          <p className={styles.none}>
+            These two already have a rule. Remove it below to change it.
+          </p>
+        )}
       </div>
 
       {constraints.length > 0 ? (

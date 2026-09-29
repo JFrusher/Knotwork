@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { importShareKey, unseal } from "@/lib/share/crypto";
 import { findSeat, type ShareSnapshot, type SharedGuest } from "@/lib/share/snapshot";
-import { getTableGeometry } from "@/lib/seating/geometry";
+import { getTableGeometry } from "@/apps/tableaux/utils/seatPositions";
 import { newTable } from "@/lib/model/factories";
 
 /**
