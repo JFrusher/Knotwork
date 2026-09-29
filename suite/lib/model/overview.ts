@@ -6,6 +6,7 @@ import { todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
 import { stationery } from "./readiness";
 import { isComing, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
+import { hiddenToolIds } from "./toolbox";
 
 /**
  * How far along each part of the wedding is, for the front page.
@@ -160,6 +161,10 @@ function groupShots(doc: Trousseau): Area {
   };
 }
 
+/** Every area, less those of the tools the wedding has removed. */
 export function overview(doc: Trousseau, raw: unknown, today: string = todayIso()): Area[] {
-  return [guests(doc), costs(doc), tasks(doc, today), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc)];
+  const hidden = hiddenToolIds(doc);
+  return [guests(doc), costs(doc), tasks(doc, today), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc)].filter(
+    (area) => !hidden.has(area.id),
+  );
 }

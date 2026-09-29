@@ -21,6 +21,7 @@ const WHOLE: Partial<Record<SliceName, string>> = {
   crew: "Suppliers and their people",
   shots: "The group shots",
   stationery: "The card design",
+  tools: "Which tools the wedding uses",
 };
 
 const COLLECTION: Record<string, { one: string; many: string }> = {

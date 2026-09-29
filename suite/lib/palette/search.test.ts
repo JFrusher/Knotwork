@@ -24,6 +24,13 @@ describe("finding anything by name", () => {
     ]);
   });
 
+  it("does not offer a tool the wedding has removed", () => {
+    const pages = entries(migrate({ ...raw, tools: { shown: ["seating"] } }))
+      .filter((entry) => entry.kind === "Page")
+      .map((entry) => entry.name);
+    expect(pages).toEqual(["Overview", "Guests", "Money", "Checklist", "Binder", "Seating"]);
+  });
+
   it("finds a guest and says where they sit, opening the list found to them by id", () => {
     const [zainab] = search(all, "zainab thist");
     expect(zainab).toMatchObject({ kind: "Guest", name: "Zainab Thistlewood", detail: "No table yet" });

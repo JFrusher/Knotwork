@@ -28,12 +28,14 @@ export {
   shotsSchema,
   stationerySchema,
   timelineSchema,
+  toolsSchema,
   type Crew,
   type Guests,
   type Seating,
   type Shots,
   type Stationery,
   type TimelineSlice,
+  type Tools,
 } from "./slices.js";
 export {
   TROUSSEAU_EXTENSION,

@@ -1,5 +1,6 @@
 import type { Trousseau } from "@jfrusher/trousseau";
 import { guestName, isComing, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
+import { hiddenToolIds } from "./toolbox";
 import { resolveShot } from "@/lib/ensemble/resolve";
 import { DUE_SOON_DAYS, money } from "@/lib/money/money";
 import { daysUntil, longDate, todayIso } from "@/lib/dates";
@@ -317,5 +318,9 @@ export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso
     });
   }
 
-  return out;
+  // A tool the wedding has removed is one it is not using: nothing in it is
+  // left to do. Here rather than in the page, so the planner's Weddings page,
+  // which runs this on the server, says the same.
+  const hidden = hiddenToolIds(doc);
+  return out.filter((item) => !hidden.has(item.href.slice(1)));
 }

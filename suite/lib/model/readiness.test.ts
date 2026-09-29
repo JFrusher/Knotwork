@@ -41,6 +41,13 @@ describe("what is left to do", () => {
     expect(ids({ guests: { g1: { id: "g1", firstName: "Charis" } } })).toEqual([]);
   });
 
+  it("says nothing about a tool the wedding has removed", () => {
+    const guests = { ...GUESTS, g2: { id: "g2", firstName: "Tobias", rsvpStatus: "confirmed" } };
+    const inSeating = (raw: Record<string, unknown>) => wedding(raw).filter((item) => item.href === "/seating");
+    expect(inSeating({ guests, ...TABLES })).not.toEqual([]);
+    expect(inSeating({ guests, ...TABLES, tools: { shown: ["timeline"] } })).toEqual([]);
+  });
+
   describe("place cards against the room", () => {
     const design = (extra: Record<string, unknown>) => ({
       guests: GUESTS,

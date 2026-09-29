@@ -2,6 +2,8 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { hiddenToolIds } from "@/lib/model/toolbox";
 import { CHAPTERS, type ChapterId, type TourChapter, type TourStep } from "./steps";
 
 /**
@@ -87,7 +89,12 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     (id: ChapterId) => begin(walkOf(CHAPTERS.filter((chapter) => chapter.id === id))),
     [begin],
   );
-  const startAll = useCallback(() => begin(walkOf(CHAPTERS)), [begin]);
+  // Every chapter but those of the tools the wedding has removed.
+  const hidden = useTrousseauStore((s) => hiddenToolIds(s.doc));
+  const startAll = useCallback(
+    () => begin(walkOf(CHAPTERS.filter((chapter) => !hidden.has(chapter.id)))),
+    [begin, hidden],
+  );
 
   const next = useCallback(() => {
     if (open) go({ walk: open.walk, index: open.index + 1 });

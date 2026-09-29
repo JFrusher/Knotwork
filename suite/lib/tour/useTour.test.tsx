@@ -9,8 +9,13 @@ const { TourProvider, useTour } = await import("./useTour");
 const { CHAPTERS } = await import("./steps");
 const { ConfirmProvider } = await import("@/components/ui/Confirm");
 const { TakeTheTour, HowThisWorks } = await import("@/components/shell/TourButtons");
+const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { migrate } = await import("@jfrusher/trousseau");
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  useTrousseauStore.setState({ doc: migrate({}) });
+});
 
 /** What the tour card would show, without the card's modal dialog. */
 function Probe() {
@@ -50,6 +55,16 @@ test("Take a tour runs every chapter, one after another", async () => {
 
   for (let i = front; i < ALL; i += 1) fireEvent.click(screen.getByRole("button", { name: "tour next" }));
   expect(screen.getByTestId("at").textContent).toBe("closed");
+});
+
+test("Take a tour leaves out the chapters of tools the wedding has removed", async () => {
+  useTrousseauStore.setState({ doc: migrate({ tools: { shown: ["timeline"] } }) });
+  const kept = CHAPTERS.filter((chapter) => ["shell", "guests", "timeline"].includes(chapter.id));
+  const total = kept.reduce((sum, chapter) => sum + chapter.steps.length, 0);
+  renderTour(<TakeTheTour />);
+  // "Take the tour again" by now: the test before this one has seen it.
+  await act(async () => fireEvent.click(screen.getByRole("button", { name: /Take (a|the) tour/ })));
+  expect(screen.getByTestId("at").textContent).toBe(`/ 1/${total}`);
 });
 
 test("How this page works explains the page you are on, and only that", () => {

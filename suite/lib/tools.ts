@@ -1,8 +1,12 @@
 import { Armchair, Banknote, Camera, ClipboardList, Clock, Contact, LayoutDashboard, ListChecks, Smartphone, Users, type LucideIcon } from "lucide-react";
 
+/** What a wedding stores to say it shows a tool. Never renamed: it is data. */
+export type ToolId = "seating" | "place-cards" | "timeline" | "delegation" | "group-shots";
+
 /** The five tools, in the order the day is planned in. Nav and landing share this. */
 export interface Tool {
-  href: "/seating" | "/place-cards" | "/timeline" | "/delegation" | "/group-shots";
+  id: ToolId;
+  href: `/${ToolId}`;
   name: string;
   tagline: string;
   icon: LucideIcon;
@@ -19,6 +23,7 @@ export interface Tool {
 
 export const TOOLS: readonly Tool[] = [
   {
+    id: "seating",
     href: "/seating",
     tokens: "tableaux-tokens",
     name: "Seating",
@@ -26,6 +31,7 @@ export const TOOLS: readonly Tool[] = [
     icon: Armchair,
   },
   {
+    id: "place-cards",
     href: "/place-cards",
     tokens: "plaque-tokens",
     name: "Place cards",
@@ -33,6 +39,7 @@ export const TOOLS: readonly Tool[] = [
     icon: Contact,
   },
   {
+    id: "timeline",
     href: "/timeline",
     tokens: "cadence-tokens",
     name: "Timeline",
@@ -40,6 +47,7 @@ export const TOOLS: readonly Tool[] = [
     icon: Clock,
   },
   {
+    id: "delegation",
     href: "/delegation",
     tokens: "brigade-tokens",
     name: "Delegation",
@@ -47,6 +55,7 @@ export const TOOLS: readonly Tool[] = [
     icon: ClipboardList,
   },
   {
+    id: "group-shots",
     href: "/group-shots",
     tokens: "ensemble-tokens",
     name: "Group shots",

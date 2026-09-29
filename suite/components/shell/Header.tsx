@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
-import { TOOLS } from "@/lib/tools";
+import { shownTools } from "@/lib/model/toolbox";
 import { AccountStatus } from "./AccountStatus";
 import { WeddingMenu } from "./WeddingMenu";
 import { HowThisWorks } from "./TourButtons";
@@ -16,6 +16,7 @@ import { WhoIsHere } from "./WhoIsHere";
 import { useDataPanel } from "./dataPanel";
 import { useGuestImport } from "./guestImportPanel";
 import { useSyncPanel } from "./syncPanel";
+import { useToolsPanel } from "./toolsPanel";
 import { usePalette } from "./CommandPalette";
 
 const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataManager), {
@@ -25,6 +26,9 @@ const GuestImport = dynamic(() => import("./GuestImport").then((m) => m.GuestImp
   ssr: false,
 });
 const SyncHistory = dynamic(() => import("./SyncHistory").then((m) => m.SyncHistory), {
+  ssr: false,
+});
+const ToolsPanel = dynamic(() => import("./ToolsPanel").then((m) => m.ToolsPanel), {
   ssr: false,
 });
 const CommandPalette = dynamic(() => import("./CommandPalette").then((m) => m.CommandPalette), {
@@ -63,6 +67,15 @@ export function Header() {
   const [syncEverOpened, setSyncEverOpened] = useState(false);
   if (syncOpen && !syncEverOpened) setSyncEverOpened(true);
   useEffect(() => useSyncPanel.getState().fromAddress(), []);
+  // Tools, adding and removing them, loaded the same way; `?panel=tools` opens it.
+  const toolsOpen = useToolsPanel((s) => s.open);
+  const showTools = useToolsPanel((s) => s.show);
+  const hideTools = useToolsPanel((s) => s.hide);
+  const [toolsEverOpened, setToolsEverOpened] = useState(false);
+  if (toolsOpen && !toolsEverOpened) setToolsEverOpened(true);
+  useEffect(() => useToolsPanel.getState().fromAddress(), []);
+  // The wedding's own choice of tools, the same for everyone planning it.
+  const tools = useTrousseauStore((s) => shownTools(s.doc));
   // The palette: its button, and Ctrl/⌘ K from anywhere.
   const paletteOpen = usePalette((s) => s.open);
   const showPalette = usePalette((s) => s.show);
@@ -96,7 +109,7 @@ export function Header() {
           {/* Scrolls within the header on a narrow screen, rather than making
               the whole page wider than it and pushing Data off the edge. */}
           <nav aria-label="Tools" className="flex min-w-0 items-center gap-1 overflow-x-auto">
-            {TOOLS.map((tool) => {
+            {tools.map((tool) => {
               const active = pathname === tool.href;
               return (
                 <Link
@@ -116,6 +129,15 @@ export function Header() {
                 </Link>
               );
             })}
+            <button
+              type="button"
+              onClick={showTools}
+              aria-label="Add or remove tools"
+              title="Add or remove tools"
+              className="flex shrink-0 items-center rounded px-2 py-1.5 text-slate transition hover:bg-stone/60 hover:text-charcoal"
+            >
+              <Plus size={16} aria-hidden />
+            </button>
           </nav>
 
           {/*
@@ -156,6 +178,7 @@ export function Header() {
       {dataEverOpened ? <DataManager open={dataOpen} onClose={hideData} /> : null}
       {importEverOpened ? <GuestImport /> : null}
       {syncEverOpened ? <SyncHistory open={syncOpen} onClose={hideSync} /> : null}
+      {toolsEverOpened ? <ToolsPanel open={toolsOpen} onClose={hideTools} /> : null}
       {paletteEverOpened ? <CommandPalette /> : null}
     </>
   );

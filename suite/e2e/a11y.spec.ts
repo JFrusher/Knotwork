@@ -62,6 +62,13 @@ test("the Data panel, open, has no accessibility violations", async ({ page }) =
   await noViolations(page);
 });
 
+test("the Tools panel, open, has no accessibility violations", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/?panel=tools");
+  await expect(page.getByRole("dialog", { name: "Tools" })).toBeVisible();
+  await noViolations(page);
+});
+
 test("the tour, open, has no accessibility violations", async ({ page }) => {
   await seedExampleWedding(page);
   await page.goto("/");
