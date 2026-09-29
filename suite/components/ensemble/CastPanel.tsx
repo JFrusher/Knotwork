@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Button, IconButton, Panel, TextField } from "@/components/ui/controls";
-import { GuestChip, GuestPicker } from "./GuestPicker";
+import { GuestChip, GuestPicker } from "@/components/cast/GuestPicker";
 import { guestName } from "@/lib/model/slices";
 import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import { roleLabel } from "@/lib/model/partners";

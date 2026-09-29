@@ -1,7 +1,7 @@
 import { guestName, isComing } from "@/lib/model/slices";
 import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import { roleLabel } from "@/lib/model/partners";
-import type { Cast, CustomRole, Guest, RsvpStatus, Seating, Shot, ShotMember } from "@/lib/model/types";
+import type { Cast, CustomRole, Guest, RsvpStatus, Seating, ShotMember } from "@/lib/model/types";
 
 export interface ResolvedPerson {
   guestId: string | null;
@@ -9,15 +9,15 @@ export interface ResolvedPerson {
   rsvpStatus: RsvpStatus | null;
 }
 
-export type ShotProblem =
+export type MemberProblem =
   | { kind: "dangling"; detail: string }
   | { kind: "declined"; name: string }
   | { kind: "empty" };
 
-export interface ResolvedShot {
+export interface ResolvedGroup {
   label: string;
   people: ResolvedPerson[];
-  problems: ShotProblem[];
+  problems: MemberProblem[];
 }
 
 /** Whose names a role is spoken in: the partners'. */
@@ -50,24 +50,25 @@ export function memberDescriptor(
 }
 
 /**
- * A shot's members, resolved to the people they name right now.
+ * A group's members — a group shot's, a processional's — resolved to the
+ * people they name right now.
  *
  * Order is preserved as authored, and a guest named twice — once directly,
  * once through a family they belong to — is printed once, at its first
  * position. `guestId` is null for a free-text member, which cannot dedupe
  * against anything and never carries a declined warning.
  */
-export function resolveShot(
-  shot: Shot,
+export function resolveMembers(
+  group: { label: string; members: ShotMember[] },
   guests: Record<string, Guest>,
   seating: Seating,
   cast: Cast,
   customRoles: CustomRole[],
   names: Names,
-): ResolvedShot {
+): ResolvedGroup {
   const people: ResolvedPerson[] = [];
   const seen = new Set<string>();
-  const problems: ShotProblem[] = [];
+  const problems: MemberProblem[] = [];
 
   const addGuest = (guestId: string, source: string) => {
     const guest = guests[guestId];
@@ -82,17 +83,17 @@ export function resolveShot(
     if (!isComing(guest)) problems.push({ kind: "declined", name });
   };
 
-  for (const member of shot.members) {
+  for (const member of group.members) {
     resolveMember(member, guests, seating, cast, customRoles, names, addGuest, problems, people);
   }
 
   if (people.length === 0 && problems.length === 0) problems.push({ kind: "empty" });
 
   const label =
-    shot.label.trim() ||
-    (shot.members.length > 0
-      ? shot.members.map((m) => memberDescriptor(m, guests, seating, customRoles, names)).join(" + ")
-      : "Untitled shot");
+    group.label.trim() ||
+    (group.members.length > 0
+      ? group.members.map((m) => memberDescriptor(m, guests, seating, customRoles, names)).join(" + ")
+      : "Untitled");
 
   return { label, people, problems };
 }
@@ -105,17 +106,17 @@ function resolveMember(
   customRoles: CustomRole[],
   names: Names,
   addGuest: (guestId: string, source: string) => void,
-  problems: ShotProblem[],
+  problems: MemberProblem[],
   people: ResolvedPerson[],
 ): void {
   switch (member.kind) {
     case "guest":
-      addGuest(member.ref, "A shot member");
+      addGuest(member.ref, "A member");
       return;
     case "family": {
       const family = seating.families[member.ref];
       if (!family) {
-        problems.push({ kind: "dangling", detail: "A shot member names a family that no longer exists" });
+        problems.push({ kind: "dangling", detail: "A member names a family that no longer exists" });
         return;
       }
       for (const guestId of family.memberIds) addGuest(guestId, `"${family.name}"`);
@@ -124,7 +125,7 @@ function resolveMember(
     case "group": {
       const group = seating.groups[member.ref] ?? seating.subgroups[member.ref];
       if (!group) {
-        problems.push({ kind: "dangling", detail: "A shot member names a group that no longer exists" });
+        problems.push({ kind: "dangling", detail: "A member names a group that no longer exists" });
         return;
       }
       for (const guest of Object.values(guests)) {
@@ -144,7 +145,7 @@ function resolveMember(
     case "customRole": {
       const role = customRoles.find((r) => r.id === member.ref);
       if (!role) {
-        problems.push({ kind: "dangling", detail: "A shot member names a role that no longer exists" });
+        problems.push({ kind: "dangling", detail: "A member names a role that no longer exists" });
         return;
       }
       if (role.guestIds.length === 0) {

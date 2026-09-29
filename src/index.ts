@@ -23,6 +23,7 @@ export {
 } from "./envelope.js";
 export {
   castSchema,
+  ceremonySchema,
   crewSchema,
   guestsSchema,
   seatingSchema,
@@ -31,6 +32,7 @@ export {
   timelineSchema,
   toolsSchema,
   type CastSlice,
+  type CeremonySlice,
   type Crew,
   type Guests,
   type Seating,

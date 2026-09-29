@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
-import { coerceGuests, readCast, readCrew, readShots, readTimeline } from "./slices";
+import { coerceGuests, readCast, readCeremony, readCrew, readShots, readTimeline } from "./slices";
 
 describe("coerceGuests keeps what it has no opinion about", () => {
   it("preserves fields owned by a tool rather than by the suite", () => {
@@ -145,5 +145,23 @@ describe("readCast", () => {
   it("is empty on a wedding with no cast anywhere", () => {
     expect(readCast(emptyTrousseau()).customRoles).toEqual([]);
     expect(Object.values(readCast(emptyTrousseau()).roles).every((ids) => ids.length === 0)).toBe(true);
+  });
+});
+
+describe("readCeremony", () => {
+  it("reads a processional, filling in what a group does not say, and converting old role names", () => {
+    const doc = migrate({
+      ceremony: {
+        processional: [
+          { id: "w1", members: [{ kind: "role", ref: "bride" }], formation: "threes", side: "b", music: "Canon in D" },
+          { id: "w2", formation: "sideways", side: "left" },
+          { label: "No id, so not a group" },
+        ],
+      },
+    });
+    expect(readCeremony(doc).processional).toEqual([
+      { id: "w1", label: "", members: [{ kind: "role", ref: "a" }], formation: "threes", side: "b", music: "Canon in D", cue: "" },
+      { id: "w2", label: "", members: [], formation: "single", side: "", music: "", cue: "" },
+    ]);
   });
 });

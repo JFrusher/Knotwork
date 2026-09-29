@@ -22,7 +22,7 @@ import { ChevronDown, ChevronUp, Copy, GripVertical, Plus, Trash2 } from "lucide
 import { IconButton } from "@/components/ui/controls";
 import { newId } from "@/lib/model/ids";
 import type { Cast, CastSlice, CustomRole, Guest, Seating, Shot, Shots } from "@/lib/model/types";
-import { resolveShot } from "@/lib/ensemble/resolve";
+import { resolveMembers } from "@/lib/cast/resolve";
 import {
   addSection,
   addShot,
@@ -211,7 +211,7 @@ function ShotRow({
   onDuplicate: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: shot.id });
-  const resolved = resolveShot(shot, guests, seating, cast, customRoles, event);
+  const resolved = resolveMembers(shot, guests, seating, cast, customRoles, event);
 
   return (
     <li

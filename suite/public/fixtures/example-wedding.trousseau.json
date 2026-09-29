@@ -5602,6 +5602,7 @@
       "timeline",
       "delegation",
       "group-shots",
+      "ceremony",
       "money",
       "checklist",
       "binder"
@@ -5639,6 +5640,106 @@
       ]
     },
     "customRoles": []
+  },
+  "ceremony": {
+    "processional": [
+      {
+        "id": "walk-registrar",
+        "label": "",
+        "members": [
+          {
+            "kind": "text",
+            "ref": "The registrar"
+          }
+        ],
+        "formation": "single",
+        "side": "",
+        "music": "",
+        "cue": "In place before the music starts"
+      },
+      {
+        "id": "walk-a-parents",
+        "label": "",
+        "members": [
+          {
+            "kind": "role",
+            "ref": "a-mother"
+          },
+          {
+            "kind": "role",
+            "ref": "a-father"
+          }
+        ],
+        "formation": "pairs",
+        "side": "a",
+        "music": "Air on the G String",
+        "cue": "Take their seats"
+      },
+      {
+        "id": "walk-b-parents",
+        "label": "",
+        "members": [
+          {
+            "kind": "role",
+            "ref": "b-mother"
+          },
+          {
+            "kind": "role",
+            "ref": "b-father"
+          }
+        ],
+        "formation": "pairs",
+        "side": "b",
+        "music": "Air on the G String",
+        "cue": ""
+      },
+      {
+        "id": "walk-a-party",
+        "label": "",
+        "members": [
+          {
+            "kind": "role",
+            "ref": "a-party"
+          }
+        ],
+        "formation": "pairs",
+        "side": "a",
+        "music": "Canon in D",
+        "cue": ""
+      },
+      {
+        "id": "walk-b-party",
+        "label": "",
+        "members": [
+          {
+            "kind": "role",
+            "ref": "b-party"
+          }
+        ],
+        "formation": "pairs",
+        "side": "b",
+        "music": "Canon in D",
+        "cue": ""
+      },
+      {
+        "id": "walk-couple",
+        "label": "",
+        "members": [
+          {
+            "kind": "role",
+            "ref": "a"
+          },
+          {
+            "kind": "role",
+            "ref": "b"
+          }
+        ],
+        "formation": "pairs",
+        "side": "",
+        "music": "The Arrival of the Queen of Sheba",
+        "cue": "The music changes as the couple enter"
+      }
+    ]
   },
   "sources": {}
 }

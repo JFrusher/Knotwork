@@ -9,14 +9,14 @@ describe("shownTools", () => {
   it("shows the five when the wedding has never chosen, and leaves the rest in the toolbox", () => {
     const doc = emptyTrousseau();
     expect(ids(doc)).toEqual(["seating", "place-cards", "timeline", "delegation", "group-shots"]);
-    expect([...hiddenToolIds(doc)]).toEqual(["money", "checklist", "binder"]);
+    expect([...hiddenToolIds(doc)]).toEqual(["ceremony", "money", "checklist", "binder"]);
     expect(shownTools(doc)).toBe(shownTools(emptyTrousseau()));
   });
 
   it("shows what is stored, in the registry's order rather than the stored one", () => {
     const doc = migrate({ tools: { shown: ["group-shots", "seating"] } });
     expect(ids(doc)).toEqual(["seating", "group-shots"]);
-    expect([...hiddenToolIds(doc)]).toEqual(["place-cards", "timeline", "delegation", "money", "checklist", "binder"]);
+    expect([...hiddenToolIds(doc)]).toEqual(["place-cards", "timeline", "delegation", "ceremony", "money", "checklist", "binder"]);
   });
 
   it("shows nothing when everything has been removed", () => {

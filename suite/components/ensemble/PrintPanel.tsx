@@ -5,7 +5,7 @@ import { browserFontSource } from "@/apps/brigade/render/pdf/fontSource";
 import { Button, Empty, Panel, Segmented } from "@/components/ui/controls";
 import { download } from "@/lib/data/file";
 import { shotListCsv } from "@/lib/ensemble/exports";
-import { resolveShot } from "@/lib/ensemble/resolve";
+import { resolveMembers } from "@/lib/cast/resolve";
 import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import type { CastSlice, Guest, Seating, Shots } from "@/lib/model/types";
 
@@ -28,7 +28,7 @@ export function PrintPanel({
 
   const problems = shots.sections.flatMap((section) =>
     section.shots.flatMap((shot) => {
-      const resolved = resolveShot(shot, guests, seating, cast.roles, cast.customRoles, event);
+      const resolved = resolveMembers(shot, guests, seating, cast.roles, cast.customRoles, event);
       return resolved.problems.map((problem) => ({
         shotLabel: resolved.label,
         text:

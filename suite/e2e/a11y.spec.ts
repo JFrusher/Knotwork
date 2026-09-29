@@ -8,7 +8,7 @@ import { seedExampleWedding } from "./wedding";
  * included: landmarks and headings are how a screen reader user finds their
  * way around, and they are what these pages got wrong.
  */
-const PAGES = ["/", "/guests", "/money", "/checklist", "/library", "/binder", "/seating", "/place-cards", "/timeline", "/delegation", "/group-shots", "/account", "/login", "/support", "/setup", "/weddings"];
+const PAGES = ["/", "/guests", "/money", "/checklist", "/library", "/binder", "/seating", "/place-cards", "/timeline", "/delegation", "/group-shots", "/ceremony", "/account", "/login", "/support", "/setup", "/weddings"];
 
 for (const path of PAGES) {
   test(`${path} has no accessibility violations`, async ({ page }) => {

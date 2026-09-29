@@ -25,6 +25,7 @@ test.each([
   ["a guest", { guests: { g1: { id: "g1", firstName: "Ann" } } }],
   ["a group shot", { shots: { ...empty.shots, sections: [{ id: "s", name: "Family", shots: [{ id: "x", label: "", members: [], notes: "" }] }] } }],
   ["a crew member", { crew: { teams: [], people: [{ id: "p1", name: "Jo" }], jobs: [], budget: null } }],
+  ["a group in the processional", { ceremony: { processional: [{ id: "w1", label: "", members: [] }] } }],
 ])("%s is content", (_, part) => {
   expect(hasContent(summarise({ ...empty, ...part }))).toBe(true);
 });

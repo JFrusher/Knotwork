@@ -10,6 +10,7 @@ import {
 import {
   publishDay,
   readCast,
+  readCeremony,
   readCrew,
   readGuests,
   readSeating,
@@ -19,7 +20,7 @@ import {
   timelineDoc,
 } from "./slices";
 import { coupleTitle } from "./partners";
-import type { CastSlice, Crew, Guest, Seating, Shots } from "./types";
+import type { CastSlice, Ceremony, Crew, Guest, Seating, Shots } from "./types";
 import type { Timeline } from "./timeline";
 
 /**
@@ -38,6 +39,7 @@ export const useTimeline = (): Timeline => useTrousseauStore((s) => readTimeline
 export const useCrew = (): Crew => useTrousseauStore((s) => readCrew(s.doc));
 export const useShots = (): Shots => useTrousseauStore((s) => readShots(s.doc));
 export const useCast = (): CastSlice => useTrousseauStore((s) => readCast(s.doc));
+export const useCeremony = (): Ceremony => useTrousseauStore((s) => readCeremony(s.doc));
 export const useResolvedDay = () => useTrousseauStore((s) => resolvedDay(s.doc));
 export const useTimelineDoc = () => useTrousseauStore((s) => timelineDoc(s.doc));
 export const useStatus = (): TrousseauState["status"] => useTrousseauStore((s) => s.status);
@@ -74,6 +76,7 @@ export interface SuiteWriters {
   setShots: (next: Shots, options?: WriteOptions) => void;
   /** Who is who, shared by Group shots and Ceremony. */
   setCast: (next: CastSlice, options?: WriteOptions) => void;
+  setCeremony: (next: Ceremony, options?: WriteOptions) => void;
   /** Both halves of a seat, as one undo step. */
   setPlan: (
     guests: Record<string, Guest>,
@@ -130,6 +133,10 @@ export function useWriters(): SuiteWriters {
     (next: CastSlice, options: WriteOptions = { label: "who is who" }) => setSlice("cast", next, options),
     [setSlice],
   );
+  const setCeremony = useCallback(
+    (next: Ceremony, options: WriteOptions = { label: "the processional" }) => setSlice("ceremony", next, options),
+    [setSlice],
+  );
   const setPlan = useCallback(
     (
       guests: Record<string, Guest>,
@@ -146,5 +153,5 @@ export function useWriters(): SuiteWriters {
     [setSlices],
   );
 
-  return { setEvent, setGuests, setSeating, setTimeline, setCrew, setShots, setCast, setPlan };
+  return { setEvent, setGuests, setSeating, setTimeline, setCrew, setShots, setCast, setCeremony, setPlan };
 }

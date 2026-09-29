@@ -1,7 +1,7 @@
 import { toCsv } from "@/lib/data/csv";
 import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import type { Cast, CustomRole, Guest, Seating, ShotSection } from "@/lib/model/types";
-import { resolveShot } from "./resolve";
+import { resolveMembers } from "@/lib/cast/resolve";
 
 /** Section, number, shot, the resolved names, and the note. The sheet a photographer prints. */
 export function shotListCsv(
@@ -19,7 +19,7 @@ export function shotListCsv(
   for (const section of sections) {
     for (const shot of section.shots) {
       number += 1;
-      const resolved = resolveShot(shot, guests, seating, cast, customRoles, names);
+      const resolved = resolveMembers(shot, guests, seating, cast, customRoles, names);
       rows.push([section.name, String(number), resolved.label, resolved.people.map((p) => p.name).join(", "), shot.notes]);
     }
   }
