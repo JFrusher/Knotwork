@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "vitest";
 import { RETENTION_MONTHS as HANDLER_RETENTION } from "./documents/retention";
 import { CONTROLLER, POLICIES, policyText, PRIVACY, RETENTION_MONTHS } from "./legal";
@@ -44,16 +46,26 @@ test("a reader is given a way to make contact", () => {
   expect(policyText(PRIVACY)).toContain(CONTROLLER.email);
 });
 
+test("the visit counting the policy describes is the one the site runs", () => {
+  // This used to assert that the policy said "no analytics" — which checked
+  // the words against themselves, and so stayed green when Vercel's analytics
+  // were added to the layout. It now reads the layout: if the counter is
+  // there, the policy must name it and must not deny it; if it goes, so must
+  // the description.
+  const layout = readFileSync(join(process.cwd(), "app", "layout.tsx"), "utf8");
+  const text = policyText(PRIVACY).toLowerCase();
+  const counts = layout.includes("<PageCounts");
+  expect(text.includes("vercel web analytics")).toBe(counts);
+  expect(text).not.toContain("no analytics");
+  expect(text).not.toContain("the only third party");
+});
+
 test("nothing claims an absence that is no longer true", () => {
-  // If analytics are ever added, this fails and the policy has to be
-  // rewritten before it can pass — which is the point.
-  //
-  // The cookie half used to assert "no cookies are set". Accounts made that
+  // The cookie assertion used to be "no cookies are set". Accounts made that
   // false: @supabase/ssr keeps the session in one. The assertion now checks
   // the cookie is disclosed rather than denied, so the failure mode is the
   // same in the other direction — remove the disclosure and this fails.
   const text = policyText(PRIVACY).toLowerCase();
-  expect(text).toContain("no analytics");
   expect(text).toContain("cookie");
   expect(text).not.toContain("no cookies are set");
   // The passphrase sync is gone; nothing may still describe it.

@@ -39,7 +39,7 @@ export const RETENTION_MONTHS = 24;
 export const PRIVACY: Policy = {
   title: "Privacy",
   updated: "2026-09-29",
-  digest: "7a705f9d10fe7dba",
+  digest: "5fd010222f8ba13a",
   intro:
     "Trousseau is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
   sections: [
@@ -102,9 +102,11 @@ export const PRIVACY: Policy = {
       ],
     },
     {
-      heading: "Cookies and tracking",
+      heading: "Cookies, tracking and counting visits",
       paragraphs: [
-        "No analytics, no advertising, no tracking pixels, and no third-party scripts on the page. Nothing here follows you anywhere.",
+        "No advertising, no tracking pixels, and nothing that follows you from one website to another.",
+        "On the hosted site — this one, not a copy somebody runs elsewhere — visits to each page are counted with Vercel Web Analytics, the host's own counter. For each page it records the page's address, the site the visit came from, the country, and the kind of browser, system and device. Before an address is sent, anything in it that is not simply the page is cut out: the token in a guest link, a supplier's link or an invitation, the id of a wedding, and everything after a ? or a #. Nothing from your wedding is in it — no guest, no name, no table.",
+        "It sets no cookie and stores nothing on your device. It tells one visit from another by a code worked out from the request, which changes every day, so a visit cannot be linked to one on another day or on another website. It is done on the basis of legitimate interest: knowing which parts of the site are used.",
         "One cookie exists, and only if you sign in: it holds your session, which is what keeps you signed in between visits. It is not used to track you and there is nothing to opt into, because without an account no cookie is set at all.",
         "The browser storage that is used — IndexedDB — holds your wedding, which is the thing you came here to work on. Nothing about you is stored for any other purpose.",
       ],
@@ -112,7 +114,7 @@ export const PRIVACY: Policy = {
     {
       heading: "Error reporting",
       paragraphs: [
-        "When something breaks, a diagnostic report may be sent to Sentry, an error-monitoring service, so the fault can be found and fixed. This is the only third party involved in running this site.",
+        "When something breaks, a diagnostic report may be sent to Sentry, an error-monitoring service, so the fault can be found and fixed. Sentry is one of three services that run the hosted site: Vercel hosts it and counts visits, as above; Supabase holds the database behind accounts and sends the sign-in emails; and Sentry receives these reports.",
         "It is configured narrowly and on purpose. No session recording, no personal data, and no console output — the tools log parts of the document while they work, and that is the guest list. Web addresses have their fragment removed before anything is sent, so the key in a guest link can never reach it.",
         "This is done on the basis of legitimate interest: keeping the application working. It sets no cookies and reads nothing from your device.",
       ],

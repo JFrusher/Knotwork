@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Lato, Marcellus } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
+import { PageCounts } from "@/components/shell/PageCounts";
 import { ReportUnhandled } from "@/components/shell/ReportUnhandled";
 import { onVercel, siteUrl } from "@/lib/env";
 import "./globals.css";
@@ -61,7 +61,7 @@ export default function RootLayout({
         {children}
         {/* Cookieless page counts on the hosted instance. Vercel serves the
             endpoint, so a copy hosted anywhere else sends nothing. */}
-        {onVercel() ? <Analytics /> : null}
+        {onVercel() ? <PageCounts /> : null}
       </body>
     </html>
   );

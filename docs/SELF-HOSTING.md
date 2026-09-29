@@ -175,6 +175,11 @@ The hosted instance runs on Vercel with **Root Directory** set to `suite`, and
 that is the least surprising option. Any host that can run a Next.js app will
 do; set the same environment variables there.
 
+On Vercel, and only there, the app counts page visits with Vercel Web
+Analytics, which is switched on in the project's settings. Every address is
+cut to its page before it is sent (`lib/pageCounts.ts`), and the Privacy
+Policy describes exactly that — change one and you must change the other.
+
 ## Keeping up with changes
 
 Migrations are additive and applied in filename order. When you pull, apply any
@@ -182,8 +187,8 @@ migration files you have not already run, then rebuild.
 
 ## If you get stuck
 
-There is no support desk, and there is no admin access to your data — by
-design, nobody running the hosted instance can read a couple's wedding either.
+There is no support desk and no admin panel: nobody running the hosted
+instance browses a couple's wedding, and support never asks to look at one.
 Open an issue with what you did and what happened.
 
 **Do not paste your guest list into an issue.**

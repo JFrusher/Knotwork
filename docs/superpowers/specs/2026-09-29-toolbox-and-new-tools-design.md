@@ -250,12 +250,20 @@ units and prices — with no guest count.
 1. **T6**: ~~take fontkit off every page~~ — **done 2026-09-29**: one constant,
    `DEFAULT_FIT`, moved beside the other template defaults; 522 KB shared to
    393 KB, and a test that walks both layouts' imports and names the chain if
-   the engine comes back. Still open: a CI check on each page's own JavaScript,
-   and its limit.
-2. **S18** (from the master plan), since the PRD says "zero tracking": remove
-   Vercel Analytics, or say in the Privacy Policy what it counts?
-3. **Cues on the day**: is the Ceremony → Timeline proposal wanted, or do the
-   cues stay in Ceremony?
+   the engine comes back. A CI check on each page's own JavaScript: **not
+   wanted** (the maintainer, 2026-09-29); the font-engine test stays as the
+   one guard.
+2. ~~**S18**~~ — **the analytics stay, and the Privacy Policy says what they
+   count** (the maintainer, 2026-09-29). Done the same day: every counted
+   address is cut to its route first, so no link's token, wedding id, query
+   or fragment is sent (`lib/pageCounts.ts`, with a test that finds every
+   page with a token in its address); the policy names the three services
+   that run the hosted site; and its test now reads the layout rather than
+   its own words, which is how the analytics got in unseen.
+3. ~~**Cues on the day**~~ — **wanted**, with a fuller Ceremony: the whole
+   order of service, songs with the lyric each cue falls on, and readings
+   (the maintainer, 2026-09-29). See
+   [its plan](../plans/2026-09-29-ceremony-order-of-service.md).
 4. ~~**Order of phases**~~ — **all four built, 2026-09-29**, in the order
    proposed: Timeline, Ceremony, Boxes, Bar.
 

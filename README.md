@@ -148,7 +148,9 @@ app — holding a readable copy of your guest list.
 ## Your data
 
 **Everything works with no account.** Open the app and it saves to your
-browser. Nothing leaves the device.
+browser. Nothing of your wedding leaves the device. The hosted site counts
+visits to its pages, with no cookie and nothing from the wedding in it; the
+[Privacy Policy](https://trousseau-suite.vercel.app/privacy) says exactly what.
 
 **With an account**, your wedding syncs so you and your partner can both work
 on it. It is stored encrypted at rest, and database-level rules mean no other
@@ -163,10 +165,12 @@ here, or on a copy you run yourself.
 wedding, the wedding stays with them; if you were the last one, it goes.
 
 > [!IMPORTANT]
-> There is no admin panel and no support login. Nobody running a Trousseau
-> instance — including the hosted one — has a way to read your wedding. That is
-> a deliberate design choice, and the reason support is "send us a screenshot"
-> rather than "let me look at your account".
+> There is no admin panel and no support login, so nobody browses weddings.
+> The database is encrypted at rest, not end to end: whoever runs an
+> instance administers its database and could read what is in it, and the
+> Privacy Policy says so plainly. That is why support is "send us a
+> screenshot" rather than "let me look at your account", and why the app
+> works in full without an account at all.
 
 ---
 
