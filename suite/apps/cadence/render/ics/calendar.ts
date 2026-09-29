@@ -9,9 +9,8 @@ import { resolve } from "../../core/schedule/resolve";
  * Times are the venue's clock, written as local times with no zone ("floating"
  * in the RFC's word): the ceremony at 13:30 is at 13:30 on every phone, as it
  * is in the Binder. Not UTC, because turning the venue's clock into UTC needs
- * the day's offset, and that is only right when somebody entered it — the Day
- * panel shows British Summer Time until they do, which would put a winter
- * wedding an hour out in every calendar it reached.
+ * the day's offset, which a wedding may not have set — and the venue's clock
+ * is the one everybody there on the day is reading.
  */
 
 export interface CalendarOptions {

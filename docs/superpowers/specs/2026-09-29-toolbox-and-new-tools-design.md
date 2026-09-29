@@ -117,6 +117,12 @@ are the **venue's clock**, not UTC.
   indistinguishable from one chosen — a winter wedding would be an hour out in
   every calendar. (This spec first said UTC would show "the venue's clock";
   UTC shows the phone's.) Refused while the day has clashes, as the PDFs are.
+- **The clocks, fixed the same day.** The fallback went further than the Day
+  panel: every Timeline edit — renaming a block was enough — wrote it into the
+  wedding, where the Binder then trusted it over the phone's own clock
+  (reproduced in a test before the fix). The offset is now null until chosen,
+  in the timeline, the published day and Delegation's reader; the panel says
+  *Not set*, any choice is a change, and sunset and golden hour wait for it.
 
 ## Phase 2 — one cast, and Ceremony
 
