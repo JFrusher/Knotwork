@@ -52,7 +52,7 @@ instead (see subsystem F).
 | M | Windows around the tools: Overview, Guests, Money, Checklist, Sync & history, palette | E, L | ⬜ planned — master plan, phase 2 |
 | N | Day-of binder and vendor links | E, J | ⬜ planned — master plan, phase 3 |
 | O | One live document: tools stop keeping copies; real-time sync | — | ⬜ planned — master plan, phase 4 |
-| P | The toolbox, and travel, ceremony, boxes and bar | L, O | 🟡 **phases 0–3 built** — [spec](superpowers/specs/2026-09-29-toolbox-and-new-tools-design.md), plans for [the toolbox](superpowers/plans/2026-09-29-toolbox.md), [travel and calendars](superpowers/plans/2026-09-29-timeline-travel-and-calendars.md), [the cast and Ceremony](superpowers/plans/2026-09-29-cast-and-ceremony.md) and [Boxes](superpowers/plans/2026-09-29-boxes.md), 2026-09-29; phase 4, the bar, gets a plan first |
+| P | The toolbox, and travel, ceremony, boxes and bar | L, O | ✅ **built** — [spec](superpowers/specs/2026-09-29-toolbox-and-new-tools-design.md), plans for [the toolbox](superpowers/plans/2026-09-29-toolbox.md), [travel and calendars](superpowers/plans/2026-09-29-timeline-travel-and-calendars.md), [the cast and Ceremony](superpowers/plans/2026-09-29-cast-and-ceremony.md), [Boxes](superpowers/plans/2026-09-29-boxes.md) and [the Bar](superpowers/plans/2026-09-29-bar.md), 2026-09-29; the proposals joining tools to each other wait on the maintainer |
 
 ## Decisions log
 

@@ -194,6 +194,13 @@ interface Item { id: string; label: string; quantity: number; packed: boolean; n
 
 ## Phase 4 — Bar
 
+**Built 2026-09-29**, with [its plan](../plans/2026-09-29-bar.md), whose
+defaults the maintainer agreed before it was built. As built, where it differs
+from below: evening-only guests are a figure of the Bar's own, since the guest
+list does not say who is invited for the evening; the toast is fizz and the
+meal is wine, and only the reception and the evening pour a mix; and prices
+have no defaults.
+
 UK first, and every figure on screen, editable, and resettable to its default.
 
 - **Who is drinking**: the guests coming (`isComing`), live, less a share not
@@ -249,8 +256,8 @@ units and prices — with no guest count.
    Vercel Analytics, or say in the Privacy Policy what it counts?
 3. **Cues on the day**: is the Ceremony → Timeline proposal wanted, or do the
    cues stay in Ceremony?
-4. **Order of phases**: Timeline built first; proposed next 2 Ceremony,
-   3 Boxes, 4 Bar.
+4. ~~**Order of phases**~~ — **all four built, 2026-09-29**, in the order
+   proposed: Timeline, Ceremony, Boxes, Bar.
 
 ## Explicitly deferred
 
