@@ -46,3 +46,18 @@ test("a new wedding adds Ceremony from Tools and is given a starting order, and 
   await processional.getByRole("button", { name: /^2\. Partner one \+ Partner two/ }).click();
   await expect(page.getByText("No one is set as Partner one yet.")).toBeVisible();
 });
+
+test("the processional prints as a page, and copies as text for an email", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await seedExampleWedding(page);
+  await page.goto("/ceremony");
+
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Print" }).click()]);
+  expect(download.suggestedFilename()).toBe("alex-and-sam-processional.pdf");
+
+  await page.getByRole("button", { name: "Copy as text" }).click();
+  await expect(page.getByText("Copied — paste it into an email to the wedding party.")).toBeVisible();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied.split("\n")[0]).toBe("The processional — Alex & Sam");
+  expect(copied).toContain("6. Alex + Sam");
+});

@@ -55,11 +55,36 @@ dependencies.**
 
 ## 2c — Paper, and planners
 
-- [ ] One page for the officiant and whoever runs the day, and the order as
+- [x] One page for the officiant and whoever runs the day, and the order as
   plain text to paste into an email. The page joins the wedding pack.
-- [ ] The library keeps a processional: its groups, roles and cues, with no
+- [x] The library keeps a processional: its groups, roles and cues, with no
   guest named.
 
 ## Status
 
-Not started.
+**Complete — 2a, 2b and 2c, 2026-09-29.** 1,816 suite tests and 110 in the
+contract package, typecheck and build clean, all 96 Playwright tests green.
+No new dependencies. **One migration**, `20260929000004_library_processional`,
+widening the library's kinds: apply it before deploying, as every migration.
+
+**What executing it found.**
+
+- The cast is read from either place, not only after the load pass has
+  moved it, because the planner's Weddings page runs What is left on the
+  server over stored documents nobody has opened since.
+- After parsing, the contract fills an absent slice with `{}`, so "this
+  wedding has its own cast" is decided by what the slice holds, not by its
+  being there.
+- Group shots' resolver was already the right shape for a processional — a
+  label and members — so it moved to `lib/cast/resolve` rather than being
+  copied; "Who's in it" became one `MemberPicker`; Money's nullable number
+  had already gone to the kit in Phase 1, and the guest picker went to
+  `components/cast`.
+- The processional's page and its email text are made from one list of rows,
+  so they cannot disagree.
+- The library's kinds are fixed in the database as well as in the code; the
+  migration test proves a processional is kept and an unknown kind still is
+  not.
+- The officiant is words ("The officiant", "The registrar") rather than a
+  crew member: nothing yet needs the link, and words were already a member
+  kind.

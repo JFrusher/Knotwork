@@ -5,14 +5,15 @@ import { daysUntil } from "@/lib/dates";
  * What a planner keeps from one wedding to use in another, and how it goes
  * into the next: a card design without its rows, a running order without its
  * date or its suppliers' numbers, a room without its guests, a checklist
- * without its dates — each task kept as so many days before the day.
+ * without its dates — each task kept as so many days before the day — and a
+ * processional with its roles and music and nobody named.
  *
  * Nothing personal leaves a wedding this way. Each kind is built from a
  * whitelist of what it is, never by removing what it is not, so a field a tool
  * adds later stays out until someone decides it belongs.
  */
 
-export const KINDS = ["cards", "day", "room", "checklist"] as const;
+export const KINDS = ["cards", "day", "room", "checklist", "processional"] as const;
 export type Kind = (typeof KINDS)[number];
 
 export const KIND_NAMES: Record<Kind, string> = {
@@ -20,6 +21,7 @@ export const KIND_NAMES: Record<Kind, string> = {
   day: "Running order",
   room: "Room",
   checklist: "Checklist",
+  processional: "Processional",
 };
 
 type Raw = Record<string, unknown>;
@@ -88,6 +90,22 @@ export function extract(kind: Kind, raw: Raw): Raw | null {
         });
       return tasks.length > 0 ? { tasks } : null;
     }
+    case "processional": {
+      const groups = Array.isArray(record(raw["ceremony"])["processional"]) ? (record(raw["ceremony"])["processional"] as unknown[]) : [];
+      if (groups.length === 0) return null;
+      return {
+        processional: groups.map(record).map((group) => ({
+          ...pick(group, ["label", "formation", "side", "music", "cue"]),
+          // Who walks by what they are to the couple, or by the words typed
+          // for them: never a guest, a family, a group or a role of this
+          // wedding's own devising, none of which exist in another wedding.
+          members: (Array.isArray(group["members"]) ? (group["members"] as unknown[]) : [])
+            .map(record)
+            .filter((member) => member["kind"] === "role" || member["kind"] === "text")
+            .map((member) => pick(member, ["kind", "ref"])),
+        })),
+      };
+    }
   }
 }
 
@@ -146,5 +164,15 @@ export function applyTo(kind: Kind, content: Raw, raw: Raw): Array<[SliceName, u
         }));
       return [["crew", { ...crew, jobs: [...jobs, ...added] }]];
     }
+    case "processional":
+      return [
+        [
+          "ceremony",
+          {
+            ...record(raw["ceremony"]),
+            processional: (content["processional"] as Raw[]).map((group) => ({ ...group, id: newId("walk") })),
+          },
+        ],
+      ];
   }
 }
