@@ -5,11 +5,15 @@ export function daysUntil(iso: string, today: string): number {
   return Math.round((Date.parse(`${iso}T12:00:00Z`) - Date.parse(`${today}T12:00:00Z`)) / 86_400_000);
 }
 
+/** The date a moment falls on where the user is, as ISO. */
+export function localDay(when: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}`;
+}
+
 /** Today's date where the user is, as ISO. */
 export function todayIso(): string {
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  return localDay(new Date());
 }
 
 /** "18 May 2028". */

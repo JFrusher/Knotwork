@@ -143,3 +143,37 @@
   font-size: 0.8rem;
   opacity: 0.75;
 }
+
+/* A supplier's own link, under their contact details. */
+.link {
+  display: grid;
+  gap: var(--sp-1);
+  justify-items: start;
+  margin-top: var(--sp-2);
+}
+
+.linkRow {
+  display: flex;
+  gap: var(--sp-1);
+  width: 100%;
+}
+
+.linkUrl {
+  min-width: 0;
+  flex: 1;
+  padding: 4px var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: var(--text-xs);
+}
+
+.linkNote {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.linkProblem {
+  font-size: var(--text-xs);
+  color: var(--danger);
+}

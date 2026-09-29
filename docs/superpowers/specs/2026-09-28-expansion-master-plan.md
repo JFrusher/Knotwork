@@ -418,7 +418,22 @@ project, the build, and the Playwright run — and gets its own plan first.
 3. **Vendor links:** each supplier gets a link to their own call sheet and a
    *Confirm* button that sets `confirmedOn`. The 2026-09-08 design deferred
    this "for something a wedding has about eight of"; a planner has eight per
-   client, which is the reason it is worth building now.
+   client, which is the reason it is worth building now. **Built
+   2026-09-29**, as the guest link is: from Delegation, under a supplier's
+   Contact, *Make a link*; the sheet — arrival, their named people, their
+   jobs on the day and before it, the couple's names, date and venue, and no
+   guest at all — is sealed under a key in the link's fragment, and
+   republishes itself a few seconds after anything on it changes. The page
+   at `/supplier/<token>` has one button: *Confirm* records when, against
+   that link only, and the couple's side carries it into `confirmedOn` as
+   the day it happened (never backwards over a later date typed in by hand,
+   and not as an undo step, since nobody here made it). If the sheet has
+   changed since, both sides say so. A supplier removed from the wedding has
+   their link taken down, since nothing could reach it any more. Its table,
+   `supplier_links`, is members-only; the public read and confirm are two
+   functions that take only a token; a wedding deleted takes its links with
+   it (all proved against PGlite). The Privacy Policy has a section on what
+   one carries, and robots refuses `/supplier/` as it does `/seat/`.
 
 ### Phase 4 — One live document
 

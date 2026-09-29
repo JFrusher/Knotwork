@@ -38,8 +38,8 @@ export const RETENTION_MONTHS = 24;
 
 export const PRIVACY: Policy = {
   title: "Privacy",
-  updated: "2026-09-28",
-  digest: "06973fd3d66fee62",
+  updated: "2026-09-29",
+  digest: "425851a1b441bb32",
   intro:
     "Trousseau is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
   sections: [
@@ -55,7 +55,7 @@ export const PRIVACY: Policy = {
       heading: "Where your wedding lives",
       paragraphs: [
         "In your browser. Guests, seating, the running order, the crew and the stationery are all stored on the device you are using, in IndexedDB, and nothing is sent anywhere by default.",
-        "You can use the whole application without any of it ever reaching a server. Making an account changes that — to plan on more than one device, with your partner, or with your planner — and so does publishing a link for your guests, which needs one.",
+        "You can use the whole application without any of it ever reaching a server. Making an account changes that — to plan on more than one device, with your partner, or with your planner — and so does publishing a link for your guests or your suppliers, which needs one.",
       ],
     },
     {
@@ -78,16 +78,24 @@ export const PRIVACY: Policy = {
       ],
     },
     {
+      heading: "What a supplier's link contains",
+      paragraphs: [
+        "Each supplier can be given a link to their own call sheet: when to arrive, which of their people are named, and their jobs with the times, places and dates — with the couple's names, the date and the venue. It carries no guests at all, and nothing of any other supplier's.",
+        "It is sealed the same way as the guest link, under a key in the link's fragment that is also kept with your wedding, and it updates itself as their jobs and times change.",
+        "It has one button, Confirm. Pressing it records when, against that link and nothing else, and that date shows on your wedding as the day they confirmed. Taking the link down deletes it outright, and it goes by itself if that supplier is removed from your wedding.",
+      ],
+    },
+    {
       heading: "How long it is kept",
       paragraphs: [
-        `A wedding on an account that is not written to for ${RETENTION_MONTHS} months is deleted automatically, along with its history, its uploaded files and its guest link. That is long enough to cover an engagement, the wedding, and a year of still wanting the seating plan.`,
+        `A wedding on an account that is not written to for ${RETENTION_MONTHS} months is deleted automatically, along with its history, its uploaded files, its guest link and its suppliers' links. That is long enough to cover an engagement, the wedding, and a year of still wanting the seating plan.`,
         "There is no backup that outlives this. When it is deleted, it is gone.",
       ],
     },
     {
       heading: "Deleting it yourself",
       paragraphs: [
-        "Deleting your account is on the account page — signing in is what proves it is yours. It takes you off every wedding you are on, and deletes each one nobody else is still on, with its history, its files and its guest link, immediately. A wedding someone else is on stays with them, because it is their wedding too.",
+        "Deleting your account is on the account page — signing in is what proves it is yours. It takes you off every wedding you are on, and deletes each one nobody else is still on, with its history, its files, its guest link and its suppliers' links, immediately. A wedding someone else is on stays with them, because it is their wedding too.",
         "Leaving one wedding works the same way, for that wedding alone. Deleting your account also deletes your library, if you kept one.",
         "Your own browser keeps its copy unless you choose otherwise, because withdrawing from a server is not the same as wanting to lose your seating plan. Signing out asks whether to remove it from the device; clearing this site's data in your browser removes it too.",
       ],

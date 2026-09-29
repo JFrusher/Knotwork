@@ -67,6 +67,9 @@ export const EXPORT_LIMIT: Limit = { max: 20, windowMs: 60 * 60 * 1000 };
  */
 export const SHARE_LIMIT: Limit = { max: 300, windowMs: 60 * 60 * 1000 };
 
+/** A supplier confirming through their link: they do it once, perhaps again after a change. */
+export const CONFIRM_LIMIT: Limit = { max: 20, windowMs: 60 * 60 * 1000 };
+
 /** Saving to a planner's library: a working day's worth, not a flood. */
 export const LIBRARY_LIMIT: Limit = { max: 60, windowMs: 60 * 60 * 1000 };
 

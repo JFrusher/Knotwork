@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { guestName, readGuests } from "@/lib/model/slices";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useSupplierLinks } from "@/lib/suppliers/links";
 import { assigneeNames, type Person } from "../../core/model/types";
 import { getDoc, useStore } from "../../state/store";
 import { Button, Panel, TextField } from "@/components/ui/fields";
+import { SupplierLinkField } from "./SupplierLinkField";
 import styles from "./CrewPanel.module.css";
 
 /**
@@ -35,6 +37,9 @@ export function CrewPanel() {
   const addable = Object.values(guests)
     .filter((guest) => !linked.has(guest.id) && guestName(guest))
     .sort((a, b) => guestName(a).localeCompare(guestName(b), "en"));
+
+  const links = useSupplierLinks((state) => state.links);
+  const withLink = new Set((links ?? []).map((link) => link.teamId));
 
   const job = doc.jobs.find((entry) => entry.id === selectedJobId) ?? null;
   const unteamed = doc.people.filter((person) => person.teamId === null);
@@ -146,7 +151,10 @@ export function CrewPanel() {
 
           {/* Folded away: most teams are friends doing a job, with nobody to
               email and nothing to confirm. */}
-          <details className={styles.contract} open={team.email !== "" || team.confirmedOn !== ""}>
+          <details
+            className={styles.contract}
+            open={team.email !== "" || team.confirmedOn !== "" || withLink.has(team.id)}
+          >
             <summary>
               Contact
               {team.confirmedOn !== "" && " · confirmed"}
@@ -163,6 +171,7 @@ export function CrewPanel() {
               value={team.confirmedOn}
               onChange={(confirmedOn) => updateTeam(team.id, { confirmedOn })}
             />
+            <SupplierLinkField teamId={team.id} name={team.name} />
           </details>
 
           <ul className={styles.list}>
