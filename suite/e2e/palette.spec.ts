@@ -53,5 +53,5 @@ test("the header's search button opens it too", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Find anything" }).click();
   await expect(page.getByRole("dialog", { name: "Find anything" })).toBeVisible();
-  await expect(page.getByRole("option")).toHaveCount(9);
+  await expect(page.getByRole("option")).toHaveCount(10);
 });

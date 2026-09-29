@@ -404,7 +404,17 @@ project, the build, and the Playwright run — and gets its own plan first.
    another wedding shows artwork only once it is uploaded there too.
 2. **Binder** (`/binder`): now and next against the clock, the run sheet, who to
    ring, find a guest's table, the shot list to tick off. Works offline from the
-   last synced copy — venues have bad signal.
+   last synced copy — venues have bad signal. **Built 2026-09-29**, outside the
+   planning app's header, for a phone: Now (against the venue's own clock,
+   from the wedding's UTC offset, so a planner abroad sees the venue's time),
+   Day, Ring (every number the running order and the crew hold, once each,
+   as `tel:` links), Find (a guest who is coming, and their table) and Shots.
+   It writes nothing to the wedding: shots ticked off stay on that phone. A
+   service worker scoped to `/binder` keeps the page and every file it
+   loaded, and never the API; the wedding is already in the phone's own
+   storage. The offline test fails without the worker. Found on the way: the
+   example named each supplier differently in the running order and the
+   crew — the crew now uses the running order's names and numbers.
 3. **Vendor links:** each supplier gets a link to their own call sheet and a
    *Confirm* button that sets `confirmedOn`. The 2026-09-08 design deferred
    this "for something a wedding has about eight of"; a planner has eight per

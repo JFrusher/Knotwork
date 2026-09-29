@@ -15,6 +15,7 @@ describe("finding anything by name", () => {
       "Guests",
       "Money",
       "Checklist",
+      "Binder",
       "Seating",
       "Place cards",
       "Timeline",
