@@ -13,7 +13,6 @@ import { Announcer } from "./ui/Announcer";
 import { Button } from "@/components/ui/fields";
 import { ChromeFill } from "@/components/shell/chrome";
 import { ToolUndo } from "@/components/shell/ToolUndo";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { ExportBar } from "./ui/ExportBar";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
@@ -33,8 +32,6 @@ export function App() {
   // Timeline keeps no copy and no history of its own: its edits are on the
   // wedding's, so that is the one the header's undo drives. The stack is
   // shared, so saying what the next undo takes back is what makes it safe.
-  const past = useTrousseauStore((state) => state.past);
-  const future = useTrousseauStore((state) => state.future);
 
   // Uploaded faces are loaded once, for the fonts this day names.
   useEffect(() => {
@@ -89,14 +86,7 @@ export function App() {
         </span>
         <Button onClick={() => setUi({ presentation: true })}>Present</Button>
       </ChromeFill>
-      <ToolUndo
-        canUndo={past.length > 0}
-        canRedo={future.length > 0}
-        onUndo={() => useTrousseauStore.getState().undo()}
-        onRedo={() => useTrousseauStore.getState().redo()}
-        undoLabel={past[past.length - 1]?.label ?? null}
-        redoLabel={future[future.length - 1]?.label ?? null}
-      />
+      <ToolUndo />
 
       {notice && (
         <p className={styles.notice} role="status">

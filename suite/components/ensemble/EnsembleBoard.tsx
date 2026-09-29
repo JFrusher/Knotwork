@@ -5,7 +5,6 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { Button, Empty, Segmented } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 import { useEvent, useGuests, useSeating, useShots, useStatus, useWriters } from "@/lib/model/useSuite";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { propose } from "@/lib/ensemble/propose";
 import { CastPanel } from "./CastPanel";
 import { PrintPanel } from "./PrintPanel";
@@ -24,25 +23,14 @@ export function EnsembleBoard() {
 
   // Ensemble has no store of its own — its edits land on the suite-wide undo
   // stack, so that is the one the header's undo has to drive.
-  const past = useTrousseauStore((s) => s.past);
-  const future = useTrousseauStore((s) => s.future);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("shot");
 
   if (status !== "ready") return null;
 
-  // The stack is shared, so the next undo may take back an edit made in another
-  // tool. Saying which is the difference between a safe button and a surprise.
   const undo = (
-    <ToolUndo
-      canUndo={past.length > 0}
-      canRedo={future.length > 0}
-      onUndo={() => useTrousseauStore.getState().undo()}
-      onRedo={() => useTrousseauStore.getState().redo()}
-      undoLabel={past[past.length - 1]?.label ?? null}
-      redoLabel={future[future.length - 1]?.label ?? null}
-    />
+    <ToolUndo />
   );
 
   if (Object.keys(guests).length === 0) {

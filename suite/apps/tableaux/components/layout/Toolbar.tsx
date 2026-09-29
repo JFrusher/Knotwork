@@ -1,4 +1,3 @@
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
 import { useStore } from '../../store/useStore'
 import { useWarnings } from '../../store/warningsContext'
 import IconButton from '../ui/IconButton'
@@ -26,10 +25,6 @@ function WarningsButton() {
 }
 
 export default function Toolbar() {
-  // Seating keeps no history of its own: its edits are on the wedding's. The
-  // stack is shared, so saying what the next undo takes back makes it safe.
-  const past = useTrousseauStore((s) => s.past)
-  const future = useTrousseauStore((s) => s.future)
   const openModal = useStore((s) => s.openModal)
   const togglePanel = useStore((s) => s.togglePanel)
 
@@ -40,14 +35,7 @@ export default function Toolbar() {
         * palette you drag a room out of, so it stays. Undo and redo went up
         * into the shell's header. There is no Save: the plan saves itself.
         */}
-      <ToolUndo
-        canUndo={past.length > 0}
-        canRedo={future.length > 0}
-        onUndo={() => useTrousseauStore.getState().undo()}
-        onRedo={() => useTrousseauStore.getState().redo()}
-        undoLabel={past[past.length - 1]?.label ?? null}
-        redoLabel={future[future.length - 1]?.label ?? null}
-      />
+      <ToolUndo />
 
       <div className={styles.center}>
         <TablePalette />

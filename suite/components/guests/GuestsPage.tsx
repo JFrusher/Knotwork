@@ -44,8 +44,6 @@ function stored(): GuestSlices {
 export function GuestsPage() {
   const status = useTrousseauStore((s) => s.status);
   const doc = useTrousseauStore((s) => s.doc);
-  const past = useTrousseauStore((s) => s.past);
-  const future = useTrousseauStore((s) => s.future);
   const showImport = useGuestImport((s) => s.show);
   const confirm = useConfirm();
 
@@ -115,14 +113,7 @@ export function GuestsPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <ToolUndo
-        canUndo={past.length > 0}
-        canRedo={future.length > 0}
-        onUndo={() => useTrousseauStore.getState().undo()}
-        onRedo={() => useTrousseauStore.getState().redo()}
-        undoLabel={past[past.length - 1]?.label ?? null}
-        redoLabel={future[future.length - 1]?.label ?? null}
-      />
+      <ToolUndo />
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>

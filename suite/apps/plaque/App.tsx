@@ -45,8 +45,6 @@ export function App() {
   // Place cards keep no history of their own: every design edit is on the
   // wedding's, which the header's undo drives. The stack is shared, so saying
   // what the next undo takes back is what makes it safe.
-  const past = useTrousseauStore((s) => s.past);
-  const future = useTrousseauStore((s) => s.future);
   // A save the browser refused, whichever slice it was: the design is in it.
   const saveError = useTrousseauStore((s) => s.saveError);
   useKeyboard();
@@ -271,14 +269,7 @@ export function App() {
 
   return (
     <div className={styles.app}>
-      <ToolUndo
-        canUndo={past.length > 0}
-        canRedo={future.length > 0}
-        onUndo={() => useTrousseauStore.getState().undo()}
-        onRedo={() => useTrousseauStore.getState().redo()}
-        undoLabel={past[past.length - 1]?.label ?? null}
-        redoLabel={future[future.length - 1]?.label ?? null}
-      />
+      <ToolUndo />
 
       <Announcer />
       <Sidebar />

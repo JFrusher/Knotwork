@@ -29,8 +29,6 @@ function write(change: (crew: Crew) => Crew, label: string) {
 export function ChecklistPage() {
   const status = useTrousseauStore((s) => s.status);
   const doc = useTrousseauStore((s) => s.doc);
-  const past = useTrousseauStore((s) => s.past);
-  const future = useTrousseauStore((s) => s.future);
   const today = todayIso();
 
   const crew = readCrew(doc);
@@ -53,14 +51,7 @@ export function ChecklistPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <ToolUndo
-        canUndo={past.length > 0}
-        canRedo={future.length > 0}
-        onUndo={() => useTrousseauStore.getState().undo()}
-        onRedo={() => useTrousseauStore.getState().redo()}
-        undoLabel={past[past.length - 1]?.label ?? null}
-        redoLabel={future[future.length - 1]?.label ?? null}
-      />
+      <ToolUndo />
 
       <h1 className="font-display text-3xl text-charcoal">Checklist</h1>
       <p className="mt-1 text-sm text-slate">

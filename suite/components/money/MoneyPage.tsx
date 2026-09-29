@@ -34,8 +34,6 @@ const amount = (n: number) => n.toLocaleString();
 export function MoneyPage() {
   const status = useTrousseauStore((s) => s.status);
   const doc = useTrousseauStore((s) => s.doc);
-  const past = useTrousseauStore((s) => s.past);
-  const future = useTrousseauStore((s) => s.future);
 
   const crew = readCrew(doc);
   const accounts = useMemo(() => money(crew), [crew]);
@@ -51,14 +49,7 @@ export function MoneyPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <ToolUndo
-        canUndo={past.length > 0}
-        canRedo={future.length > 0}
-        onUndo={() => useTrousseauStore.getState().undo()}
-        onRedo={() => useTrousseauStore.getState().redo()}
-        undoLabel={past[past.length - 1]?.label ?? null}
-        redoLabel={future[future.length - 1]?.label ?? null}
-      />
+      <ToolUndo />
 
       <h1 className="font-display text-3xl text-charcoal">Money</h1>
       <p className="mt-1 text-sm text-slate">What the suppliers cost, what has been paid, and what is still to pay.</p>

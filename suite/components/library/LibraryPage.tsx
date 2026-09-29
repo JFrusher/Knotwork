@@ -40,8 +40,6 @@ export function LibraryPage() {
   const status = useTrousseauStore((s) => s.status);
   const raw = useTrousseauStore((s) => s.raw);
   const couple = useTrousseauStore((s) => s.doc.event.coupleNames);
-  const past = useTrousseauStore((s) => s.past);
-  const future = useTrousseauStore((s) => s.future);
   const confirm = useConfirm();
   const [listing, setListing] = useState<Listing>({ status: "loading" });
   const [notice, setNotice] = useState<string | null>(null);
@@ -98,14 +96,7 @@ export function LibraryPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <ToolUndo
-        canUndo={past.length > 0}
-        canRedo={future.length > 0}
-        onUndo={() => useTrousseauStore.getState().undo()}
-        onRedo={() => useTrousseauStore.getState().redo()}
-        undoLabel={past[past.length - 1]?.label ?? null}
-        redoLabel={future[future.length - 1]?.label ?? null}
-      />
+      <ToolUndo />
       <h1 className="font-display text-3xl text-charcoal">Library</h1>
       <p className="mt-1 max-w-2xl text-sm text-slate">
         Designs you keep to use again, for any wedding you plan. Nobody goes in with them: a card design without its guests,
