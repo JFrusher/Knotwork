@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { applyTo, extract } from "./items";
+import { adds, applyTo, extract } from "./items";
 
 const example = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
 const names = Object.values(example.guests as Record<string, { firstName: string; lastName: string }>).flatMap((guest) => [
@@ -124,5 +124,44 @@ describe("a processional", () => {
     expect(value.processional).toHaveLength(6);
     expect(new Set(value.processional.map((group) => group.id)).size).toBe(6);
     expect(value.processional.map((group) => group.id)).not.toContain("old");
+  });
+});
+
+describe("a set of boxes", () => {
+  it("is kept as its boxes and what goes in each: not who takes them, when, what is packed or its notes", () => {
+    const kept = extract("boxes", example)!;
+    const boxes = kept["boxes"] as Array<Record<string, unknown>>;
+    expect(boxes).toHaveLength(4);
+    expect(boxes[1]).toEqual({
+      number: 2,
+      name: "Getting ready",
+      items: [
+        { label: "Outfits, on hangers", quantity: 2 },
+        { label: "Shoes", quantity: 2 },
+        { label: "Steamer", quantity: 1 },
+        { label: "Emergency kit: plasters, safety pins, needle and thread, painkillers", quantity: 1 },
+        { label: "Phone chargers", quantity: 2 },
+      ],
+    });
+    const text = JSON.stringify(kept);
+    for (const gone of ['"personIds"', '"blockId"', '"packed"', '"notes"', '"id"', "best man"]) expect(text).not.toContain(gone);
+    expect(mentionsAnyGuest(kept)).toEqual([]);
+  });
+
+  it("adds to a wedding the boxes it has none of by name, numbered on, with nothing packed, and asks nothing first", () => {
+    const kept = extract("boxes", example)!;
+    const into = { boxes: { boxes: [{ id: "mine", number: 7, name: "getting ready", items: [] }] } };
+    const [[slice, value]] = applyTo("boxes", kept, into) as [[string, { boxes: Array<Record<string, unknown>> }]];
+    expect(slice).toBe("boxes");
+    expect(value.boxes.map((box) => `${box["number"]} ${box["name"]}`)).toEqual([
+      "7 getting ready",
+      "8 The rings and the paperwork",
+      "9 The day's odds and ends",
+      "10 Overnight and the day after",
+    ]);
+    const items = value.boxes.slice(1).flatMap((box) => box["items"] as Array<{ id: string; packed: boolean }>);
+    expect(items.every((item) => item.packed === false && typeof item.id === "string")).toBe(true);
+    expect(adds("boxes")).toBe(true);
+    expect(adds("room")).toBe(false);
   });
 });

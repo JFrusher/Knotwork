@@ -152,6 +152,12 @@ the tour being held under thirty steps.
 
 ## Phase 3 — Boxes
 
+**Built 2026-09-29**, with [its plan](../plans/2026-09-29-boxes.md). As built,
+where it differs from below: a thing moves between boxes from a menu on its
+row rather than by dragging; items carry no notes of their own; a box not for
+the day needs nobody to take it; and the library adds boxes to a wedding
+rather than replacing its own.
+
 The maintainer's words: boxes, what is in each, "in a good intuitive way", and
 each box attached to a part of the day. The design below was confirmed as it
 stands (decision 16).
