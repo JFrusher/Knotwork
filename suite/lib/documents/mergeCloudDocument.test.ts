@@ -169,3 +169,16 @@ test("the day is this side's own when the timeline and the event are", () => {
 
   expect(merge(base, server, fingerprintParts(base)).raw.day).toEqual({ from: "mine" });
 });
+
+const box = (id: string, packed: boolean) => ({ id, number: 1, name: id, items: [{ id: `${id}-item`, label: "Shoes", quantity: 1, packed }] });
+
+test("two people packing two different boxes both keep what they ticked", () => {
+  const base = doc({ boxes: { boxes: [box("ready", false), box("overnight", false)] } });
+  const local = doc({ boxes: { boxes: [box("ready", true), box("overnight", false)] } });
+  const server = doc({ boxes: { boxes: [box("ready", false), box("overnight", true)] } });
+
+  const result = merge(local, server, fingerprintParts(base));
+
+  expect(result.conflicts).toEqual([]);
+  expect(result.raw.boxes).toEqual({ boxes: [box("ready", true), box("overnight", true)] });
+});

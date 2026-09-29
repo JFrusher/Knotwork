@@ -5603,6 +5603,7 @@
       "delegation",
       "group-shots",
       "ceremony",
+      "boxes",
       "money",
       "checklist",
       "binder"
@@ -5738,6 +5739,164 @@
         "side": "",
         "music": "The Arrival of the Queen of Sheba",
         "cue": "The music changes as the couple enter"
+      }
+    ]
+  },
+  "boxes": {
+    "boxes": [
+      {
+        "id": "box-rings",
+        "number": 1,
+        "name": "The rings and the paperwork",
+        "blockId": "blk-ceremony",
+        "personIds": [
+          "p_ex00p"
+        ],
+        "notes": "Stays with the best man from the morning.",
+        "items": [
+          {
+            "id": "item-rings-1",
+            "label": "The rings",
+            "quantity": 2,
+            "packed": false
+          },
+          {
+            "id": "item-rings-2",
+            "label": "Any paperwork the ceremony needs",
+            "quantity": 1,
+            "packed": false
+          },
+          {
+            "id": "item-rings-3",
+            "label": "Vows and readings",
+            "quantity": 1,
+            "packed": true
+          },
+          {
+            "id": "item-rings-4",
+            "label": "Envelopes for suppliers' final payments",
+            "quantity": 3,
+            "packed": false
+          }
+        ]
+      },
+      {
+        "id": "box-getting-ready",
+        "number": 2,
+        "name": "Getting ready",
+        "blockId": "blk-prep",
+        "personIds": [
+          "p_ex00q"
+        ],
+        "notes": "",
+        "items": [
+          {
+            "id": "item-ready-1",
+            "label": "Outfits, on hangers",
+            "quantity": 2,
+            "packed": true
+          },
+          {
+            "id": "item-ready-2",
+            "label": "Shoes",
+            "quantity": 2,
+            "packed": true
+          },
+          {
+            "id": "item-ready-3",
+            "label": "Steamer",
+            "quantity": 1,
+            "packed": false
+          },
+          {
+            "id": "item-ready-4",
+            "label": "Emergency kit: plasters, safety pins, needle and thread, painkillers",
+            "quantity": 1,
+            "packed": false
+          },
+          {
+            "id": "item-ready-5",
+            "label": "Phone chargers",
+            "quantity": 2,
+            "packed": false
+          }
+        ]
+      },
+      {
+        "id": "box-odds-and-ends",
+        "number": 3,
+        "name": "The day's odds and ends",
+        "blockId": "blk-breakfast",
+        "personIds": [
+          "p_ex00r"
+        ],
+        "notes": "",
+        "items": [
+          {
+            "id": "item-odds-1",
+            "label": "Table plan",
+            "quantity": 1,
+            "packed": true
+          },
+          {
+            "id": "item-odds-2",
+            "label": "Place cards",
+            "quantity": 106,
+            "packed": false
+          },
+          {
+            "id": "item-odds-3",
+            "label": "Guest book and pens",
+            "quantity": 1,
+            "packed": false
+          },
+          {
+            "id": "item-odds-4",
+            "label": "Card box",
+            "quantity": 1,
+            "packed": false
+          },
+          {
+            "id": "item-odds-5",
+            "label": "Cake knife",
+            "quantity": 1,
+            "packed": false
+          },
+          {
+            "id": "item-odds-6",
+            "label": "Favours",
+            "quantity": 100,
+            "packed": false
+          }
+        ]
+      },
+      {
+        "id": "box-overnight",
+        "number": 4,
+        "name": "Overnight and the day after",
+        "blockId": null,
+        "personIds": [],
+        "notes": "",
+        "items": [
+          {
+            "id": "item-overnight-1",
+            "label": "Clothes for the day after",
+            "quantity": 2,
+            "packed": false
+          },
+          {
+            "id": "item-overnight-2",
+            "label": "Toiletries",
+            "quantity": 1,
+            "packed": false
+          },
+          {
+            "id": "item-overnight-3",
+            "label": "Passports and travel documents",
+            "quantity": 2,
+            "packed": false
+          }
+        ]
       }
     ]
   },

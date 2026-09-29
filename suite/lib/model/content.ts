@@ -1,5 +1,5 @@
 import { migrate } from "@jfrusher/trousseau";
-import { readCeremony, readCrew, readGuests, readSeating, readShots } from "./slices";
+import { readBoxes, readCeremony, readCrew, readGuests, readSeating, readShots } from "./slices";
 
 /**
  * What a wedding holds, in the terms a person would recognise it by.
@@ -21,6 +21,7 @@ export interface WeddingSummary {
   shots: number;
   /** Groups in the processional. */
   walking: number;
+  boxes: number;
   /** Names on a card design that came from a file rather than the room. */
   cards: number;
 }
@@ -40,6 +41,7 @@ export function summarise(raw: unknown): WeddingSummary {
     jobs: crew.jobs.length,
     shots: readShots(doc).sections.reduce((sum, section) => sum + section.shots.length, 0),
     walking: readCeremony(doc).processional.length,
+    boxes: readBoxes(doc).boxes.length,
     cards: Array.isArray(stationery.rows) ? stationery.rows.length : 0,
   };
 }
@@ -62,6 +64,7 @@ export function describe(summary: WeddingSummary): string {
     summary.jobs && plural(summary.jobs, "job"),
     summary.shots && plural(summary.shots, "group shot"),
     summary.walking && `${plural(summary.walking, "group")} in the processional`,
+    summary.boxes && plural(summary.boxes, "box", "boxes"),
   ].filter(Boolean);
   const name = summary.names || "A wedding with no names yet";
   return parts.length > 0 ? `${name} — ${parts.join(", ")}` : name;

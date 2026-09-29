@@ -316,3 +316,25 @@ describe("the processional", () => {
     expect(ids({ guests: GUESTS, ...TABLES, ...hidden, ...walking([{ kind: "role", ref: "a-mother" }]) })).not.toContain("ceremony-dangling");
   });
 });
+
+describe("the boxes", () => {
+  const boxesNeededAt = (blockId: string | null, packed = false) => ({
+    boxes: { boxes: [{ id: "b1", number: 1, name: "Getting ready", blockId, personIds: [], items: [{ id: "i1", label: "Shoes", quantity: 1, packed }] }] },
+  });
+  const onDay = (today: string, raw: Record<string, unknown>) => {
+    const full = { ...emptyTrousseau(), ...EVERY_TOOL, guests: GUESTS, event: { ...emptyTrousseau().event, date: "2028-06-01" }, ...raw };
+    return readiness(migrate(full), full, today).map((item) => item.id);
+  };
+
+  it("says when a box is needed for a part of the day the Timeline no longer has", () => {
+    expect(onDay("2028-01-01", boxesNeededAt("blk-gone"))).toContain("boxes-lost");
+    expect(onDay("2028-01-01", boxesNeededAt(null))).not.toContain("boxes-lost");
+  });
+
+  it("says there is packing left only in the last week, and not once it is done or the day has passed", () => {
+    expect(onDay("2028-05-01", boxesNeededAt(null))).not.toContain("boxes-unpacked");
+    expect(onDay("2028-05-28", boxesNeededAt(null))).toContain("boxes-unpacked");
+    expect(onDay("2028-05-28", boxesNeededAt(null, true))).not.toContain("boxes-unpacked");
+    expect(onDay("2028-06-02", boxesNeededAt(null))).not.toContain("boxes-unpacked");
+  });
+});

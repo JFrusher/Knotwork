@@ -5,7 +5,8 @@ import { money } from "@/lib/money/money";
 import { todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
 import { stationery } from "./readiness";
-import { isComing, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
+import { isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
+import { dayPlaces, neededAt, packingOf } from "@/lib/boxes/view";
 import { hiddenToolIds } from "./toolbox";
 
 /**
@@ -25,7 +26,8 @@ export type AreaId =
   | "timeline"
   | "delegation"
   | "group-shots"
-  | "ceremony";
+  | "ceremony"
+  | "boxes";
 
 export interface Area {
   id: AreaId;
@@ -188,10 +190,24 @@ function ceremony(doc: Trousseau): Area {
   };
 }
 
+function boxes(doc: Trousseau): Area {
+  const all = readBoxes(doc);
+  if (all.boxes.length === 0) return { id: "boxes", summary: "No boxes yet", detail: "", progress: null };
+  const { packed, total } = packingOf(all);
+  const known = dayPlaces(doc);
+  const lost = all.boxes.filter((box) => neededAt(box, known).lost).length;
+  return {
+    id: "boxes",
+    summary: plural(all.boxes.length, "box", "boxes"),
+    detail: [total > 0 ? `${packed} of ${total} packed` : "Nothing in them yet", lost > 0 ? `${lost} to look at` : ""].filter(Boolean).join(" · "),
+    progress: total > 0 ? packed / total : null,
+  };
+}
+
 /** Every area, less those of the tools the wedding has removed. */
 export function overview(doc: Trousseau, raw: unknown, today: string = todayIso()): Area[] {
   const hidden = hiddenToolIds(doc);
-  return [guests(doc), costs(doc), tasks(doc, today), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc), ceremony(doc)].filter(
+  return [guests(doc), costs(doc), tasks(doc, today), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc), ceremony(doc), boxes(doc)].filter(
     (area) => !hidden.has(area.id),
   );
 }

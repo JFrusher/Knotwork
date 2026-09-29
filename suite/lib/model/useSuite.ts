@@ -9,6 +9,7 @@ import {
 } from "@/lib/store/useTrousseauStore";
 import {
   publishDay,
+  readBoxes,
   readCast,
   readCeremony,
   readCrew,
@@ -20,7 +21,7 @@ import {
   timelineDoc,
 } from "./slices";
 import { coupleTitle } from "./partners";
-import type { CastSlice, Ceremony, Crew, Guest, Seating, Shots } from "./types";
+import type { Boxes, CastSlice, Ceremony, Crew, Guest, Seating, Shots } from "./types";
 import type { Timeline } from "./timeline";
 
 /**
@@ -40,6 +41,7 @@ export const useCrew = (): Crew => useTrousseauStore((s) => readCrew(s.doc));
 export const useShots = (): Shots => useTrousseauStore((s) => readShots(s.doc));
 export const useCast = (): CastSlice => useTrousseauStore((s) => readCast(s.doc));
 export const useCeremony = (): Ceremony => useTrousseauStore((s) => readCeremony(s.doc));
+export const useBoxes = (): Boxes => useTrousseauStore((s) => readBoxes(s.doc));
 export const useResolvedDay = () => useTrousseauStore((s) => resolvedDay(s.doc));
 export const useTimelineDoc = () => useTrousseauStore((s) => timelineDoc(s.doc));
 export const useStatus = (): TrousseauState["status"] => useTrousseauStore((s) => s.status);
@@ -77,6 +79,7 @@ export interface SuiteWriters {
   /** Who is who, shared by Group shots and Ceremony. */
   setCast: (next: CastSlice, options?: WriteOptions) => void;
   setCeremony: (next: Ceremony, options?: WriteOptions) => void;
+  setBoxes: (next: Boxes, options?: WriteOptions) => void;
   /** Both halves of a seat, as one undo step. */
   setPlan: (
     guests: Record<string, Guest>,
@@ -137,6 +140,10 @@ export function useWriters(): SuiteWriters {
     (next: Ceremony, options: WriteOptions = { label: "the processional" }) => setSlice("ceremony", next, options),
     [setSlice],
   );
+  const setBoxes = useCallback(
+    (next: Boxes, options: WriteOptions = { label: "the boxes" }) => setSlice("boxes", next, options),
+    [setSlice],
+  );
   const setPlan = useCallback(
     (
       guests: Record<string, Guest>,
@@ -153,5 +160,5 @@ export function useWriters(): SuiteWriters {
     [setSlices],
   );
 
-  return { setEvent, setGuests, setSeating, setTimeline, setCrew, setShots, setCast, setCeremony, setPlan };
+  return { setEvent, setGuests, setSeating, setTimeline, setCrew, setShots, setCast, setCeremony, setBoxes, setPlan };
 }

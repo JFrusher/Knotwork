@@ -1,5 +1,5 @@
 import type { Trousseau } from "@jfrusher/trousseau";
-import { guestName, readCrew, readGuests } from "@/lib/model/slices";
+import { personName, readCrew, readGuests } from "@/lib/model/slices";
 import { parseDay } from "../core/import/day";
 import { emptyDoc } from "../core/model/defaults";
 import type { BrigadeDoc } from "../core/model/types";
@@ -44,11 +44,7 @@ export function readSlice(doc: Trousseau): BrigadeDoc {
    * had, which is better than a job sheet that suddenly reads "Someone".
    */
   const guests = readGuests(doc);
-  const people = crew.people.map((person) => {
-    if (!person.guestId) return person;
-    const guest = guests[person.guestId];
-    return guest ? { ...person, name: guestName(guest) || person.name } : person;
-  });
+  const people = crew.people.map((person) => ({ ...person, name: personName(person, guests) }));
 
   return {
     schemaVersion: base.schemaVersion,

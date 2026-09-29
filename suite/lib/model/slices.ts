@@ -36,6 +36,9 @@ import { CAST_ROLES } from "./types";
 import type {
   Cast,
   CastRole,
+  Box,
+  BoxItem,
+  Boxes,
   CastSlice,
   Ceremony,
   WalkGroup,
@@ -48,6 +51,7 @@ import type {
   Guest,
   NamedGroup,
   Obstacle,
+  Person,
   PerSideSeats,
   RoomSpec,
   Seating,
@@ -210,6 +214,16 @@ export function hasLegacyGuests(source: unknown): boolean {
 /** A guest's printed name. `firstName` may hold a whole name on a one-column import. */
 export function guestName(guest: Guest): string {
   return [guest.firstName, guest.lastName].filter(Boolean).join(" ").trim();
+}
+
+/**
+ * A crew member's name. Somebody who is also a guest is named by the guest
+ * list, so a spelling corrected there is corrected everywhere they are named;
+ * linked to a guest since deleted, they keep the name they had.
+ */
+export function personName(person: Pick<Person, "name" | "guestId">, guests: Record<string, Guest>): string {
+  const guest = person.guestId ? guests[person.guestId] : undefined;
+  return guest ? guestName(guest) || person.name : person.name;
 }
 
 /**
@@ -913,5 +927,42 @@ export function readCeremony(doc: Trousseau): Ceremony {
   return cached(doc, "ceremony", () => {
     const raw = (doc as Record<string, unknown>)["ceremony"];
     return { processional: list(isRecord(raw) ? raw["processional"] : null, readWalkGroup) };
+  });
+}
+
+// boxes -----------------------------------------------------------------------
+
+function readBoxItem(raw: unknown): BoxItem | null {
+  if (!isRecord(raw) || typeof raw["id"] !== "string") return null;
+  return {
+    id: raw["id"],
+    label: str(raw["label"]),
+    quantity: Math.max(1, Math.round(num(raw["quantity"], 1))),
+    packed: bool(raw["packed"], false),
+  };
+}
+
+function readBox(raw: unknown, index: number): Box | null {
+  if (!isRecord(raw) || typeof raw["id"] !== "string") return null;
+  return {
+    id: raw["id"],
+    number: num(raw["number"], index + 1),
+    name: str(raw["name"]),
+    items: list(raw["items"], readBoxItem),
+    blockId: typeof raw["blockId"] === "string" ? raw["blockId"] : null,
+    personIds: list(raw["personIds"], (id) => (typeof id === "string" ? id : null)),
+    notes: str(raw["notes"]),
+  };
+}
+
+export function emptyBoxes(): Boxes {
+  return { boxes: [] };
+}
+
+export function readBoxes(doc: Trousseau): Boxes {
+  return cached(doc, "boxes", () => {
+    const raw = (doc as Record<string, unknown>)["boxes"];
+    const stored = isRecord(raw) && Array.isArray(raw["boxes"]) ? raw["boxes"] : [];
+    return { boxes: stored.map(readBox).filter((box): box is Box => box !== null) };
   });
 }

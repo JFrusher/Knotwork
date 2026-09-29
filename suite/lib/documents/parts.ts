@@ -19,6 +19,7 @@ import { SLICE_NAMES, type SliceName } from "@jfrusher/trousseau";
  *   timeline/blocks/<id>     one block
  *   timeline/blocks#order    the blocks' order
  *   crew, crew/jobs/<id>, crew/jobs#order
+ *   boxes, boxes/boxes/<id>, boxes/boxes#order
  *   event, shots, stationery, tools, cast, ceremony
  *
  * `day` is not a part: it is published from the timeline and the event, and
@@ -41,6 +42,8 @@ export const KEYED: Partial<Record<SliceName, Keyed>> = {
   seating: { field: "tables", shape: "map" },
   timeline: { field: "blocks", shape: "list" },
   crew: { field: "jobs", shape: "list" },
+  // Two people packing at once tick things in different boxes.
+  boxes: { field: "boxes", shape: "list" },
 };
 
 /** Published from the timeline and the event; worked out again, never merged. */

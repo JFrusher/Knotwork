@@ -1,5 +1,6 @@
 import type { Trousseau } from "@jfrusher/trousseau";
-import { guestName, isComing, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
+import { guestName, isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
+import { dayPlaces, neededAt, packingOf } from "@/lib/boxes/view";
 import { hiddenToolIds } from "./toolbox";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { DUE_SOON_DAYS, money } from "@/lib/money/money";
@@ -26,12 +27,25 @@ import { checklist } from "@/lib/checklist/checklist";
 
 export type Severity = "blocking" | "advisory";
 
+/** How close to the day unpacked boxes are worth saying so. */
+export const PACKING_DAYS = 7;
+
 export interface Readiness {
   id: string;
   severity: Severity;
   message: string;
   /** Where the fix is, so a row can take you there. */
-  href: "/guests" | "/money" | "/checklist" | "/seating" | "/place-cards" | "/timeline" | "/delegation" | "/group-shots" | "/ceremony";
+  href:
+    | "/guests"
+    | "/money"
+    | "/checklist"
+    | "/seating"
+    | "/place-cards"
+    | "/timeline"
+    | "/delegation"
+    | "/group-shots"
+    | "/ceremony"
+    | "/boxes";
   action: string;
 }
 
@@ -260,6 +274,40 @@ export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso
           : `The processional names ${walkingNobody} people or roles who are not set, or no longer exist.`,
       href: "/ceremony",
       action: "Fix the processional",
+    });
+  }
+
+  // A box needed for a block the day no longer has: its label would say
+  // neither where nor when. The Timeline changed, and Boxes cannot see that.
+  const boxes = readBoxes(doc);
+  const known = dayPlaces(doc);
+  const lost = boxes.boxes.filter((box) => neededAt(box, known).lost).length;
+  if (lost > 0) {
+    out.push({
+      id: "boxes-lost",
+      severity: "blocking",
+      message:
+        lost === 1
+          ? "A box is needed for a part of the day that is no longer on the Timeline."
+          : `${lost} boxes are needed for parts of the day that are no longer on the Timeline.`,
+      href: "/boxes",
+      action: "Say where they are needed",
+    });
+  }
+
+  // The last week: packing is a thing done before the day, like a task.
+  const daysToGo = doc.event.date ? daysUntil(doc.event.date, today) : null;
+  const { packed, total } = packingOf(boxes);
+  if (daysToGo !== null && daysToGo >= 0 && daysToGo <= PACKING_DAYS && packed < total) {
+    const left = total - packed;
+    out.push({
+      id: "boxes-unpacked",
+      severity: "advisory",
+      message: `${left} ${left === 1 ? "thing is" : "things are"} still to pack, and the day is ${
+        daysToGo === 0 ? "today" : daysToGo === 1 ? "tomorrow" : `in ${daysToGo} days`
+      }.`,
+      href: "/boxes",
+      action: "Finish packing",
     });
   }
 
