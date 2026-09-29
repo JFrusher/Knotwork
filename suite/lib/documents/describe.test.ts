@@ -53,6 +53,11 @@ describe("what changed between two versions", () => {
     expect(describeChanges(before, after)).toEqual(["The day’s blocks put in a new order"]);
   });
 
+  it("says when somebody added or removed a tool", () => {
+    const after = { ...before, tools: { shown: ["seating"] } };
+    expect(describeChanges(before, after)).toEqual(["Which tools the wedding uses: changed"]);
+  });
+
   it("says nothing of a version that changed nothing", () => {
     expect(describeChanges(before, before)).toEqual([]);
   });

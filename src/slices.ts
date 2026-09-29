@@ -21,6 +21,12 @@ export const crewSchema = z.looseObject({}).default(() => ({}));
 export const stationerySchema = z.looseObject({}).default(() => ({}));
 export const shotsSchema = z.looseObject({}).default(() => ({}));
 export const timelineSchema = z.looseObject({}).default(() => ({}));
+/**
+ * Which tools the wedding shows. Owned by the launcher rather than any tool,
+ * as `event` is, and its own slice so that adding a tool never conflicts with
+ * a partner changing the date.
+ */
+export const toolsSchema = z.looseObject({}).default(() => ({}));
 
 export type Guests = z.infer<typeof guestsSchema>;
 export type Seating = z.infer<typeof seatingSchema>;
@@ -28,3 +34,4 @@ export type Crew = z.infer<typeof crewSchema>;
 export type Stationery = z.infer<typeof stationerySchema>;
 export type Shots = z.infer<typeof shotsSchema>;
 export type TimelineSlice = z.infer<typeof timelineSchema>;
+export type Tools = z.infer<typeof toolsSchema>;
