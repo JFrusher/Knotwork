@@ -3,9 +3,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { migrate } from "@jfrusher/trousseau";
-import { readCast, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
+import { readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 import { readiness } from "@/lib/model/readiness";
-import { resolveShot } from "@/lib/ensemble/resolve";
+import { resolveMembers } from "@/lib/cast/resolve";
 import { computeWarnings } from "@/apps/tableaux/utils/warnings";
 import { shownTools } from "@/lib/model/toolbox";
 import { TOOLS } from "@/lib/tools";
@@ -82,7 +82,7 @@ test("the shot list names real people, with nobody missing from it", () => {
   const all = shots.sections.flatMap((s) => s.shots);
   expect(all.length).toBeGreaterThanOrEqual(12);
   for (const shot of all) {
-    const resolved = resolveShot(shot, readGuests(doc), seating, cast.roles, cast.customRoles, doc.event);
+    const resolved = resolveMembers(shot, readGuests(doc), seating, cast.roles, cast.customRoles, doc.event);
     expect(resolved.problems.filter((p) => p.kind !== "declined"), resolved.label).toEqual([]);
   }
 });
@@ -96,4 +96,14 @@ test("the place cards are drawn from the room, and agree with it", () => {
 
 test("every tool is shown, including those a new wedding adds itself, so there is nothing it cannot demonstrate", () => {
   expect(shownTools(doc)).toEqual(TOOLS);
+});
+
+test("the processional names real people, from the same cast as the group shots", () => {
+  const processional = readCeremony(doc).processional;
+  expect(processional.length).toBeGreaterThanOrEqual(5);
+  const cast = readCast(doc);
+  for (const group of processional) {
+    const resolved = resolveMembers(group, readGuests(doc), seating, cast.roles, cast.customRoles, doc.event);
+    expect(resolved.problems.filter((p) => p.kind !== "declined"), resolved.label).toEqual([]);
+  }
 });

@@ -9,7 +9,7 @@ import { paginate } from "@/apps/brigade/render/pdf/table";
 import { wrap } from "@/apps/brigade/render/pdf/text";
 import { contentBox, PAGE_SIZES, ptToMm } from "@/apps/brigade/render/pdf/units";
 import type { Cast, CustomRole, Guest, Seating, ShotSection } from "@/lib/model/types";
-import { resolveShot } from "@/lib/ensemble/resolve";
+import { resolveMembers } from "@/lib/cast/resolve";
 
 export interface ShotSheetOptions {
   fontSource: FontSource;
@@ -75,7 +75,7 @@ export async function renderShotSheet(
 
     for (const shot of section.shots) {
       shotNumber += 1;
-      const resolved = resolveShot(shot, guests, seating, cast, customRoles, { partners: options.partners });
+      const resolved = resolveMembers(shot, guests, seating, cast, customRoles, { partners: options.partners });
       const labelLines = wrap(resolved.label, bold, BODY_PT, labelColMm);
       const peopleLines = wrap(resolved.people.map((p) => p.name).join(", ") || "—", regular, BODY_PT, peopleColMm);
       const notesLines = wrap(shot.notes, regular, BODY_PT, NOTES_COL_MM);

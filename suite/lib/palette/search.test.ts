@@ -18,6 +18,7 @@ describe("finding anything by name", () => {
       "Timeline",
       "Delegation",
       "Group shots",
+      "Ceremony",
       "Money",
       "Checklist",
       "Binder",

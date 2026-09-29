@@ -1,11 +1,11 @@
 import type { Trousseau } from "@jfrusher/trousseau";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
-import { resolveShot } from "@/lib/ensemble/resolve";
+import { resolveMembers } from "@/lib/cast/resolve";
 import { money } from "@/lib/money/money";
 import { todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
 import { stationery } from "./readiness";
-import { isComing, readCast, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
+import { isComing, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
 import { hiddenToolIds } from "./toolbox";
 
 /**
@@ -16,7 +16,16 @@ import { hiddenToolIds } from "./toolbox";
  * how much of it is done, so the page reads as the wedding's state rather than
  * as a list of ways into it.
  */
-export type AreaId = "guests" | "money" | "checklist" | "seating" | "place-cards" | "timeline" | "delegation" | "group-shots";
+export type AreaId =
+  | "guests"
+  | "money"
+  | "checklist"
+  | "seating"
+  | "place-cards"
+  | "timeline"
+  | "delegation"
+  | "group-shots"
+  | "ceremony";
 
 export interface Area {
   id: AreaId;
@@ -152,7 +161,7 @@ function groupShots(doc: Trousseau): Area {
   const guestList = readGuests(doc);
   const room = readSeating(doc);
   const troubled = all.filter(
-    (shot) => resolveShot(shot, guestList, room, cast.roles, cast.customRoles, doc.event).problems.length > 0,
+    (shot) => resolveMembers(shot, guestList, room, cast.roles, cast.customRoles, doc.event).problems.length > 0,
   ).length;
   return {
     id: "group-shots",
@@ -162,10 +171,27 @@ function groupShots(doc: Trousseau): Area {
   };
 }
 
+function ceremony(doc: Trousseau): Area {
+  const processional = readCeremony(doc).processional;
+  if (processional.length === 0) return { id: "ceremony", summary: "No processional yet", detail: "", progress: null };
+  const guestList = readGuests(doc);
+  const room = readSeating(doc);
+  const cast = readCast(doc);
+  const troubled = processional.filter(
+    (group) => resolveMembers(group, guestList, room, cast.roles, cast.customRoles, doc.event).problems.length > 0,
+  ).length;
+  return {
+    id: "ceremony",
+    summary: plural(processional.length, "group walking", "groups walking"),
+    detail: troubled > 0 ? `${troubled} to look at` : "",
+    progress: null,
+  };
+}
+
 /** Every area, less those of the tools the wedding has removed. */
 export function overview(doc: Trousseau, raw: unknown, today: string = todayIso()): Area[] {
   const hidden = hiddenToolIds(doc);
-  return [guests(doc), costs(doc), tasks(doc, today), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc)].filter(
+  return [guests(doc), costs(doc), tasks(doc, today), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc), ceremony(doc)].filter(
     (area) => !hidden.has(area.id),
   );
 }

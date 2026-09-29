@@ -369,3 +369,34 @@ export interface CastSlice {
   roles: Cast;
   customRoles: CustomRole[];
 }
+
+// ceremony --------------------------------------------------------------------
+
+/** How a group walks: one at a time, side by side in pairs, or in threes. */
+export type Formation = "single" | "pairs" | "threes";
+
+export const FORMATIONS: readonly Formation[] = ["single", "pairs", "threes"];
+
+/**
+ * One group in the processional, in the order they walk. Its members are the
+ * kinds a group shot's are — a role, a guest, a family, words — and resolve
+ * the same way, from the one cast.
+ */
+export interface WalkGroup {
+  id: string;
+  /** Blank means the printed label is built from the members instead. */
+  label: string;
+  members: ShotMember[];
+  formation: Formation;
+  /** Which side of the aisle they go to: a partner's, both, or not said. */
+  side: Side;
+  /** What they walk to, as the couple would write it: "Canon in D". */
+  music: string;
+  /** When: "The music changes as the couple enter". */
+  cue: string;
+}
+
+/** The `ceremony` slice. Ceremony's own. */
+export interface Ceremony {
+  processional: WalkGroup[];
+}

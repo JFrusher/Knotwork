@@ -33,20 +33,25 @@ dependencies.**
 
 ## 2b — Ceremony
 
-- [ ] `ceremony` joins the contract's slices: `{ processional: WalkGroup[] }`,
+- [x] `ceremony` joins the contract's slices: `{ processional: WalkGroup[] }`,
   a group being a label, members (the shot's member kinds), how they walk
   (alone, in pairs, in threes), which side they go to, and a cue — the music,
   and when it changes.
-- [ ] Pure actions: add, change, move, remove a group; add and remove members.
-- [ ] *Suggest an order* from the cast: the officiant, grandparents, parents,
+- [x] Pure actions: add, change, move, remove a group; add and remove members.
+- [x] *Suggest an order* from the cast: the officiant, grandparents, parents,
   the wedding parties, then the couple — a starting point, every part of it
   editable, and nothing in it assuming who walks with whom.
-- [ ] Checks: somebody walking who has declined; a role nobody has been cast
+- [x] Checks: somebody walking who has declined; a role nobody has been cast
   in. What is left and the front page say so, when Ceremony is shown.
-- [ ] The page, `/ceremony`: the order on the left, the picked group on the
+- [x] The page, `/ceremony`: the order on the left, the picked group on the
   right, with the member picker Group shots uses (moved to be shared).
   Registered as a tool, off until added.
-- [ ] The example wedding gets a processional, since it shows every tool.
+- [x] The example wedding gets a processional, since it shows every tool.
+- Not done, on purpose: a tour chapter. The tour is held to under thirty steps
+  and has twenty-nine; Ceremony's list carries the anchor one would point at
+  (`ceremony.order`) for when a chapter elsewhere is trimmed.
+- The resolver both tools use moved to `lib/cast/resolve` as `resolveMembers`,
+  taking any group with a label and members; its words no longer say "shot".
 
 ## 2c — Paper, and planners
 

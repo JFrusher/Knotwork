@@ -23,6 +23,7 @@ const WHOLE: Partial<Record<SliceName, string>> = {
   stationery: "The card design",
   tools: "Which tools the wedding uses",
   cast: "Who is who",
+  ceremony: "The processional",
 };
 
 const COLLECTION: Record<string, { one: string; many: string }> = {

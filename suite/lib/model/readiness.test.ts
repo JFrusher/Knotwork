@@ -297,3 +297,22 @@ describe("money and confirmations", () => {
     ).not.toContain("unconfirmed-teams");
   });
 });
+
+describe("the processional", () => {
+  const walking = (members: unknown[]) => ({ ceremony: { processional: [{ id: "w1", members }] } });
+
+  it("says when it names a role nobody is cast in", () => {
+    const found = wedding({ guests: GUESTS, ...TABLES, ...walking([{ kind: "role", ref: "a-mother" }]) });
+    expect(found.find((item) => item.id === "ceremony-dangling")).toMatchObject({ severity: "blocking", href: "/ceremony" });
+  });
+
+  it("says nothing when everybody in it is somebody", () => {
+    const cast = { cast: { roles: { "a-mother": ["g1"] }, customRoles: [] } };
+    expect(ids({ guests: GUESTS, ...TABLES, ...cast, ...walking([{ kind: "role", ref: "a-mother" }]) })).not.toContain("ceremony-dangling");
+  });
+
+  it("says nothing while Ceremony is not one of the wedding's tools", () => {
+    const hidden = { tools: { shown: ["seating"] } };
+    expect(ids({ guests: GUESTS, ...TABLES, ...hidden, ...walking([{ kind: "role", ref: "a-mother" }]) })).not.toContain("ceremony-dangling");
+  });
+});

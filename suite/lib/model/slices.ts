@@ -37,6 +37,8 @@ import type {
   Cast,
   CastRole,
   CastSlice,
+  Ceremony,
+  WalkGroup,
   Constraint,
   Crew,
   CustomRole,
@@ -883,5 +885,33 @@ export function readCast(doc: Trousseau): CastSlice {
         ? { roles: shots["cast"], customRoles: shots["customRoles"] }
         : {};
     return { roles: readRoles(source.roles), customRoles: list(source.customRoles, readCustomRole) };
+  });
+}
+
+// ceremony --------------------------------------------------------------------
+
+function readWalkGroup(raw: unknown): WalkGroup | null {
+  if (!isRecord(raw) || typeof raw["id"] !== "string") return null;
+  const formation = raw["formation"];
+  const side = raw["side"];
+  return {
+    id: raw["id"],
+    label: str(raw["label"]),
+    members: list(raw["members"], readMember),
+    formation: formation === "pairs" || formation === "threes" ? formation : "single",
+    side: side === "a" || side === "b" || side === "both" ? side : "",
+    music: str(raw["music"]),
+    cue: str(raw["cue"]),
+  };
+}
+
+export function emptyCeremony(): Ceremony {
+  return { processional: [] };
+}
+
+export function readCeremony(doc: Trousseau): Ceremony {
+  return cached(doc, "ceremony", () => {
+    const raw = (doc as Record<string, unknown>)["ceremony"];
+    return { processional: list(isRecord(raw) ? raw["processional"] : null, readWalkGroup) };
   });
 }

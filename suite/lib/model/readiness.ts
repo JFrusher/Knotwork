@@ -1,7 +1,7 @@
 import type { Trousseau } from "@jfrusher/trousseau";
-import { guestName, isComing, readCast, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
+import { guestName, isComing, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
 import { hiddenToolIds } from "./toolbox";
-import { resolveShot } from "@/lib/ensemble/resolve";
+import { resolveMembers } from "@/lib/cast/resolve";
 import { DUE_SOON_DAYS, money } from "@/lib/money/money";
 import { daysUntil, longDate, todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
@@ -31,7 +31,7 @@ export interface Readiness {
   severity: Severity;
   message: string;
   /** Where the fix is, so a row can take you there. */
-  href: "/guests" | "/money" | "/checklist" | "/seating" | "/place-cards" | "/timeline" | "/delegation" | "/group-shots";
+  href: "/guests" | "/money" | "/checklist" | "/seating" | "/place-cards" | "/timeline" | "/delegation" | "/group-shots" | "/ceremony";
   action: string;
 }
 
@@ -229,7 +229,7 @@ export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso
   const cast = readCast(doc);
   const dangling = shots.sections
     .flatMap((section) => section.shots)
-    .flatMap((shot) => resolveShot(shot, guests, seating, cast.roles, cast.customRoles, doc.event).problems)
+    .flatMap((shot) => resolveMembers(shot, guests, seating, cast.roles, cast.customRoles, doc.event).problems)
     .filter((problem) => problem.kind === "dangling").length;
 
   if (dangling > 0) {
@@ -242,6 +242,24 @@ export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso
           : `${dangling} group shots point at someone or something that no longer exists.`,
       href: "/group-shots",
       action: "Fix the shot list",
+    });
+  }
+
+  // The same for the processional, read from the same cast.
+  const walkingNobody = readCeremony(doc)
+    .processional.flatMap((group) => resolveMembers(group, guests, seating, cast.roles, cast.customRoles, doc.event).problems)
+    .filter((problem) => problem.kind === "dangling").length;
+
+  if (walkingNobody > 0) {
+    out.push({
+      id: "ceremony-dangling",
+      severity: "blocking",
+      message:
+        walkingNobody === 1
+          ? "The processional names someone who is not set, or no longer exists."
+          : `The processional names ${walkingNobody} people or roles who are not set, or no longer exist.`,
+      href: "/ceremony",
+      action: "Fix the processional",
     });
   }
 
