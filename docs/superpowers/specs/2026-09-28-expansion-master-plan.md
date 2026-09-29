@@ -41,6 +41,7 @@ several turned out differently once tested than they looked when read.
 | S15 | What is left said the card design had "nowhere to show" 83 dietary requirements that the design drew as icons: it counted text tokens and not the column an icon is drawn from, which Plaque itself counts. | Reproduced — unit. **Fixed 2026-09-28**. |
 | S16 | Since sides were named after the partners, the place cards' Side column carried the stored "a" and "b": a card binding `{{Side}}` printed a letter. | Reproduced — unit. **Fixed 2026-09-28**: "Alex’s side". |
 | S17 | Seating's "worth checking" note counted a guest who answered "None" as having no dietary note. Six of its seven notes on the example were those guests. | Reproduced — unit. **Fixed 2026-09-28**. |
+| S18 | The Privacy Policy says "no analytics … and no third-party scripts", with Sentry the only third party; but on a Vercel deployment the root layout renders Vercel Web Analytics, added by Vercel's bot on 2026-09-08. The policy is false there. | Traced (`app/layout.tsx`, commit e63d4be). **Open — the maintainer's call**: remove the analytics, or say in the policy what it counts. Found with it, and fixed: the command palette put a guest's name in the address (`/guests?q=…`); it now goes by id. |
 
 ### Architecture
 
