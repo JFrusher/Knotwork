@@ -6,6 +6,23 @@ import { seedExampleWedding, storedDocument } from "./wedding";
  * five by default, any of them removable, and a removal only ever hides.
  */
 
+test("a new wedding has Guests and the five in the header, and adds the rest from Tools", async ({ page }) => {
+  await page.goto("/");
+  const tabs = page.getByRole("navigation", { name: "Tools" });
+  await expect(tabs.getByRole("link")).toHaveText(["Guests", "Seating", "Place cards", "Timeline", "Delegation", "Group shots"]);
+
+  await tabs.getByRole("button", { name: "Add or remove tools" }).click();
+  const panel = page.getByRole("dialog", { name: "Tools" });
+  // Guests is not in the toolbox: every tool is built on it, so it cannot go.
+  await expect(panel.getByRole("button", { name: /Guests/ })).toHaveCount(0);
+  await panel.getByRole("button", { name: "Add Money" }).click();
+  await page.keyboard.press("Escape");
+
+  await expect(tabs.getByRole("link", { name: "Money" })).toBeVisible();
+  await tabs.getByRole("link", { name: "Money" }).click();
+  await expect(page).toHaveURL(/\/money$/);
+});
+
 test("a tool removed from Tools leaves the header, and undo brings it back", async ({ page }) => {
   await seedExampleWedding(page);
   await page.goto("/checklist");
@@ -37,7 +54,7 @@ test("a removal is kept in the wedding and survives a reload", async ({ page }) 
   // Stored before the reload is relied on: the write is what is being tested.
   await expect
     .poll(async () => (await storedDocument(page)).tools?.shown)
-    .toEqual(["seating", "place-cards", "timeline", "delegation"]);
+    .toEqual(["seating", "place-cards", "timeline", "delegation", "money", "checklist", "binder"]);
   await page.goto("/");
 
   const tabs = page.getByRole("navigation", { name: "Tools" });

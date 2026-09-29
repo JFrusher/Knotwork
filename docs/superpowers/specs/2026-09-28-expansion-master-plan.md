@@ -169,6 +169,12 @@ thing on a screen is the thing that needs a decision.
   controls (Timeline's zoom, Fit day and Present) do not fit and scroll out of
   sight inside it.
 
+  **Superseded 2026-09-29** by the
+  [toolbox spec](2026-09-29-toolbox-and-new-tools-design.md) (decisions 17–19):
+  Guests is the header's first tab, Money, Checklist and Binder are tools a
+  wedding adds from the toolbox, and only Overview stays under the wedding's
+  name.
+
 ## Signing in safely
 
 The rule: **nothing is replaced without a restorable copy, and nothing is

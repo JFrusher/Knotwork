@@ -31,15 +31,9 @@ describe("the front page's measures", () => {
     expect(areas.checklist).toMatchObject({ summary: "12 to do", detail: "7 done" });
   });
 
-  it("leaves out the areas of tools the wedding has removed, and keeps the wedding's own", () => {
-    const removed = { ...raw, tools: { shown: ["timeline", "delegation"] } };
-    expect(overview(migrate(removed), removed).map((area) => area.id)).toEqual([
-      "guests",
-      "money",
-      "checklist",
-      "timeline",
-      "delegation",
-    ]);
+  it("leaves out the areas of tools the wedding does not show, and always keeps the guests", () => {
+    const removed = { ...raw, tools: { shown: ["timeline", "money"] } };
+    expect(overview(migrate(removed), removed).map((area) => area.id)).toEqual(["guests", "money", "timeline"]);
   });
 
   it("says there is nothing yet, rather than that nothing is wrong, on an empty wedding", () => {

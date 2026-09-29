@@ -1,17 +1,23 @@
 import { Armchair, Banknote, Camera, ClipboardList, Clock, Contact, LayoutDashboard, ListChecks, Smartphone, Users, type LucideIcon } from "lucide-react";
 
 /** What a wedding stores to say it shows a tool. Never renamed: it is data. */
-export type ToolId = "seating" | "place-cards" | "timeline" | "delegation" | "group-shots";
+export type ToolId =
+  | "seating"
+  | "place-cards"
+  | "timeline"
+  | "delegation"
+  | "group-shots"
+  | "money"
+  | "checklist"
+  | "binder";
 
-/** The five tools, in the order the day is planned in. Nav and landing share this. */
-export interface Tool {
-  id: ToolId;
-  href: `/${ToolId}`;
+/** A way into one part of the wedding, as a tab in the header. */
+export interface Tab {
+  href: string;
   name: string;
-  tagline: string;
   icon: LucideIcon;
   /**
-   * The token class carrying this tool's palette.
+   * The token class carrying this tab's palette.
    *
    * The tab is where a tool is identified now that the wordmarks have gone, so
    * the active one is underlined in the colour that tool uses throughout. The
@@ -21,6 +27,26 @@ export interface Tool {
   tokens: string;
 }
 
+/** Something a wedding can add from the toolbox, or remove. */
+export interface Tool extends Tab {
+  id: ToolId;
+  href: `/${ToolId}`;
+  tagline: string;
+  /** Shown in a wedding that has never chosen. */
+  defaultOn: boolean;
+}
+
+/**
+ * The guest list: always the first tab, and never removable, because every
+ * tool is built on it.
+ */
+export const GUESTS: Tab = { href: "/guests", name: "Guests", icon: Users, tokens: "tableaux-tokens" };
+
+/**
+ * Every tool, in the order the header draws them: the five in the order the
+ * day is planned in, on by default, then those a wedding adds when it wants
+ * them.
+ */
 export const TOOLS: readonly Tool[] = [
   {
     id: "seating",
@@ -29,6 +55,7 @@ export const TOOLS: readonly Tool[] = [
     name: "Seating",
     tagline: "Build the room, then put people in it.",
     icon: Armchair,
+    defaultOn: true,
   },
   {
     id: "place-cards",
@@ -37,6 +64,7 @@ export const TOOLS: readonly Tool[] = [
     name: "Place cards",
     tagline: "Print-ready cards from the plan you just made.",
     icon: Contact,
+    defaultOn: true,
   },
   {
     id: "timeline",
@@ -45,6 +73,7 @@ export const TOOLS: readonly Tool[] = [
     name: "Timeline",
     tagline: "The run of the day, and what collides.",
     icon: Clock,
+    defaultOn: true,
   },
   {
     id: "delegation",
@@ -53,6 +82,7 @@ export const TOOLS: readonly Tool[] = [
     name: "Delegation",
     tagline: "The jobs, and the hands doing them.",
     icon: ClipboardList,
+    defaultOn: true,
   },
   {
     id: "group-shots",
@@ -61,13 +91,40 @@ export const TOOLS: readonly Tool[] = [
     name: "Group shots",
     tagline: "The family photo list, built from who's who.",
     icon: Camera,
+    defaultOn: true,
+  },
+  {
+    id: "money",
+    href: "/money",
+    tokens: "brigade-tokens",
+    name: "Money",
+    tagline: "What each supplier costs, what is paid, and what falls due.",
+    icon: Banknote,
+    defaultOn: false,
+  },
+  {
+    id: "checklist",
+    href: "/checklist",
+    tokens: "brigade-tokens",
+    name: "Checklist",
+    tagline: "What to have done before the day, each with a date.",
+    icon: ListChecks,
+    defaultOn: false,
+  },
+  {
+    id: "binder",
+    href: "/binder",
+    tokens: "cadence-tokens",
+    name: "Binder",
+    tagline: "The day on your phone, with or without signal.",
+    icon: Smartphone,
+    defaultOn: false,
   },
 ];
 
 /**
- * The wedding's own pages, as against the tools: views over the whole of it.
- * They sit under the wedding's name in the header, and each joins this list
- * as it is built.
+ * The wedding's own pages, as against its tools: views over the whole of it,
+ * under the wedding's name in the header.
  */
 export interface WeddingPage {
   href: string;
@@ -75,10 +132,4 @@ export interface WeddingPage {
   icon: LucideIcon;
 }
 
-export const WEDDING_PAGES: readonly WeddingPage[] = [
-  { href: "/", name: "Overview", icon: LayoutDashboard },
-  { href: "/guests", name: "Guests", icon: Users },
-  { href: "/money", name: "Money", icon: Banknote },
-  { href: "/checklist", name: "Checklist", icon: ListChecks },
-  { href: "/binder", name: "Binder", icon: Smartphone },
-];
+export const WEDDING_PAGES: readonly WeddingPage[] = [{ href: "/", name: "Overview", icon: LayoutDashboard }];

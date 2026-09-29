@@ -2,7 +2,7 @@ import type { Trousseau } from "@jfrusher/trousseau";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { guestName, readCrew, readGuests, readSeating, readTimeline, resolvedDay } from "@/lib/model/slices";
 import { longDate } from "@/lib/dates";
-import { WEDDING_PAGES } from "@/lib/tools";
+import { GUESTS, WEDDING_PAGES } from "@/lib/tools";
 import { shownTools } from "@/lib/model/toolbox";
 
 /**
@@ -31,7 +31,7 @@ export function entries(doc: Trousseau): Entry[] {
   const people = new Map(crew.people.map((person) => [person.id, person.name]));
 
   return [
-    ...[...WEDDING_PAGES, ...shownTools(doc)].map((page) => ({ kind: "Page" as const, name: page.name, detail: "", href: page.href })),
+    ...[...WEDDING_PAGES, GUESTS, ...shownTools(doc)].map((page) => ({ kind: "Page" as const, name: page.name, detail: "", href: page.href })),
     ...Object.values(guests).map((guest) => {
       const name = guestName(guest);
       const table = guest.assignedTableId ? tables[guest.assignedTableId]?.label : "";

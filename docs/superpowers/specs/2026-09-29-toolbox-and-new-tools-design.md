@@ -49,12 +49,22 @@ the choice made is recorded with its reason.
 | 14 | What removing a tool does | Delegated: **hides it, deletes nothing.** Its tab, its area on the front page, its entries in What is left, its tour chapter and its palette entry go. Its work is kept, the removal is one undo step, and adding it back brings it back as it was. Its page still opens from its address. |
 | 15 | Where the shared people live | Delegated, for Phase 2: **a slice of their own, `cast`**, moved out of `shots` on load. A tool rewrites only its own slice; once two tools edit the cast, it is neither tool's. |
 
+The maintainer's second answers, the same day, after Phase 0 was built:
+
+| # | Question | Decision |
+|---|---|---|
+| 16 | Boxes as designed in Phase 3 | **Yes**: each box on a block of the day, its where and when the block's. |
+| 17 | Guests | **A tab of its own at the top**, first. Delegated: **never removable**, because every tool is built on the guest list, so it is not in the toolbox. |
+| 18 | Money, Checklist, Binder | **In the toolbox**, as tools. Delegated: **off until added** — the words were "in the tool box" against "a tab on the top", and a header of Guests and the five is the clean start the PRD asked for. This replaces the master plan's rule that the wedding's own pages sit under its name; only Overview is left there. |
+| 19 | Room in the header | Delegated: **the tool on screen keeps its controls; the tabs give way and scroll.** Measured at 1024px with every tool added: the tabs took 392px and left Timeline's controls 244 of the 323 they need. Denser tabs would have bought about 90px, enough today and not once Phase 1–4 add tools. |
+
 ## Phase 0 — the toolbox
 
 **Built 2026-09-29**, with [its plan](../plans/2026-09-29-toolbox.md).
 
-- **The `tools` slice** is `{ shown: string[] }`. With nothing stored, the five
-  are shown, which is every wedding today and every new one. Once somebody
+- **The `tools` slice** is `{ shown: string[] }`. With nothing stored, the tools
+  marked `defaultOn` are shown — the five — which is every wedding today and
+  every new one; Money, Checklist and Binder wait in the toolbox. Once somebody
   adds or removes a tool the list is stored as written, and it keeps ids this
   build does not know: a tool a newer version added is never removed by an
   older one writing its own change.
@@ -62,15 +72,19 @@ the choice made is recorded with its reason.
   what is stored; an address could be renamed. `shownTools(doc)` gives the
   shown tools in the registry's order, cached per document like every other
   derived view.
-- **The header** shows the shown tools and ends the row with **+**, which opens
+- **The header** shows Guests, always first, then the shown tools, and ends the
+  row with **+**, which opens
   **Tools** (`?panel=tools`): every tool with what it is for, and Add or
   Remove. A removal says the work is kept, and is one step on the wedding's
   history ("Undo removing Seating").
-- **Removed means out of sight everywhere at once**: the header, the front
-  page's areas, What is left (in `readiness` itself, so the planner's Weddings
-  page, which runs it on the server, agrees), "Take a tour", and the palette's
-  pages. Records in the palette — a table, a block — still open where they
-  live.
+- **Not shown means out of sight everywhere at once**, whether removed or
+  never added: the header, the front page's areas, What is left (in
+  `readiness` itself, so the planner's Weddings page, which runs it on the
+  server, agrees), "Take a tour", and the palette's pages. Records in the
+  palette — a table, a block — still open where they live. So a wedding that
+  has not added Money hears nothing of balances falling due.
+- **The example wedding shows every tool**, held there by a test: it exists to
+  show what Trousseau does, and the tour and front page point at all of it.
 
 ## Phase 1 — Timeline: travel between places, and calendars
 
@@ -111,7 +125,8 @@ the choice made is recorded with its reason.
 ## Phase 3 — Boxes
 
 The maintainer's words: boxes, what is in each, "in a good intuitive way", and
-each box attached to a part of the day.
+each box attached to a part of the day. The design below was confirmed as it
+stands (decision 16).
 
 ```ts
 interface Box {
