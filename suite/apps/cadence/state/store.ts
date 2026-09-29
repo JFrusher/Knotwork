@@ -21,6 +21,7 @@ import {
   type Conflict,
 } from "../core/schedule/conflicts";
 import { byId, resolve, type ResolvedBlock } from "../core/schedule/resolve";
+import { withJourney } from "../core/schedule/travel";
 import { slack as computeSlack, type SlackReport } from "../core/schedule/slack";
 import { whatIf, type Change, type WhatIf } from "../core/schedule/whatIf";
 import { sunForDay, type SunTimes } from "../core/sun/solar";
@@ -100,6 +101,8 @@ export interface StoreState {
   setDay: (patch: Partial<DaySettings>) => void;
   setTagDetail: (detail: TagDetail) => void;
   removeTagDetail: (tag: string) => void;
+  /** Minutes between two places, or null to stop checking them. */
+  setJourney: (between: [string, string], minutes: number | null) => void;
   setStyle: (output: OutputId, patch: Partial<StyleSpec>) => void;
   addFont: (font: UploadedFont) => void;
   removeFont: (blobKey: string) => void;
@@ -253,6 +256,12 @@ export const useStore = create<StoreState>((set, get) => {
               )
             : [...doc.tagDetails, detail],
         };
+      }),
+
+    setJourney: (between, minutes) =>
+      edit("a journey's time", (doc) => {
+        const travel = withJourney(doc.travel, between, minutes);
+        return travel === doc.travel ? doc : { ...doc, travel };
       }),
 
     removeTagDetail: (tag) =>

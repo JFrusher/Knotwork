@@ -580,6 +580,16 @@ export function readTimeline(doc: Trousseau): Timeline {
           notes: str(t["notes"]),
         };
       }),
+      // Two places and a time, or nothing: a journey with half of it missing
+      // could only ever be guessed at.
+      travel: list(raw["travel"], (j) => {
+        if (!isRecord(j) || !Array.isArray(j["between"])) return null;
+        const [from, to] = j["between"];
+        const minutes = j["minutes"];
+        if (typeof from !== "string" || typeof to !== "string" || !from.trim() || !to.trim()) return null;
+        if (typeof minutes !== "number" || !Number.isFinite(minutes) || minutes <= 0) return null;
+        return { between: [from, to] as [string, string], minutes };
+      }),
       outputs: readOutputs(raw["outputs"]),
       styles: isRecord(raw["styles"])
         ? { ...defaultStyles(), ...(raw["styles"] as ReturnType<typeof defaultStyles>) }

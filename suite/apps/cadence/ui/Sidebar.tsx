@@ -4,6 +4,7 @@ import { FontsPanel } from "./panels/FontsPanel";
 import { InspectorPanel } from "./panels/InspectorPanel";
 import { StylePanel } from "./panels/StylePanel";
 import { TagsPanel } from "./panels/TagsPanel";
+import { TravelPanel } from "./panels/TravelPanel";
 import styles from "./Sidebar.module.css";
 
 export function Sidebar() {
@@ -13,6 +14,7 @@ export function Sidebar() {
       <BlocksPanel />
       <InspectorPanel />
       <TagsPanel />
+      <TravelPanel />
       <StylePanel />
       <FontsPanel />
     </aside>

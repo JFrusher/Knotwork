@@ -547,7 +547,8 @@
       "notes": ""
     }
   ],
-  "outputs": [
+  "travel": [],
+      "outputs": [
     {
       "id": "run-sheet",
       "label": "Master run-sheet",

@@ -54,6 +54,16 @@ export interface TagDetail {
   notes?: string;
 }
 
+/**
+ * How long it takes to get between two places, typed by the couple. The same
+ * either way. Never guessed: two places with no journey typed are never
+ * checked against each other.
+ */
+export interface Journey {
+  between: [string, string];
+  minutes: number;
+}
+
 export interface DaySettings {
   /** ISO `YYYY-MM-DD`. Used for display and the solar calculation only. */
   date: string;
@@ -98,6 +108,7 @@ export interface TimelineDoc {
   lanes: string[];
   blocks: Block[];
   tagDetails: TagDetail[];
+  travel: Journey[];
   outputs: OutputSpec[];
   styles: Record<OutputId, StyleSpec>;
   fonts: UploadedFont[];
