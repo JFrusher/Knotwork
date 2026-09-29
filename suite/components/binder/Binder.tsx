@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Phone } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
-import { contacts, dayClock, findGuests, nowAndNext, runningOrder, type BinderBlock } from "@/lib/binder/binder";
+import { contacts, dayClock, findGuests, nowAndNext, runningOrder, takenKey, type BinderBlock } from "@/lib/binder/binder";
 import { resolveShot } from "@/lib/ensemble/resolve";
 import { readGuests, readSeating, readShots } from "@/lib/model/slices";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
@@ -236,11 +236,6 @@ function Find() {
       </ul>
     </section>
   );
-}
-
-/** Shots taken, on this phone only, per wedding. */
-function takenKey(weddingId: string | null) {
-  return `trousseau.binder.taken.${weddingId ?? "this-device"}`;
 }
 
 function Shots() {

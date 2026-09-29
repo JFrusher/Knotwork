@@ -27,8 +27,12 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          void caches.open(KEPT).then((cache) => cache.put(url.pathname, copy));
+          // Only a page that worked replaces the kept one: an error kept here
+          // would be all the Binder could show once the signal went.
+          if (response.ok) {
+            const copy = response.clone();
+            void caches.open(KEPT).then((cache) => cache.put(url.pathname, copy));
+          }
           return response;
         })
         .catch(() => caches.match(url.pathname).then((kept) => kept ?? Response.error())),

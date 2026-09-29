@@ -56,3 +56,26 @@ test("with no signal, it opens from the copy on the phone", async ({ page, conte
   await page.getByRole("navigation", { name: "The Binder" }).getByRole("button", { name: "Day" }).click();
   await expect(page.getByRole("region", { name: "The day" }).getByRole("listitem")).toHaveCount(27);
 });
+
+// An error answered while there was signal once replaced the kept page, and
+// was all the phone had to show when the signal went.
+test("a page that fails with signal does not replace the copy kept for no signal", async ({ page, context }) => {
+  // So the route below answers the worker's own requests, not only the page's.
+  process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = "1";
+  await seedExampleWedding(page);
+  await page.goto("/binder");
+  await expect(page.getByRole("heading", { name: "Alex & Sam" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
+  await expect
+    .poll(() => page.evaluate(async () => (await (await caches.open("binder-v1")).keys()).length))
+    .toBeGreaterThan(5);
+
+  await context.route("**/binder", (route) => route.fulfill({ status: 500, body: "Something went wrong" }));
+  await page.reload();
+  await expect(page.getByText("Something went wrong")).toBeVisible();
+  await context.unroute("**/binder");
+
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Alex & Sam" })).toBeVisible();
+});

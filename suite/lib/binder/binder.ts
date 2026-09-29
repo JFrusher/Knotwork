@@ -125,3 +125,11 @@ export function findGuests(doc: Trousseau, query: string, limit = 20): FoundGues
     .sort((a, b) => a.name.localeCompare(b.name, "en"))
     .slice(0, limit);
 }
+
+/** Where a phone keeps which shots it has ticked off, one wedding per key. */
+export const TAKEN_PREFIX = "trousseau.binder.taken.";
+
+/** Shots taken, on this phone only, per wedding. */
+export function takenKey(weddingId: string | null): string {
+  return `${TAKEN_PREFIX}${weddingId ?? "this-device"}`;
+}
