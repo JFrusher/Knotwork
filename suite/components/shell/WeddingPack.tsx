@@ -5,7 +5,7 @@ import { FileDown } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { KO_FI_URL } from "@/lib/support";
 import type { PackSection } from "@/lib/export/weddingPack";
-import { readCast, readCeremony, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
+import { readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 
 /**
  * The one button that produces everything you carry on the day.
@@ -44,6 +44,7 @@ export function WeddingPack() {
       ["The day", runSheet],
       ["The processional", processional],
       ["The jobs", jobList],
+      ["The boxes", packingList],
       ["The shots", shotSheet],
     ] as const) {
       try {
@@ -187,6 +188,25 @@ async function processional(): Promise<Uint8Array | null> {
   ]);
 
   return renderProcessionalSheet(processionalRows(groups, readGuests(doc), readSeating(doc), readCast(doc), doc.event), {
+    fontSource: browserFontSource(),
+    coupleNames: doc.event.coupleNames,
+    generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+  });
+}
+
+async function packingList(): Promise<Uint8Array | null> {
+  const { doc } = useTrousseauStore.getState();
+  const boxes = readBoxes(doc);
+  if (boxes.boxes.length === 0) return null;
+
+  const [{ renderPackingList }, { browserFontSource }, { boxRows }, { dayPlaces }] = await Promise.all([
+    import("@/lib/boxes/render/pdf/packingList"),
+    import("@/apps/brigade/render/pdf/fontSource"),
+    import("@/lib/boxes/rows"),
+    import("@/lib/boxes/view"),
+  ]);
+
+  return renderPackingList(boxRows(boxes, dayPlaces(doc), readCrew(doc), readGuests(doc)), {
     fontSource: browserFontSource(),
     coupleNames: doc.event.coupleNames,
     generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
