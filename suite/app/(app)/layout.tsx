@@ -1,6 +1,7 @@
 import { Footer } from "@/components/shell/Footer";
 import { Header } from "@/components/shell/Header";
 import { StoreHydrator } from "@/lib/store/StoreHydrator";
+import { LiveWedding } from "@/components/shell/LiveWedding";
 import { GuestLinkKeeper } from "@/components/shell/GuestLinkKeeper";
 import { SupplierLinkKeeper } from "@/components/shell/SupplierLinkKeeper";
 import { TourProvider } from "@/lib/tour/useTour";
@@ -21,6 +22,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     // to fill what is left of the viewport, so the two can never disagree.
     <div className="[--shell-header-h:3.5rem]">
       <StoreHydrator />
+      <LiveWedding />
       <GuestLinkKeeper />
       <SupplierLinkKeeper />
       {/* One confirmation dialog for the whole app — see `components/ui/Confirm`. */}

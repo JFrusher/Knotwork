@@ -529,6 +529,20 @@ replaced by the converted originals rather than kept beside them.
 presence) lands after this, not before: an instant pull into a tool that still
 remounts on every change would make that remount constant.
 
+- **Real-time sync and presence: built 2026-09-29.** Every accepted save is
+  announced from the database, by a trigger, on the wedding's private
+  Realtime channel — its version number and nothing else, so no guest, name
+  or plan travels over it. Only the wedding's members may follow the channel
+  (row-level security on Realtime's own messages), and they may say they are
+  there but not announce a save. A window that hears a version it does not
+  have pulls, and merges as any pull does; one that rejoins after a dropped
+  connection pulls too, and coming back to the tab still looks. The poll is
+  gone. Presence is each member's email and the page they are on, shown in
+  the header as initials — and nothing when nobody else is there. The
+  database side is tested against a stand-in for Supabase's Realtime schema,
+  the window side against a stand-in client; neither has run against a live
+  Supabase project yet.
+
 Per-record merging — two partners editing different guests do not conflict —
 landed with Sync & history, over keyed records (guests, tables, blocks, jobs).
 

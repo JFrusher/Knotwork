@@ -12,6 +12,7 @@ import { WeddingMenu } from "./WeddingMenu";
 import { HowThisWorks } from "./TourButtons";
 import { ChromeSlot } from "./chrome";
 import { DataButton } from "./DataButton";
+import { WhoIsHere } from "./WhoIsHere";
 import { useDataPanel } from "./dataPanel";
 import { useGuestImport } from "./guestImportPanel";
 import { useSyncPanel } from "./syncPanel";
@@ -144,6 +145,7 @@ export function Header() {
           >
             <Search size={15} aria-hidden />
           </button>
+          <WhoIsHere />
           <DataButton onOpen={conflict ? showSync : showData} />
 
           <HowThisWorks />

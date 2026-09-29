@@ -1,3 +1,4 @@
+import { LiveWedding } from "@/components/shell/LiveWedding";
 import { StoreHydrator } from "@/lib/store/StoreHydrator";
 
 /**
@@ -10,6 +11,7 @@ export default function BinderLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <StoreHydrator />
+      <LiveWedding />
       {children}
     </>
   );

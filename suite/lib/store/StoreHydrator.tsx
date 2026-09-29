@@ -4,9 +4,6 @@ import { useEffect } from "react";
 import { reconcileLoadedDocument } from "@/lib/seating/normalise";
 import { useTrousseauStore } from "./useTrousseauStore";
 
-/** How often to check for the other partner's changes while the tab is open. */
-const PULL_INTERVAL_MS = 20_000;
-
 /**
  * Reads the stored wedding once, on the client.
  *
@@ -38,18 +35,14 @@ export function StoreHydrator() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const pull = () => void useTrousseauStore.getState().pullFromCloud();
-    const interval = setInterval(pull, PULL_INTERVAL_MS);
-
+    // Nothing polls: `LiveWedding` hears each save as it lands. Coming back
+    // to the tab still looks, since a browser may have put a background tab's
+    // connection to sleep, and a save made then was not heard.
     const onVisible = () => {
-      if (document.visibilityState === "visible") pull();
+      if (document.visibilityState === "visible") void useTrousseauStore.getState().pullFromCloud();
     };
     document.addEventListener("visibilitychange", onVisible);
-
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener("visibilitychange", onVisible);
-    };
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
 
   return null;
