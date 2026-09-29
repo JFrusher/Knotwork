@@ -5,7 +5,8 @@ import { FileDown } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { KO_FI_URL } from "@/lib/support";
 import type { PackSection } from "@/lib/export/weddingPack";
-import { readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
+import { hiddenToolIds } from "@/lib/model/toolbox";
+import { readBar, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 
 /**
  * The one button that produces everything you carry on the day.
@@ -13,7 +14,7 @@ import { readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, r
  * It lives here rather than in any one tool because it is the only
  * thing in the suite that is not any one tool's job: the plan comes from the
  * room, the running order from the day, the processional from the ceremony,
- * the jobs from the crew, and the whole
+ * the jobs from the crew, the drinks from the bar, and the whole
  * point is that they are printed from the same wedding at the same moment.
  *
  * Sections are gathered one at a time and a failure is reported rather than
@@ -45,6 +46,7 @@ export function WeddingPack() {
       ["The processional", processional],
       ["The jobs", jobList],
       ["The boxes", packingList],
+      ["The drinks", drinksList],
       ["The shots", shotSheet],
     ] as const) {
       try {
@@ -85,8 +87,9 @@ export function WeddingPack() {
     <div data-tour="shell.pack" className="rounded-lg border border-charcoal/10 bg-stone/60 p-6">
       <h2 className="mb-1 text-lg text-charcoal">The wedding pack</h2>
       <p className="mb-4 max-w-prose text-sm text-slate">
-        The floor plan, the run sheet, the job list and the group shot list as one document,
-        printed from the wedding as it stands right now. Place cards are a separate print — they
+        The floor plan, the run sheet, the job list and the group shot list — and the processional,
+        the packing list and the drinks to buy, from the tools you use — as one document, printed
+        from the wedding as it stands right now. Place cards are a separate print — they
         go on card stock, not in a binder.
       </p>
 
@@ -190,6 +193,30 @@ async function processional(): Promise<Uint8Array | null> {
   return renderProcessionalSheet(processionalRows(groups, readGuests(doc), readSeating(doc), readCast(doc), doc.event), {
     fontSource: browserFontSource(),
     coupleNames: doc.event.coupleNames,
+    generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+  });
+}
+
+async function drinksList(): Promise<Uint8Array | null> {
+  const { doc } = useTrousseauStore.getState();
+  // Worked out for any wedding with guests, so printed only for one using the Bar.
+  if (hiddenToolIds(doc).has("bar")) return null;
+
+  const [{ renderShoppingList }, { browserFontSource }, { forWords, shoppingList, spendWords }, { barSum }] = await Promise.all([
+    import("@/lib/bar/render/pdf/shoppingList"),
+    import("@/apps/brigade/render/pdf/fontSource"),
+    import("@/lib/bar/rows"),
+    import("@/lib/bar/sum"),
+  ]);
+  const sum = barSum(doc);
+  const groups = shoppingList(readBar(doc), sum);
+  if (groups.length === 0) return null;
+
+  return renderShoppingList(groups, {
+    fontSource: browserFontSource(),
+    coupleNames: doc.event.coupleNames,
+    forWhom: forWords(sum),
+    spend: spendWords(sum),
     generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
   });
 }

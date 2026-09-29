@@ -25,6 +25,7 @@ const WHOLE: Partial<Record<SliceName, string>> = {
   cast: "Who is who",
   ceremony: "The processional",
   boxes: "The boxes",
+  bar: "The bar",
 };
 
 const COLLECTION: Record<string, { one: string; many: string }> = {

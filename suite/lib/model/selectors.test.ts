@@ -1,7 +1,8 @@
 import { expect, test } from "vitest";
 import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
-import { readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline, resolvedDay, timelineDoc } from "./slices";
+import { readBar, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline, resolvedDay, timelineDoc } from "./slices";
 import { hiddenToolIds, shownTools } from "./toolbox";
+import { barSum } from "@/lib/bar/sum";
 
 /**
  * Every slice reader must return the same object for the same document.
@@ -33,6 +34,8 @@ test.each([
   ["cast", () => readCast(doc)],
   ["ceremony", () => readCeremony(doc)],
   ["boxes", () => readBoxes(doc)],
+  ["bar", () => readBar(doc)],
+  ["the bar's sum", () => barSum(doc)],
   ["timelineDoc", () => timelineDoc(doc)],
   ["resolved day", () => resolvedDay(doc)],
   ["shown tools", () => shownTools(doc)],

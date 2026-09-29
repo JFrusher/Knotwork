@@ -22,6 +22,7 @@ export {
   type Trousseau,
 } from "./envelope.js";
 export {
+  barSchema,
   boxesSchema,
   castSchema,
   ceremonySchema,
@@ -32,6 +33,7 @@ export {
   stationerySchema,
   timelineSchema,
   toolsSchema,
+  type BarSlice,
   type BoxesSlice,
   type CastSlice,
   type CeremonySlice,

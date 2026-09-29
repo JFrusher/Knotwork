@@ -1,5 +1,6 @@
 import { migrate } from "@jfrusher/trousseau";
-import { readBoxes, readCeremony, readCrew, readGuests, readSeating, readShots } from "./slices";
+import { choices } from "@/lib/bar/actions";
+import { readBar, readBoxes, readCeremony, readCrew, readGuests, readSeating, readShots } from "./slices";
 
 /**
  * What a wedding holds, in the terms a person would recognise it by.
@@ -22,6 +23,8 @@ export interface WeddingSummary {
   /** Groups in the processional. */
   walking: number;
   boxes: number;
+  /** Things chosen on the Bar: a figure changed, a price typed. */
+  bar: number;
   /** Names on a card design that came from a file rather than the room. */
   cards: number;
 }
@@ -42,6 +45,7 @@ export function summarise(raw: unknown): WeddingSummary {
     shots: readShots(doc).sections.reduce((sum, section) => sum + section.shots.length, 0),
     walking: readCeremony(doc).processional.length,
     boxes: readBoxes(doc).boxes.length,
+    bar: choices(readBar(doc)),
     cards: Array.isArray(stationery.rows) ? stationery.rows.length : 0,
   };
 }
@@ -65,6 +69,7 @@ export function describe(summary: WeddingSummary): string {
     summary.shots && plural(summary.shots, "group shot"),
     summary.walking && `${plural(summary.walking, "group")} in the processional`,
     summary.boxes && plural(summary.boxes, "box", "boxes"),
+    summary.bar && plural(summary.bar, "choice", "choices") + " for the bar",
   ].filter(Boolean);
   const name = summary.names || "A wedding with no names yet";
   return parts.length > 0 ? `${name} — ${parts.join(", ")}` : name;

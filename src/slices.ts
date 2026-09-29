@@ -31,6 +31,8 @@ export const castSchema = z.looseObject({}).default(() => ({}));
 export const ceremonySchema = z.looseObject({}).default(() => ({}));
 /** What is packed in which box, and the part of the day each is needed for. Boxes' own. */
 export const boxesSchema = z.looseObject({}).default(() => ({}));
+/** What the couple chose for the drinks they buy: the kind of bar and every figure they changed. Bar's own. */
+export const barSchema = z.looseObject({}).default(() => ({}));
 /**
  * Which tools the wedding shows. Owned by the launcher rather than any tool,
  * as `event` is, and its own slice so that adding a tool never conflicts with
@@ -47,4 +49,5 @@ export type TimelineSlice = z.infer<typeof timelineSchema>;
 export type CastSlice = z.infer<typeof castSchema>;
 export type CeremonySlice = z.infer<typeof ceremonySchema>;
 export type BoxesSlice = z.infer<typeof boxesSchema>;
+export type BarSlice = z.infer<typeof barSchema>;
 export type Tools = z.infer<typeof toolsSchema>;

@@ -10,7 +10,7 @@ import { daysUntil, longDate, todayIso } from "@/lib/dates";
 import { changeBudget, changeTeam, type TeamMoney } from "@/lib/money/edit";
 import { Button, Empty } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
-import { WholeNumberInput } from "@/components/ui/WholeNumberInput";
+import { NumberInput } from "@/components/ui/NumberInput";
 
 const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-sm text-charcoal tabular-nums focus:border-gold";
 
@@ -60,7 +60,7 @@ export function MoneyPage() {
           <span aria-hidden className="block text-xs tracking-widest text-slate uppercase">
             Budget
           </span>
-          <WholeNumberInput
+          <NumberInput
             label="Budget"
             value={accounts.budget}
             onCommit={(budget) => write(changeBudget(storedCrew(), budget), "the budget")}
@@ -147,10 +147,10 @@ export function MoneyPage() {
                           {team.name}
                         </th>
                         <td className="px-3 py-1.5">
-                          <WholeNumberInput label={`${team.name}: cost`} value={team.cost} onCommit={(cost) => change(team.id, { cost })} className={`${CONTROL} w-24`} />
+                          <NumberInput label={`${team.name}: cost`} value={team.cost} onCommit={(cost) => change(team.id, { cost })} className={`${CONTROL} w-24`} />
                         </td>
                         <td className="px-3 py-1.5">
-                          <WholeNumberInput label={`${team.name}: deposit`} value={team.deposit} onCommit={(deposit) => change(team.id, { deposit })} className={`${CONTROL} w-24`} />
+                          <NumberInput label={`${team.name}: deposit`} value={team.deposit} onCommit={(deposit) => change(team.id, { deposit })} className={`${CONTROL} w-24`} />
                         </td>
                         <td className="px-3 py-1.5">
                           <DateInput label={`${team.name}: deposit paid on`} value={team.depositPaidOn} onChange={(depositPaidOn) => change(team.id, { depositPaidOn })} />

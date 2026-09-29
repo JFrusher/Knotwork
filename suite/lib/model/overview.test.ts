@@ -29,6 +29,8 @@ describe("the front page's measures", () => {
     expect(areas["group-shots"].summary).toBe("26 shots");
     // Nineteen tasks before the day, seven of them done.
     expect(areas.checklist).toMatchObject({ summary: "12 to do", detail: "7 done" });
+    // 100 coming and 30 for the evening; fizz, wine and beer priced, and 4 lines not.
+    expect(areas.bar).toMatchObject({ summary: "Drinks for 100, and 30 in the evening", detail: "About 1,206, 4 lines with no price" });
   });
 
   it("leaves out the areas of tools the wedding does not show, and always keeps the guests", () => {

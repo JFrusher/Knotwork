@@ -433,3 +433,96 @@ export interface Box {
 export interface Boxes {
   boxes: Box[];
 }
+
+// bar -------------------------------------------------------------------------
+
+/** The kind of bar, which sets what the reception and the evening pour. */
+export type BarKind = "full" | "beer-and-wine" | "cocktails" | "no-and-low";
+export const BAR_KINDS: readonly BarKind[] = ["full", "beer-and-wine", "cocktails", "no-and-low"];
+
+/** A lighter or heavier crowd than most. */
+export type Crowd = "lighter" | "usual" | "heavier";
+export const CROWDS: readonly Crowd[] = ["lighter", "usual", "heavier"];
+
+/** What is poured in a part of the day with a mix. A cocktail is a spirit and a mixer. */
+export type Pour = "fizz" | "wine" | "beer" | "spirit";
+export const POURS: readonly Pour[] = ["fizz", "wine", "beer", "spirit"];
+
+/** The parts of the day that pour a mix; the toast is fizz and the meal is wine. */
+export type MixedPart = "reception" | "evening";
+export const MIXED_PARTS: readonly MixedPart[] = ["reception", "evening"];
+
+/** A share of each pour, in percent. */
+export type Mix = Record<Pour, number>;
+
+/** Every figure the sum uses that has a default. */
+export type Figure =
+  | "notDrinkingPct"
+  | "eveningGuests"
+  | "receptionHours"
+  | "receptionPerHour"
+  | "toastGlasses"
+  | "mealGlasses"
+  | "eveningHours"
+  | "eveningPerHour"
+  | "redPct"
+  | "fizzGlassMl"
+  | "wineGlassMl"
+  | "spiritMl"
+  | "mixerMl"
+  | "softMl"
+  | "iceKg";
+export const FIGURES: readonly Figure[] = [
+  "notDrinkingPct",
+  "eveningGuests",
+  "receptionHours",
+  "receptionPerHour",
+  "toastGlasses",
+  "mealGlasses",
+  "eveningHours",
+  "eveningPerHour",
+  "redPct",
+  "fizzGlassMl",
+  "wineGlassMl",
+  "spiritMl",
+  "mixerMl",
+  "softMl",
+  "iceKg",
+];
+
+/** What is bought, a line of the shopping list. */
+export type BarLine = "fizz" | "white" | "red" | "beer" | "spirits" | "mixers" | "soft" | "ice";
+export const BAR_LINES: readonly BarLine[] = ["fizz", "white", "red", "beer", "spirits", "mixers", "soft", "ice"];
+
+/** Where a line is bought. */
+export type Shop = "wine-merchant" | "cash-and-carry" | "supermarket";
+export const SHOPS: readonly Shop[] = ["wine-merchant", "cash-and-carry", "supermarket"];
+
+/** What the couple chose for one line; anything absent is the default. */
+export interface LineChoice {
+  /** Per bottle, per case of beer, per litre or per kilo. */
+  price?: number;
+  /** Already theirs, in the line's own units: bottles, cans, litres, kilos. */
+  have?: number;
+  shop?: Shop;
+}
+
+/**
+ * The `bar` slice. Bar's own.
+ *
+ * Only what the couple chose: every figure they have not changed is its
+ * default, read from `lib/bar/defaults`, so putting one back is forgetting it.
+ * Nothing worked out is kept — who is coming is the guest list's, live.
+ */
+export interface Bar {
+  kind: BarKind;
+  crowd: Crowd;
+  /** How many are coming, typed over the guest list's count; null reads the list. */
+  people: number | null;
+  figures: Partial<Record<Figure, number>>;
+  /** A part's mix, where it was changed from the kind's. */
+  mix: Partial<Record<MixedPart, Mix>>;
+  lines: Partial<Record<BarLine, LineChoice>>;
+  /** Round up to whole cases, for buying on sale or return. */
+  wholeCases: boolean;
+}

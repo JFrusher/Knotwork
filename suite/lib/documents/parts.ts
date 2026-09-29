@@ -20,7 +20,7 @@ import { SLICE_NAMES, type SliceName } from "@jfrusher/trousseau";
  *   timeline/blocks#order    the blocks' order
  *   crew, crew/jobs/<id>, crew/jobs#order
  *   boxes, boxes/boxes/<id>, boxes/boxes#order
- *   event, shots, stationery, tools, cast, ceremony
+ *   event, shots, stationery, tools, cast, ceremony, bar
  *
  * `day` is not a part: it is published from the timeline and the event, and
  * is worked out again rather than merged — see `mergeCloudDocument`.
