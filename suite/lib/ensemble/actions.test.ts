@@ -1,25 +1,20 @@
 import { describe, expect, it } from "vitest";
 import type { Shots } from "@/lib/model/types";
 import {
-  addCustomRole,
   addMember,
   addSection,
   addShot,
   duplicateShot,
   patchShot,
-  removeCustomRole,
   removeMember,
   removeSection,
   removeShot,
-  renameCustomRole,
   renameSection,
   reorderSections,
   reorderShot,
-  setCastRole,
-  setCustomRoleMembers,
 } from "./actions";
 
-const empty: Shots = { cast: {} as Shots["cast"], customRoles: [], sections: [] };
+const empty: Shots = { sections: [] };
 
 describe("sections", () => {
   it("adds a section with the given name", () => {
@@ -131,41 +126,5 @@ describe("members", () => {
 
     shots = removeMember(shots, shotId, 0);
     expect(shots.sections[0]!.shots[0]!.members).toEqual([{ kind: "text", ref: "the dog" }]);
-  });
-});
-
-describe("cast", () => {
-  it("sets a role's guest ids, replacing whatever was there", () => {
-    const withRole = setCastRole(empty, "a", ["g1"]);
-    expect(withRole.cast.a).toEqual(["g1"]);
-    expect(setCastRole(withRole, "a", []).cast.a).toEqual([]);
-  });
-});
-
-describe("custom roles", () => {
-  it("adds a custom role by name", () => {
-    const shots = addCustomRole(empty, "Me and my family");
-    expect(shots.customRoles).toHaveLength(1);
-    expect(shots.customRoles[0]).toMatchObject({ name: "Me and my family", guestIds: [] });
-  });
-
-  it("renames a custom role by id", () => {
-    const shots = addCustomRole(empty, "Old name");
-    const id = shots.customRoles[0]!.id;
-    expect(renameCustomRole(shots, id, "New name").customRoles[0]!.name).toBe("New name");
-  });
-
-  it("removes a custom role by id", () => {
-    const shots = addCustomRole(empty, "Gone");
-    const id = shots.customRoles[0]!.id;
-    expect(removeCustomRole(shots, id).customRoles).toEqual([]);
-  });
-
-  it("sets a custom role's guest ids, replacing whatever was there", () => {
-    const shots = addCustomRole(empty, "Ushers");
-    const id = shots.customRoles[0]!.id;
-    const withMembers = setCustomRoleMembers(shots, id, ["g1", "g2"]);
-    expect(withMembers.customRoles[0]!.guestIds).toEqual(["g1", "g2"]);
-    expect(setCustomRoleMembers(withMembers, id, []).customRoles[0]!.guestIds).toEqual([]);
   });
 });

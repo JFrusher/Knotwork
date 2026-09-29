@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { daySchema } from "./day.js";
 import { eventSchema } from "./event.js";
-import { crewSchema, guestsSchema, seatingSchema, shotsSchema, stationerySchema, timelineSchema, toolsSchema } from "./slices.js";
+import { castSchema, crewSchema, guestsSchema, seatingSchema, shotsSchema, stationerySchema, timelineSchema, toolsSchema } from "./slices.js";
 
 export const TROUSSEAU_KIND = "trousseau";
 export const TROUSSEAU_VERSION = 1;
@@ -21,6 +21,7 @@ export const SLICE_NAMES = [
   "shots",
   "timeline",
   "tools",
+  "cast",
 ] as const;
 
 export type SliceName = (typeof SLICE_NAMES)[number];
@@ -46,6 +47,7 @@ export const trousseauSchema = z.looseObject({
   shots: shotsSchema,
   timeline: timelineSchema,
   tools: toolsSchema,
+  cast: castSchema,
   /** Native documents, keyed by app name. Present only in an exported file. */
   sources: z.record(z.string(), z.unknown()).default(() => ({})),
 });

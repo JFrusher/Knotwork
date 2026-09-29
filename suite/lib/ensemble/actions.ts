@@ -1,5 +1,5 @@
 import { newId } from "@/lib/model/ids";
-import type { Cast, CastRole, CustomRole, Shot, ShotMember, ShotSection, Shots } from "@/lib/model/types";
+import type { Shot, ShotMember, ShotSection, Shots } from "@/lib/model/types";
 
 /**
  * The shot list: sections holding shots holding members. A shot lives inside
@@ -103,29 +103,5 @@ function patchShotMembers(
       ...s,
       shots: s.shots.map((shot) => (shot.id === shotId ? { ...shot, members: update(shot.members) } : shot)),
     })),
-  };
-}
-
-export function setCastRole(shots: Shots, role: CastRole, guestIds: string[]): Shots {
-  return { ...shots, cast: { ...shots.cast, [role]: guestIds } as Cast };
-}
-
-export function addCustomRole(shots: Shots, name: string): Shots {
-  const role: CustomRole = { id: newId("crole"), name, guestIds: [] };
-  return { ...shots, customRoles: [...shots.customRoles, role] };
-}
-
-export function renameCustomRole(shots: Shots, roleId: string, name: string): Shots {
-  return { ...shots, customRoles: shots.customRoles.map((r) => (r.id === roleId ? { ...r, name } : r)) };
-}
-
-export function removeCustomRole(shots: Shots, roleId: string): Shots {
-  return { ...shots, customRoles: shots.customRoles.filter((r) => r.id !== roleId) };
-}
-
-export function setCustomRoleMembers(shots: Shots, roleId: string, guestIds: string[]): Shots {
-  return {
-    ...shots,
-    customRoles: shots.customRoles.map((r) => (r.id === roleId ? { ...r, guestIds } : r)),
   };
 }

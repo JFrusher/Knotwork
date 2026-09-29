@@ -6,7 +6,7 @@ import { Phone } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { contacts, dayClock, findGuests, nowAndNext, runningOrder, takenKey, type BinderBlock } from "@/lib/binder/binder";
 import { resolveShot } from "@/lib/ensemble/resolve";
-import { readGuests, readSeating, readShots } from "@/lib/model/slices";
+import { readCast, readGuests, readSeating, readShots } from "@/lib/model/slices";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { longDate } from "@/lib/dates";
 
@@ -253,6 +253,7 @@ function Shots() {
 
   const sections = useMemo(() => {
     const shots = readShots(doc);
+    const cast = readCast(doc);
     const guests = readGuests(doc);
     const seating = readSeating(doc);
     return shots.sections.map((section) => ({
@@ -260,7 +261,7 @@ function Shots() {
       name: section.name,
       shots: section.shots.map((shot) => ({
         id: shot.id,
-        ...resolveShot(shot, guests, seating, shots.cast, shots.customRoles, doc.event),
+        ...resolveShot(shot, guests, seating, cast.roles, cast.customRoles, doc.event),
       })),
     }));
   }, [doc]);

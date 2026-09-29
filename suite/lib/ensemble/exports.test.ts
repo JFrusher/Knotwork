@@ -59,6 +59,8 @@ const emptyCast: Cast = {
   "a-father": [],
   "b-mother": [],
   "b-father": [],
+  "a-grandparents": [],
+  "b-grandparents": [],
   "a-party": [],
   "b-party": [],
 };

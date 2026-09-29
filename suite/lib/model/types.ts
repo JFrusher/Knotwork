@@ -291,11 +291,21 @@ export interface Crew {
 // group shots ------------------------------------------------------------------
 
 /**
- * Where a shot's people come from — the couple, a parent, the wedding party —
- * by which partner they belong to. Named in words by `roleLabel`, after the
- * partners: `b-mother` is "Sam's mother".
+ * Who somebody is to the couple — one of them, a parent, a grandparent, the
+ * wedding party — by which partner they belong to. Named in words by
+ * `roleLabel`, after the partners: `b-mother` is "Sam's mother".
  */
-export type CastRole = "a" | "b" | "a-mother" | "a-father" | "b-mother" | "b-father" | "a-party" | "b-party";
+export type CastRole =
+  | "a"
+  | "b"
+  | "a-mother"
+  | "a-father"
+  | "b-mother"
+  | "b-father"
+  | "a-grandparents"
+  | "b-grandparents"
+  | "a-party"
+  | "b-party";
 
 export const CAST_ROLES: readonly CastRole[] = [
   "a",
@@ -304,11 +314,13 @@ export const CAST_ROLES: readonly CastRole[] = [
   "a-father",
   "b-mother",
   "b-father",
+  "a-grandparents",
+  "b-grandparents",
   "a-party",
   "b-party",
 ];
 
-/** Roles that hold at most one person. The wedding parties hold many. */
+/** Roles that hold at most one person. Grandparents and the wedding parties hold many. */
 export const SINGLE_ROLES: ReadonlySet<CastRole> = new Set(["a", "b", "a-mother", "a-father", "b-mother", "b-father"]);
 
 /** Guest ids per role. Singular roles hold 0 or 1; party roles hold many. */
@@ -344,9 +356,16 @@ export interface ShotSection {
   shots: Shot[];
 }
 
-/** The `shots` slice. Ensemble's model. */
+/** The `shots` slice. Ensemble's model: the list itself, whoever is in it. */
 export interface Shots {
-  cast: Cast;
-  customRoles: CustomRole[];
   sections: ShotSection[];
+}
+
+/**
+ * The `cast` slice: who is who, shared by Group shots and Ceremony, so a
+ * mother named once is the same mother in the photographs and down the aisle.
+ */
+export interface CastSlice {
+  roles: Cast;
+  customRoles: CustomRole[];
 }

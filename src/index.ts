@@ -22,6 +22,7 @@ export {
   type Trousseau,
 } from "./envelope.js";
 export {
+  castSchema,
   crewSchema,
   guestsSchema,
   seatingSchema,
@@ -29,6 +30,7 @@ export {
   stationerySchema,
   timelineSchema,
   toolsSchema,
+  type CastSlice,
   type Crew,
   type Guests,
   type Seating,

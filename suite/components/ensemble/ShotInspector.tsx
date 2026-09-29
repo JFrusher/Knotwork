@@ -8,11 +8,12 @@ import { memberDescriptor } from "@/lib/ensemble/resolve";
 import { addMember, patchShot, removeMember } from "@/lib/ensemble/actions";
 import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import { roleLabel } from "@/lib/model/partners";
-import { CAST_ROLES, type Guest, type Seating, type Shot, type ShotMember, type Shots } from "@/lib/model/types";
+import { CAST_ROLES, type CastSlice, type Guest, type Seating, type Shot, type ShotMember, type Shots } from "@/lib/model/types";
 
 export function ShotInspector({
   shot,
   shots,
+  cast,
   guests,
   seating,
   event,
@@ -20,6 +21,7 @@ export function ShotInspector({
 }: {
   shot: Shot;
   shots: Shots;
+  cast: CastSlice;
   guests: Record<string, Guest>;
   seating: Seating;
   event: WeddingEvent;
@@ -38,7 +40,7 @@ export function ShotInspector({
   };
 
   const availableRoles = CAST_ROLES.filter((role) => !hasRole(role));
-  const availableCustomRoles = shots.customRoles.filter(
+  const availableCustomRoles = cast.customRoles.filter(
     (r) => !shot.members.some((m) => m.kind === "customRole" && m.ref === r.id),
   );
   const availableFamilies = Object.values(seating.families).filter(
@@ -64,7 +66,7 @@ export function ShotInspector({
           {shot.members.map((member, index) => (
             <li key={index}>
               <GuestChip
-                name={memberDescriptor(member, guests, seating, shots.customRoles, event)}
+                name={memberDescriptor(member, guests, seating, cast.customRoles, event)}
                 onRemove={() => onChange(removeMember(shots, shot.id, index))}
               />
             </li>

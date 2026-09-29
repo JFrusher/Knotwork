@@ -7,15 +7,17 @@ import { download } from "@/lib/data/file";
 import { shotListCsv } from "@/lib/ensemble/exports";
 import { resolveShot } from "@/lib/ensemble/resolve";
 import type { Event as WeddingEvent } from "@jfrusher/trousseau";
-import type { Guest, Seating, Shots } from "@/lib/model/types";
+import type { CastSlice, Guest, Seating, Shots } from "@/lib/model/types";
 
 export function PrintPanel({
   shots,
+  cast,
   guests,
   seating,
   event,
 }: {
   shots: Shots;
+  cast: CastSlice;
   guests: Record<string, Guest>;
   seating: Seating;
   event: WeddingEvent;
@@ -26,7 +28,7 @@ export function PrintPanel({
 
   const problems = shots.sections.flatMap((section) =>
     section.shots.flatMap((shot) => {
-      const resolved = resolveShot(shot, guests, seating, shots.cast, shots.customRoles, event);
+      const resolved = resolveShot(shot, guests, seating, cast.roles, cast.customRoles, event);
       return resolved.problems.map((problem) => ({
         shotLabel: resolved.label,
         text:
@@ -51,7 +53,7 @@ export function PrintPanel({
         shots.sections,
         guests,
         seating,
-        shots.cast,
+        cast.roles,
         {
           fontSource: browserFontSource(),
           pageSize,
@@ -59,7 +61,7 @@ export function PrintPanel({
           partners: event.partners,
           generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
         },
-        shots.customRoles,
+        cast.customRoles,
       );
       download(`${slug()}-group-shots.pdf`, new Blob([bytes as BlobPart], { type: "application/pdf" }));
     } catch (cause) {
@@ -74,7 +76,7 @@ export function PrintPanel({
     try {
       download(
         `${slug()}-group-shots.csv`,
-        shotListCsv(shots.sections, guests, seating, shots.cast, shots.customRoles, event),
+        shotListCsv(shots.sections, guests, seating, cast.roles, cast.customRoles, event),
         "text/csv",
       );
     } catch (cause) {

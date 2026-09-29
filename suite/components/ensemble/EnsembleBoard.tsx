@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Sparkles, Wand2 } from "lucide-react";
 import { Button, Empty, Segmented } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
-import { useEvent, useGuests, useSeating, useShots, useStatus, useWriters } from "@/lib/model/useSuite";
+import { useCast, useEvent, useGuests, useSeating, useShots, useStatus, useWriters } from "@/lib/model/useSuite";
 import { propose } from "@/lib/ensemble/propose";
 import { CastPanel } from "./CastPanel";
 import { PrintPanel } from "./PrintPanel";
@@ -19,7 +19,8 @@ export function EnsembleBoard() {
   const guests = useGuests();
   const seating = useSeating();
   const shots = useShots();
-  const { setShots } = useWriters();
+  const cast = useCast();
+  const { setShots, setCast } = useWriters();
 
   // Ensemble has no store of its own — its edits land on the suite-wide undo
   // stack, so that is the one the header's undo has to drive.
@@ -60,6 +61,7 @@ export function EnsembleBoard() {
         </div>
         <ShotList
           shots={shots}
+          cast={cast}
           guests={guests}
           seating={seating}
           event={event}
@@ -88,14 +90,14 @@ export function EnsembleBoard() {
         <div data-tour="groupshots.panel" className="flex-1 overflow-y-auto">
           {tab === "shot" &&
             (selectedShot ? (
-              <ShotInspector shot={selectedShot} shots={shots} guests={guests} seating={seating} event={event} onChange={setShots} />
+              <ShotInspector shot={selectedShot} shots={shots} cast={cast} guests={guests} seating={seating} event={event} onChange={setShots} />
             ) : (
               <div className="flex h-full items-center justify-center">
                 <Empty>Pick a shot on the left, or add one.</Empty>
               </div>
             ))}
-          {tab === "cast" && <CastPanel shots={shots} guests={guests} event={event} onChange={setShots} />}
-          {tab === "print" && <PrintPanel shots={shots} guests={guests} seating={seating} event={event} />}
+          {tab === "cast" && <CastPanel cast={cast} guests={guests} event={event} onChange={setCast} />}
+          {tab === "print" && <PrintPanel shots={shots} cast={cast} guests={guests} seating={seating} event={event} />}
         </div>
       </div>
     </div>

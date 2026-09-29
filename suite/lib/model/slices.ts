@@ -36,6 +36,7 @@ import { CAST_ROLES } from "./types";
 import type {
   Cast,
   CastRole,
+  CastSlice,
   Constraint,
   Crew,
   CustomRole,
@@ -773,7 +774,7 @@ export function emptyCast(): Cast {
   return cast;
 }
 
-function readCast(raw: unknown): Cast {
+function readRoles(raw: unknown): Cast {
   const cast = emptyCast();
   if (!isRecord(raw)) return cast;
   for (const role of CAST_ROLES) {
@@ -831,7 +832,7 @@ function readSection(raw: unknown): ShotSection | null {
 }
 
 export function emptyShots(): Shots {
-  return { cast: emptyCast(), customRoles: [], sections: [] };
+  return { sections: [] };
 }
 
 export function readShots(doc: Trousseau): Shots {
@@ -839,10 +840,48 @@ export function readShots(doc: Trousseau): Shots {
     const raw: Record<string, unknown> = isRecord((doc as Record<string, unknown>)["shots"])
       ? ((doc as Record<string, unknown>)["shots"] as Record<string, unknown>)
       : {};
-    return {
-      cast: readCast(raw["cast"]),
-      customRoles: list(raw["customRoles"], readCustomRole),
-      sections: list(raw["sections"], readSection),
-    };
+    return { sections: list(raw["sections"], readSection) };
+  });
+}
+
+// cast ------------------------------------------------------------------------
+
+const holdsOwnCast = (own: unknown): own is Record<string, unknown> =>
+  isRecord(own) && ("roles" in own || "customRoles" in own);
+const holdsOldCast = (shots: unknown): shots is Record<string, unknown> =>
+  isRecord(shots) && ("cast" in shots || "customRoles" in shots);
+
+/**
+ * True when the cast is still inside `shots`, where it lived before two tools
+ * shared it. `reconcileLoadedDocument` moves it to its own slice.
+ */
+export function hasLegacyCast(raw: unknown): boolean {
+  return isRecord(raw) && !holdsOwnCast(raw["cast"]) && holdsOldCast(raw["shots"]);
+}
+
+export function emptyCastSlice(): CastSlice {
+  return { roles: emptyCast(), customRoles: [] };
+}
+
+/**
+ * Who is who: the `cast` slice, or — in a document written before it had a
+ * slice of its own — the cast still inside `shots`, old role names and all.
+ *
+ * Read from either, rather than only after the load-time pass has moved it,
+ * because the planner's Weddings page runs What is left over stored documents
+ * on the server, and a wedding nobody has opened since must not read as having
+ * no cast.
+ */
+export function readCast(doc: Trousseau): CastSlice {
+  return cached(doc, "cast", () => {
+    const record = doc as Record<string, unknown>;
+    const own = record["cast"];
+    const shots = record["shots"];
+    const source = holdsOwnCast(own)
+      ? { roles: own["roles"], customRoles: own["customRoles"] }
+      : holdsOldCast(shots)
+        ? { roles: shots["cast"], customRoles: shots["customRoles"] }
+        : {};
+    return { roles: readRoles(source.roles), customRoles: list(source.customRoles, readCustomRole) };
   });
 }

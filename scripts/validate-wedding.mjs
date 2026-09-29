@@ -156,10 +156,15 @@ export function check(doc) {
       ...Object.keys(doc.seating?.groups ?? {}),
       ...Object.keys(doc.seating?.subgroups ?? {}),
     ]);
+    // The cast has a slice of its own, shared with Ceremony. A document written
+    // before it had one keeps it inside the shots, and is read from there.
+    const ownCast = isObj(doc.cast) && ("roles" in doc.cast || "customRoles" in doc.cast);
+    const castRoles = ownCast ? doc.cast.roles : doc.shots.cast;
+    const castCustomRoles = ownCast ? doc.cast.customRoles : doc.shots.customRoles;
     const customRoleIds = new Set(
-      (Array.isArray(doc.shots.customRoles) ? doc.shots.customRoles : []).filter(isObj).map((r) => r.id),
+      (Array.isArray(castCustomRoles) ? castCustomRoles : []).filter(isObj).map((r) => r.id),
     );
-    const cast = isObj(doc.shots.cast) ? doc.shots.cast : {};
+    const cast = isObj(castRoles) ? castRoles : {};
 
     for (const [role, ids] of Object.entries(cast)) {
       for (const id of Array.isArray(ids) ? ids : []) {
