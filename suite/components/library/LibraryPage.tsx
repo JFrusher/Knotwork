@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { migrate } from "@jfrusher/trousseau";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { publishDay, readTimeline } from "@/lib/model/slices";
-import { applyTo, extract, KIND_NAMES, KINDS, type Kind } from "@/lib/library/items";
+import { adds, applyTo, extract, KIND_NAMES, KINDS, type Adding, type Kind } from "@/lib/library/items";
 import type { LibraryListing } from "@/lib/library/store";
 import { longDate } from "@/lib/dates";
 import { Button, Empty } from "@/components/ui/controls";
@@ -21,10 +21,11 @@ const CARRIES: Record<Kind, string> = {
   room: "The tables and the floor, with every chair empty.",
   checklist: "The tasks, each as so many days before the day.",
   processional: "The order, who walks by what they are to the couple, how, and the music — nobody by name.",
+  boxes: "The boxes and what goes in each — not who takes them, when they are needed, or what is packed.",
 };
 
 /** What putting it in does to the wedding it goes into, said before it is done. */
-const REPLACES: Record<Exclude<Kind, "checklist">, string> = {
+const REPLACES: Record<Exclude<Kind, Adding>, string> = {
   cards: "The card design here is replaced. Who the cards are for is not.",
   day: "The running order here is replaced. Jobs tied to its blocks will need new ones.",
   room: "The room here is replaced, and everyone is unseated. Families and groups stay.",
@@ -70,7 +71,7 @@ export function LibraryPage() {
   };
 
   const use = async (item: LibraryListing) => {
-    if (item.kind !== "checklist") {
+    if (!adds(item.kind)) {
       const ok = await confirm({ title: `Use “${item.name}” here?`, body: <p>{REPLACES[item.kind]} Undo takes it back.</p>, action: "Use it" });
       if (!ok) return;
     }

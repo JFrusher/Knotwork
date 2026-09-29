@@ -5,15 +5,21 @@ import { daysUntil } from "@/lib/dates";
  * What a planner keeps from one wedding to use in another, and how it goes
  * into the next: a card design without its rows, a running order without its
  * date or its suppliers' numbers, a room without its guests, a checklist
- * without its dates — each task kept as so many days before the day — and a
- * processional with its roles and music and nobody named.
+ * without its dates — each task kept as so many days before the day — a
+ * processional with its roles and music and nobody named, and a set of boxes
+ * with what goes in each, but not who takes them or when.
  *
  * Nothing personal leaves a wedding this way. Each kind is built from a
  * whitelist of what it is, never by removing what it is not, so a field a tool
  * adds later stays out until someone decides it belongs.
  */
 
-export const KINDS = ["cards", "day", "room", "checklist", "processional"] as const;
+export const KINDS = ["cards", "day", "room", "checklist", "processional", "boxes"] as const;
+
+/** Kinds that add to a wedding rather than replace what it has, so ask nothing first. */
+const ADDING = ["checklist", "boxes"] as const satisfies readonly Kind[];
+export type Adding = (typeof ADDING)[number];
+export const adds = (kind: Kind): kind is Adding => (ADDING as readonly Kind[]).includes(kind);
 export type Kind = (typeof KINDS)[number];
 
 export const KIND_NAMES: Record<Kind, string> = {
@@ -22,6 +28,7 @@ export const KIND_NAMES: Record<Kind, string> = {
   room: "Room",
   checklist: "Checklist",
   processional: "Processional",
+  boxes: "Boxes",
 };
 
 type Raw = Record<string, unknown>;
@@ -106,6 +113,19 @@ export function extract(kind: Kind, raw: Raw): Raw | null {
         })),
       };
     }
+    case "boxes": {
+      const boxes = Array.isArray(record(raw["boxes"])["boxes"]) ? (record(raw["boxes"])["boxes"] as unknown[]) : [];
+      if (boxes.length === 0) return null;
+      return {
+        // What each box is and what goes in it. Not who takes it, which part
+        // of the day it is for, what is packed or its notes: those are this
+        // wedding's.
+        boxes: boxes.map(record).map((box) => ({
+          ...pick(box, ["number", "name"]),
+          items: (Array.isArray(box["items"]) ? (box["items"] as unknown[]) : []).map(record).map((item) => pick(item, ["label", "quantity"])),
+        })),
+      };
+    }
   }
 }
 
@@ -163,6 +183,26 @@ export function applyTo(kind: Kind, content: Raw, raw: Raw): Array<[SliceName, u
           dueOn: date && task.daysBefore !== null ? daysBefore(date, task.daysBefore) : "",
         }));
       return [["crew", { ...crew, jobs: [...jobs, ...added] }]];
+    }
+    case "boxes": {
+      // Added, as the usual boxes are: only boxes this wedding has no box of
+      // that name for, numbered on from its highest, nothing yet packed.
+      const current = record(raw["boxes"]);
+      const boxes = Array.isArray(current["boxes"]) ? (current["boxes"] as Raw[]) : [];
+      const have = new Set(boxes.map((box) => String(box["name"] ?? "").trim().toLowerCase()));
+      let number = boxes.reduce((highest, box) => Math.max(highest, typeof box["number"] === "number" ? box["number"] : 0), 0);
+      const added = (content["boxes"] as Raw[])
+        .filter((box) => !have.has(String(box["name"] ?? "").trim().toLowerCase()))
+        .map((box) => ({
+          id: newId("box"),
+          number: ++number,
+          name: box["name"],
+          items: (box["items"] as Raw[]).map((item) => ({ id: newId("item"), label: item["label"], quantity: item["quantity"], packed: false })),
+          blockId: null,
+          personIds: [],
+          notes: "",
+        }));
+      return [["boxes", { ...current, boxes: [...boxes, ...added] }]];
     }
     case "processional":
       return [
