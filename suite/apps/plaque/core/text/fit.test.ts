@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { FitConfig } from "../types";
-import { DEFAULT_FIT, fitBlock, fitText, type FitInput } from "./fit";
+import { fitBlock, fitText, type FitInput } from "./fit";
+import { DEFAULT_FIT } from "../template/defaults";
 import { loadFont, measureWidth, widestLineMm } from "./measure";
 
 const crimson = loadFont(

@@ -2,8 +2,22 @@ import { DEFAULT_FONT_ID } from "../../assets/fonts";
 import { BUNDLED_ICONS } from "../../assets/icons";
 import { defaultNameTemplate, guessMapping } from "../csv/guessMapping";
 import { panelBounds } from "../geometry/fold";
-import { DEFAULT_FIT } from "../text/fit";
-import type { CardElement, CardSpec, ElementId, IconRule, SheetSpec, Template } from "../types";
+import type { CardElement, CardSpec, ElementId, FitConfig, IconRule, SheetSpec, Template } from "../types";
+
+/**
+ * How a text element fits its box until someone says otherwise.
+ *
+ * Here rather than beside the fitter in `text/fit`, because that module
+ * measures with fontkit, and every page loads these defaults: the shared store
+ * reads the card design, which starts from them. Importing one constant from
+ * there put 144 KB of font engine on every page of the app.
+ */
+export const DEFAULT_FIT: FitConfig = {
+  mode: "shrink",
+  minFontSizePt: 8,
+  maxLines: 2,
+  anchor: "align",
+};
 
 let fallbackCounter = 0;
 

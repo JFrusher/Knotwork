@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Template, TextElement } from "../types";
-import { DEFAULT_FIT } from "../text/fit";
+import { DEFAULT_FIT } from "./defaults";
 import {
   hasOverrides,
   orphanedOverrides,

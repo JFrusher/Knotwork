@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_FIT } from "../text/fit";
+import { DEFAULT_FIT } from "./defaults";
 import type { IconElement, ListElement, Template, TextElement } from "../types";
 import { rebindTemplate, unboundTokens } from "./rebind";
 

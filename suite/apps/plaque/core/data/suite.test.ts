@@ -5,7 +5,7 @@ import { parseCsv } from "@/lib/data/csv";
 import { paginate } from "../imposition/paginate";
 import { defaultCard, defaultSheet, newId } from "../template/defaults";
 import { makeResolveOptions } from "../template/resolve";
-import { DEFAULT_FIT } from "../text/fit";
+import { DEFAULT_FIT } from "../template/defaults";
 import { loadFont, type LoadedFont } from "../text/measure";
 import type {
   CardSpec,
