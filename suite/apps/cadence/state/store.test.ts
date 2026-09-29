@@ -117,6 +117,26 @@ describe("document actions", () => {
     expect(doc().styles["order-of-day"].fontFamily).toBe("Crimson Text");
   });
 
+  it("sets a journey's time, changes it from either end, and takes it away", () => {
+    state().setJourney(["The suite", "Orangery"], 5);
+    expect(doc().travel).toEqual([{ between: ["The suite", "Orangery"], minutes: 5 }]);
+    expect(history().past.at(-1)?.label).toBe("a journey's time");
+
+    state().setJourney(["orangery", "the suite"], 8);
+    expect(doc().travel).toEqual([{ between: ["The suite", "Orangery"], minutes: 8 }]);
+
+    state().setJourney(["Orangery", "The suite"], null);
+    expect(doc().travel).toEqual([]);
+  });
+
+  it("puts nothing on the history for taking away a journey nobody typed", () => {
+    const before = doc();
+    const steps = history().past.length;
+    state().setJourney(["The suite", "Lawn"], null);
+    expect(doc()).toBe(before);
+    expect(history().past).toHaveLength(steps);
+  });
+
   it("adds a lane once", () => {
     state().addLane("Children");
     state().addLane("Children");

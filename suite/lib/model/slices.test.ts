@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { emptyTrousseau } from "@jfrusher/trousseau";
-import { coerceGuests, readCrew } from "./slices";
+import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
+import { coerceGuests, readCrew, readTimeline } from "./slices";
 
 describe("coerceGuests keeps what it has no opinion about", () => {
   it("preserves fields owned by a tool rather than by the suite", () => {
@@ -100,5 +100,27 @@ describe("readCrew", () => {
   it("still reads a job that is tied to one", () => {
     const crew = readCrew(docWith({ jobs: [{ id: "j1", label: "Buttonholes", blockId: "b1" }] }));
     expect(crew.jobs[0]!.blockId).toBe("b1");
+  });
+});
+
+describe("readTimeline's travel", () => {
+  it("keeps a journey with two places and a time, and drops one missing either", () => {
+    const doc = migrate({
+      timeline: {
+        travel: [
+          { between: ["The house", "The venue"], minutes: 15 },
+          { between: ["The house", ""], minutes: 10 },
+          { between: ["The house"], minutes: 10 },
+          { between: ["Church", "The venue"], minutes: 0 },
+          { between: ["Church", "The venue"], minutes: "20" },
+          "Church to the venue",
+        ],
+      },
+    });
+    expect(readTimeline(doc).travel).toEqual([{ between: ["The house", "The venue"], minutes: 15 }]);
+  });
+
+  it("is empty on a wedding that has never typed one", () => {
+    expect(readTimeline(emptyTrousseau()).travel).toEqual([]);
   });
 });

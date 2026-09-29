@@ -1,6 +1,7 @@
 import { formatClock, formatDuration } from "../time/minutes";
 import { isMoment, type TimelineDoc } from "../model/types";
 import { blocksById, byId, byLane, type ResolvedBlock } from "./resolve";
+import { travelShortfalls } from "./travel";
 
 export type ConflictKind =
   | "lane-overlap"
@@ -8,7 +9,8 @@ export type ConflictKind =
   | "anchor-collision"
   | "curfew-overrun"
   | "past-golden-hour"
-  | "squeezed";
+  | "squeezed"
+  | "no-travel-time";
 
 /** Conflicts block export. Advisories never do. */
 export type Severity = "conflict" | "advisory";
@@ -102,6 +104,7 @@ export function conflicts(
   }
 
   found.push(...tagDoubleBookings(resolved, doc, label));
+  found.push(...travelShortfalls(resolved, doc));
 
   const goldenHourEndMin = options.goldenHourEndMin;
   if (goldenHourEndMin !== undefined) {

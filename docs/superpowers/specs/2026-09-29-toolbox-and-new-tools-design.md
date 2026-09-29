@@ -88,19 +88,35 @@ The maintainer's second answers, the same day, after Phase 0 was built:
 
 ## Phase 1 — Timeline: travel between places, and calendars
 
+**Built 2026-09-29**, with [its plan](../plans/2026-09-29-timeline-travel-and-calendars.md).
+Two things below were corrected by the code before they were built, and are
+written here as built: who moves is a **tag**, not a lane; and calendar times
+are the **venue's clock**, not UTC.
+
 - **Travel times** the couple types: `timeline.travel`, a list of
   `{ between: [placeA, placeB], minutes }`, the same either way. The panel lists
   the pairs the day actually moves between (from the blocks' locations), so
   there is nothing to invent, only blanks to fill.
-- **A new advisory, `no-travel-time`**: a lane or a tag that ends one block at
-  one place and starts its next somewhere else sooner than the typed time
-  allows — "Hair and make-up ends at 13:00 at the house; the first look starts
+- **A new advisory, `no-travel-time`**: a tag that ends one block at one place
+  and starts its next somewhere else sooner than the typed time allows,
+  measured from where the run sheet says the block ends (before its
+  contingency buffer) — "Hair and make-up ends at 13:00 at the house; the first look starts
   at 13:05 at the venue, 15 minutes away." A pair with no time typed is never
   guessed at and never flagged. Advisory, because a person running is not a
-  print run that should stop.
+  print run that should stop. *Not a lane:* the example's Suppliers lane holds
+  the florist, the caterer and the band, and Transport the cars and the guest
+  coach — a lane is a kind of activity, and checking one would say the coach
+  cannot get from where the cars were. Tags are already who is where; the
+  panel tells a couple to tag their own blocks ("couple") to be checked.
 - **Calendar files**: the day as `.ics`, whole or for one supplier (a tag's
-  blocks), written in the browser. Times go out in UTC from the wedding's own
-  `utcOffsetMin`, so a phone abroad shows the venue's clock correctly.
+  blocks), written in the browser, on the wedding's own date and refused
+  without one — the timeline's `day.date` is a placeholder, 20 June 2026, until
+  a date is set. Times are **local, with no zone**, so 13:30 at the venue is
+  13:30 on every phone, as in the Binder. Not UTC: that needs the day's offset,
+  and an offset nobody entered reads as British Summer Time in the Day panel,
+  indistinguishable from one chosen — a winter wedding would be an hour out in
+  every calendar. (This spec first said UTC would show "the venue's clock";
+  UTC shows the phone's.) Refused while the day has clashes, as the PDFs are.
 
 ## Phase 2 — one cast, and Ceremony
 
@@ -206,14 +222,17 @@ units and prices — with no guest count.
 
 ## Open questions
 
-1. **T6**: take fontkit off every page by breaking the static chain above, and
-   add a CI check on each page's own JavaScript? And the limit, if so.
+1. **T6**: ~~take fontkit off every page~~ — **done 2026-09-29**: one constant,
+   `DEFAULT_FIT`, moved beside the other template defaults; 522 KB shared to
+   393 KB, and a test that walks both layouts' imports and names the chain if
+   the engine comes back. Still open: a CI check on each page's own JavaScript,
+   and its limit.
 2. **S18** (from the master plan), since the PRD says "zero tracking": remove
    Vercel Analytics, or say in the Privacy Policy what it counts?
 3. **Cues on the day**: is the Ceremony → Timeline proposal wanted, or do the
    cues stay in Ceremony?
-4. **Order of phases**: proposed 1 Timeline (smallest, most already there),
-   2 Ceremony, 3 Boxes, 4 Bar.
+4. **Order of phases**: Timeline built first; proposed next 2 Ceremony,
+   3 Boxes, 4 Bar.
 
 ## Explicitly deferred
 

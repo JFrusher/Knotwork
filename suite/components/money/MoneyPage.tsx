@@ -10,6 +10,7 @@ import { daysUntil, longDate, todayIso } from "@/lib/dates";
 import { changeBudget, changeTeam, type TeamMoney } from "@/lib/money/edit";
 import { Button, Empty } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
+import { WholeNumberInput } from "@/components/ui/WholeNumberInput";
 
 const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-sm text-charcoal tabular-nums focus:border-gold";
 
@@ -59,11 +60,11 @@ export function MoneyPage() {
           <span aria-hidden className="block text-xs tracking-widest text-slate uppercase">
             Budget
           </span>
-          <NumberInput
+          <WholeNumberInput
             label="Budget"
             value={accounts.budget}
             onCommit={(budget) => write(changeBudget(storedCrew(), budget), "the budget")}
-            className="mt-2 w-full text-2xl"
+            className={`${CONTROL} mt-2 w-full text-2xl`}
           />
         </div>
         <Figure label="Committed" value={amount(accounts.committed)}>
@@ -146,10 +147,10 @@ export function MoneyPage() {
                           {team.name}
                         </th>
                         <td className="px-3 py-1.5">
-                          <NumberInput label={`${team.name}: cost`} value={team.cost} onCommit={(cost) => change(team.id, { cost })} className="w-24" />
+                          <WholeNumberInput label={`${team.name}: cost`} value={team.cost} onCommit={(cost) => change(team.id, { cost })} className={`${CONTROL} w-24`} />
                         </td>
                         <td className="px-3 py-1.5">
-                          <NumberInput label={`${team.name}: deposit`} value={team.deposit} onCommit={(deposit) => change(team.id, { deposit })} className="w-24" />
+                          <WholeNumberInput label={`${team.name}: deposit`} value={team.deposit} onCommit={(deposit) => change(team.id, { deposit })} className={`${CONTROL} w-24`} />
                         </td>
                         <td className="px-3 py-1.5">
                           <DateInput label={`${team.name}: deposit paid on`} value={team.depositPaidOn} onChange={(depositPaidOn) => change(team.id, { depositPaidOn })} />
@@ -188,41 +189,6 @@ function Figure({ label, value, children }: { label: string; value: string; chil
       <span className="mt-2 block text-2xl text-charcoal tabular-nums">{value}</span>
       {children ? <span className="mt-1 block text-xs text-slate">{children}</span> : null}
     </div>
-  );
-}
-
-/** A whole amount, or nothing; written when you leave the field, not per keystroke. */
-function NumberInput({
-  label,
-  value,
-  onCommit,
-  className,
-}: {
-  label: string;
-  value: number | null;
-  onCommit: (value: number | null) => void;
-  className: string;
-}) {
-  return (
-    <input
-      // Keyed on the stored value, so an undo shows through.
-      key={value ?? "none"}
-      type="number"
-      min={0}
-      step={1}
-      aria-label={label}
-      defaultValue={value ?? ""}
-      placeholder="—"
-      onBlur={(event) => {
-        const text = event.target.value.trim();
-        const next = text === "" ? null : Math.max(0, Math.round(Number(text)));
-        if (next !== value && (next === null || Number.isFinite(next))) onCommit(next);
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Enter") event.currentTarget.blur();
-      }}
-      className={`${CONTROL} ${className}`}
-    />
   );
 }
 
