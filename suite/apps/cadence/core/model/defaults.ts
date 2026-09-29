@@ -49,7 +49,7 @@ export function defaultDay(): DaySettings {
     venueName: "",
     latitude: 51.5074,
     longitude: -0.1278,
-    utcOffsetMin: 60,
+    utcOffsetMin: null,
     curfewMin: 1500,
     logoKey: null,
   };

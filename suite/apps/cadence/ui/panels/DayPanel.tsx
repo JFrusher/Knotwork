@@ -71,9 +71,14 @@ export function DayPanel() {
       <Field label="Clocks" hint="Entered, not guessed. British Summer Time is UTC+1.">
         <select
           className={styles.date}
-          value={doc.day.utcOffsetMin}
+          // "" until chosen, so the first choice is a change even when it is
+          // British Summer Time, and nothing is shown as chosen that was not.
+          value={doc.day.utcOffsetMin ?? ""}
           onChange={(event) => setDay({ utcOffsetMin: Number(event.target.value) })}
         >
+          <option value="" disabled>
+            Not set
+          </option>
           {OFFSETS.map((offset) => (
             <option key={offset.value} value={offset.value}>
               {offset.label}
@@ -83,7 +88,9 @@ export function DayPanel() {
       </Field>
 
       <p className={styles.sun}>
-        {sun?.sunsetMin == null
+        {doc.day.utcOffsetMin === null
+          ? "Set the clocks to see sunset and golden hour."
+          : sun?.sunsetMin == null
           ? "The sun does not set at this latitude on this date."
           : `Sunset ${formatClock(sun.sunsetMin)}, golden hour from ${formatClock(sun.goldenHourStartMin ?? sun.sunsetMin)}.`}
       </p>

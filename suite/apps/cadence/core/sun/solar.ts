@@ -97,12 +97,17 @@ export function sunTimes(
   };
 }
 
-/** Convenience for the document's own day settings. */
+/**
+ * Convenience for the document's own day settings. Nothing until the clocks
+ * are set: sunset on the venue's clock needs the venue's offset, and one
+ * guessed would print a sunset an hour out.
+ */
 export function sunForDay(day: {
   date: string;
   latitude: number;
   longitude: number;
-  utcOffsetMin: number;
+  utcOffsetMin: number | null;
 }): SunTimes | null {
+  if (day.utcOffsetMin === null) return null;
   return sunTimes(day.date, day.latitude, day.longitude, day.utcOffsetMin);
 }

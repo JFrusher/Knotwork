@@ -85,7 +85,12 @@ export const daySchema = z.looseObject({
     coupleNames: z.string(),
     venueName: z.string(),
     curfewMin: z.number(),
-    utcOffsetMin: z.number(),
+    /**
+     * The day's offset from UTC in minutes, or null until somebody enters it.
+     * Never filled in with a likely value: a guess here is a wedding an hour
+     * out in every clock that reads it.
+     */
+    utcOffsetMin: z.number().nullable(),
   }),
   lanes: stringList(),
   blocks: z.array(dayBlockSchema),

@@ -37,6 +37,16 @@ describe("daySchema", () => {
     expect(daySchema.safeParse(future).success).toBe(true);
   });
 
+  it("takes a day whose clocks nobody has set", () => {
+    const parsed = daySchema.parse({
+      kind: "cadence.day",
+      version: 1,
+      day: { date: "", coupleNames: "", venueName: "", curfewMin: 0, utcOffsetMin: null },
+      blocks: [],
+    });
+    expect(parsed.day.utcOffsetMin).toBeNull();
+  });
+
   it("preserves unknown keys on the day, a block and a team", () => {
     const parsed = daySchema.parse({
       kind: "cadence.day",

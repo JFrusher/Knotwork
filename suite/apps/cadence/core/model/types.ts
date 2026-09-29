@@ -71,8 +71,11 @@ export interface DaySettings {
   venueName: string;
   latitude: number;
   longitude: number;
-  /** The day's offset from UTC in minutes. BST is 60. Entered, never inferred. */
-  utcOffsetMin: number;
+  /**
+   * The day's offset from UTC in minutes. BST is 60. Entered, never inferred:
+   * null until somebody chooses it, and whatever needs it says so meanwhile.
+   */
+  utcOffsetMin: number | null;
   /** Minutes-from-00:00. May exceed 1440. */
   curfewMin: number;
   /** Blob store key for the logo, or null. */

@@ -72,3 +72,23 @@ test("every edit republishes the resolved day, for Delegation and the Binder to 
   const day = useTrousseauStore.getState().doc.day;
   expect(day?.blocks.map((block) => [block.label, block.startMin])).toEqual([["Ceremony", 810]]);
 });
+
+/**
+ * Clocks nobody has set stay unset.
+ *
+ * The Timeline used to fill a missing offset with British Summer Time and
+ * write that back into the wedding with its next edit — renaming a block was
+ * enough — so a guess became the wedding's clocks, shown in the Day panel as
+ * if chosen, and trusted by the Binder over the phone's own.
+ */
+test("an unset offset stays unset through a Timeline edit, and one set is kept", () => {
+  open({ date: "2028-12-12" });
+  expect(useTrousseauStore.getState().doc.event.utcOffsetMin).toBeNull();
+
+  useStore.getState().addBlock("Main day", { label: "Ceremony" });
+  expect(useTrousseauStore.getState().doc.event.utcOffsetMin).toBeNull();
+  expect(currentDoc().day.utcOffsetMin).toBeNull();
+
+  useStore.getState().setDay({ utcOffsetMin: 0 });
+  expect(useTrousseauStore.getState().doc.event.utcOffsetMin).toBe(0);
+});
