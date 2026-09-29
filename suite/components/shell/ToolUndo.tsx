@@ -11,10 +11,10 @@ import { ChromeFill } from "./chrome";
  * since the tools write their slices silently and the document's history never
  * saw the edit you had just made.
  *
- * The tool passes its own state in. Nothing is unified about *how* undo works:
- * Plaque keeps snapshots, Cadence and Brigade share a history module, Tableaux
- * replays inverse commands, and all four are right for what they do. Only the
- * button is shared, so that undo is in the same place wherever you are.
+ * The tool passes its own state in. Plaque keeps snapshots, Cadence a history
+ * module, and Tableaux replays inverse commands; Delegation, Group shots and
+ * the pages keep no copy and drive the wedding's own history. Only the button
+ * is shared, so that undo is in the same place wherever you are.
  */
 export function ToolUndo({
   canUndo,

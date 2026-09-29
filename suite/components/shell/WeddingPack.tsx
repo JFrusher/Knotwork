@@ -167,7 +167,7 @@ async function jobList(): Promise<Uint8Array | null> {
     import("@/apps/brigade/render/pdf/fontSource"),
     import("@/apps/brigade/state/sliceBridge"),
   ]);
-  const doc = readSlice();
+  const doc = readSlice(useTrousseauStore.getState().doc);
   if (doc.jobs.length === 0) return null;
 
   return renderJobList(doc, {

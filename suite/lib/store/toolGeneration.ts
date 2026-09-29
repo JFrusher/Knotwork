@@ -33,14 +33,12 @@ import { useTrousseauStore } from "./useTrousseauStore";
  * The slices each tool copies into its own store when it mounts — everything it
  * reads into that copy, whether or not it writes it all back.
  *
- * Delegation writes only the crew, but shows the day and guests' names from its
- * copy, so a change to either would otherwise leave it showing the old ones.
+ * Delegation is not here: it reads the wedding live and keeps no copy.
  */
 export const HOLDS = {
   tableaux: ["guests", "seating", "event"],
   cadence: ["timeline", "event"],
   plaque: ["stationery"],
-  brigade: ["crew", "day", "guests"],
 } as const satisfies Record<string, readonly SliceName[]>;
 
 export type ToolId = keyof typeof HOLDS;

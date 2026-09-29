@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatClock } from "../../core/time/minutes";
-import { getDoc, useStore } from "../../state/store";
+import { useBrigadeDoc } from "../../state/store";
 import { Panel } from "@/components/ui/fields";
 import styles from "./DayPanel.module.css";
 
@@ -10,7 +10,7 @@ import styles from "./DayPanel.module.css";
  * anybody importing anything.
  */
 export function DayPanel() {
-  const day = useStore(getDoc).day;
+  const day = useBrigadeDoc().day;
 
   return (
     <Panel title="The day" data-tour="delegation.day">

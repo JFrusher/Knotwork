@@ -447,6 +447,18 @@ part of it. `lib/seating`'s `organise`, `warnings`, `roomActions` and
 `alignmentSnap` are an earlier TypeScript port nothing calls; they go then,
 replaced by the converted originals rather than kept beside them.
 
+- **Delegation: built 2026-09-29.** Its store keeps only what is its own —
+  the picked job, the filter, a notice. The crew and the day are read from
+  the wedding through one view memoised on the document, and every edit
+  goes straight into the `crew` slice with a label ("Undo who is on a
+  job"), on the one history the header drives. Its own history module, its
+  restore-on-mount and its 400ms autosave are gone, and it is out of
+  `HOLDS`, so a change made over it no longer remounts it. Proved first by
+  tests that failed on the old store (an edit not in the wedding until an
+  autosave; a change made elsewhere not seen), and end to end: someone put
+  on a job is stored at once, and undone from the header with the job still
+  open.
+
 **Real-time sync** (Supabase Realtime in place of the 20-second poll, and
 presence) lands after this, not before: an instant pull into a tool that still
 remounts on every change would make that remount constant.

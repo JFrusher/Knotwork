@@ -1,74 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSelectFromAddress } from "@/components/shell/useSelectFromAddress";
 import { Board } from "./render/screen/Board";
-import { createPersister, restore } from "./state/persist";
-import { getDoc, useStore } from "./state/store";
+import { useBrigadeDoc, useStore } from "./state/store";
 import { Announcer } from "./ui/Announcer";
 import { Button } from "@/components/ui/fields";
 import { ChromeFill } from "@/components/shell/chrome";
 import { ToolUndo } from "@/components/shell/ToolUndo";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { ExportBar } from "./ui/ExportBar";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
 import styles from "./App.module.css";
 
-const persister = createPersister();
-
 export function App() {
-  const doc = useStore(getDoc);
+  const doc = useBrigadeDoc();
   const notice = useStore((state) => state.notice);
   const filter = useStore((state) => state.filter);
   const setFilter = useStore((state) => state.setFilter);
   const setNotice = useStore((state) => state.setNotice);
 
-  // Bring back the last session once, on boot.
-  /**
-   * Nothing is written until the saved day has been read back.
-   *
-   * The autosave effect below runs on the first render, when the store still
-   * holds the empty document it was created with — and the effect that restores
-   * the real one has only just run, so this render's `doc` is still the empty
-   * one. Standalone, that was harmless: a second render followed immediately
-   * and replaced the pending write before the debounce elapsed, and in any case
-   * a write that arrived too early was dropped by a store that had not loaded.
-   *
-   * Neither of those safety nets exists now. The shared document is ready
-   * before the tool mounts, so an early write lands, and it lands on a real
-   * wedding — blanking the day and, through the mirror, the couple and venue
-   * with it. A restore is a read; writing before it finishes is never right.
-   */
-  const [restored, setRestored] = useState(false);
-  const canUndo = useStore((state) => state.canUndo());
-  const canRedo = useStore((state) => state.canRedo());
+  // Delegation keeps no copy and no history of its own: its edits are on the
+  // wedding's, so that is the one the header's undo drives. The stack is
+  // shared, so saying what the next undo takes back is what makes it safe.
+  const past = useTrousseauStore((state) => state.past);
+  const future = useTrousseauStore((state) => state.future);
 
-  useEffect(() => {
-    useStore.getState().loadDoc(restore());
-    setRestored(true);
-  }, []);
-  // A link to one job — the command palette's — opens on it, after the load.
+  // A link to one job — the command palette's — opens on it.
   useSelectFromAddress(useStore.getState().select);
-
-  // Autosave into the shared wedding, debounced, and flushed if the window goes
-  // away mid-edit.
-  useEffect(() => {
-    if (!restored) return;
-    persister.schedule(doc);
-  }, [doc, restored]);
-  useEffect(() => {
-    const flush = () => persister.flush();
-    window.addEventListener("beforeunload", flush);
-    // The listener is not enough on its own. Each tool used to *be* the page,
-    // so unmounting only ever happened as the page went away and `beforeunload`
-    // had already flushed. They are tabs now: switching to another tool unmounts
-    // this one with no unload event, which would drop whatever the debounce was
-    // still holding.
-    return () => {
-      window.removeEventListener("beforeunload", flush);
-      flush();
-    };
-  }, []);
 
   // The jobs on the day. A task before it with nobody named is the couple's
   // own, kept on the Checklist, and is not a gap in the crew.
@@ -103,10 +62,12 @@ export function App() {
         </Button>
       </ChromeFill>
       <ToolUndo
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onUndo={() => useStore.getState().undo()}
-        onRedo={() => useStore.getState().redo()}
+        canUndo={past.length > 0}
+        canRedo={future.length > 0}
+        onUndo={() => useTrousseauStore.getState().undo()}
+        onRedo={() => useTrousseauStore.getState().redo()}
+        undoLabel={past[past.length - 1]?.label ?? null}
+        redoLabel={future[future.length - 1]?.label ?? null}
       />
 
       {notice && (

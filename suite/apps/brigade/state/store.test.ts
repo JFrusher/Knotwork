@@ -1,13 +1,21 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { sampleDoc } from "../core/model/defaults";
-import { getDoc, useStore } from "./store";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined, del: async () => undefined }));
+
+const { emptyTrousseau, migrate } = await import("@jfrusher/trousseau");
+const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { default: sampleDay } = await import("../fixtures/sample-day.day.json");
+const { sampleDoc } = await import("../core/model/defaults");
+const { crewSlice } = await import("./sliceBridge");
+const { brigadeDoc, useStore } = await import("./store");
 
 const state = () => useStore.getState();
-const doc = () => getDoc(useStore.getState());
+const doc = () => brigadeDoc(useTrousseauStore.getState().doc);
 
 describe("the store", () => {
   beforeEach(() => {
-    state().loadDoc(sampleDoc());
+    const raw = { ...emptyTrousseau(), crew: crewSlice(sampleDoc()), day: sampleDay } as Record<string, unknown>;
+    useTrousseauStore.setState({ status: "ready", raw, doc: migrate(raw), past: [], future: [] });
   });
 
   it("puts a person on a job and takes them off again", () => {
@@ -20,7 +28,7 @@ describe("the store", () => {
 
   it("undoes an assignment", () => {
     state().toggleAssignment("job-glasses", "per-joe");
-    state().undo();
+    useTrousseauStore.getState().undo();
     expect(doc().jobs.find((job) => job.id === "job-glasses")?.personIds).toEqual([]);
   });
 

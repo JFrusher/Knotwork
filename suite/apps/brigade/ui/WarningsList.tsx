@@ -1,8 +1,8 @@
-import { selectCover, useStore } from "../state/store";
+import { useCover, useStore } from "../state/store";
 import styles from "./WarningsList.module.css";
 
 export function WarningsList() {
-  const cover = useStore(selectCover);
+  const cover = useCover();
   const select = useStore((state) => state.select);
 
   if (cover.warnings.length === 0) {

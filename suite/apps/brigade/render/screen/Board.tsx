@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { assigneeNames, type DayBlock, type Job } from "../../core/model/types";
 import { formatClock } from "../../core/time/minutes";
-import { getDoc, selectCover, useStore } from "../../state/store";
+import { useBrigadeDoc, useCover, useStore } from "../../state/store";
 import styles from "./Board.module.css";
 
 /**
@@ -13,8 +13,8 @@ import styles from "./Board.module.css";
  * stay visible, because an empty block is where the next job goes.
  */
 export function Board() {
-  const doc = useStore(getDoc);
-  const cover = useStore(selectCover);
+  const doc = useBrigadeDoc();
+  const cover = useCover();
   const selectedJobId = useStore((state) => state.selectedJobId);
   const filter = useStore((state) => state.filter);
   const select = useStore((state) => state.select);

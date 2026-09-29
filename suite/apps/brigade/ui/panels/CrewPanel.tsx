@@ -3,7 +3,7 @@ import { guestName, readGuests } from "@/lib/model/slices";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { useSupplierLinks } from "@/lib/suppliers/links";
 import { assigneeNames, type Person } from "../../core/model/types";
-import { getDoc, useStore } from "../../state/store";
+import { useBrigadeDoc, useStore } from "../../state/store";
 import { Button, Panel, TextField } from "@/components/ui/fields";
 import { SupplierLinkField } from "./SupplierLinkField";
 import styles from "./CrewPanel.module.css";
@@ -14,7 +14,7 @@ import styles from "./CrewPanel.module.css";
  * click, and a click cannot be dropped in the wrong lane.
  */
 export function CrewPanel() {
-  const doc = useStore(getDoc);
+  const doc = useBrigadeDoc();
   const selectedJobId = useStore((state) => state.selectedJobId);
   const filter = useStore((state) => state.filter);
   const addTeam = useStore((state) => state.addTeam);

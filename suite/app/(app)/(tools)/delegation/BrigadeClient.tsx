@@ -22,7 +22,7 @@ const App = dynamic(() => import("@/apps/brigade/App").then((m) => m.App), { ssr
 export function BrigadeApp() {
   return (
     <div className="brigade-scope">
-      <WhenDocumentReady tool="brigade">
+      <WhenDocumentReady>
         <App />
       </WhenDocumentReady>
     </div>

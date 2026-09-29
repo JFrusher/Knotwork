@@ -30,16 +30,18 @@ import { HOLDS, type ToolId } from "@/lib/store/toolGeneration";
  * teaching each of the four to re-read.
  *
  * The same remount handles one slice changing rather than all of them. While
- * the tool is open the gate tells the store what it copied, so a write to any
- * of that from outside — the Data panel, over the top of it — starts a new
- * generation too, instead of being overwritten by the tool's next save.
+ * a tool that keeps a copy is open the gate tells the store what it copied, so
+ * a write to any of that from outside — the Data panel, over the top of it —
+ * starts a new generation too, instead of being overwritten by the tool's next
+ * save. A tool that reads the wedding live names no `tool`: it holds nothing.
  */
-export function WhenDocumentReady({ tool, children }: { tool: ToolId; children: React.ReactNode }) {
+export function WhenDocumentReady({ tool, children }: { tool?: ToolId; children: React.ReactNode }) {
   const status = useTrousseauStore((s) => s.status);
   const error = useTrousseauStore((s) => s.error);
   const generation = useTrousseauStore((s) => s.generation);
 
   useEffect(() => {
+    if (!tool) return;
     const { hold, release } = useTrousseauStore.getState();
     hold(tool, HOLDS[tool]);
     return () => release(tool);
