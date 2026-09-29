@@ -3,8 +3,10 @@ import type { CsvTable } from "@/lib/data/csv";
 import type { Guest } from "@/lib/model/types";
 // Seating's own table-making, so a starting room is made of exactly the
 // tables Seating would have made by hand.
-import { addTable } from "@/apps/tableaux/store/actions.js";
-import { DEFAULT_PPU } from "@/apps/tableaux/utils/seatPositions.js";
+import { addTable } from "@/apps/tableaux/store/actions";
+import { applyPatch } from "@/apps/tableaux/store/patch";
+import { normalizePlan } from "@/apps/tableaux/store/plan";
+import type { Plan } from "@/apps/tableaux/store/types";
 
 /**
  * What setup builds before anything is written: the pieces it commits as one
@@ -37,19 +39,18 @@ export function tablesFor(guests: number, type: StartingTable): number {
 /** A room laid out with `count` tables, taller than Seating's default if they need it. */
 export function startingRoom(seating: Record<string, unknown>, type: StartingTable, count: number): Record<string, unknown> {
   const grid = GRID[type];
-  const settings = { pixelsPerUnit: DEFAULT_PPU, ...(seating["settings"] as object | undefined) };
-  let tables = { ...(seating["tables"] as Record<string, unknown> | undefined) };
+  // As Seating would read the draft, so the tables are the ones it would add.
+  let plan = normalizePlan(seating as Partial<Plan>);
   for (let i = 0; i < count; i += 1) {
     const x = grid.x0 + (i % grid.cols) * grid.dx;
     const y = grid.y0 + Math.floor(i / grid.cols) * grid.dy;
-    // Every option named: TypeScript reads the JS signature as requiring them.
-    const options = { type, x, y, label: undefined, capacity: undefined, sizeUnits: undefined, perSideSeats: undefined, seatMode: undefined };
-    const command = addTable(options)({ tables, settings }) as { payload: { tables: Record<string, unknown> } };
-    tables = { ...tables, ...command.payload.tables };
+    const command = addTable({ type, x, y })(plan);
+    if (!command) throw new Error("Seating would not add a starting table.");
+    plan = { ...plan, ...applyPatch(plan, command.payload) };
   }
   const rows = Math.ceil(count / grid.cols);
   const height = Math.max(ROOM.height, grid.y0 + rows * grid.dy);
-  return { ...seating, tables, room: { ...ROOM, height } };
+  return { ...seating, tables: plan.tables, room: { ...ROOM, height } };
 }
 
 /** One name per line, as a one-column file, so pasting runs the importer's own rules. */

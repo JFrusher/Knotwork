@@ -6,7 +6,7 @@ import {
   ppuFromCalibration,
   CM_PER_FOOT,
   CM_PER_INCH,
-} from './units.js'
+} from './units'
 
 describe('toDisplay', () => {
   it('shows metres past 1m, centimetres below', () => {

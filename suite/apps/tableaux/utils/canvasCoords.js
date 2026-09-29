@@ -1,4 +1,4 @@
-import { useStore } from '../store/useStore.js'
+import { useStore } from '../store/useStore'
 
 /**
  * Shared handle to the canvas viewport element so coordinate conversions and

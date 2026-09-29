@@ -1,10 +1,10 @@
 import { useDraggable } from '@dnd-kit/core'
 import clsx from 'clsx'
-import { useStore } from '../../store/useStore.js'
-import ContextMenu, { useContextMenu } from '../ui/ContextMenu.jsx'
-import Tooltip from '../ui/Tooltip.jsx'
-import { pickGuestLabel } from '../../utils/guestFilters.js'
-import { readableTextColour } from '../../utils/colour.js'
+import { useStore } from '../../store/useStore'
+import ContextMenu, { useContextMenu } from '../ui/ContextMenu'
+import Tooltip from '../ui/Tooltip'
+import { pickGuestLabel } from '../../utils/guestFilters'
+import { readableTextColour } from '../../utils/colour'
 import styles from './TableGuestBox.module.css'
 
 /**

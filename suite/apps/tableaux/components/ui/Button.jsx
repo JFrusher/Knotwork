@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import Icon from './Icon.jsx'
+import Icon from './Icon'
 import styles from './Button.module.css'
 
 /**

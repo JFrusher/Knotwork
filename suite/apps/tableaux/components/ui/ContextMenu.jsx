@@ -1,7 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import clsx from 'clsx'
-import Icon from './Icon.jsx'
+import Icon from './Icon'
 import styles from './ContextMenu.module.css'
 
 /** Hook that tracks a right-click menu's open position. */

@@ -2,7 +2,7 @@ import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import type { Guest, RsvpStatus, Side } from "@/lib/model/types";
 import { newGuest } from "@/lib/model/factories";
 import { normaliseDietary } from "@/lib/model/dietary";
-import { removeGuests } from "@/lib/seating/removeGuests";
+import { dropGuests } from "@/lib/guests/edit";
 import type { CsvTable } from "./csv";
 
 /**
@@ -313,5 +313,6 @@ export function applyImport(
   const guests: Record<string, unknown> = { ...plan.guests };
   for (const guest of plan.ambiguous) if (choices.add.has(guest.id)) guests[guest.id] = guest;
   if (choices.remove.size === 0) return { guests, seating: null };
-  return removeGuests(guests, seating, choices.remove);
+  const stored = typeof seating === "object" && seating !== null && !Array.isArray(seating) ? (seating as Record<string, unknown>) : {};
+  return dropGuests({ guests, seating: stored }, [...choices.remove]);
 }

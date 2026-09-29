@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { useStore } from '../../store/useStore.js'
-import { exportFloorPlanPdf, exportCards } from '../../utils/exportPdf.js'
-import { CARD_TEMPLATE_LIST } from '../../utils/cardTemplates.js'
-import Modal from '../ui/Modal.jsx'
-import Icon from '../ui/Icon.jsx'
+import { useStore } from '../../store/useStore'
+import { exportFloorPlanPdf, exportCards } from '../../utils/exportPdf'
+import { CARD_TEMPLATE_LIST } from '../../utils/cardTemplates'
+import Modal from '../ui/Modal'
+import Icon from '../ui/Icon'
 import styles from './ExportModal.module.css'
 
 const SHEET_OPTIONS = [

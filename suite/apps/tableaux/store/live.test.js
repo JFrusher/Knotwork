@@ -6,7 +6,7 @@ vi.mock('idb-keyval', () => ({ get: async () => undefined, set: async () => unde
 
 const { migrate } = await import('@jfrusher/trousseau')
 const { useTrousseauStore } = await import('@/lib/store/useTrousseauStore')
-const { useStore } = await import('./useStore.js')
+const { useStore } = await import('./useStore')
 
 /*
  * Seating holds no copy of the wedding: its plan is the wedding's guests and

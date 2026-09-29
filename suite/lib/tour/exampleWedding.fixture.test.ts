@@ -6,7 +6,7 @@ import { migrate } from "@jfrusher/trousseau";
 import { readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 import { readiness } from "@/lib/model/readiness";
 import { resolveShot } from "@/lib/ensemble/resolve";
-import { computeWarnings } from "@/apps/tableaux/utils/warnings.js";
+import { computeWarnings } from "@/apps/tableaux/utils/warnings";
 
 /*
  * The example wedding exists to show what Trousseau does once a wedding is
@@ -41,7 +41,11 @@ test("nearly everyone coming has a seat — a few do not, which is what there is
 });
 
 test("Seating finds nothing wrong: families sit together, and each group lists its own", () => {
-  const warnings = computeWarnings({ guests: readGuests(doc), tables: seating.tables, families: seating.families, constraints: [] });
+  // As Seating reads them: every guest with the name it shows.
+  const named = Object.fromEntries(
+    Object.entries(readGuests(doc)).map(([id, g]) => [id, { ...g, fullName: `${g.firstName} ${g.lastName}` }]),
+  );
+  const warnings = computeWarnings({ guests: named, tables: seating.tables, families: seating.families, constraints: [] });
   expect(warnings.filter((w: { level: string }) => w.level === "warn")).toEqual([]);
   // Tableaux shows a group from its member list, the rest of the suite from the guest.
   const groups = raw.seating.groups as Record<string, { memberIds: string[] }>;

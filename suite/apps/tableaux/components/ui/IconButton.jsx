@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
 import clsx from 'clsx'
-import Icon from './Icon.jsx'
+import Icon from './Icon'
 import styles from './IconButton.module.css'
 
 /**

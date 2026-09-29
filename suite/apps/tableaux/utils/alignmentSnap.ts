@@ -14,23 +14,64 @@
  * the one nearest the free position, as long as it is within `threshold`.
  */
 
-const loOf = (box, axis) => (axis === 'x' ? box.cx - box.hw : box.cy - box.hh)
-const hiOf = (box, axis) => (axis === 'x' ? box.cx + box.hw : box.cy + box.hh)
-const midOf = (box, axis) => (axis === 'x' ? box.cx : box.cy)
-const halfOf = (box, axis) => (axis === 'x' ? box.hw : box.hh)
+import type { Room } from '../store/types'
 
-const cLoOf = (c, axis) => (axis === 'x' ? c.left : c.top)
-const cHiOf = (c, axis) => (axis === 'x' ? c.right : c.bottom)
+type Axis = 'x' | 'y'
+
+/** A table's unrotated box: centre and half-extents. */
+export interface SnapBox {
+  cx: number
+  cy: number
+  hw: number
+  hh: number
+}
+
+/** A wall rectangle: a room space, or the legacy room. */
+export interface Container {
+  left: number
+  top: number
+  right: number
+  bottom: number
+}
+
+type Segment = [number, number]
+
+type SnapRef =
+  | { type: 'spacing'; axis: Axis; perp: number; segments: Segment[]; dist: number }
+  | { type: 'align'; axis: Axis; pos: number; others: SnapBox[]; container?: undefined }
+  | { type: 'center' | 'wall'; axis: Axis; pos: number; container: Container; others?: undefined }
+
+type SnapRefInput =
+  | { type: 'align'; axis: Axis; others: SnapBox[] }
+  | { type: 'center' | 'wall'; axis: Axis; container: Container }
+
+/** A guide to draw: an alignment line, or the equal gaps of a spacing snap. */
+export type Guide =
+  | { kind: 'spacing'; axis: Axis; perp: number; segments: Segment[]; dist: number }
+  | { kind: 'line'; axis: 'v' | 'h'; pos: number; start: number; end: number; variant: 'align' | 'center' | 'wall' }
+
+const loOf = (box: SnapBox, axis: Axis) => (axis === 'x' ? box.cx - box.hw : box.cy - box.hh)
+const hiOf = (box: SnapBox, axis: Axis) => (axis === 'x' ? box.cx + box.hw : box.cy + box.hh)
+const midOf = (box: SnapBox, axis: Axis) => (axis === 'x' ? box.cx : box.cy)
+const halfOf = (box: SnapBox, axis: Axis) => (axis === 'x' ? box.hw : box.hh)
+
+const cLoOf = (c: Container, axis: Axis) => (axis === 'x' ? c.left : c.top)
+const cHiOf = (c: Container, axis: Axis) => (axis === 'x' ? c.right : c.bottom)
 
 /** Do two boxes overlap on the axis PERPENDICULAR to `axis`? (same row/column) */
-function perpOverlap(a, b, axis) {
+function perpOverlap(a: SnapBox, b: SnapBox, axis: Axis): boolean {
   const other = axis === 'x' ? 'y' : 'x'
   return loOf(a, other) < hiOf(b, other) && loOf(b, other) < hiOf(a, other)
 }
 
 /** Equal-spacing (distribution) candidates for one axis. */
-function spacingCandidates(axis, moving, tables, half) {
-  const out = []
+function spacingCandidates(
+  axis: Axis,
+  moving: SnapBox,
+  tables: SnapBox[],
+  half: number
+): Array<{ coord: number; ref: SnapRef }> {
+  const out: Array<{ coord: number; ref: SnapRef }> = []
   const neigh = tables.filter((t) => perpOverlap(moving, t, axis))
   if (!neigh.length) return out
   const cur = midOf(moving, axis)
@@ -41,7 +82,7 @@ function spacingCandidates(axis, moving, tables, half) {
     .filter((t) => loOf(t, axis) >= cur)
     .sort((a, b) => midOf(a, axis) - midOf(b, axis)) // nearest first
 
-  const ref = (segments, gap) => ({
+  const ref = (segments: Segment[], gap: number): SnapRef => ({
     type: 'spacing',
     axis,
     perp: axis === 'x' ? moving.cy : moving.cx,
@@ -107,13 +148,19 @@ function spacingCandidates(axis, moving, tables, half) {
 }
 
 /** Solve one axis: returns { coord, ref } or { coord: null, ref: null }. */
-function solveAxis(axis, moving, tables, containers, threshold) {
+function solveAxis(
+  axis: Axis,
+  moving: SnapBox,
+  tables: SnapBox[],
+  containers: Container[],
+  threshold: number
+): { coord: number; ref: SnapRef } | { coord: null; ref: null } {
   const half = halfOf(moving, axis)
   const cur = midOf(moving, axis)
-  const cands = []
-  const push = (coord, pos, ref) => {
+  const cands: Array<{ coord: number; delta: number; ref: SnapRef }> = []
+  const push = (coord: number, pos: number, ref: SnapRefInput) => {
     const delta = Math.abs(coord - cur)
-    if (delta <= threshold) cands.push({ coord, delta, ref: { ...ref, pos } })
+    if (delta <= threshold) cands.push({ coord, delta, ref: { ...ref, pos } as SnapRef })
   }
 
   for (const t of tables) {
@@ -146,7 +193,7 @@ function solveAxis(axis, moving, tables, containers, threshold) {
 }
 
 /** Turn a chosen snap reference into renderable guide(s), given the final box. */
-function buildGuides(ref, moving) {
+function buildGuides(ref: SnapRef, moving: SnapBox): Guide[] {
   if (ref.type === 'spacing') {
     return [{ kind: 'spacing', axis: ref.axis, perp: ref.perp, segments: ref.segments, dist: ref.dist }]
   }
@@ -158,7 +205,7 @@ function buildGuides(ref, moving) {
       lo = ref.container.top
       hi = ref.container.bottom
     } else {
-      for (const o of ref.others) {
+      for (const o of ref.others ?? []) {
         lo = Math.min(lo, o.cy - o.hh)
         hi = Math.max(hi, o.cy + o.hh)
       }
@@ -171,7 +218,7 @@ function buildGuides(ref, moving) {
     lo = ref.container.left
     hi = ref.container.right
   } else {
-    for (const o of ref.others) {
+    for (const o of ref.others ?? []) {
       lo = Math.min(lo, o.cx - o.hw)
       hi = Math.max(hi, o.cx + o.hw)
     }
@@ -180,11 +227,20 @@ function buildGuides(ref, moving) {
 }
 
 /**
- * Compute the snapped position for a dragged table.
- * @returns {{ x: number|null, y: number|null, guides: Array }}
- *   x/y are the snapped centre on each axis, or null when that axis didn't snap.
+ * Compute the snapped position for a dragged table: the snapped centre on
+ * each axis, or null where that axis didn't snap, and the guides to draw.
  */
-export function computeSnap({ moving, tables = [], containers = [], threshold = 8 }) {
+export function computeSnap({
+  moving,
+  tables = [],
+  containers = [],
+  threshold = 8,
+}: {
+  moving: SnapBox
+  tables?: SnapBox[]
+  containers?: Container[]
+  threshold?: number
+}): { x: number | null; y: number | null; guides: Guide[] } {
   const xr = solveAxis('x', moving, tables, containers, threshold)
   const yr = solveAxis('y', moving, tables, containers, threshold)
   const final = {
@@ -193,24 +249,25 @@ export function computeSnap({ moving, tables = [], containers = [], threshold = 
     hw: moving.hw,
     hh: moving.hh,
   }
-  const guides = []
+  const guides: Guide[] = []
   if (xr.ref) guides.push(...buildGuides(xr.ref, final))
   if (yr.ref) guides.push(...buildGuides(yr.ref, final))
   return { x: xr.coord, y: yr.coord, guides }
 }
 
 /** Build axis-aligned wall rectangles from the room model (spaces + legacy rect). */
-export function buildContainers(room) {
-  const out = []
+export function buildContainers(room: Pick<Room, 'width' | 'height' | 'spaces'> | null | undefined): Container[] {
+  const out: Container[] = []
   if (room?.width && room?.height) {
     out.push({ left: 0, top: 0, right: room.width, bottom: room.height })
   }
   for (const sp of room?.spaces || []) {
-    if (sp.shape === 'polygon' && Array.isArray(sp.vertices) && sp.vertices.length) {
+    if (sp.shape === 'polygon') {
+      if (!sp.vertices.length) continue
       const xs = sp.vertices.map((v) => sp.x + v.x)
       const ys = sp.vertices.map((v) => sp.y + v.y)
       out.push({ left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) })
-    } else if (sp.width != null && sp.height != null) {
+    } else {
       out.push({ left: sp.x, top: sp.y, right: sp.x + sp.width, bottom: sp.y + sp.height })
     }
   }

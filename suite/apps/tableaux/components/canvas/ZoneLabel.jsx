@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import clsx from 'clsx'
-import { useStore } from '../../store/useStore.js'
-import ContextMenu, { useContextMenu } from '../ui/ContextMenu.jsx'
+import { useStore } from '../../store/useStore'
+import ContextMenu, { useContextMenu } from '../ui/ContextMenu'
 import styles from './ZoneLabel.module.css'
 
 export default function ZoneLabel({ zoneId, screenToCanvas }) {

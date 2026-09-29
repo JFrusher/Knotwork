@@ -1,9 +1,9 @@
-import { useStore } from '../../store/useStore.js'
-import { useWarnings } from '../../store/warningsContext.jsx'
-import { centerCanvasOn } from '../../utils/canvasCoords.js'
-import Modal from '../ui/Modal.jsx'
-import Button from '../ui/Button.jsx'
-import Icon from '../ui/Icon.jsx'
+import { useStore } from '../../store/useStore'
+import { useWarnings } from '../../store/warningsContext'
+import { centerCanvasOn } from '../../utils/canvasCoords'
+import Modal from '../ui/Modal'
+import Button from '../ui/Button'
+import Icon from '../ui/Icon'
 import styles from './WarningsPanel.module.css'
 
 export default function WarningsPanel() {

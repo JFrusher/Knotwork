@@ -1,3 +1,23 @@
+import type { Designation, PerSideSeats } from '../store/types'
+
+export type TableShape = 'circle' | 'rect' | 'half-circle'
+export type SeatLayout = 'around' | 'perimeter' | 'long-sides' | 'one-side' | 'curved' | 'none'
+
+export interface TableTypeDef {
+  id: string
+  label: string
+  shape: TableShape
+  seatLayout: SeatLayout
+  defaultCapacity: number
+  minCapacity: number
+  maxCapacity: number
+  baseRadius?: number
+  width?: number
+  height?: number
+  rounded?: boolean
+  distinctColour?: string
+}
+
 /**
  * The single source of truth for table types. Used by the palette (thumbnails),
  * TableNode (SVG rendering), seatPositions (seat geometry) and the store
@@ -11,7 +31,7 @@
  *   curved      — seats along the curved edge of a half-circle
  *   none        — no individual seats shown (sweetheart)
  */
-export const TABLE_TYPES = {
+export const TABLE_TYPES: Record<string, TableTypeDef> = {
   round: {
     id: 'round',
     label: 'Round',
@@ -92,7 +112,7 @@ export const TABLE_TYPES = {
 
 export const TABLE_TYPE_LIST = Object.values(TABLE_TYPES)
 
-export const DESIGNATIONS = [
+export const DESIGNATIONS: Array<{ id: Designation; label: string }> = [
   { id: null, label: 'None' },
   { id: 'top-table', label: 'Top table' },
   { id: 'vip', label: 'VIP' },
@@ -100,26 +120,26 @@ export const DESIGNATIONS = [
   { id: 'band-bar', label: 'Band / Bar' },
 ]
 
-export const getTableType = (type) => TABLE_TYPES[type] || TABLE_TYPES.round
+export const getTableType = (type: string): TableTypeDef => TABLE_TYPES[type] || TABLE_TYPES.round
 
-export const defaultCapacityFor = (type) => getTableType(type).defaultCapacity
+export const defaultCapacityFor = (type: string): number => getTableType(type).defaultCapacity
 
-export const clampCapacity = (type, capacity) => {
+export const clampCapacity = (type: string, capacity: number): number => {
   const t = getTableType(type)
   return Math.max(t.minCapacity, Math.min(t.maxCapacity, Math.round(capacity || 0)))
 }
 
 // ── custom (per-side) rectangle tables ──────────────────────────────────────
 
-const SIDES = ['top', 'right', 'bottom', 'left']
+const SIDES = ['top', 'right', 'bottom', 'left'] as const
 
 /** Total seat count implied by a per-side seat distribution. */
-export const seatCountFromPerSide = (perSide) =>
+export const seatCountFromPerSide = (perSide: Partial<PerSideSeats> | null | undefined): number =>
   SIDES.reduce((sum, side) => sum + Math.max(0, Math.round(perSide?.[side] || 0)), 0)
 
 /** Coerce a per-side object into clean non-negative integers for all four edges. */
-export const clampPerSide = (perSide) => {
-  const out = {}
+export const clampPerSide = (perSide: Partial<PerSideSeats> | null | undefined): PerSideSeats => {
+  const out: PerSideSeats = { top: 0, right: 0, bottom: 0, left: 0 }
   SIDES.forEach((side) => {
     out[side] = Math.max(0, Math.min(40, Math.round(perSide?.[side] || 0)))
   })

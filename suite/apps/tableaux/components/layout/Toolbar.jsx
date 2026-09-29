@@ -1,10 +1,10 @@
 import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
-import { useStore } from '../../store/useStore.js'
-import { useWarnings } from '../../store/warningsContext.jsx'
-import IconButton from '../ui/IconButton.jsx'
+import { useStore } from '../../store/useStore'
+import { useWarnings } from '../../store/warningsContext'
+import IconButton from '../ui/IconButton'
 import { ToolUndo } from '@/components/shell/ToolUndo'
-import Icon from '../ui/Icon.jsx'
-import TablePalette from '../toolbar/TablePalette.jsx'
+import Icon from '../ui/Icon'
+import TablePalette from '../toolbar/TablePalette'
 import styles from './Toolbar.module.css'
 
 function WarningsButton() {

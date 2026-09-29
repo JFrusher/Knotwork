@@ -1,8 +1,8 @@
-import { useStore } from '../../store/useStore.js'
-import StatsPanel from './StatsPanel.jsx'
-import TableInspector from './TableInspector.jsx'
-import GuestInspector from './GuestInspector.jsx'
-import SpaceInspector from './SpaceInspector.jsx'
+import { useStore } from '../../store/useStore'
+import StatsPanel from './StatsPanel'
+import TableInspector from './TableInspector'
+import GuestInspector from './GuestInspector'
+import SpaceInspector from './SpaceInspector'
 import styles from './RightSidebar.module.css'
 
 export default function RightSidebar() {

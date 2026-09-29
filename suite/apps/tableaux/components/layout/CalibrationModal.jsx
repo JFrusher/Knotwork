@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useStore } from '../../store/useStore.js'
-import { parseDisplay, ppuFromCalibration, toDisplay } from '../../utils/units.js'
-import Modal from '../ui/Modal.jsx'
-import Button from '../ui/Button.jsx'
+import { useStore } from '../../store/useStore'
+import { parseDisplay, ppuFromCalibration, toDisplay } from '../../utils/units'
+import Modal from '../ui/Modal'
+import Button from '../ui/Button'
 import f from '../sidebar/fields.module.css'
 import styles from './SettingsModal.module.css'
 

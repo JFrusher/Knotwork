@@ -105,7 +105,7 @@ test("a diet stored as the file's words arrives as the key it means", () => {
  * keeps no copy now.
  */
 test("a guest import and a rename made in the Data panel show in Seating, and survive its next edit", async () => {
-  const { useStore } = await import("./useStore.js");
+  const { useStore } = await import("./useStore");
 
   withGuests({ g1: { id: "g1", firstName: "Ada", lastName: "Test" } });
   useTrousseauStore.getState().setSlice("event", { ...emptyTrousseau().event, coupleNames: "Old Names" });

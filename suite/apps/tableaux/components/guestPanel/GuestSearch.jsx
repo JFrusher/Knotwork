@@ -1,7 +1,7 @@
 import clsx from 'clsx'
-import { useStore } from '../../store/useStore.js'
-import Icon from '../ui/Icon.jsx'
-import { filterDefs } from '../../utils/guestFilters.js'
+import { useStore } from '../../store/useStore'
+import Icon from '../ui/Icon'
+import { filterDefs } from '../../utils/guestFilters'
 import styles from './GuestSearch.module.css'
 
 export default function GuestSearch() {

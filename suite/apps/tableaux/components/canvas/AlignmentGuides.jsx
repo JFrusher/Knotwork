@@ -1,6 +1,6 @@
-import { useStore } from '../../store/useStore.js'
-import { DEFAULT_PPU } from '../../utils/seatPositions.js'
-import { toDisplay } from '../../utils/units.js'
+import { useStore } from '../../store/useStore'
+import { DEFAULT_PPU } from '../../utils/seatPositions'
+import { toDisplay } from '../../utils/units'
 
 // Alignment lines use the accent; centring/wall/equal-spacing guides use a
 // distinct colour so "this edge lines up" reads differently from "these gaps

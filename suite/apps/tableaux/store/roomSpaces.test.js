@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useStore } from './useStore.js'
+import { useStore } from './useStore'
 import { validatePlanDoc } from './planSchema'
 import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
-import { openPlan } from '../test/openPlan.js'
+import { openPlan } from '../test/openPlan'
 
 const s = () => useStore.getState()
 

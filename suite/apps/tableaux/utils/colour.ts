@@ -3,7 +3,7 @@
  */
 
 /** Parse a #rgb / #rrggbb hex string into [r, g, b] (0–255), or null. */
-function parseHex(hex) {
+function parseHex(hex: unknown): [number, number, number] | null {
   if (typeof hex !== 'string') return null
   let h = hex.trim().replace(/^#/, '')
   if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]
@@ -16,7 +16,7 @@ function parseHex(hex) {
  * using the perceptual YIQ luminance threshold. Defaults to white for unknown
  * inputs (group colours are mid-to-dark, so white reads well).
  */
-export function readableTextColour(hex) {
+export function readableTextColour(hex: string | null | undefined): string {
   const rgb = parseHex(hex)
   if (!rgb) return '#fff'
   const [r, g, b] = rgb

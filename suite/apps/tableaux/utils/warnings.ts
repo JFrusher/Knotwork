@@ -1,5 +1,15 @@
 import { isComing } from '@/lib/model/slices'
-import { getTableType } from './tableTypes.js'
+import type { Constraint, Family, Guest, Table } from '../store/types'
+import { getTableType } from './tableTypes'
+
+export interface SeatingWarning {
+  id: string
+  level: 'warn' | 'info'
+  kind: 'over-capacity' | 'dietary-check' | 'empty-special' | 'unassigned' | 'apart' | 'together' | 'family-split'
+  message: string
+  tableId?: string | null
+  guestId?: string
+}
 
 /**
  * Pure rules engine. Given the document, returns a flat list of warnings:
@@ -7,14 +17,24 @@ import { getTableType } from './tableTypes.js'
  * Surfaced as amber badges on tables/cards and in the warnings panel; never
  * blocks the user.
  */
-export function computeWarnings(state) {
+type WarnedGuest = Pick<Guest, 'id' | 'fullName' | 'dietary' | 'dietaryRaw' | 'assignedTableId' | 'rsvpStatus'>
+type WarnedTable = Pick<Table, 'id' | 'label' | 'type' | 'capacity' | 'designation' | 'assignedGuestIds'>
+type WarnedFamily = Pick<Family, 'id' | 'name' | 'memberIds'>
+
+/** Only what the rules read, so anything holding a plan's shape can be checked. */
+export function computeWarnings(state: {
+  guests?: Record<string, WarnedGuest>
+  tables?: Record<string, WarnedTable>
+  constraints?: Constraint[]
+  families?: Record<string, WarnedFamily>
+}): SeatingWarning[] {
   const { guests = {}, tables = {}, constraints = [], families = {} } = state
   const guestList = Object.values(guests)
   const tableList = Object.values(tables)
-  const out = []
+  const out: SeatingWarning[] = []
 
   for (const t of tableList) {
-    const ids = (t.assignedGuestIds || []).filter(Boolean)
+    const ids = (t.assignedGuestIds || []).filter((id): id is string => Boolean(id))
     const seated = ids.length
 
     if (seated > t.capacity) {
@@ -30,7 +50,7 @@ export function computeWarnings(state) {
     const gs = ids.map((id) => guests[id]).filter(Boolean)
     // A note is anything the guest said: "None" is an answer, and is kept in
     // `dietaryRaw` while `dietary` holds only a requirement.
-    const noted = (g) => Boolean(g.dietary || g.dietaryRaw?.trim())
+    const noted = (g: WarnedGuest) => Boolean(g.dietary || g.dietaryRaw?.trim())
     const withDiet = gs.filter(noted).length
     const without = gs.filter((g) => !noted(g)).length
     if (withDiet > 0 && without > 0) {
@@ -115,7 +135,7 @@ export function computeWarnings(state) {
   for (const f of Object.values(families)) {
     const seated = (f.memberIds || [])
       .map((id) => guests[id])
-      .filter((g) => g && g.assignedTableId)
+      .filter((g): g is WarnedGuest => Boolean(g && g.assignedTableId))
     const tableIds = new Set(seated.map((g) => g.assignedTableId))
     if (tableIds.size > 1) {
       seated.forEach((g) => {
@@ -134,17 +154,20 @@ export function computeWarnings(state) {
   return out
 }
 
-export function buildWarningIndex(list) {
-  const byTable = new Map()
-  const byGuest = new Map()
+export function buildWarningIndex(list: SeatingWarning[]): {
+  byTable: Map<string, SeatingWarning[]>
+  byGuest: Map<string, SeatingWarning[]>
+} {
+  const byTable = new Map<string, SeatingWarning[]>()
+  const byGuest = new Map<string, SeatingWarning[]>()
   for (const w of list) {
     if (w.tableId) {
       if (!byTable.has(w.tableId)) byTable.set(w.tableId, [])
-      byTable.get(w.tableId).push(w)
+      byTable.get(w.tableId)!.push(w)
     }
     if (w.guestId) {
       if (!byGuest.has(w.guestId)) byGuest.set(w.guestId, [])
-      byGuest.get(w.guestId).push(w)
+      byGuest.get(w.guestId)!.push(w)
     }
   }
   return { byTable, byGuest }

@@ -1,5 +1,5 @@
-import { getTableType } from '../../utils/tableTypes.js'
-import { getTableGeometry } from '../../utils/seatPositions.js'
+import { getTableType } from '../../utils/tableTypes'
+import { getTableGeometry } from '../../utils/seatPositions'
 
 /**
  * Schematic SVG of a table type, derived from the real seat geometry so the

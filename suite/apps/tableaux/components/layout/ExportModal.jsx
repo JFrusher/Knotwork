@@ -1,8 +1,8 @@
-import { useStore } from '../../store/useStore.js'
-import Modal from '../ui/Modal.jsx'
-import Icon from '../ui/Icon.jsx'
-import { exportCsv } from '../../utils/exportCsv.js'
-import { exportReportCsv } from '../../utils/exportReports.js'
+import { useStore } from '../../store/useStore'
+import Modal from '../ui/Modal'
+import Icon from '../ui/Icon'
+import { exportCsv } from '../../utils/exportCsv'
+import { exportReportCsv } from '../../utils/exportReports'
 import styles from './ExportModal.module.css'
 
 /**

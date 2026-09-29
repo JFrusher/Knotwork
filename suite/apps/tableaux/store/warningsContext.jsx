@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo } from 'react'
-import { useStore } from './useStore.js'
-import { computeWarnings, buildWarningIndex } from '../utils/warnings.js'
+import { useStore } from './useStore'
+import { computeWarnings, buildWarningIndex } from '../utils/warnings'
 
 const EMPTY = []
 const WarningsContext = createContext({ list: EMPTY, byTable: new Map(), byGuest: new Map() })

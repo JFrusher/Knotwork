@@ -1,7 +1,7 @@
 import { useState, useRef, memo } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import clsx from 'clsx'
-import { useStore } from '../../store/useStore.js'
+import { useStore } from '../../store/useStore'
 import {
   getTableGeometry,
   getAdaptedSeatsForDrag,
@@ -9,17 +9,17 @@ import {
   DEFAULT_PPU,
   SEAT_OFFSET,
   SEAT_RADIUS,
-} from '../../utils/seatPositions.js'
-import { getTableType } from '../../utils/tableTypes.js'
-import { computeSnap, buildContainers } from '../../utils/alignmentSnap.js'
-import SeatSlot from './SeatSlot.jsx'
-import TableGuestBox from './TableGuestBox.jsx'
-import { getTableGridLayout } from '../../utils/tableGrid.js'
-import ChairNubs from './ChairNubs.jsx'
-import TableHandles from './TableHandles.jsx'
-import ContextMenu, { useContextMenu } from '../ui/ContextMenu.jsx'
-import Icon from '../ui/Icon.jsx'
-import { useTableWarnings } from '../../store/warningsContext.jsx'
+} from '../../utils/seatPositions'
+import { getTableType } from '../../utils/tableTypes'
+import { computeSnap, buildContainers } from '../../utils/alignmentSnap'
+import SeatSlot from './SeatSlot'
+import TableGuestBox from './TableGuestBox'
+import { getTableGridLayout } from '../../utils/tableGrid'
+import ChairNubs from './ChairNubs'
+import TableHandles from './TableHandles'
+import ContextMenu, { useContextMenu } from '../ui/ContextMenu'
+import Icon from '../ui/Icon'
+import { useTableWarnings } from '../../store/warningsContext'
 import styles from './TableNode.module.css'
 
 const RING_PAD = 7

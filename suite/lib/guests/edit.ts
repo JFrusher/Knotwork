@@ -1,8 +1,9 @@
-import { applyPatch } from "@/apps/tableaux/store/patch.js";
-import { assignGuest, unassignGuest, updateGuest } from "@/apps/tableaux/store/actions.js";
+import { applyPatch } from "@/apps/tableaux/store/patch";
+import { assignGuest, removeGuests, unassignGuest, updateGuest } from "@/apps/tableaux/store/actions";
+import { emptyPlan, SEATING_KEYS } from "@/apps/tableaux/store/plan";
+import type { Action, Guest, Plan } from "@/apps/tableaux/store/types";
 import { normaliseDietary } from "@/lib/model/dietary";
 import type { RsvpStatus, Side } from "@/lib/model/types";
-import { removeGuests } from "@/lib/seating/removeGuests";
 
 /**
  * Changes the Guests page makes, as Seating makes them.
@@ -11,9 +12,11 @@ import { removeGuests } from "@/lib/seating/removeGuests";
  * the table's list change together, a seat-level table keeps its holes, the
  * occupant of a taken seat is moved off it — and saying it twice is how a
  * guest and a table come to disagree. So these run Seating's own commands,
- * over the slices as stored, and hand the slices back. Stored rather than
- * read through the suite's typed readers, which rebuild records from the
- * fields they know and would drop the ones only Seating uses.
+ * over the slices as stored, and hand the slices back.
+ *
+ * As stored, not as Seating reads them: this page changes what it means to
+ * and nothing else. A room Seating would tidy on its next edit is left as it
+ * is, and a guest nobody touched is not rewritten.
  */
 
 type Raw = Record<string, unknown>;
@@ -24,20 +27,19 @@ export interface GuestSlices {
   seating: Raw;
 }
 
-interface Command {
-  payload: Raw;
-}
-type Action = (state: Raw) => Command | null;
-
 function run(slices: GuestSlices, actions: Action[]): GuestSlices {
-  // Seating's document is the room with the guests in it.
-  let state: Raw = { ...slices.seating, guests: slices.guests };
+  // Seating's plan is the room with the guests in it: whatever the room is
+  // missing reads as empty, and nothing it has is rebuilt.
+  const before: Plan = { ...emptyPlan(), ...(slices.seating as Partial<Plan>), guests: slices.guests as Record<string, Guest> };
+  let plan = before;
   for (const action of actions) {
-    const command = action(state);
-    if (command) state = { ...state, ...applyPatch(state, command.payload) };
+    const command = action(plan);
+    if (command) plan = { ...plan, ...applyPatch(plan, command.payload) };
   }
-  const { guests, ...seating } = state;
-  return { guests: guests as Raw, seating };
+  // Only the parts a command changed go back; every other one is as stored.
+  const seating: Raw = { ...slices.seating };
+  for (const key of SEATING_KEYS) if (plan[key] !== before[key]) seating[key] = plan[key];
+  return { guests: plan.guests, seating };
 }
 
 /** What can be set on many guests at once, and on one. */
@@ -60,9 +62,9 @@ function patchFor(change: GuestChange, guest: Raw): Raw {
 export function changeGuests(slices: GuestSlices, ids: readonly string[], change: GuestChange): GuestSlices {
   return run(
     slices,
-    ids.map((id) => (state: Raw) => {
-      const guest = (state["guests"] as Raw)[id];
-      return guest ? updateGuest(id, patchFor(change, guest as Raw))(state) : null;
+    ids.map((id): Action => (plan) => {
+      const guest = plan.guests[id];
+      return guest ? updateGuest(id, patchFor(change, guest as unknown as Raw) as Partial<Guest>)(plan) : null;
     }),
   );
 }
@@ -77,5 +79,5 @@ export function seatGuests(slices: GuestSlices, ids: readonly string[], tableId:
 
 /** Off the list, and out of everything that points at them. */
 export function dropGuests(slices: GuestSlices, ids: readonly string[]): GuestSlices {
-  return removeGuests(slices.guests, slices.seating, new Set(ids));
+  return run(slices, [removeGuests(ids)]);
 }

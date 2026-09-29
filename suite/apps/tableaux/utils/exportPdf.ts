@@ -1,13 +1,17 @@
-import { buildFloorPlanSvg, measureFloorPlan } from './floorPlanSvg.js'
-import { CARD_TEMPLATES } from './cardTemplates.js'
-import { slug } from './download.js'
+import type { jsPDF as JsPdf } from 'jspdf'
+import { buildFloorPlanSvg, measureFloorPlan, type Bounds, type FloorPlanSource, type Measure } from './floorPlanSvg'
+import { CARD_TEMPLATES, type CardTemplate } from './cardTemplates'
+import { slug } from './download'
 
 // jsPDF + svg2pdf are heavy and only needed on export, so they are dynamically
 // imported (kept out of the main bundle).
 async function loadPdf() {
-  const [{ jsPDF }, svg2pdfMod] = await Promise.all([import('jspdf'), import('svg2pdf.js')])
-  return { jsPDF, svg2pdf: svg2pdfMod.svg2pdf || svg2pdfMod.default }
+  const [{ jsPDF }, { svg2pdf }] = await Promise.all([import('jspdf'), import('svg2pdf.js')])
+  return { jsPDF, svg2pdf }
 }
+
+/** How the plan is laid across sheets: fitted to one unless the type would go illegible. */
+export type Pages = 'auto' | 'single' | 'split'
 
 // ── one-page seating chart ──────────────────────────────────────────────────
 // Flip PAGE_FORMAT to 'a3' for an entrance-board sized print; everything else
@@ -24,18 +28,18 @@ const MAX_NAME_PT = 16
 const FONT_FLOOR_PT = 6 // below this the plan is tiled across two sheets
 const TILE_OVERLAP = 0.05
 
-const tableByLabel = (a, b) =>
+const tableByLabel = (a: { label: string }, b: { label: string }) =>
   String(a.label).localeCompare(String(b.label), undefined, { numeric: true })
 
 /** Seated guests in table → seat order, with their table label. */
-function seatedGuests(doc) {
+function seatedGuests(doc: FloorPlanSource): Array<{ name: string; table: string; lastName: string }> {
   const guests = doc.guests || {}
   const tables = doc.tables || {}
-  const out = []
+  const out: Array<{ name: string; table: string; lastName: string }> = []
   Object.values(tables)
     .sort(tableByLabel)
     .forEach((t) => {
-      for (const gid of (t.assignedGuestIds || []).filter(Boolean)) {
+      for (const gid of (t.assignedGuestIds || []).filter((id): id is string => Boolean(id))) {
         const g = guests[gid]
         if (g) out.push({ name: g.fullName, table: t.label, lastName: g.lastName || g.fullName })
       }
@@ -53,13 +57,18 @@ function seatedGuests(doc) {
  * The cell size and the type that fits it are solved against the plan itself by
  * measureFloorPlan; all this does is scale that onto paper.
  */
-export function planSheets(m, availW, availH, pages = 'auto') {
-  const fit = (w, h) => Math.min(availW / w, availH / h)
-  const solve = (s) => Math.min(m.basePx * s, MAX_NAME_PT)
+export function planSheets(
+  m: Bounds & { basePx: number },
+  availW: number,
+  availH: number,
+  pages: Pages = 'auto'
+): { scale: number; basePt: number; windows: Bounds[] } {
+  const fit = (w: number, h: number) => Math.min(availW / w, availH / h)
+  const solve = (s: number) => Math.min(m.basePx * s, MAX_NAME_PT)
 
   let scale = fit(m.width, m.height)
   let basePt = solve(scale)
-  let windows = [{ minX: m.minX, minY: m.minY, width: m.width, height: m.height }]
+  let windows: Bounds[] = [{ minX: m.minX, minY: m.minY, width: m.width, height: m.height }]
   if (pages === 'single' || (pages === 'auto' && basePt >= FONT_FLOOR_PT)) {
     return { scale, basePt, windows }
   }
@@ -102,7 +111,7 @@ export function planSheets(m, availW, availH, pages = 'auto') {
  * alongside the run sheet and the job list. Everything below builds the page;
  * only the last step differs.
  */
-export async function buildFloorPlanPdf(doc, name, opts = {}) {
+export async function buildFloorPlanPdf(doc: FloorPlanSource, name: string, opts: { pages?: Pages } = {}): Promise<JsPdf> {
   const { jsPDF, svg2pdf } = await loadPdf()
   const planOpts = { ...opts, padPx: PLAN_PAD }
 
@@ -119,9 +128,9 @@ export async function buildFloorPlanPdf(doc, name, opts = {}) {
   const availH = pageH - MARGIN * 2 - HEADER
 
   // Real metrics from the PDF's own Helvetica, so the fit is exact.
-  const measure = (text, size) => pdf.getStringUnitWidth(String(text)) * size
+  const measure: Measure = (text, size) => pdf.getStringUnitWidth(String(text)) * size
 
-  const fit = (b) => Math.min(availW / b.width, availH / b.height)
+  const fit = (b: Bounds) => Math.min(availW / b.width, availH / b.height)
   const m = measureFloorPlan(doc, { ...planOpts, measure, fit })
   const { scale, basePt, windows } = planSheets(m, availW, availH, opts.pages)
 
@@ -150,7 +159,7 @@ export async function buildFloorPlanPdf(doc, name, opts = {}) {
       measure,
       window: win,
     })
-    const el = new DOMParser().parseFromString(svg, 'image/svg+xml').documentElement
+    const el = new DOMParser().parseFromString(svg, 'image/svg+xml').documentElement as unknown as SVGElement
     // A to-scale plan rarely matches the page's aspect ratio, so centre it on
     // both axes rather than leaving all the slack at the bottom.
     await svg2pdf(el, pdf, {
@@ -165,12 +174,12 @@ export async function buildFloorPlanPdf(doc, name, opts = {}) {
 }
 
 /** The floor plan, downloaded. */
-export async function exportFloorPlanPdf(doc, name, opts = {}) {
+export async function exportFloorPlanPdf(doc: FloorPlanSource, name: string, opts: { pages?: Pages } = {}): Promise<void> {
   const pdf = await buildFloorPlanPdf(doc, name, opts)
   pdf.save(`${slug(name)}-seating-chart.pdf`)
 }
 
-function renderCards(pdf, items, tpl) {
+function renderCards(pdf: JsPdf, items: Array<{ name: string; table: string }>, tpl: CardTemplate): void {
   const perPage = tpl.cols * tpl.rows
   items.forEach((item, i) => {
     const onPage = i % perPage
@@ -201,7 +210,7 @@ function renderCards(pdf, items, tpl) {
   })
 }
 
-export async function exportCards(doc, name, templateId) {
+export async function exportCards(doc: FloorPlanSource, name: string, templateId: string): Promise<void> {
   const tpl = CARD_TEMPLATES[templateId]
   if (!tpl) return
   const { jsPDF } = await loadPdf()
@@ -212,7 +221,7 @@ export async function exportCards(doc, name, templateId) {
     items = [...items].sort((a, b) => String(a.lastName).localeCompare(String(b.lastName)))
   }
   if (!items.length) {
-    items = [{ name: 'No seated guests yet', table: '' }]
+    items = [{ name: 'No seated guests yet', table: '', lastName: '' }]
   }
 
   renderCards(pdf, items, tpl)

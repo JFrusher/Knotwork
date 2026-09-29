@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildAssignmentCsv } from './exportCsv.js'
+import { buildAssignmentCsv } from './exportCsv'
 
 const guest = (id, fullName, extra = {}) => ({
   id,

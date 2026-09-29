@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
-import { useStore } from '../store/useStore.js'
-import { screenToCanvas, isWithinViewport } from '../utils/canvasCoords.js'
+import { useStore } from '../store/useStore'
+import { screenToCanvas, isWithinViewport } from '../utils/canvasCoords'
 
 /**
  * App-root drag controller. Handles:

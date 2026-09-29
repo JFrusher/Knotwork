@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { getTableGridLayout, getTableInterior } from './tableGrid.js'
-import { shortName, pickGuestLabel } from './guestFilters.js'
+import { getTableGridLayout, getTableInterior } from './tableGrid'
+import { shortName, pickGuestLabel } from './guestFilters'
 
 const rect = (width, height) => ({ shape: 'rect', width, height })
 const circle = (radius) => ({ shape: 'circle', radius, width: radius * 2, height: radius * 2 })

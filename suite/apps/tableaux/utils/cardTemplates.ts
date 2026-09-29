@@ -4,7 +4,23 @@
  * drawn so users can trim. Approximate Avery layouts — close enough to print
  * on standard perforated stock or to cut by hand.
  */
-export const CARD_TEMPLATES = {
+export interface CardTemplate {
+  label: string
+  kind: 'place' | 'escort'
+  pageW: number
+  pageH: number
+  marginX: number
+  marginY: number
+  cols: number
+  rows: number
+  cellW: number
+  cellH: number
+  gapX: number
+  gapY: number
+  fold: boolean
+}
+
+export const CARD_TEMPLATES: Record<string, CardTemplate> = {
   'place-tent': {
     label: 'Place cards — tent fold (2 per page)',
     kind: 'place',

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { applyPatch } from './patch.js'
+import { applyPatch } from './patch'
 
 describe('applyPatch', () => {
   it('adds and replaces entities in a collection', () => {

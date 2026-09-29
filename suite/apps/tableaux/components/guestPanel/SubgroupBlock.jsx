@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import clsx from 'clsx'
-import { useStore } from '../../store/useStore.js'
-import Icon from '../ui/Icon.jsx'
-import GuestCard from './GuestCard.jsx'
-import FamilyBlock from './FamilyBlock.jsx'
-import ContextMenu, { useContextMenu } from '../ui/ContextMenu.jsx'
-import ColorPicker from '../ui/ColorPicker.jsx'
+import { useStore } from '../../store/useStore'
+import Icon from '../ui/Icon'
+import GuestCard from './GuestCard'
+import FamilyBlock from './FamilyBlock'
+import ContextMenu, { useContextMenu } from '../ui/ContextMenu'
+import ColorPicker from '../ui/ColorPicker'
 import styles from './SubgroupBlock.module.css'
 
 export default function SubgroupBlock({

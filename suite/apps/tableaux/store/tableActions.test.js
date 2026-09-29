@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useStore } from './useStore.js'
-import { getTableGeometry } from '../utils/seatPositions.js'
+import { useStore } from './useStore'
+import { getTableGeometry } from '../utils/seatPositions'
 import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
-import { openPlan } from '../test/openPlan.js'
+import { openPlan } from '../test/openPlan'
 
 const baseDoc = () => ({
   meta: { weddingName: 'T', venue: '', date: '', createdAt: '', updatedAt: '' },

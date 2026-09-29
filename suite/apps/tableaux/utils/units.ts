@@ -10,13 +10,15 @@
  * stored, so toggling between metric and imperial is lossless.
  */
 
+import type { SizeUnits, UnitSystem } from '@/lib/model/types'
+
 export const CM_PER_INCH = 2.54
 export const CM_PER_FOOT = 30.48
 
-const round2 = (n) => Math.round(n * 100) / 100
+const round2 = (n: number): number => Math.round(n * 100) / 100
 
 /** Best-effort locale default: imperial for US/Liberia/Myanmar, else metric. */
-export function localeDefaultUnitSystem() {
+export function localeDefaultUnitSystem(): UnitSystem {
   try {
     const lang =
       (typeof navigator !== 'undefined' && (navigator.language || navigator.languages?.[0])) || ''
@@ -32,7 +34,7 @@ export function localeDefaultUnitSystem() {
  * Returns `{ value, label }` — `value` is the primary numeric magnitude in the
  * chosen system (handy for inputs), `label` is the full human string.
  */
-export function toDisplay(cm, system = 'metric') {
+export function toDisplay(cm: number, system: UnitSystem = 'metric'): { value: number; label: string } {
   const v = Number(cm) || 0
   if (system === 'imperial') {
     const totalInches = v / CM_PER_INCH
@@ -55,7 +57,7 @@ export function toDisplay(cm, system = 'metric') {
  * Accepts explicit units (`5'6"`, `1.5m`, `150cm`, `60in`, `8ft`). A bare
  * number is interpreted by `system`: inches for imperial, centimetres for metric.
  */
-export function parseDisplay(input, system = 'metric') {
+export function parseDisplay(input: unknown, system: UnitSystem = 'metric'): number | null {
   if (input == null) return null
   const str = String(input).trim().toLowerCase().replace(/[″”]/g, '"').replace(/[′’]/g, "'")
   if (!str) return null
@@ -99,16 +101,16 @@ export function parseDisplay(input, system = 'metric') {
 }
 
 /** Compact label for a table's footprint, e.g. "Ø 1.5 m" or "2.2 × 1.3 m". */
-export function formatDimensions(sizeUnits, system = 'metric') {
+export function formatDimensions(sizeUnits: SizeUnits | null | undefined, system: UnitSystem = 'metric'): string {
   if (!sizeUnits) return ''
-  if (sizeUnits.shape === 'circle' || sizeUnits.shape === 'half-circle') {
+  if (sizeUnits.shape !== 'rect') {
     return `Ø ${toDisplay(sizeUnits.diameter, system).label}`
   }
   return `${toDisplay(sizeUnits.width, system).label} × ${toDisplay(sizeUnits.height, system).label}`
 }
 
 /** Derive a pixels-per-cm scale from a measured pixel distance over a known real length. */
-export function ppuFromCalibration(pixelDistance, realCm) {
+export function ppuFromCalibration(pixelDistance: number, realCm: number): number | null {
   if (!pixelDistance || !realCm) return null
   const ppu = pixelDistance / realCm
   return Number.isFinite(ppu) && ppu > 0 ? ppu : null

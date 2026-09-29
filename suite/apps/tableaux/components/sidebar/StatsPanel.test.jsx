@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import StatsPanel from './StatsPanel.jsx'
-import { useStore } from '../../store/useStore.js'
-import { openPlan } from '../../test/openPlan.js'
+import StatsPanel from './StatsPanel'
+import { useStore } from '../../store/useStore'
+import { openPlan } from '../../test/openPlan'
 
 beforeEach(() => {
   openPlan({

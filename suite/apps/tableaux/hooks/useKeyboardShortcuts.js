@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
-import { useStore } from '../store/useStore.js'
-import { fitCanvasToContent, zoomCanvasBy } from '../utils/canvasCoords.js'
+import { useStore } from '../store/useStore'
+import { fitCanvasToContent, zoomCanvasBy } from '../utils/canvasCoords'
 
 const isEditable = (el) =>
   !!el &&

@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import clsx from 'clsx'
-import IconButton from './IconButton.jsx'
+import IconButton from './IconButton'
 import styles from './Modal.module.css'
 
 const FOCUSABLE =

@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import clsx from 'clsx'
-import { useStore } from '../../store/useStore.js'
-import Icon from './Icon.jsx'
-import IconButton from './IconButton.jsx'
+import { useStore } from '../../store/useStore'
+import Icon from './Icon'
+import IconButton from './IconButton'
 import styles from './Toast.module.css'
 
 const ICON_FOR = {

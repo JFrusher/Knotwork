@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { planSheets } from './exportPdf.js'
+import { planSheets } from './exportPdf'
 
 // A wide plan whose names are far too small to stay legible on one A4 sheet.
 const tiny = { minX: 0, minY: 0, width: 4000, height: 1000, basePx: 20 }

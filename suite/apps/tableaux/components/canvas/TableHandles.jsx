@@ -1,6 +1,6 @@
-import { useStore } from '../../store/useStore.js'
-import { canvasToScreen } from '../../utils/canvasCoords.js'
-import { deriveSizeUnits, getTableGeometry, DEFAULT_PPU } from '../../utils/seatPositions.js'
+import { useStore } from '../../store/useStore'
+import { canvasToScreen } from '../../utils/canvasCoords'
+import { deriveSizeUnits, getTableGeometry, DEFAULT_PPU } from '../../utils/seatPositions'
 import styles from './TableHandles.module.css'
 
 const norm360 = (deg) => ((Math.round(deg) % 360) + 360) % 360

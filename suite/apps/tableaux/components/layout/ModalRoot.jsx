@@ -1,13 +1,13 @@
-import { useStore } from '../../store/useStore.js'
-import ConfirmDialog from '../ui/ConfirmDialog.jsx'
-import WarningsPanel from './WarningsPanel.jsx'
-import ConstraintsModal from './ConstraintsModal.jsx'
-import SnapshotsModal from './SnapshotsModal.jsx'
-import ExportModal from './ExportModal.jsx'
-import SettingsModal from './SettingsModal.jsx'
-import CalibrationModal from './CalibrationModal.jsx'
-import CustomTableModal from './CustomTableModal.jsx'
-import PrintModal from './PrintModal.jsx'
+import { useStore } from '../../store/useStore'
+import ConfirmDialog from '../ui/ConfirmDialog'
+import WarningsPanel from './WarningsPanel'
+import ConstraintsModal from './ConstraintsModal'
+import SnapshotsModal from './SnapshotsModal'
+import ExportModal from './ExportModal'
+import SettingsModal from './SettingsModal'
+import CalibrationModal from './CalibrationModal'
+import CustomTableModal from './CustomTableModal'
+import PrintModal from './PrintModal'
 
 /**
  * Renders the single store-driven modal. New modal types are added to the

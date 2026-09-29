@@ -5,7 +5,7 @@ import {
   rectSeatsFromSides,
   deriveSizeUnits,
   DEFAULT_PPU,
-} from './seatPositions.js'
+} from './seatPositions'
 
 describe('getTableGeometry', () => {
   it('places one seat per capacity around a round table', () => {

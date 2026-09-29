@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
-import { useStore } from '../store/useStore.js'
+import { useStore } from '../store/useStore'
 import {
   canvasViewportRef,
   screenToCanvas,
@@ -7,7 +7,7 @@ import {
   zoomCanvasAt,
   zoomCanvasBy,
   fitCanvasToContent,
-} from '../utils/canvasCoords.js'
+} from '../utils/canvasCoords'
 
 /**
  * Pan/zoom for the room canvas. The world layer is transformed with

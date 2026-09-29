@@ -16,6 +16,20 @@
  * Kept separate from seatPositions.js (footprint geometry) so it has no
  * dependency on the seat-placement maths and can evolve independently.
  */
+import type { TableGeometry } from './seatPositions'
+
+export interface TableGridLayout {
+  cols: number
+  rows: number
+  gap: number
+  hasHeader: boolean
+  width: number
+  height: number
+  offsetY: number
+  charsPerLine: number
+  maxLines: number
+}
+
 const MARGIN = 8 // inset from the table edge so boxes never touch the border
 const GAP = 3 // gap between boxes (px) — small so the grid fills tight shapes
 const HEADER_H = 16 // "seated/capacity" header row height (px)
@@ -38,7 +52,7 @@ const minRowH = Math.ceil(GRID_FONT_PX * LINE_H) + 2 * BOX_PAD_Y + 2 * BORDER + 
  * small margin, plus a vertical offset from the shape centre (non-zero only for
  * half-circles, whose fillable area hugs the flat bottom edge).
  */
-export function getTableInterior(geom) {
+export function getTableInterior(geom: TableGeometry | null | undefined): { width: number; height: number; offsetY: number } {
   if (!geom) return { width: 0, height: 0, offsetY: 0 }
   if (geom.shape === 'circle') {
     // Inscribed square: side = r·√2.
@@ -66,14 +80,8 @@ export function getTableInterior(geom) {
  * Lay out the name grid so it fills the table interior at the fixed seat font.
  * Returns null when the interior is too small to hold a grid (caller shows a
  * plain count instead).
- *
- * @param {{capacity:number}} table
- * @param {{shape:string,width:number,height:number,radius?:number}} geom
- * @returns {{cols:number, rows:number, gap:number, hasHeader:boolean,
- *            width:number, height:number, offsetY:number,
- *            charsPerLine:number, maxLines:number} | null}
  */
-export function getTableGridLayout(table, geom) {
+export function getTableGridLayout(table: { capacity: number }, geom: TableGeometry): TableGridLayout | null {
   const cap = Math.max(1, table.capacity || 1)
   const interior = getTableInterior(geom)
   if (interior.width < MIN_INTERIOR || interior.height < MIN_INTERIOR) return null

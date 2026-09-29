@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
-import { useStore } from '../../store/useStore.js'
-import Modal from '../ui/Modal.jsx'
-import Button from '../ui/Button.jsx'
-import IconButton from '../ui/IconButton.jsx'
+import { useStore } from '../../store/useStore'
+import Modal from '../ui/Modal'
+import Button from '../ui/Button'
+import IconButton from '../ui/IconButton'
 import f from '../sidebar/fields.module.css'
 import styles from './ConstraintsModal.module.css'
 

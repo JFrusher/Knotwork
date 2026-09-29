@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildDietaryTotals, buildPerTableSummary, buildReportCsv } from './exportReports.js'
+import { buildDietaryTotals, buildPerTableSummary, buildReportCsv } from './exportReports'
 
 const state = () => ({
   guests: {

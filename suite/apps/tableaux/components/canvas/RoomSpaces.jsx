@@ -1,10 +1,10 @@
 import { useState, useRef, useCallback } from 'react'
-import { useStore } from '../../store/useStore.js'
-import { DEFAULT_PPU } from '../../utils/seatPositions.js'
-import { CM_PER_FOOT } from '../../utils/units.js'
-import ContextMenu, { useContextMenu } from '../ui/ContextMenu.jsx'
-import ColorPicker from '../ui/ColorPicker.jsx'
-import Icon from '../ui/Icon.jsx'
+import { useStore } from '../../store/useStore'
+import { DEFAULT_PPU } from '../../utils/seatPositions'
+import { CM_PER_FOOT } from '../../utils/units'
+import ContextMenu, { useContextMenu } from '../ui/ContextMenu'
+import ColorPicker from '../ui/ColorPicker'
+import Icon from '../ui/Icon'
 import styles from './RoomSpaces.module.css'
 
 /** Bounding box of a space in absolute canvas coords. */

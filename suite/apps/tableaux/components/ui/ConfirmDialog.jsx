@@ -1,5 +1,5 @@
-import Modal from './Modal.jsx'
-import Button from './Button.jsx'
+import Modal from './Modal'
+import Button from './Button'
 import styles from './ConfirmDialog.module.css'
 
 export default function ConfirmDialog({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { matchesFilters } from './guestFilters.js'
+import { matchesFilters } from './guestFilters'
 
 describe('the Unassigned chip', () => {
   it('finds who still needs a seat, and not someone who is not coming', () => {

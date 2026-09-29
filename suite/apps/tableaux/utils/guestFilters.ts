@@ -1,5 +1,6 @@
 import { sideShort } from '@/lib/model/partners'
 import { isComing } from '@/lib/model/slices'
+import type { Group, Guest, Meta } from '../store/types'
 
 // TODO(family-ux): no "in a family" (or per-family) filter chip exists —
 // would need an entry here AND in PREDICATES below, and a predicate can't
@@ -11,7 +12,7 @@ import { isComing } from '@/lib/model/slices'
  * two side chips are named after the partners — "Alex's", "Sam's" — from the
  * wedding's `meta`.
  */
-export function filterDefs(meta) {
+export function filterDefs(meta: Pick<Meta, 'partners'>): Array<{ key: FilterKey; label: string }> {
   return [
     { key: 'unassigned', label: 'Unassigned' },
     { key: 'a', label: sideShort('a', meta) },
@@ -23,7 +24,9 @@ export function filterDefs(meta) {
   ]
 }
 
-const PREDICATES = {
+export type FilterKey = 'unassigned' | 'a' | 'b' | 'vegetarian' | 'vegan' | 'gluten-free' | 'notes'
+
+const PREDICATES: Record<FilterKey, (guest: Guest) => boolean> = {
   // Who still needs a seat: someone who declined does not.
   unassigned: (g) => isComing(g) && !g.assignedTableId,
   a: (g) => g.side === 'a' || g.side === 'both',
@@ -40,12 +43,12 @@ const PREDICATES = {
 // can never match both); and both side chips together only matches
 // side==='both', not the union a user would expect from ticking two side
 // chips. See tmp/ux-audit.md #G7.
-export function matchesFilters(guest, filters) {
+export function matchesFilters(guest: Guest, filters: readonly string[] | null | undefined): boolean {
   if (!filters || filters.length === 0) return true
-  return filters.every((f) => (PREDICATES[f] ? PREDICATES[f](guest) : true))
+  return filters.every((f) => (f in PREDICATES ? PREDICATES[f as FilterKey](guest) : true))
 }
 
-export function matchesSearch(guest, group, query) {
+export function matchesSearch(guest: Guest, group: Pick<Group, 'name'> | null | undefined, query: string): boolean {
   if (!query) return true
   const q = query.trim().toLowerCase()
   if (!q) return true
@@ -57,7 +60,7 @@ export function matchesSearch(guest, group, query) {
   )
 }
 
-export const initials = (name = '') =>
+export const initials = (name = ''): string =>
   name
     .split(/\s+/)
     .filter(Boolean)
@@ -66,7 +69,7 @@ export const initials = (name = '') =>
     .join('') || '?'
 
 /** "Sarah M." — first name + last initial, for compact in-table name boxes. */
-export const shortName = (guest) => {
+export const shortName = (guest: Pick<Guest, 'fullName' | 'firstName' | 'lastName'> | null | undefined): string => {
   if (!guest) return '?'
   const parts = (guest.fullName || '').split(/\s+/).filter(Boolean)
   const first = guest.firstName || parts[0] || ''
@@ -78,7 +81,7 @@ export const shortName = (guest) => {
 // Does `text` fit in `maxLines` lines of `charsPerLine`, wrapping at spaces?
 // (A single word longer than a line never fits — we'd rather drop to a shorter
 // label than truncate mid-word.)
-const fitsLines = (text, charsPerLine, maxLines) => {
+const fitsLines = (text: string, charsPerLine: number, maxLines: number): boolean => {
   if (charsPerLine <= 0) return false
   if (text.length <= charsPerLine) return true
   if (maxLines < 2) return false
@@ -101,7 +104,11 @@ const fitsLines = (text, charsPerLine, maxLines) => {
  * Pick the richest label that fits a name box: full name → "First L." → first
  * name → initials. Always returns at least initials so a guest is never blank.
  */
-export const pickGuestLabel = (guest, charsPerLine, maxLines = 1) => {
+export const pickGuestLabel = (
+  guest: Pick<Guest, 'fullName' | 'firstName' | 'lastName'> | null | undefined,
+  charsPerLine: number,
+  maxLines = 1
+): string => {
   if (!guest) return '?'
   const fallback = initials(guest.fullName)
   const candidates = [guest.fullName, shortName(guest), guest.firstName, fallback]

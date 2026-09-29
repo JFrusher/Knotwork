@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { useStore } from './useStore.js'
+import { useStore } from './useStore'
 import { validatePlanDoc } from './planSchema'
 import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
-import { openPlan } from '../test/openPlan.js'
+import { openPlan } from '../test/openPlan'
 
 // A deliberately rich document touching every field that has been suspected of
 // "not persisting": table rotation, seat-level assignments (incl. gaps), seat

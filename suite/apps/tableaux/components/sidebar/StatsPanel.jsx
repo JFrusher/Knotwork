@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
-import { useStore } from '../../store/useStore.js'
+import { useStore } from '../../store/useStore'
 import { DIETARY_META, dietaryLabel } from '@/lib/model/dietary'
 import { isComing } from '@/lib/model/slices'
-import { fillColour } from '../../utils/seatPositions.js'
+import { fillColour } from '../../utils/seatPositions'
 import styles from './StatsPanel.module.css'
 
 export default function StatsPanel() {

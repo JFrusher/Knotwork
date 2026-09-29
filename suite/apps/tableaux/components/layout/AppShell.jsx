@@ -1,10 +1,10 @@
 import clsx from 'clsx'
-import { useStore } from '../../store/useStore.js'
-import Toolbar from './Toolbar.jsx'
-import GuestPanel from '../guestPanel/GuestPanel.jsx'
-import RoomCanvas from '../canvas/RoomCanvas.jsx'
-import RightSidebar from '../sidebar/RightSidebar.jsx'
-import ErrorBoundary from '../ui/ErrorBoundary.jsx'
+import { useStore } from '../../store/useStore'
+import Toolbar from './Toolbar'
+import GuestPanel from '../guestPanel/GuestPanel'
+import RoomCanvas from '../canvas/RoomCanvas'
+import RightSidebar from '../sidebar/RightSidebar'
+import ErrorBoundary from '../ui/ErrorBoundary'
 import styles from './AppShell.module.css'
 
 // Renders straight away: Seating is shown only once the wedding has been read

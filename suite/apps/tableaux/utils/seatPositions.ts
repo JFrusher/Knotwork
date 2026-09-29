@@ -1,4 +1,45 @@
-import { getTableType } from './tableTypes.js'
+import type { PerSideSeats, SizeUnits, Table } from '../store/types'
+import { getTableType, type TableShape, type TableTypeDef } from './tableTypes'
+
+export interface Seat {
+  x: number
+  y: number
+}
+
+export interface TableGeometry {
+  shape: TableShape
+  width: number
+  height: number
+  radius: number
+  /** A half-circle's centre, below its top edge. */
+  cy?: number
+  rounded?: boolean
+  seats: Seat[]
+}
+
+/** What the geometry is read from: a table, or the start of one. */
+export type TableShapeSource = Pick<Table, 'type' | 'capacity'> & {
+  sizeUnits?: SizeUnits
+  perSideSeats?: PerSideSeats | null
+  seatArcRange?: { start: number; total: number } | null
+}
+
+/** A neighbour's box, centre and half-extents, for moving chairs out of its way. */
+export interface NeighbourBox {
+  id?: string
+  cx: number
+  cy: number
+  hw: number
+  hh: number
+}
+
+export interface AdaptedSeats {
+  seats: Seat[]
+  /** The table fields to commit on drop. */
+  patch: { perSideSeats: PerSideSeats } | { seatArcRange: { start: number; total: number } }
+}
+
+type Side = keyof PerSideSeats
 
 /**
  * Table geometry + seat placement. Returns, for a given table, the bounding
@@ -35,7 +76,7 @@ export const DEFAULT_CHAIR_CM = 45
 // ── seat-count distribution for rectangles ──────────────────────────────────
 
 /** Split a capacity across rectangle edges according to the preset's layout. */
-export function sidesFromLayout(cap, def) {
+export function sidesFromLayout(cap: number, def: TableTypeDef): PerSideSeats {
   const layout = def.seatLayout
   let top = 0
   let bottom = 0
@@ -59,7 +100,7 @@ export function sidesFromLayout(cap, def) {
 }
 
 /** Minimum px box that fits the given per-side seat counts (and preset min). */
-function minRectSize(sides, def) {
+function minRectSize(sides: PerSideSeats, def: TableTypeDef): { width: number; height: number } {
   const perLong = Math.max(sides.top, sides.bottom, 1)
   const perShort = Math.max(sides.left, sides.right, 0)
   return {
@@ -69,11 +110,11 @@ function minRectSize(sides, def) {
 }
 
 /** Minimum radius that fits `cap` seats around a circle (and preset baseRadius). */
-function minRoundRadius(cap, def) {
+function minRoundRadius(cap: number, def: TableTypeDef): number {
   return Math.max(def.baseRadius || 0, (cap * SEAT_PITCH) / (2 * Math.PI))
 }
 
-function minHalfRadius(cap, def) {
+function minHalfRadius(cap: number, def: TableTypeDef): number {
   return Math.max(def.baseRadius || 0, (cap * SEAT_PITCH) / Math.PI)
 }
 
@@ -85,16 +126,16 @@ function minHalfRadius(cap, def) {
 const SEAT_FIT_FLOOR = 16
 
 /** Smallest radius that fits `cap` seats around a circle (seats only). */
-function seatFitRadius(cap) {
+function seatFitRadius(cap: number): number {
   return Math.max(SEAT_FIT_FLOOR, (cap * SEAT_PITCH) / (2 * Math.PI))
 }
 
-function seatFitHalfRadius(cap) {
+function seatFitHalfRadius(cap: number): number {
   return Math.max(SEAT_FIT_FLOOR, (cap * SEAT_PITCH) / Math.PI)
 }
 
 /** Smallest px box that fits the given per-side seat counts (seats only). */
-function seatFitRect(sides) {
+function seatFitRect(sides: PerSideSeats): { width: number; height: number } {
   const perLong = Math.max(sides.top, sides.bottom, 1)
   const perShort = Math.max(sides.left, sides.right, 0)
   return {
@@ -108,12 +149,12 @@ function seatFitRect(sides) {
 // When startAngle/arcTotal are provided, distribute seats across that arc
 // (half-step centering keeps them evenly spaced within the available arc).
 // Defaults reproduce the original full-circle behaviour exactly.
-function roundSeatsAt(cap, radius, startAngle, arcTotal) {
+function roundSeatsAt(cap: number, radius: number, startAngle?: number, arcTotal?: number): Seat[] {
   const start = startAngle ?? -Math.PI / 2
   const arc = arcTotal ?? 2 * Math.PI
   const partial = arcTotal != null
   const seatR = radius + SEAT_OFFSET
-  const seats = []
+  const seats: Seat[] = []
   for (let i = 0; i < cap; i++) {
     const angle = partial
       ? start + (i + 0.5) * (arc / cap)
@@ -123,9 +164,9 @@ function roundSeatsAt(cap, radius, startAngle, arcTotal) {
   return seats
 }
 
-function halfCircleSeatsAt(cap, radius, cy) {
+function halfCircleSeatsAt(cap: number, radius: number, cy: number): Seat[] {
   const seatR = radius + SEAT_OFFSET
-  const seats = []
+  const seats: Seat[] = []
   for (let i = 0; i < cap; i++) {
     const t = (i + 0.5) / cap
     const angle = Math.PI - t * Math.PI // π (left) → 0 (right) across the top
@@ -136,7 +177,7 @@ function halfCircleSeatsAt(cap, radius, cy) {
 
 // Matches the seat order rectSeatsFromSides lays out in, and therefore the
 // order assignedGuestIds indices are grouped in for a seat-mode rect table.
-const SIDE_ORDER = ['top', 'bottom', 'left', 'right']
+const SIDE_ORDER = ['top', 'bottom', 'left', 'right'] as const
 
 /**
  * Re-slice a seat-mode rect table's assignedGuestIds when its per-side seat
@@ -151,10 +192,14 @@ const SIDE_ORDER = ['top', 'bottom', 'left', 'right']
  * specific side is already taken. A side whose count didn't change is left
  * completely untouched.
  */
-export function remapSeatsForSides(guestIds = [], oldSides, newSides) {
+export function remapSeatsForSides(
+  guestIds: Array<string | null> = [],
+  oldSides: Partial<PerSideSeats> | null,
+  newSides: Partial<PerSideSeats> | null
+): Array<string | null> {
   let cursor = 0
-  const nextSegments = []
-  const overflow = []
+  const nextSegments: Array<Array<string | null>> = []
+  const overflow: string[] = []
 
   for (const side of SIDE_ORDER) {
     const oldCount = Math.max(0, Math.round(oldSides?.[side] || 0))
@@ -167,7 +212,7 @@ export function remapSeatsForSides(guestIds = [], oldSides, newSides) {
       nextSegments.push([...segment, ...new Array(newCount - oldCount).fill(null)])
       continue
     }
-    const occupied = segment.filter(Boolean)
+    const occupied = segment.filter((id): id is string => Boolean(id))
     if (occupied.length <= newCount) {
       nextSegments.push([...occupied, ...new Array(newCount - occupied.length).fill(null)])
     } else {
@@ -178,7 +223,7 @@ export function remapSeatsForSides(guestIds = [], oldSides, newSides) {
 
   // Anything beyond the last known side (e.g. the array already carried
   // overflow from an earlier resize) rides along rather than being dropped.
-  if (cursor < guestIds.length) overflow.push(...guestIds.slice(cursor).filter(Boolean))
+  if (cursor < guestIds.length) overflow.push(...guestIds.slice(cursor).filter((id): id is string => Boolean(id)))
 
   const out = nextSegments.flat()
   return overflow.length ? [...out, ...overflow] : out
@@ -188,10 +233,10 @@ export function remapSeatsForSides(guestIds = [], oldSides, newSides) {
  * Place seats on the edges of a rect of the given px size, in the order
  * top → bottom → left → right (matching assignedGuestIds indices).
  */
-export function rectSeatsFromSides(sides, width, height) {
+export function rectSeatsFromSides(sides: Partial<PerSideSeats> | null, width: number, height: number): Seat[] {
   const { top = 0, bottom = 0, left = 0, right = 0 } = sides || {}
-  const seats = []
-  const row = (n, edge) => {
+  const seats: Seat[] = []
+  const row = (n: number, edge: Side) => {
     for (let i = 0; i < n; i++) {
       const t = (i + 0.5) / n
       if (edge === 'top') seats.push({ x: -width / 2 + t * width, y: -height / 2 - SEAT_OFFSET })
@@ -211,20 +256,23 @@ export function rectSeatsFromSides(sides, width, height) {
 
 // ── main entry ──────────────────────────────────────────────────────────────
 
-export function getTableGeometry(table, pixelsPerUnit = DEFAULT_PPU) {
+export function getTableGeometry(table: TableShapeSource, pixelsPerUnit = DEFAULT_PPU): TableGeometry {
   const def = getTableType(table.type)
   const cap = Math.max(1, table.capacity || def.defaultCapacity)
   const shape = table.sizeUnits?.shape || def.shape
   const ppu = pixelsPerUnit || DEFAULT_PPU
   const su = table.sizeUnits
+  // The footprint in centimetres, of whichever kind the size is.
+  const diameter = su && 'diameter' in su ? su.diameter : null
+  const box = su && 'width' in su ? su : null
 
   if (shape === 'circle') {
     const noSeats = def.seatLayout === 'none'
-    const minR = noSeats ? def.baseRadius : minRoundRadius(cap, def)
+    const minR = noSeats ? def.baseRadius || 0 : minRoundRadius(cap, def)
     // Real-units: clamp only to the seat-fit minimum so tables can shrink below
     // the cosmetic preset size. Legacy (no sizeUnits): keep the preset min.
     const seatFloor = noSeats ? SEAT_FIT_FLOOR : seatFitRadius(cap)
-    const radius = su ? Math.max((su.diameter * ppu) / 2, seatFloor) : minR
+    const radius = diameter !== null ? Math.max((diameter * ppu) / 2, seatFloor) : minR
     const arc = table.seatArcRange || null
     return {
       shape: 'circle',
@@ -237,7 +285,7 @@ export function getTableGeometry(table, pixelsPerUnit = DEFAULT_PPU) {
 
   if (shape === 'half-circle') {
     const minR = minHalfRadius(cap, def)
-    const radius = su ? Math.max((su.diameter * ppu) / 2, seatFitHalfRadius(cap)) : minR
+    const radius = diameter !== null ? Math.max((diameter * ppu) / 2, seatFitHalfRadius(cap)) : minR
     const cy = radius / 2
     return {
       shape: 'half-circle',
@@ -253,8 +301,8 @@ export function getTableGeometry(table, pixelsPerUnit = DEFAULT_PPU) {
   const sides = table.perSideSeats || sidesFromLayout(cap, def)
   const min = minRectSize(sides, def)
   const fit = seatFitRect(sides)
-  const width = su ? Math.max((su.width || def.width) * ppu, fit.width) : min.width
-  const height = su ? Math.max((su.height || def.height) * ppu, fit.height) : min.height
+  const width = su ? Math.max((box?.width || def.width || 0) * ppu, fit.width) : min.width
+  const height = su ? Math.max((box?.height || def.height || 0) * ppu, fit.height) : min.height
   return {
     shape: 'rect',
     width,
@@ -270,10 +318,10 @@ export function getTableGeometry(table, pixelsPerUnit = DEFAULT_PPU) {
  * (preset + capacity) geometry. Used to migrate older plans so the first render
  * is pixel-identical: `sizeUnits × ppu` reproduces the legacy px footprint.
  */
-export function deriveSizeUnits(table, pixelsPerUnit = DEFAULT_PPU) {
+export function deriveSizeUnits(table: TableShapeSource, pixelsPerUnit = DEFAULT_PPU): SizeUnits {
   const ppu = pixelsPerUnit || DEFAULT_PPU
   const g = getTableGeometry({ ...table, sizeUnits: undefined, perSideSeats: null }, ppu)
-  const r2 = (n) => Math.round((n / ppu) * 100) / 100
+  const r2 = (n: number) => Math.round((n / ppu) * 100) / 100
   if (g.shape === 'circle' || g.shape === 'half-circle') {
     return { shape: g.shape, diameter: r2(g.radius * 2) }
   }
@@ -281,7 +329,7 @@ export function deriveSizeUnits(table, pixelsPerUnit = DEFAULT_PPU) {
 }
 
 /** Fill-level colour for the capacity ring: green → amber → red. */
-export function fillColour(ratio) {
+export function fillColour(ratio: number): string {
   if (ratio > 1) return 'var(--danger)'
   if (ratio >= 0.85) return 'var(--warn)'
   return 'var(--ok)'
@@ -299,7 +347,11 @@ const CHAIR_BUFFER = SEAT_OFFSET * 2 + 8
  *   patch — the table fields to commit on drop:
  *           { perSideSeats } for rects, { seatArcRange } for circles.
  */
-export function getAdaptedSeatsForDrag(table, ppu, neighbourBoxes) {
+export function getAdaptedSeatsForDrag(
+  table: TableShapeSource & Pick<Table, 'x' | 'y'>,
+  ppu: number,
+  neighbourBoxes: NeighbourBox[] | null | undefined
+): AdaptedSeats | null {
   if (!neighbourBoxes?.length) return null
   const p = ppu || DEFAULT_PPU
   const geom = getTableGeometry(table, p)
@@ -308,10 +360,14 @@ export function getAdaptedSeatsForDrag(table, ppu, neighbourBoxes) {
   return null
 }
 
-function _adaptRect(table, geom, neighbours) {
+function _adaptRect(
+  table: TableShapeSource & Pick<Table, 'x' | 'y'>,
+  geom: TableGeometry,
+  neighbours: NeighbourBox[]
+): AdaptedSeats | null {
   const ax = table.x, ay = table.y
   const aw = geom.width / 2, ah = geom.height / 2
-  const blocked = { top: false, bottom: false, left: false, right: false }
+  const blocked: Record<Side, boolean> = { top: false, bottom: false, left: false, right: false }
 
   for (const n of neighbours) {
     // Use <= / >= so exactly-touching edges (gap === 0) count as overlapping.
@@ -338,10 +394,10 @@ function _adaptRect(table, geom, neighbours) {
   const cap = Math.max(1, table.capacity || def.defaultCapacity)
   const origSides = table.perSideSeats || sidesFromLayout(cap, def)
   const adapted = { ...origSides }
-  const freeSides = []
+  const freeSides: Side[] = []
   let displaced = 0
 
-  for (const side of ['top', 'bottom', 'left', 'right']) {
+  for (const side of SIDE_ORDER) {
     if (blocked[side]) {
       displaced += adapted[side]
       adapted[side] = 0
@@ -362,12 +418,16 @@ function _adaptRect(table, geom, neighbours) {
   }
 }
 
-function _adaptCircle(table, geom, neighbours) {
+function _adaptCircle(
+  table: TableShapeSource & Pick<Table, 'x' | 'y'>,
+  geom: TableGeometry,
+  neighbours: NeighbourBox[]
+): AdaptedSeats | null {
   const ax = table.x, ay = table.y
   const r = geom.radius
   const cap = Math.max(1, table.capacity || 0)
   const TAU = 2 * Math.PI
-  const blocks = []
+  const blocks: Array<{ center: number; half: number }> = []
 
   for (const n of neighbours) {
     const dx = n.cx - ax, dy = n.cy - ay
@@ -388,8 +448,8 @@ function _adaptCircle(table, geom, neighbours) {
 
   // Convert each blocking arc to an interval in [0, TAU), splitting any that
   // cross the 0/TAU boundary into two pieces so standard interval merge works.
-  const norm = a => ((a % TAU) + TAU) % TAU
-  const intervals = []
+  const norm = (a: number) => ((a % TAU) + TAU) % TAU
+  const intervals: Array<[number, number]> = []
   for (const { center, half } of blocks) {
     const lo = norm(center - half)
     const hi = norm(center + half)
@@ -403,7 +463,7 @@ function _adaptCircle(table, geom, neighbours) {
 
   // Sort then merge overlapping intervals.
   intervals.sort((a, b) => a[0] - b[0])
-  const merged = []
+  const merged: Array<[number, number]> = []
   for (const [lo, hi] of intervals) {
     if (merged.length && lo <= merged[merged.length - 1][1]) {
       merged[merged.length - 1][1] = Math.max(merged[merged.length - 1][1], hi)

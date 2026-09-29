@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeWarnings, buildWarningIndex } from './warnings.js'
+import { computeWarnings, buildWarningIndex } from './warnings'
 
 const guest = (id, over = {}) => ({
   id,

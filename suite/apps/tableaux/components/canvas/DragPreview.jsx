@@ -1,6 +1,6 @@
-import { useStore } from '../../store/useStore.js'
-import Icon from '../ui/Icon.jsx'
-import TableThumbnail from '../toolbar/TableThumbnail.jsx'
+import { useStore } from '../../store/useStore'
+import Icon from '../ui/Icon'
+import TableThumbnail from '../toolbar/TableThumbnail'
 import styles from './DragPreview.module.css'
 
 /** The element that follows the cursor during a drag (rendered in DragOverlay). */

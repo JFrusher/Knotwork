@@ -10,14 +10,14 @@ import {
   pointerWithin,
   getClientRect,
 } from '@dnd-kit/core'
-import { useCanvasDnd } from './hooks/useCanvasDnd.js'
-import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js'
-import { WarningsProvider } from './store/warningsContext.jsx'
-import AppShell from './components/layout/AppShell.jsx'
-import ModalRoot from './components/layout/ModalRoot.jsx'
-import ToastViewport from './components/ui/Toast.jsx'
-import DragPreview from './components/canvas/DragPreview.jsx'
-import { useStore } from './store/useStore.js'
+import { useCanvasDnd } from './hooks/useCanvasDnd'
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+import { WarningsProvider } from './store/warningsContext'
+import AppShell from './components/layout/AppShell'
+import ModalRoot from './components/layout/ModalRoot'
+import ToastViewport from './components/ui/Toast'
+import DragPreview from './components/canvas/DragPreview'
+import { useStore } from './store/useStore'
 import { useSelectFromAddress } from '@/components/shell/useSelectFromAddress'
 
 /** A link to one table — the command palette's — opens on it. */

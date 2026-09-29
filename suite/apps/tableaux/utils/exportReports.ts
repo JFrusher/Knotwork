@@ -1,9 +1,9 @@
-import { DIETARY_META } from '@/lib/model/dietary'
+import { DIETARY_META, dietaryMeta } from '@/lib/model/dietary'
 import { sideShort } from '@/lib/model/partners'
 import { isComing } from '@/lib/model/slices'
-import { getTableType } from './tableTypes.js'
-import { toCsv } from './exportCsv.js'
-import { downloadFile, slug } from './download.js'
+import { getTableType } from './tableTypes'
+import { toCsv, type PlanSource } from './exportCsv'
+import { downloadFile, slug } from './download'
 
 /**
  * Vendor/caterer reporting built purely from the live document — works in both
@@ -13,9 +13,9 @@ import { downloadFile, slug } from './download.js'
  */
 
 /** Headcount by dietary requirement among non-declined guests. */
-export function buildDietaryTotals(state) {
+export function buildDietaryTotals(state: PlanSource): { headers: string[]; rows: Array<[string, number]> } {
   const { guests = {} } = state
-  const counts = {}
+  const counts: Record<string, number> = {}
   let standard = 0
   let total = 0
   for (const g of Object.values(guests)) {
@@ -25,37 +25,37 @@ export function buildDietaryTotals(state) {
     if (!key) standard++
     else counts[key] = (counts[key] || 0) + 1
   }
-  const rows = []
+  const rows: Array<[string, number]> = []
   rows.push(['Standard / no requirement', standard])
-  Object.keys(DIETARY_META)
-    .filter((k) => counts[k])
-    .forEach((k) => rows.push([DIETARY_META[k].label, counts[k]]))
+  Object.values(DIETARY_META)
+    .filter((meta) => counts[meta.key])
+    .forEach((meta) => rows.push([meta.label, counts[meta.key]]))
   // any unknown keys not in DIETARY_META
   Object.keys(counts)
-    .filter((k) => !DIETARY_META[k])
+    .filter((k) => !dietaryMeta(k))
     .forEach((k) => rows.push([k, counts[k]]))
   rows.push(['Total attending', total])
   return { headers: ['Dietary requirement', 'Guests'], rows }
 }
 
 /** Per-table summary: occupancy, capacity, dietary breakdown, side mix. */
-export function buildPerTableSummary(state) {
+export function buildPerTableSummary(state: PlanSource): { headers: string[]; rows: Array<Array<string | number>> } {
   const { guests = {}, tables = {}, meta } = state
   const headers = ['Table', 'Seated', 'Capacity', 'Dietary', sideShort('a', meta), sideShort('b', meta)]
-  const rows = []
+  const rows: Array<Array<string | number>> = []
   const tableList = Object.values(tables).sort((a, b) =>
     String(a.label).localeCompare(String(b.label), undefined, { numeric: true })
   )
   for (const t of tableList) {
-    const ids = (t.assignedGuestIds || []).filter(Boolean)
-    const diet = {}
+    const ids = (t.assignedGuestIds || []).filter((id): id is string => Boolean(id))
+    const diet: Record<string, number> = {}
     let a = 0
     let b = 0
     for (const gid of ids) {
       const g = guests[gid]
       if (!g) continue
       if (g.dietary) {
-        const ab = DIETARY_META[g.dietary]?.abbrev || g.dietary
+        const ab = dietaryMeta(g.dietary)?.abbrev || g.dietary
         diet[ab] = (diet[ab] || 0) + 1
       }
       if (g.side === 'a') a++
@@ -77,7 +77,7 @@ export function buildPerTableSummary(state) {
 }
 
 /** A single CSV report combining dietary totals and the per-table summary. */
-export function buildReportCsv(state) {
+export function buildReportCsv(state: PlanSource): string {
   const diet = buildDietaryTotals(state)
   const perTable = buildPerTableSummary(state)
   return (
@@ -87,6 +87,6 @@ export function buildReportCsv(state) {
   )
 }
 
-export function exportReportCsv(state, name) {
+export function exportReportCsv(state: PlanSource, name: string): void {
   downloadFile(`${slug(name)}-report.csv`, buildReportCsv(state), 'text/csv')
 }

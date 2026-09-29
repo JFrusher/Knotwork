@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useStore } from './useStore.js'
-import { seatId } from '../utils/ids.js'
+import { useStore } from './useStore'
+import { seatId } from '../utils/ids'
 import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
-import { openPlan } from '../test/openPlan.js'
+import { openPlan } from '../test/openPlan'
 
 const mkGuest = (id, first, last) => ({
   id,

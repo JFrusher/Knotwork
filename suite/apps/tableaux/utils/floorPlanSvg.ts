@@ -1,4 +1,63 @@
-import { getTableGeometry, DEFAULT_PPU } from './seatPositions.js'
+import type { Guest, Join, Pillar, Plan, Space, Table, WallElement, Zone } from '../store/types'
+import { getTableGeometry, DEFAULT_PPU, type Seat, type TableGeometry } from './seatPositions'
+
+/** What the plan is drawn from: Seating's plan, or as much of it as there is. */
+export type FloorPlanSource = Partial<Pick<Plan, 'guests' | 'tables' | 'zones' | 'wallElements' | 'pillars'>> & {
+  settings?: Partial<Plan['settings']>
+  room?: Partial<Plan['room']>
+}
+
+/** One cell size and type size for every name on the sheet. */
+export interface Cells {
+  cellW: number
+  cellH: number
+  basePx: number
+}
+
+/** Measures `text` at `size`, in the units the drawing is in. */
+export type Measure = (text: string, size: number) => number
+
+export interface FloorPlanOptions {
+  ppu?: number
+  padPx?: number
+  measure?: Measure
+  /** The page scale a plan of these bounds would print at. */
+  fit?: (bounds: Bounds) => number
+  showSeats?: boolean
+  seatLabels?: 'number' | 'name' | 'none'
+  nameFontPx?: number
+  cells?: Cells
+  /** The part of the plan this sheet shows, when it is split across two. */
+  window?: Bounds
+}
+
+export interface Bounds {
+  minX: number
+  minY: number
+  width: number
+  height: number
+}
+
+/** A seat in world coordinates, with its outward direction and who sits there. */
+interface PlacedSeat {
+  x: number
+  y: number
+  nx: number
+  ny: number
+  index: number
+  table: Table
+  guest: Guest | null
+}
+
+interface WallSeg {
+  wallIndex: number
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
+
+type Point = { x: number; y: number }
 
 /**
  * Build a to-scale SVG of the room, zones and tables from a plain plan `doc`
@@ -14,10 +73,10 @@ import { getTableGeometry, DEFAULT_PPU } from './seatPositions.js'
  *   none   — the seat shape only
  */
 
-const escAttr = (s) =>
-  String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c])
+const escAttr = (s: unknown): string =>
+  String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c] as string)
 
-function shapePath(geom) {
+function shapePath(geom: TableGeometry): string {
   if (geom.shape === 'circle') return `<circle cx="0" cy="0" r="${geom.radius}" />`
   if (geom.shape === 'rect') {
     const rx = geom.rounded ? 14 : 6
@@ -27,7 +86,7 @@ function shapePath(geom) {
 }
 
 /** Compute door arc path string (same logic as canvas RoomSpaces.jsx). */
-function buildDoorPath(we, seg, scale) {
+function buildDoorPath(we: WallElement, seg: WallSeg, scale: number): string {
   const len = Math.hypot(seg.x2 - seg.x1, seg.y2 - seg.y1)
   if (!len) return ''
   const ux = (seg.x2 - seg.x1) / len
@@ -45,7 +104,7 @@ function buildDoorPath(we, seg, scale) {
   const fhx = free.x - hinge.x, fhy = free.y - hinge.y
   const ohx = openPos.x - hinge.x, ohy = openPos.y - hinge.y
   const sweep = fhx * ohy - fhy * ohx > 0 ? 1 : 0
-  const r = (n) => Math.round(n * 10) / 10
+  const r = (n: number) => Math.round(n * 10) / 10
   return (
     `M ${r(hinge.x)} ${r(hinge.y)} L ${r(openPos.x)} ${r(openPos.y)} ` +
     `M ${r(free.x)} ${r(free.y)} A ${r(doorLen)} ${r(doorLen)} 0 0 ${sweep} ${r(openPos.x)} ${r(openPos.y)}`
@@ -53,7 +112,7 @@ function buildDoorPath(we, seg, scale) {
 }
 
 /** Wall segments for a space (absolute canvas coords). */
-function getWallSegs(sp) {
+function getWallSegs(sp: Space): WallSeg[] {
   if (sp.shape === 'polygon') {
     return sp.vertices.map((v, i) => {
       const nxt = sp.vertices[(i + 1) % sp.vertices.length]
@@ -84,7 +143,7 @@ const INNER_BITE = 6
 export const MIN_NAME_PX = 4.5 // below this, names get ellipsised rather than shrunk further
 
 /** Fallback text metric when no real font metrics are supplied. Linear in size. */
-const estimateWidth = (text, fontPx) => String(text).length * fontPx * 0.52
+const estimateWidth: Measure = (text, fontPx) => String(text).length * fontPx * 0.52
 
 /**
  * Which way is "away from the table" for one seat, in the table's own
@@ -95,7 +154,7 @@ const estimateWidth = (text, fontPx) => String(text).length * fontPx * 0.52
  * would send an end seat's cell out diagonally and straight into its neighbour's,
  * costing the long tables the width they have least of.
  */
-function seatNormal(seat, geom) {
+function seatNormal(seat: Seat, geom: TableGeometry): Point {
   if (geom.shape === 'rect') {
     if (Math.abs(seat.y) > geom.height / 2) return { x: 0, y: Math.sign(seat.y) }
     if (Math.abs(seat.x) > geom.width / 2) return { x: Math.sign(seat.x), y: 0 }
@@ -106,7 +165,7 @@ function seatNormal(seat, geom) {
 }
 
 /** A seat's outward direction in world coordinates, table rotation included. */
-function outwardOf(seat) {
+function outwardOf(seat: PlacedSeat): Point {
   if (Number.isFinite(seat.nx) && Number.isFinite(seat.ny)) return { x: seat.nx, y: seat.ny }
   const dx = seat.x - seat.table.x
   const dy = seat.y - seat.table.y
@@ -123,7 +182,7 @@ function outwardOf(seat) {
  * floor outside the table is usually clear — so height is nearly free and width
  * is not.
  */
-function cellCentre(seat, out, cellH) {
+function cellCentre(seat: Point, out: Point, cellH: number): Point {
   const reach = Math.max(0, cellH / 2 - INNER_BITE)
   return { x: seat.x + out.x * reach, y: seat.y + out.y * reach }
 }
@@ -138,7 +197,7 @@ function cellCentre(seat, out, cellH) {
  * ponytail: O(n²) over the seat list — ~100 seats on a real plan, so ~5k distance
  * checks per height tried. Swap in a grid/kd-tree only if plans reach thousands.
  */
-function widthAt(centres, cellH) {
+function widthAt(centres: Point[], cellH: number): number {
   let bound = MAX_CELL_W + CELL_GAP
   for (let i = 0; i < centres.length; i++) {
     for (let j = i + 1; j < centres.length; j++) {
@@ -162,7 +221,7 @@ function widthAt(centres, cellH) {
  * three-letter pieces is less readable, not more — so the width of the cell caps
  * the type however tall the cell is allowed to get.
  */
-function nameSizeIn(w, h, tokenW) {
+function nameSizeIn(w: number, h: number, tokenW: number): number {
   const textW = w - CELL_INSET * 2
   if (textW <= 0 || tokenW <= 0) return 0
   return Math.max(0, Math.min(textW / tokenW, h / (2 * LEADING)))
@@ -185,12 +244,12 @@ function nameSizeIn(w, h, tokenW) {
  * whisker of the best, take the shortest: a taller cell that reads no better is
  * just a bigger empty box.
  */
-export function solveCells(seats, tokenW, rank = (cell) => cell.basePx) {
-  const floor = { cellW: MIN_CELL_W, cellH: MIN_CELL_H, basePx: MIN_NAME_PX }
+export function solveCells(seats: PlacedSeat[], tokenW: number, rank = (cell: Cells) => cell.basePx): Cells {
+  const floor: Cells = { cellW: MIN_CELL_W, cellH: MIN_CELL_H, basePx: MIN_NAME_PX }
   if (!seats.length) return floor
 
   const outs = seats.map(outwardOf)
-  const candidates = []
+  const candidates: Cells[] = []
   for (let h = MIN_CELL_H; h <= MAX_CELL_H; h += CELL_H_STEP) {
     const centres = seats.map((s, i) => cellCentre(s, outs[i], h))
     const cellW = widthAt(centres, h)
@@ -206,7 +265,7 @@ export function solveCells(seats, tokenW, rank = (cell) => cell.basePx) {
  * Plan bounds grown to hold the name cells. They reach further out than the table
  * halo allows for, so without this the outermost names get clipped off the sheet.
  */
-function expandForCells(l, cells) {
+function expandForCells(l: Bounds & { seats: PlacedSeat[] }, cells: Cells): Bounds {
   let minX = l.minX
   let minY = l.minY
   let maxX = l.minX + l.width
@@ -222,7 +281,7 @@ function expandForCells(l, cells) {
 }
 
 /** 90th-percentile value of a numeric array (empty → 1). */
-function p90(values) {
+function p90(values: number[]): number {
   if (!values.length) return 1
   const sorted = [...values].sort((a, b) => a - b)
   return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.9))]
@@ -233,8 +292,8 @@ function p90(values) {
  * the plan, so one very long surname wraps inside its own cell rather than setting
  * the type size for the whole sheet.
  */
-export function tokenWidthOf(seats, measure) {
-  const widths = []
+export function tokenWidthOf(seats: PlacedSeat[], measure: Measure): number {
+  const widths: number[] = []
   for (const s of seats) {
     if (!s.guest) continue
     const first = s.guest.firstName || s.guest.fullName || ''
@@ -249,7 +308,7 @@ export function tokenWidthOf(seats, measure) {
  * surname reads perfectly well split where its own hyphen falls; no name reads
  * well split mid-word, so anything else is left whole for the caller to cut.
  */
-function wrapToken(text, fontPx, maxW, measure) {
+function wrapToken(text: string, fontPx: number, maxW: number, measure: Measure): string[] {
   const name = String(text ?? '')
   if (name === '' || measure(name, fontPx) <= maxW) return [name]
   const at = name.lastIndexOf('-')
@@ -262,7 +321,7 @@ function wrapToken(text, fontPx, maxW, measure) {
 }
 
 /** Shrink `text` until it fits `maxW` at `fontPx`, ellipsising as a last resort. */
-function fitToken(text, fontPx, maxW, measure) {
+function fitToken(text: string, fontPx: number, maxW: number, measure: Measure): string {
   let s = String(text)
   if (!s) return s
   if (measure(s, fontPx) <= maxW) return s
@@ -275,7 +334,7 @@ function fitToken(text, fontPx, maxW, measure) {
 
 // ── layout ──────────────────────────────────────────────────────────────────
 
-const spaceBox = (sp) =>
+const spaceBox = (sp: Space): { minX: number; minY: number; maxX: number; maxY: number } =>
   sp.shape === 'polygon'
     ? {
         minX: Math.min(...sp.vertices.map((v) => sp.x + v.x)),
@@ -291,24 +350,24 @@ const spaceBox = (sp) =>
  * out from buildFloorPlanSvg so the PDF exporter can size type against the
  * cells before anything is drawn.
  */
-function layoutFloorPlan(doc, { ppu, padPx } = {}) {
+function layoutFloorPlan(doc: FloorPlanSource, { ppu, padPx }: FloorPlanOptions = {}) {
   const settings = doc.settings || {}
   const scale = ppu || settings.pixelsPerUnit || DEFAULT_PPU
   const guests = doc.guests || {}
   const tables = Object.values(doc.tables || {})
   const zones = Object.values(doc.zones || {})
-  const wallElements = Object.values(doc.wallElements || {}).filter(Boolean)
-  const pillars = Object.values(doc.pillars || {}).filter(Boolean)
-  const room = doc.room || {}
+  const wallElements = Object.values(doc.wallElements || {}).filter((we): we is WallElement => Boolean(we))
+  const pillars = Object.values(doc.pillars || {}).filter((p): p is Pillar => Boolean(p))
+  const room: Partial<Plan['room']> = doc.room || {}
   const roomW = (room.widthUnits ? room.widthUnits * scale : room.width) || 1200
   const roomH = (room.heightUnits ? room.heightUnits * scale : room.height) || 900
 
   // Multi-room: render each floor space; fall back to a single rect for old docs.
-  const spaces =
+  const spaces: Space[] =
     Array.isArray(room.spaces) && room.spaces.length
       ? room.spaces
-      : [{ shape: 'rect', x: 0, y: 0, width: roomW, height: roomH, backgroundColour: '#FAF8F5' }]
-  const joins = Array.isArray(room.joins) ? room.joins : []
+      : [{ id: 'room', label: 'Room', shape: 'rect', x: 0, y: 0, width: roomW, height: roomH, backgroundColour: '#FAF8F5' }]
+  const joins: Join[] = Array.isArray(room.joins) ? room.joins : []
 
   // Deliberately not seeded at the origin. A room drawn away from (0,0) would
   // otherwise drag all the empty ground back to it onto the printed sheet.
@@ -316,7 +375,7 @@ function layoutFloorPlan(doc, { ppu, padPx } = {}) {
   let minY = Infinity
   let maxX = -Infinity
   let maxY = -Infinity
-  const grow = (x1, y1, x2, y2) => {
+  const grow = (x1: number, y1: number, x2: number, y2: number) => {
     minX = Math.min(minX, x1)
     minY = Math.min(minY, y1)
     maxX = Math.max(maxX, x2)
@@ -334,7 +393,7 @@ function layoutFloorPlan(doc, { ppu, padPx } = {}) {
     grow(p.x - r, p.y - r, p.x + r, p.y + r)
   })
 
-  const seats = []
+  const seats: PlacedSeat[] = []
   const geoms = tables.map((t) => {
     const g = getTableGeometry(t, scale)
     const rad = ((t.rotation || 0) * Math.PI) / 180
@@ -356,7 +415,7 @@ function layoutFloorPlan(doc, { ppu, padPx } = {}) {
         ny: n.x * sin + n.y * cos,
         index: i,
         table: t,
-        guest: guests[assigned[i]] || null,
+        guest: (assigned[i] && guests[assigned[i]]) || null,
       })
     })
     return { t, g }
@@ -398,21 +457,20 @@ function layoutFloorPlan(doc, { ppu, padPx } = {}) {
  * buildFloorPlanSvg so the exporter can fit the page before anything is drawn,
  * then hand the same solved cells back in so the two cannot disagree.
  */
-export function measureFloorPlan(doc, opts = {}) {
+export function measureFloorPlan(doc: FloorPlanSource, opts: FloorPlanOptions = {}): Bounds & Cells {
   const l = layoutFloorPlan(doc, opts)
   const measure = opts.measure || estimateWidth
   // `fit` maps the bounds a cell size produces to the scale the page would then
   // print at, so the solver can rank candidates by their size on paper.
-  const rank = opts.fit
-    ? (cell) => cell.basePx * opts.fit(expandForCells(l, cell))
-    : undefined
+  const { fit } = opts
+  const rank = fit ? (cell: Cells) => cell.basePx * fit(expandForCells(l, cell)) : undefined
   const cells = solveCells(l.seats, tokenWidthOf(l.seats, measure), rank)
   return { ...expandForCells(l, cells), ...cells }
 }
 
 // ── drawing ─────────────────────────────────────────────────────────────────
 
-function renderNumberSeats(g, rot, withNumbers) {
+function renderNumberSeats(g: TableGeometry, rot: number, withNumbers: boolean): string {
   return g.seats
     .map((s, i) => {
       const circle = `<circle cx="${s.x}" cy="${s.y}" r="14" fill="#fff" stroke="#bbb" stroke-width="1.5"/>`
@@ -434,8 +492,8 @@ function renderNumberSeats(g, rot, withNumbers) {
  * the chart reads as one document. A name too wide for its cell wraps onto more
  * lines; only when it runs out of lines is it cut.
  */
-function renderNameCells(seats, cellW, cellH, basePx, measure) {
-  const r1 = (n) => Math.round(n * 10) / 10
+function renderNameCells(seats: PlacedSeat[], cellW: number, cellH: number, basePx: number, measure: Measure): string {
+  const r1 = (n: number) => Math.round(n * 10) / 10
   const textW = cellW - CELL_INSET * 2
   // Round DOWN to the precision actually written to the SVG, so the fit test
   // measures the same type the renderer will draw.
@@ -454,7 +512,7 @@ function renderNameCells(seats, cellW, cellH, basePx, measure) {
 
       const first = s.guest.firstName || s.guest.fullName || ''
       const last = s.guest.lastName || ''
-      const styled = (tokens, weight, fill) => tokens.map((t) => ({ t, weight, fill }))
+      const styled = (tokens: string[], weight: number, fill: string) => tokens.map((t) => ({ t, weight, fill }))
       let lines = [
         ...styled(wrapToken(first, base, textW, measure), 700, '#1f1b16'),
         ...styled(wrapToken(last, base, textW, measure), 400, '#4a4238'),
@@ -488,7 +546,7 @@ function renderNameCells(seats, cellW, cellH, basePx, measure) {
     .join('')
 }
 
-export function buildFloorPlanSvg(doc, opts = {}) {
+export function buildFloorPlanSvg(doc: FloorPlanSource, opts: FloorPlanOptions = {}): { svg: string; width: number; height: number } {
   const {
     showSeats = true,
     seatLabels = 'number',
@@ -499,7 +557,7 @@ export function buildFloorPlanSvg(doc, opts = {}) {
   const l = layoutFloorPlan(doc, opts)
   const { scale, spaces, joins, zones, wallElements, pillars, geoms, seats } = l
 
-  const parts = []
+  const parts: string[] = []
   // Floor spaces (rectangles + polygons).
   spaces.forEach((sp) => {
     const fill = sp.backgroundColour || '#FAF8F5'
@@ -529,7 +587,7 @@ export function buildFloorPlanSvg(doc, opts = {}) {
       )
     }
   })
-  zones.forEach((z) => {
+  zones.forEach((z: Zone) => {
     const fill = z.colour || '#E8E0D5'
     if (z.shape === 'circle') {
       parts.push(
@@ -544,7 +602,7 @@ export function buildFloorPlanSvg(doc, opts = {}) {
   })
 
   // Wall element gap overlays + symbols.
-  const weBySpace = {}
+  const weBySpace: Record<string, WallElement[]> = {}
   wallElements.forEach((we) => {
     if (!weBySpace[we.spaceId]) weBySpace[we.spaceId] = []
     weBySpace[we.spaceId].push(we)
@@ -620,7 +678,7 @@ export function buildFloorPlanSvg(doc, opts = {}) {
     )
   })
 
-  let bounds = { minX: l.minX, minY: l.minY, width: l.width, height: l.height }
+  let bounds: Bounds = { minX: l.minX, minY: l.minY, width: l.width, height: l.height }
   if (names) {
     // The exporter solves the cells once and passes them back in, so the sheet it
     // measured and the sheet it draws are the same sheet.
