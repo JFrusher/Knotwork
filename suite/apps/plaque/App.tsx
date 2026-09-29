@@ -20,11 +20,13 @@ import { loadFonts as loadStoredFonts } from "./state/blobStore";
 import { loadImages, toSource } from "./state/imageStore";
 import { loadPrinters } from "./state/printerStore";
 import { loadBundledFonts, registerFont } from "./state/fontLoader";
-import { read as readSaved, save, type SaveInput } from "./state/persist";
+import { designOf } from "./state/design";
+import { writeDesign } from "./state/sliceBridge";
 import { usePlaque } from "./state/store";
 import { useKeyboard } from "./state/useKeyboard";
 import { Announcer } from "./ui/Announcer";
 import { ToolUndo } from "@/components/shell/ToolUndo";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { ExportBar } from "./ui/ExportBar";
 import { MissingAssets } from "./ui/MissingAssets";
 import { Pagination } from "./ui/Pagination";
@@ -38,41 +40,15 @@ const PLACEHOLDER_ROW = { "": "" };
 /** Absent scope means per-row: what every design written before scope existed meant. */
 const PER_ROW = { kind: "per-row" } as const;
 
-interface Notice {
-  text: string;
-  actions?: { label: string; onClick: () => void }[];
-}
-
-/** Read from the store rather than a closure, so the unload flush is never stale. */
-function autosavePayload(): SaveInput {
-  const s = usePlaque.getState();
-  return {
-    card: s.card,
-    sheet: s.sheet,
-    template: s.template,
-    headers: s.headers,
-    rows: s.rows,
-    rowIds: s.rowIds,
-    merged: s.merged,
-    csvIssues: s.csvIssues,
-    fileName: s.fileName,
-    uploadedIcons: s.uploadedIcons,
-    assetNames: s.assetNames,
-    snapEnabled: s.snapEnabled,
-    sheetCollapsed: s.sheetCollapsed,
-    past: s.past,
-    future: s.future,
-  };
-}
-
 export function App() {
   const [ready, setReady] = useState(false);
-  // Selected one at a time: an action's identity is stable, so these never
-  // hand back a new reference and never re-render on their own account.
-  const undo = usePlaque((s) => s.undo);
-  const redo = usePlaque((s) => s.redo);
-  const [notices, setNotices] = useState<Notice[]>([]);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  // Place cards keep no history of their own: every design edit is on the
+  // wedding's, which the header's undo drives. The stack is shared, so saying
+  // what the next undo takes back is what makes it safe.
+  const past = useTrousseauStore((s) => s.past);
+  const future = useTrousseauStore((s) => s.future);
+  // A save the browser refused, whichever slice it was: the design is in it.
+  const saveError = useTrousseauStore((s) => s.saveError);
   useKeyboard();
 
   // App genuinely needs most of the design to draw the card, but it selects
@@ -100,8 +76,7 @@ export function App() {
     editingSide,
     printers,
     activePrinterId,
-    past,
-    future,
+    designProblem,
   } = usePlaque(
     useShallow((s) => ({
       card: s.card,
@@ -125,15 +100,13 @@ export function App() {
       editingSide: s.editingSide,
       printers: s.printers,
       activePrinterId: s.activePrinterId,
-      past: s.past,
-      future: s.future,
+      designProblem: s.designProblem,
     })),
   );
 
   // Actions never change identity in zustand, so they are read once.
   const {
     select,
-    beginEdit,
     setElementBox,
     setElementCrop,
     setCropId,
@@ -146,7 +119,8 @@ export function App() {
   // design: it belongs to this window and is not worth persisting.
   const [zoom, setZoom] = useState(1);
 
-  // Load fonts and any saved design once, before the first render of the canvas.
+  // Load fonts, images and printers once, before the first render of the
+  // canvas. The design needs no loading: it is the wedding's, already here.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -174,79 +148,13 @@ export function App() {
         Object.fromEntries(storedImages.map((i) => [i.id, i.name])),
       );
 
-      const saved = readSaved();
-      const queued: Notice[] = [];
-      if (saved.status === "ok") {
-        // version and savedAt describe the record, not the design; they have no
-        // business in the store.
-        const { version: _version, savedAt: _savedAt, ...restored } = saved.data;
-        usePlaque.getState().hydrate({ ...restored, uploadedFontIds: stored.map((f) => f.id) });
-      } else if (saved.status === "discarded") {
-        queued.push({ text: `${saved.reason} Starting fresh.` });
-      }
-      setNotices(queued);
-
-      usePlaque.getState().setFonts(bundled, labels);
+      usePlaque.getState().setFonts(bundled, labels, stored.map((f) => f.id));
       setReady(true);
     })().catch(() => setReady(true));
     return () => {
       cancelled = true;
     };
   }, []);
-
-  // A failed write is reported, never swallowed: an edit the user believes is
-  // saved and is not is the whole of prime directive 1 (S-D1.2).
-  const attemptSave = () => {
-    void save(autosavePayload()).then((result) => setSaveError(result.ok ? null : result.reason));
-  };
-
-  // Autosave. Font binaries are excluded — they live in IndexedDB under their
-  // own keys — but undo history is not: a reload that silently resets how far
-  // back the user can step is lost work too.
-  useEffect(() => {
-    if (!ready) return;
-    const timer = setTimeout(attemptSave, 400);
-    return () => clearTimeout(timer);
-  }, [
-    ready,
-    card,
-    sheet,
-    template,
-    headers,
-    rows,
-    uploadedIcons,
-    snapEnabled,
-    sheetCollapsed,
-    csvIssues,
-    fileName,
-    past,
-    future,
-  ]);
-
-  // The debounce above means a tab killed within 400ms of the last edit would
-  // lose it, so a tab going away flushes immediately.
-  // ponytail: best effort. An IndexedDB write started during pagehide is
-  // usually completed by the browser but is not guaranteed. Upgrade path if it
-  // ever proves lossy: keep a synchronous localStorage copy of the design only
-  // (rows excluded, they will not fit) as a last-resort crash log.
-  useEffect(() => {
-    if (!ready) return;
-    const flush = () => void save(autosavePayload());
-    const flushIfHidden = () => {
-      if (document.visibilityState === "hidden") flush();
-    };
-    window.addEventListener("pagehide", flush);
-    document.addEventListener("visibilitychange", flushIfHidden);
-    return () => {
-      window.removeEventListener("pagehide", flush);
-      document.removeEventListener("visibilitychange", flushIfHidden);
-      // Plaque used to be the page, so unmounting only happened as the page
-      // went away and `pagehide` had already flushed. It is a tab now, and
-      // switching to Seating unmounts it with no such event — which would drop
-      // whatever the 400ms autosave timer was still holding.
-      flush();
-    };
-  }, [ready]);
 
   // Esc leaves crop mode, the way it leaves every other transient mode.
   useEffect(() => {
@@ -366,40 +274,24 @@ export function App() {
       <ToolUndo
         canUndo={past.length > 0}
         canRedo={future.length > 0}
-        onUndo={undo}
-        onRedo={redo}
+        onUndo={() => useTrousseauStore.getState().undo()}
+        onRedo={() => useTrousseauStore.getState().redo()}
+        undoLabel={past[past.length - 1]?.label ?? null}
+        redoLabel={future[future.length - 1]?.label ?? null}
       />
 
       <Announcer />
       <Sidebar />
 
       <div className={styles.main}>
-        {saveError && <PersistenceBar reason={saveError} onRetry={attemptSave} />}
+        {saveError && (
+          <PersistenceBar
+            reason={saveError}
+            onRetry={() => writeDesign(designOf(usePlaque.getState()), { silent: true })}
+          />
+        )}
 
-        {notices.map((notice) => {
-          const dismiss = () => setNotices((all) => all.filter((n) => n !== notice));
-          return (
-            <p className={styles.notice} key={notice.text}>
-              {notice.text}
-              {notice.actions?.map((action) => (
-                <button
-                  key={action.label}
-                  type="button"
-                  className={styles.noticeAction}
-                  onClick={() => {
-                    action.onClick();
-                    dismiss();
-                  }}
-                >
-                  {action.label}
-                </button>
-              ))}
-              <button type="button" onClick={dismiss} aria-label="Dismiss">
-                ✕
-              </button>
-            </p>
-          );
-        })}
+        {designProblem && <p className={styles.notice}>{designProblem}</p>}
 
         <div className={sheetCollapsed ? `${styles.workspace} ${styles.workspaceWide}` : styles.workspace}>
           <section data-tour="placecards.canvas" className={styles.pane} aria-label="Card">
@@ -448,7 +340,6 @@ export function App() {
                 cropId={cropId}
                 zoom={zoom}
                 onSelect={select}
-                onEditStart={beginEdit}
                 onChange={setElementBox}
                 onCrop={setElementCrop}
                 onZoomChange={setZoom}

@@ -31,7 +31,7 @@ const App = dynamic(() => import("@/apps/plaque/App").then((m) => m.App), { ssr:
 export function PlaqueApp() {
   return (
     <div className="plaque-scope">
-      <WhenDocumentReady tool="plaque">
+      <WhenDocumentReady>
         <App />
       </WhenDocumentReady>
     </div>

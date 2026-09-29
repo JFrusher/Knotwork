@@ -112,7 +112,7 @@ export function applyTo(kind: Kind, content: Raw, raw: Raw): Array<[SliceName, u
       const current = record(raw["stationery"]);
       // A wedding with no cards yet gets an empty list, which Place cards
       // fills from the room when it is asked to.
-      const list = "version" in current ? {} : { headers: [], rows: [], rowIds: [], merged: {}, csvIssues: [], fileName: null, past: [], future: [] };
+      const list = "version" in current ? {} : { headers: [], rows: [], rowIds: [], merged: {}, csvIssues: [], fileName: null };
       return [["stationery", { ...current, ...list, ...content, savedAt: null }]];
     }
     case "day":

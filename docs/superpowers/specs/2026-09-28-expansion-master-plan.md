@@ -42,6 +42,7 @@ several turned out differently once tested than they looked when read.
 | S16 | Since sides were named after the partners, the place cards' Side column carried the stored "a" and "b": a card binding `{{Side}}` printed a letter. | Reproduced — unit. **Fixed 2026-09-28**: "Alex’s side". |
 | S17 | Seating's "worth checking" note counted a guest who answered "None" as having no dietary note. Six of its seven notes on the example were those guests. | Reproduced — unit. **Fixed 2026-09-28**. |
 | S18 | The Privacy Policy says "no analytics … and no third-party scripts", with Sentry the only third party; but on a Vercel deployment the root layout renders Vercel Web Analytics, added by Vercel's bot on 2026-09-08. The policy is false there. | Traced (`app/layout.tsx`, commit e63d4be). **Open — the maintainer's call**: remove the analytics, or say in the policy what it counts. Found with it, and fixed: the command palette put a guest's name in the address (`/guests?q=…`); it now goes by id. |
+| S19 | In Place cards, undoing any edit — even adding a rectangle — silently dropped the card's row scope (per-table menus went back to one card per guest) and every per-row tweak: its undo history kept only the elements and the background. | Reproduced against the old store. **Fixed** by Place cards moving onto the wedding's one history, which puts back the whole slice; the reproduction is now a test. |
 
 ### Architecture
 
@@ -458,6 +459,20 @@ replaced by the converted originals rather than kept beside them.
   autosave; a change made elsewhere not seen), and end to end: someone put
   on a job is stored at once, and undone from the header with the job still
   open.
+- **Place cards: built 2026-09-29.** The design — card, sheet, template and
+  the guest rows — is the `stationery` slice, and Plaque's store only shows
+  it: every design edit is written there first with a label, and a
+  subscription makes the store follow the slice synchronously, whoever
+  changed it (an undo, the library, a partner's device). What is the
+  window's own — fonts, images, printers, the selection, the page — stays
+  in the store. A drag writes every frame under one label, which the
+  history keeps as one step; measured first, a write costs under a
+  millisecond of a frame (0.2ms to re-read the wedding, 0.6ms to clone it
+  into IndexedDB, at 300 guests). Gone: its snapshot history (and with it
+  S19), the undo stack stored inside the slice, restore-on-mount, the
+  400ms autosave and its unload flushes, and the canvas's gesture-start
+  hook. A design that cannot be read still says so, until the next edit
+  starts fresh.
 
 **Real-time sync** (Supabase Realtime in place of the 20-second poll, and
 presence) lands after this, not before: an instant pull into a tool that still

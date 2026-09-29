@@ -23,9 +23,10 @@ export interface UseDragOptions {
   svgRef: RefObject<SVGSVGElement | null>;
   snapTargets: SnapTargets;
   snapEnabled: boolean;
-  /** Called once as a drag starts, so history records one entry per drag, not per frame. */
-  onEditStart: () => void;
-  /** Called continuously while dragging. Must not touch undo history. */
+  /**
+   * Called continuously while dragging. Every call is one change under one
+   * label, which the wedding's history keeps as a single step.
+   */
   onChange: (id: ElementId, box: Rect) => void;
 }
 
@@ -40,7 +41,6 @@ export function useDragElement({
   svgRef,
   snapTargets,
   snapEnabled,
-  onEditStart,
   onChange,
 }: UseDragOptions) {
   const [drag, setDrag] = useState<DragState | null>(null);
@@ -65,9 +65,9 @@ export function useDragElement({
       event.stopPropagation();
       event.currentTarget.setPointerCapture(event.pointerId);
       origin.current = { point, box, mode };
-      // Deliberately NOT calling onEditStart here. A pointerdown that never
-      // moves is a selection, not an edit, and recording one would put a no-op
-      // entry on the undo stack — so the next Ctrl+Z would appear to do nothing.
+      // Nothing is written yet. A pointerdown that never moves is a selection,
+      // not an edit, and writing one would put a no-op entry on the undo stack
+      // — so the next Ctrl+Z would appear to do nothing.
       started.current = false;
       setDrag({ id, box, hitXs: [], hitYs: [] });
     },
@@ -84,12 +84,10 @@ export function useDragElement({
       const dx = point.x - start.point.x;
       const dy = point.y - start.point.y;
 
-      // The first real movement is what counts as the start of an edit, so one
-      // drag produces exactly one undo entry.
+      // The first real movement is what counts as the start of an edit.
       if (!started.current) {
         if (Math.hypot(dx, dy) < MOVE_THRESHOLD_MM) return;
         started.current = true;
-        onEditStart();
       }
 
       // Shift locks the aspect. Snapping is skipped while it is held: pulling
@@ -103,7 +101,7 @@ export function useDragElement({
       setDrag({ id: drag.id, box, hitXs: snapped.hitXs, hitYs: snapped.hitYs });
       onChange(drag.id, box);
     },
-    [drag, onChange, onEditStart, snapEnabled, snapTargets, toMm],
+    [drag, onChange, snapEnabled, snapTargets, toMm],
   );
 
   const end = useCallback(() => {

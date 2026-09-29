@@ -1,40 +1,27 @@
-import { mayWrite, noteRead } from "@/lib/store/toolGeneration";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
-import type { Persisted } from "./persist";
+import { useTrousseauStore, type WriteOptions } from "@/lib/store/useTrousseauStore";
+import { initialDesign, type Design } from "./design";
+import { load, VERSION } from "./persist";
 
 /**
- * Where Plaque's autosave actually lands.
+ * Where Place cards' design lives: the `stationery` slice of the shared
+ * wedding, so it travels with the backup, the sync and everything else.
  *
- * This is the whole adaptation. Plaque was a standalone app that owned its own
- * IndexedDB key; here it is one tool among four, and its work belongs in the
- * `stationery` slice of the shared wedding — so it travels with the backup, the
- * sync and everything else, instead of being a second thing to remember.
- *
- * Nothing above this file knows. The store, the nine panels, the undo history,
- * the "restored from 13:42" notice are all Plaque's own code, unchanged. The
- * only edit to `persist.ts` is which two functions the bytes pass through.
- *
- * Synchronous on purpose: `persist.save` is called from an unload handler,
- * where a promise is not guaranteed to settle. The shared store starts its
- * IndexedDB write the moment it is handed the value, so that is enough.
+ * Plaque keeps no copy of it. Its store shows what this slice holds, and every
+ * design edit is written here first, on the wedding's one history.
  */
 
-/** The autosave, or null when this wedding has no stationery yet. */
-export function readSlice(): Persisted | null {
-  noteRead("plaque");
-  const raw = useTrousseauStore.getState().raw["stationery"];
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
-  // A slice with no version was written by something other than Plaque's
-  // autosave — an empty envelope, most likely. Treated as absent rather than
-  // fed to a loader that expects a shape it does not have.
-  return "version" in raw ? (raw as unknown as Persisted) : null;
+/** The design the wedding holds — the starting one when it has none — and why, when it could not be read. */
+export function readDesign(raw: Record<string, unknown>): { design: Design; problem: string | null } {
+  const result = load(raw["stationery"]);
+  if (result.status === "ok") {
+    const { version: _version, savedAt: _savedAt, ...design } = result.data;
+    return { design, problem: null };
+  }
+  return { design: initialDesign(), problem: result.status === "discarded" ? `${result.reason} Starting fresh.` : null };
 }
 
-export function writeSlice(record: Persisted): void {
-  // Refused when the document has been replaced since this was read — see
-  // `toolGeneration`. Writing here would put the previous wedding back.
-  if (!mayWrite("plaque")) return;
+export function writeDesign(design: Design, options: WriteOptions): void {
   useTrousseauStore
     .getState()
-    .setSlice("stationery", record, { label: "the stationery", silent: true, by: "plaque" });
+    .setSlice("stationery", { version: VERSION, savedAt: new Date().toISOString(), ...design }, options);
 }

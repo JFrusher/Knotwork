@@ -33,12 +33,12 @@ import { useTrousseauStore } from "./useTrousseauStore";
  * The slices each tool copies into its own store when it mounts — everything it
  * reads into that copy, whether or not it writes it all back.
  *
- * Delegation is not here: it reads the wedding live and keeps no copy.
+ * Delegation and Place cards are not here: they read the wedding live and
+ * keep no copy.
  */
 export const HOLDS = {
   tableaux: ["guests", "seating", "event"],
   cadence: ["timeline", "event"],
-  plaque: ["stationery"],
 } as const satisfies Record<string, readonly SliceName[]>;
 
 export type ToolId = keyof typeof HOLDS;

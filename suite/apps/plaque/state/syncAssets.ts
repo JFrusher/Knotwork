@@ -1,6 +1,7 @@
 import { loadFonts, saveFont } from "./blobStore";
 import { loadImages, saveImage } from "./imageStore";
-import { readSlice } from "./sliceBridge";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { readDesign } from "./sliceBridge";
 
 /**
  * Plaque's uploaded fonts and artwork, for the sync layer.
@@ -75,7 +76,7 @@ export async function acceptAsset(id: string, bytes: Uint8Array): Promise<void> 
 
 /** The filename the user uploaded it under, if the design still remembers. */
 function nameOf(assetId: string): string | undefined {
-  return readSlice()?.assetNames?.[assetId];
+  return readDesign(useTrousseauStore.getState().raw).design.assetNames[assetId];
 }
 
 /** PNG and JPEG are the two a PDF can carry, so they are the two Plaque takes. */
