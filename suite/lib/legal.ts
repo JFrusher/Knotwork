@@ -39,7 +39,7 @@ export const RETENTION_MONTHS = 24;
 export const PRIVACY: Policy = {
   title: "Privacy",
   updated: "2026-09-29",
-  digest: "bc0c57413d0ed37b",
+  digest: "7694e81f01ae6858",
   intro:
     "Trousseau is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
   sections: [
@@ -64,7 +64,7 @@ export const PRIVACY: Policy = {
         "An account exists so you and your partner can plan on separate devices. Making one stores your email address, and nothing else about you — there is no password, no profile, and no name field. Signing in sends a link to that address; clicking it is what proves it is you.",
         "Your wedding is then stored in a database as one document, encrypted at rest, with database rules that make it unreadable to any other account. Inviting your partner or your planner adds exactly that person, by the email address you name. Either of you can see everyone who has access, and remove your planner at any time.",
         "Being straight about it: this is ordinary, well-guarded storage, not encryption I cannot undo. I do not read your wedding and there is no support tool that would let me browse it, but I administer the database, so I could. If that matters more to you than planning across devices does, use the app without an account — it is the default, and nothing leaves your browser.",
-        "Every version you save is kept alongside the current one, so a mistake can be recovered rather than being final.",
+        "Earlier versions are kept alongside the current one, so a mistake can be recovered rather than being final: one for every ten minutes each of you spends changing it, and past a month, one for each day it changed.",
         "While more than one of you has the wedding open, each change reaches the others as it is saved. What travels to announce it is a version number, not the wedding; each device then fetches the change the way it fetches everything else. The others with it open see your email address and which page you are on — nobody outside the wedding does.",
         "A planner can also keep a library of their own — card designs, rooms, running orders and checklists — to use again for other weddings. It is theirs alone: no other account can see it, and nothing personal goes into it, so no guests, no dates and no suppliers' names or numbers. It stays until they remove it or delete their account.",
       ],

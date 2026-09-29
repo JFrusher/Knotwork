@@ -10,6 +10,7 @@ import { resolveMembers } from "@/lib/cast/resolve";
 import { computeWarnings } from "@/apps/tableaux/utils/warnings";
 import { shownTools } from "@/lib/model/toolbox";
 import { TOOLS } from "@/lib/tools";
+import { USUAL_TASKS } from "@/lib/checklist/checklist";
 
 /*
  * The example wedding exists to show what Trousseau does once a wedding is
@@ -121,4 +122,9 @@ test("the boxes are each needed somewhere on the day, taken by somebody in the c
   const { packed, total } = packingOf({ boxes });
   expect(packed).toBeGreaterThan(0);
   expect(packed).toBeLessThan(total);
+});
+
+test("every usual task is already on the example's checklist, so it has nothing to offer and shows a finished list", () => {
+  const have = new Set(readCrew(doc).jobs.filter((job) => job.blockId === null).map((job) => job.label.toLowerCase()));
+  expect(USUAL_TASKS.filter((task) => !have.has(task.label.toLowerCase())).map((task) => task.label)).toEqual([]);
 });

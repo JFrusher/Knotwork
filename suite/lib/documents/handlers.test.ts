@@ -158,6 +158,15 @@ describe("the history", () => {
     });
   });
 
+  it("keeps one person's saves within ten minutes as one version, holding the latest", async () => {
+    const store = memoryStore();
+    await store.saveDocument("w1", { v: 1 }, 0, "u-ada");
+    await store.saveDocument("w1", { v: 2 }, 1, "u-ada");
+    const reply = await historyHandler(store, [{ userId: "u-ada", email: "ada@example.com" }], "w1", "u-ada");
+    expect((reply.body as { entries: unknown[] }).entries).toHaveLength(1);
+    expect((await historyDocumentHandler(store, "w1", "v1")).body).toEqual({ document: { v: 2 } });
+  });
+
   it("gives one version back, and only from its own wedding", async () => {
     const store = memoryStore();
     await store.saveDocument("w1", { v: 1 }, 0);

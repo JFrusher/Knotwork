@@ -1,10 +1,13 @@
 # Trousseau — database review, and a proposed change to history
 
 Date: 2026-09-29
-Status: **a proposal for the maintainer.** Nothing in the database has
-changed. The one fix made with it is documentation (D4). The change proposed
-below needs a migration, applied by hand before deploying, so it is the
-maintainer's call.
+Status: **accepted by the maintainer and built, 2026-09-29.** The history
+proposal is migration `20260929000007_bounded_history`. D7, found while
+building it, is fixed in `20260929000008_signed_in_callers`. Apply both before
+deploying. As built, the one change from the proposal: old history is thinned
+by the save that opens a new entry, not by the nightly sweep. That needs no
+schedule, and no function that only the server's own role may call — a
+permission this repository cannot prove on a Supabase project.
 
 Scope:
 
@@ -60,6 +63,7 @@ Findings are marked as they are elsewhere:
 | D4 | **The self-hosting guide listed 7 migrations to apply; there are 16.** The README said "seven migrations". Someone following the list would miss the roles, the guest and supplier links, the library and the live channel, and have an app whose writes fail. **Fixed with this review:** the guide now says to apply every file in the folder, in order, rather than keeping a list that goes out of date. | Traced |
 | D5 | Smaller foreign keys have no index either: `invites.wedding_id` and `created_by`, a planner's `wedding_members.user_id`, `wedding_documents.updated_by`, and each link's `published_by`. Every one is on a table of a few rows per wedding, so a scan there costs nothing that matters. No action. | Traced |
 | D6 | The first five migrations build the passphrase schema that the ninth removes, so a fresh install creates and drops it. That is harmless. Squashing them is not worth the risk to existing deployments, which track what they have applied by file name. No action. | Traced |
+| D7 | **`remove_member` did not refuse a caller with no session.** It decided whether a caller may remove someone with `p_user_id <> auth.uid()`. With nobody signed in, `auth.uid()` is null, that comparison is null, and the `if` it guarded was skipped. Called that way, it removed the member, and with the last one gone, the wedding. In plain Postgres `anon` cannot call it: it is revoked from `public` and granted only to `authenticated`. But a Supabase project also grants new functions to `anon` by default privileges, which `revoke … from public` does not undo. Whether the hosted project was exposed can be checked there with `select has_function_privilege('anon', 'public.remove_member(uuid,uuid)', 'execute')`. **Fixed either way:** the function refuses a caller with no session first. And every function meant for signed-in people is revoked from `anon` by name, proved against a stand-in for Supabase's defaults. | Reproduced |
 
 ## The proposal: keep the structure, bound the history
 
@@ -144,7 +148,7 @@ Against PGlite, as the migration tests already are:
 - The panel's query and both deletions plan as index scans.
 - The migration can be run twice.
 
-## Open for the maintainer
+## Was open for the maintainer — answered 2026-09-29
 
 1. **Accept the history proposal as it stands, or change it:**
    - the ten-minute window;
@@ -152,3 +156,6 @@ Against PGlite, as the migration tests already are:
    - one entry kept per day beyond that.
 2. The existing history is already large wherever people have been editing.
    Should the same migration thin it now, or leave that to the sweep?
+   **Answered by how it was built:** each wedding's old history is thinned the
+   next time anyone on it opens a new entry. A wedding nobody opens again goes
+   with the 24-month sweep.

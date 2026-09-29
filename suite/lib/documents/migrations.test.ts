@@ -127,6 +127,9 @@ test("a non-member cannot save a document for someone else's wedding", async () 
   ).rejects.toThrow();
 });
 
+// As the documents migration first wrote it: a row per accepted write. Since
+// 20260929000007 a person's saves within ten minutes are one row — see
+// history.migrations.test.ts, which runs every migration.
 test("every accepted write appends exactly one history row, and a rejected write appends none", async () => {
   const alice = await userExists("alice@example.com");
   await asUser(alice);

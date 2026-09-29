@@ -153,7 +153,7 @@ function Versions({ onRestored }: { onRestored: () => void }) {
           Saved versions
         </h3>
         <p className="mt-2 text-sm text-slate">
-          An account keeps every version of the wedding it is sent, and who sent it. This wedding is on this device only.
+          An account keeps earlier versions of the wedding — one for every ten minutes each of you spends on it, and past a month one a day — and who saved each. This wedding is on this device only.
         </p>
       </section>
     );

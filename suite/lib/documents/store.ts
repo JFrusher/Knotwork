@@ -38,7 +38,11 @@ export interface DocumentStore {
    * signed-in account itself, in `save_wedding_document`, from the session.
    */
   saveDocument(weddingId: string, document: unknown, expectedVersion: number, savedBy?: string): Promise<SaveResult>;
-  /** The versions saved, newest first — every accepted save keeps one. */
+  /**
+   * The versions saved, newest first. A person's saves within ten minutes of
+   * their entry opening are one entry, holding the latest; the database also
+   * thins entries past 30 days to one a day (20260929000007_bounded_history).
+   */
   history(weddingId: string, limit: number): Promise<HistoryEntry[]>;
   /** One saved version's document, or null if the wedding has no such version. */
   historyDocument(weddingId: string, id: string): Promise<unknown | null>;
@@ -57,9 +61,12 @@ export interface DocumentStore {
   deleteWedding(weddingId: string): Promise<void>;
 }
 
+/** How long one person's saves are kept as one entry in the history. */
+const SITTING_MS = 10 * 60 * 1000;
+
 export function memoryStore(): DocumentStore {
   const documents = new Map<string, DocumentRecord>();
-  const versions: Array<HistoryEntry & { weddingId: string; document: unknown }> = [];
+  const versions: Array<HistoryEntry & { weddingId: string; document: unknown; openedAt: number }> = [];
 
   return {
     async getDocument(weddingId) {
@@ -84,7 +91,15 @@ export function memoryStore(): DocumentStore {
         updatedAt: new Date().toISOString(),
       };
       documents.set(weddingId, record);
-      versions.push({ id: `v${versions.length + 1}`, weddingId, document, savedAt: record.updatedAt, savedBy: savedBy ?? null });
+      // As save_wedding_document: this person's entry, if it is the wedding's
+      // latest and opened under ten minutes ago, is brought up to date.
+      const latest = versions.filter((version) => version.weddingId === weddingId).at(-1);
+      if (latest && savedBy && latest.savedBy === savedBy && Date.now() - latest.openedAt < SITTING_MS) {
+        latest.document = document;
+        latest.savedAt = record.updatedAt;
+      } else {
+        versions.push({ id: `v${versions.length + 1}`, weddingId, document, savedAt: record.updatedAt, savedBy: savedBy ?? null, openedAt: Date.now() });
+      }
       return { accepted: true, record };
     },
 
