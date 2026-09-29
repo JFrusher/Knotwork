@@ -1,7 +1,8 @@
 import { toCsv } from "@/lib/data/csv";
 import { personName } from "@/lib/model/slices";
 import type { BoxItem, Boxes, Crew, Guest } from "@/lib/model/types";
-import { neededAt, whereBy, type Place } from "./view";
+import type { Place } from "@/lib/model/slices";
+import { neededAt, whereBy } from "./view";
 
 /** One box as it is printed: the labels, the list and the CSV are made from these, so they agree. */
 export interface BoxRow {

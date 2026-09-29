@@ -20,7 +20,8 @@ import { SLICE_NAMES, type SliceName } from "@jfrusher/trousseau";
  *   timeline/blocks#order    the blocks' order
  *   crew, crew/jobs/<id>, crew/jobs#order
  *   boxes, boxes/boxes/<id>, boxes/boxes#order
- *   event, shots, stationery, tools, cast, ceremony, bar
+ *   ceremony, ceremony/order/<id>, ceremony/order#order
+ *   event, shots, stationery, tools, cast, bar
  *
  * `day` is not a part: it is published from the timeline and the event, and
  * is worked out again rather than merged — see `mergeCloudDocument`.
@@ -44,6 +45,8 @@ export const KEYED: Partial<Record<SliceName, Keyed>> = {
   crew: { field: "jobs", shape: "list" },
   // Two people packing at once tick things in different boxes.
   boxes: { field: "boxes", shape: "list" },
+  // Two people write different readings, or choose different music, at once.
+  ceremony: { field: "order", shape: "list" },
 };
 
 /** Published from the timeline and the event; worked out again, never merged. */

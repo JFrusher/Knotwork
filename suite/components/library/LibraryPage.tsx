@@ -20,7 +20,7 @@ const CARRIES: Record<Kind, string> = {
   day: "The blocks, lanes and times, with each block’s notes — without the date, the couple or the suppliers’ numbers.",
   room: "The tables and the floor, with every chair empty.",
   checklist: "The tasks, each as so many days before the day.",
-  processional: "The order, who walks by what they are to the couple, how, and the music — nobody by name.",
+  processional: "The order of service with its music and readings, and who walks by what they are to the couple — nobody by name, and not the vows.",
   boxes: "The boxes and what goes in each — not who takes them, when they are needed, or what is packed.",
   bar: "The kind of bar, the figures, the mix, the prices and the shops — not how many are coming or what a couple has.",
 };
@@ -30,7 +30,7 @@ const REPLACES: Record<Exclude<Kind, Adding>, string> = {
   cards: "The card design here is replaced. Who the cards are for is not.",
   day: "The running order here is replaced. Jobs tied to its blocks will need new ones.",
   room: "The room here is replaced, and everyone is unseated. Families and groups stay.",
-  processional: "The processional here is replaced. Who is who is not.",
+  processional: "The order of service and the processional here are replaced. The officiant, the witnesses and who is who are not.",
   bar: "The bar's settings here are replaced. How many are coming, and what is already bought, are not.",
 };
 

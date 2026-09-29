@@ -167,8 +167,8 @@ slice in a checked shape and are cached per document:
 - `readCast`
 - `resolvedDay`
 
-The day's blocks with their worked-out clock times come from `dayPlaces` in
-`lib/boxes/view.ts`. Name crew members with `personName`, which prefers the
+The day's blocks with their worked-out start and end times come from
+`dayPlaces`, beside them. Name crew members with `personName`, which prefers the
 guest list's spelling when the person is a guest.
 
 **Shared people.** The couple, their parents, grandparents and wedding

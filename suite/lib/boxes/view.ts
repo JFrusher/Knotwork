@@ -1,26 +1,7 @@
 import type { Trousseau } from "@jfrusher/trousseau";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
-import { cached, readTimeline, resolvedDay } from "@/lib/model/slices";
+import type { Place } from "@/lib/model/slices";
 import type { Box, BoxItem, Boxes } from "@/lib/model/types";
-
-/** Where and when a block of the day is: what a box needed at it is labelled with. */
-export interface Place {
-  label: string;
-  location: string;
-  startMin: number;
-}
-
-/** Every block of the day by id, with where it is and when it starts. */
-export function dayPlaces(doc: Trousseau): ReadonlyMap<string, Place> {
-  return cached(doc, "boxPlaces", () => {
-    const starts = new Map(resolvedDay(doc).map((block) => [block.id, block.startMin]));
-    return new Map(
-      readTimeline(doc)
-        .blocks.filter((block) => starts.has(block.id))
-        .map((block) => [block.id, { label: block.label, location: block.location.trim(), startMin: starts.get(block.id)! }]),
-    );
-  });
-}
 
 /**
  * Where a box is going and by when: its block's, or nothing for a box not for

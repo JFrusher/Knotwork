@@ -6,14 +6,14 @@ import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { KO_FI_URL } from "@/lib/support";
 import type { PackSection } from "@/lib/export/weddingPack";
 import { hiddenToolIds } from "@/lib/model/toolbox";
-import { readBar, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
+import { dayPlaces, readBar, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 
 /**
  * The one button that produces everything you carry on the day.
  *
  * It lives here rather than in any one tool because it is the only
  * thing in the suite that is not any one tool's job: the plan comes from the
- * room, the running order from the day, the processional from the ceremony,
+ * room, the running order from the day, the ceremony's from Ceremony,
  * the jobs from the crew, the drinks from the bar, and the whole
  * point is that they are printed from the same wedding at the same moment.
  *
@@ -43,7 +43,7 @@ export function WeddingPack() {
     for (const [title, make] of [
       ["The room", floorPlan],
       ["The day", runSheet],
-      ["The processional", processional],
+      ["The ceremony", runningOrder],
       ["The jobs", jobList],
       ["The boxes", packingList],
       ["The drinks", drinksList],
@@ -179,20 +179,25 @@ async function jobList(): Promise<Uint8Array | null> {
   });
 }
 
-async function processional(): Promise<Uint8Array | null> {
+/** The running order: the order of service, with the processional where they walk. */
+async function runningOrder(): Promise<Uint8Array | null> {
   const { doc } = useTrousseauStore.getState();
-  const groups = readCeremony(doc).processional;
-  if (groups.length === 0) return null;
+  const ceremony = readCeremony(doc);
+  if (ceremony.order.length === 0) return null;
 
-  const [{ renderProcessionalSheet }, { browserFontSource }, { processionalRows }] = await Promise.all([
-    import("@/lib/ceremony/render/pdf/processionalSheet"),
+  const [{ renderRunningOrder }, { browserFontSource }, { orderRows }, { ceremonyPlace }] = await Promise.all([
+    import("@/lib/ceremony/render/pdf/runningOrder"),
     import("@/apps/brigade/render/pdf/fontSource"),
     import("@/lib/ceremony/rows"),
+    import("@/lib/ceremony/checks"),
   ]);
+  const { place } = ceremonyPlace(ceremony, dayPlaces(doc));
 
-  return renderProcessionalSheet(processionalRows(groups, readGuests(doc), readSeating(doc), readCast(doc), doc.event), {
+  return renderRunningOrder(orderRows(ceremony, readGuests(doc), readSeating(doc), readCast(doc), doc.event, place), {
     fontSource: browserFontSource(),
     coupleNames: doc.event.coupleNames,
+    officiant: ceremony.officiant,
+    where: place,
     generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
   });
 }
@@ -226,11 +231,10 @@ async function packingList(): Promise<Uint8Array | null> {
   const boxes = readBoxes(doc);
   if (boxes.boxes.length === 0) return null;
 
-  const [{ renderPackingList }, { browserFontSource }, { boxRows }, { dayPlaces }] = await Promise.all([
+  const [{ renderPackingList }, { browserFontSource }, { boxRows }] = await Promise.all([
     import("@/lib/boxes/render/pdf/packingList"),
     import("@/apps/brigade/render/pdf/fontSource"),
     import("@/lib/boxes/rows"),
-    import("@/lib/boxes/view"),
   ]);
 
   return renderPackingList(boxRows(boxes, dayPlaces(doc), readCrew(doc), readGuests(doc)), {

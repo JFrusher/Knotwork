@@ -377,6 +377,79 @@ export type Formation = "single" | "pairs" | "threes";
 
 export const FORMATIONS: readonly Formation[] = ["single", "pairs", "threes"];
 
+/** What kind of ceremony it is, which decides the order suggested and what the law asks of it. */
+export type CeremonyKind = "civil" | "religious" | "humanist" | "other";
+export const CEREMONY_KINDS: readonly CeremonyKind[] = ["civil", "religious", "humanist", "other"];
+
+/**
+ * A piece of music, as the people playing it need it: which track, played by
+ * whom, where in it to begin and where to stop, and its words.
+ */
+export interface Song {
+  title: string;
+  artist: string;
+  /** "String quartet", "Organ", "The DJ, from a recording". */
+  playedBy: string;
+  /** Where in the track to begin, in seconds: 45 skips an intro. Null is the start. */
+  startSec: number | null;
+  /** Where to fade, in seconds. Null plays it to the end. */
+  endSec: number | null;
+  /** Typed by the couple, for the singers or the order of service. The app ships none. */
+  lyrics: string;
+}
+
+/** What a part of the ceremony is, which decides its words, its checks and its print. */
+export type MomentKind =
+  | "music"
+  | "processional"
+  | "welcome"
+  | "reading"
+  | "song"
+  | "words"
+  | "vows"
+  | "rings"
+  | "declaration"
+  | "kiss"
+  | "signing"
+  | "recessional"
+  | "other";
+export const MOMENT_KINDS: readonly MomentKind[] = [
+  "music",
+  "processional",
+  "welcome",
+  "reading",
+  "song",
+  "words",
+  "vows",
+  "rings",
+  "declaration",
+  "kiss",
+  "signing",
+  "recessional",
+  "other",
+];
+
+/** One part of the order of service, in the order it happens. */
+export interface Moment {
+  id: string;
+  kind: MomentKind;
+  title: string;
+  /** Who leads it — a reader, a singer — as the cast's kinds, resolved as a shot's are. */
+  members: ShotMember[];
+  minutes: number | null;
+  /** When it starts: "at 'And I will love you still'", "as the registrar finishes". */
+  cue: string;
+  song: Song | null;
+  /** The reading, the vows, the officiant's words. */
+  words: string;
+  /** Its words and lyrics in full in the guests' order of service, not only its title. */
+  print: boolean;
+  /** Approved by the registrar: a civil ceremony's readings and music need to be. */
+  approved: boolean;
+  /** For the officiant and whoever runs the day. */
+  notes: string;
+}
+
 /**
  * One group in the processional, in the order they walk. Its members are the
  * kinds a group shot's are — a role, a guest, a family, words — and resolve
@@ -390,14 +463,24 @@ export interface WalkGroup {
   formation: Formation;
   /** Which side of the aisle they go to: a partner's, both, or not said. */
   side: Side;
-  /** What they walk to, as the couple would write it: "Canon in D". */
-  music: string;
-  /** When: "The music changes as the couple enter". */
+  /** A new piece starting as this group walks, or null: the one playing carries on. */
+  song: Song | null;
+  /** When they set off: "at 'At last'", "when the music changes". */
   cue: string;
 }
 
 /** The `ceremony` slice. Ceremony's own. */
 export interface Ceremony {
+  kind: CeremonyKind;
+  /** The Timeline's block it is: where and when come from there, as a box's do. */
+  blockId: string | null;
+  /** "Mrs Ada Jones, the registrar". */
+  officiant: string;
+  /** Who signs the register as witness. */
+  witnesses: ShotMember[];
+  notes: string;
+  /** The order of service. */
+  order: Moment[];
   processional: WalkGroup[];
 }
 

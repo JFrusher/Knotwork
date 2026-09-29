@@ -2,6 +2,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { migrate } from "@jfrusher/trousseau";
+import { readCeremony } from "@/lib/model/slices";
 import { adds, applyTo, extract } from "./items";
 
 const example = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
@@ -78,15 +80,15 @@ describe("putting it into another wedding", () => {
   });
 });
 
-describe("a processional", () => {
-  const withGuestWalking = {
+describe("a ceremony", () => {
+  const withGuestsNamed = {
     ...example,
     ceremony: {
+      ...example.ceremony,
       processional: [
         ...(example.ceremony.processional as object[]),
         {
           id: "walk-extra",
-          label: "",
           members: [
             { kind: "guest", ref: Object.keys(example.guests)[0] },
             { kind: "customRole", ref: "crole-readers" },
@@ -95,35 +97,58 @@ describe("a processional", () => {
           ],
           formation: "pairs",
           side: "b",
-          music: "",
-          cue: "",
         },
       ],
     },
   };
 
   it("is kept by roles, words and music, with nobody named and nothing of this wedding's own", () => {
-    const kept = extract("processional", withGuestWalking)!;
-    const groups = kept["processional"] as Array<{ members: Array<{ kind: string }> }>;
+    const kept = extract("processional", withGuestsNamed)!;
+    const groups = kept["processional"] as Array<{ members: Array<{ kind: string }>; song: { title: string } | null }>;
+    const order = kept["order"] as Array<{ kind: string; members: Array<{ kind: string }>; words: string }>;
+    expect(kept["kind"]).toBe("civil");
     expect(groups).toHaveLength(7);
-    expect(groups[5]).toMatchObject({ formation: "pairs", side: "", music: "The Arrival of the Queen of Sheba" });
+    expect(groups[5]!.song?.title).toBe("The Arrival of the Queen of Sheba");
     expect(groups[6]!.members).toEqual([{ kind: "role", ref: "b-grandparents" }]);
-    expect(groups.flatMap((group) => group.members).every((member) => member.kind === "role" || member.kind === "text")).toBe(true);
-    expect(JSON.stringify(kept)).not.toContain('"id"');
+    expect(order.find((moment) => moment.kind === "reading")!.words).toContain("Let me not to the marriage of true minds");
+    // The reader was a guest, the vows are the couple's own.
+    expect(order.find((moment) => moment.kind === "reading")!.members).toEqual([]);
+    expect(order.find((moment) => moment.kind === "vows")!.words).toBe("");
+    const everyone = [...groups, ...order].flatMap((entry) => entry.members);
+    expect(everyone.every((member) => member.kind === "role" || member.kind === "text")).toBe(true);
+    const text = JSON.stringify(kept);
+    expect(text).not.toContain('"id"');
+    expect(text).not.toContain("Ada Hartley");
+    expect(text).not.toContain("left pocket");
+    expect(text).not.toContain("blk-ceremony");
+    expect(text).not.toContain('"approved"');
     expect(mentionsAnyGuest(kept)).toEqual([]);
   });
 
-  it("is nothing to keep from a wedding with no processional", () => {
-    expect(extract("processional", { ...example, ceremony: { processional: [] } })).toBeNull();
+  it("is nothing to keep from a wedding with no ceremony planned", () => {
+    expect(extract("processional", { ...example, ceremony: { processional: [], order: [] } })).toBeNull();
   });
 
-  it("goes into another wedding as its processional, each group with an id of its own", () => {
+  it("replaces another wedding's order and processional, each part with an id of its own, keeping its officiant and nothing approved", () => {
     const kept = extract("processional", example)!;
-    const [[slice, value]] = applyTo("processional", kept, { ceremony: { processional: [{ id: "old" }] } }) as [[string, { processional: Array<{ id: string }> }]];
+    const into = { ceremony: { officiant: "Revd Jones", blockId: "blk-mine", order: [{ id: "old-moment" }], processional: [{ id: "old" }] } };
+    const [[slice, value]] = applyTo("processional", kept, into) as [[string, { officiant: string; blockId: string; order: Array<{ id: string; approved: boolean }>; processional: Array<{ id: string }> }]];
     expect(slice).toBe("ceremony");
+    expect(value.officiant).toBe("Revd Jones");
+    expect(value.blockId).toBe("blk-mine");
     expect(value.processional).toHaveLength(6);
-    expect(new Set(value.processional.map((group) => group.id)).size).toBe(6);
-    expect(value.processional.map((group) => group.id)).not.toContain("old");
+    expect(new Set([...value.order, ...value.processional].map((entry) => entry.id)).size).toBe(value.order.length + 6);
+    expect(value.order.map((moment) => moment.id)).not.toContain("old-moment");
+    expect(value.order.every((moment) => moment.approved === false)).toBe(true);
+  });
+
+  it("puts one kept before ceremonies had an order in as its processional, read into an order", () => {
+    const older = { processional: [{ label: "", formation: "single", side: "", music: "Canon in D", cue: "", members: [] }] };
+    const [[, value]] = applyTo("processional", older, { ceremony: { order: [{ id: "stale" }] } }) as [[string, Record<string, unknown>]];
+    expect("order" in value).toBe(false);
+    const read = readCeremony(migrate({ ceremony: value }));
+    expect(read.order.map((moment) => moment.kind)).toEqual(["processional"]);
+    expect(read.processional[0]!.song?.title).toBe("Canon in D");
   });
 });
 

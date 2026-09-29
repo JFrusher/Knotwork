@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/fields";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { roomPlaces } from "../../state/roomPlaces";
+import { CeremonyCues } from "./CeremonyCues";
 import styles from "./InspectorPanel.module.css";
 
 export function InspectorPanel() {
@@ -172,6 +173,8 @@ export function InspectorPanel() {
       />
 
       <TextArea label="Notes" value={block.notes} onChange={(notes) => updateBlock(block.id, { notes })} />
+
+      {entry && <CeremonyCues blockId={block.id} startMin={entry.startMin} />}
 
       <fieldset className={styles.outputs}>
         <legend className={styles.legend}>Appears on</legend>

@@ -126,6 +126,11 @@ are the **venue's clock**, not UTC.
 
 ## Phase 2 — one cast, and Ceremony
 
+**Grown 2026-09-29** into the whole ceremony — the order of service, songs
+with where to start and the lyric each cue falls on, readings, witnesses, and
+the cues shown inside the Timeline's block — with
+[its plan](../plans/2026-09-29-ceremony-order-of-service.md).
+
 **Built 2026-09-29**, with [its plan](../plans/2026-09-29-cast-and-ceremony.md).
 As built, where it differs from below: the suggested order ends with the
 couple walking in together, since who walks with whom is theirs to say; the

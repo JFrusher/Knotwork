@@ -1,8 +1,9 @@
 import type { Trousseau } from "@jfrusher/trousseau";
-import { guestName, isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
-import { dayPlaces, neededAt, packingOf } from "@/lib/boxes/view";
+import { dayPlaces, guestName, isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
+import { neededAt, packingOf } from "@/lib/boxes/view";
 import { hiddenToolIds } from "./toolbox";
 import { resolveMembers } from "@/lib/cast/resolve";
+import { ceremonyPlace, overrun } from "@/lib/ceremony/checks";
 import { DUE_SOON_DAYS, money } from "@/lib/money/money";
 import { daysUntil, longDate, todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
@@ -259,21 +260,50 @@ export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso
     });
   }
 
-  // The same for the processional, read from the same cast.
-  const walkingNobody = readCeremony(doc)
-    .processional.flatMap((group) => resolveMembers(group, guests, seating, cast.roles, cast.customRoles, doc.event).problems)
+  // The same for the ceremony, read from the same cast: whoever walks, leads a
+  // part, or signs as a witness.
+  const ceremony = readCeremony(doc);
+  const named = [
+    ...ceremony.processional,
+    ...ceremony.order.filter((moment) => moment.members.length > 0).map((moment) => ({ label: moment.title, members: moment.members })),
+    ...(ceremony.witnesses.length > 0 ? [{ label: "The witnesses", members: ceremony.witnesses }] : []),
+  ];
+  const namingNobody = named
+    .flatMap((group) => resolveMembers(group, guests, seating, cast.roles, cast.customRoles, doc.event).problems)
     .filter((problem) => problem.kind === "dangling").length;
 
-  if (walkingNobody > 0) {
+  if (namingNobody > 0) {
     out.push({
       id: "ceremony-dangling",
       severity: "blocking",
       message:
-        walkingNobody === 1
-          ? "The processional names someone who is not set, or no longer exists."
-          : `The processional names ${walkingNobody} people or roles who are not set, or no longer exist.`,
+        namingNobody === 1
+          ? "The ceremony names someone who is not set, or no longer exists."
+          : `The ceremony names ${namingNobody} people or roles who are not set, or no longer exist.`,
       href: "/ceremony",
-      action: "Fix the processional",
+      action: "Fix the ceremony",
+    });
+  }
+
+  // Where and when the ceremony is are the Timeline's, which Ceremony cannot change.
+  const { place: ceremonyAt, lost: ceremonyLost } = ceremonyPlace(ceremony, dayPlaces(doc));
+  if (ceremonyLost) {
+    out.push({
+      id: "ceremony-lost",
+      severity: "blocking",
+      message: "The ceremony is planned for a part of the day that is no longer on the Timeline.",
+      href: "/ceremony",
+      action: "Say when it is",
+    });
+  }
+  const runsOver = overrun(ceremony, ceremonyAt);
+  if (runsOver > 0) {
+    out.push({
+      id: "ceremony-overruns",
+      severity: "advisory",
+      message: `The order of service runs ${runsOver} ${runsOver === 1 ? "minute" : "minutes"} longer than the ceremony on the Timeline.`,
+      href: "/ceremony",
+      action: "Shorten it, or lengthen the block",
     });
   }
 

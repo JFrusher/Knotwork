@@ -317,6 +317,32 @@ describe("the processional", () => {
   });
 });
 
+describe("the ceremony against the day", () => {
+  const ceremonyOn = (blockId: string, minutes: number[]) => ({
+    guests: GUESTS,
+    timeline: { blocks: [{ id: "blk-ceremony", label: "Ceremony", location: "Orangery", anchorMin: 840, durationMin: 30 }] },
+    ceremony: { kind: "civil", blockId, order: minutes.map((m, i) => ({ id: `m${i}`, kind: "words", title: `Part ${i}`, minutes: m })) },
+  });
+
+  it("says when the ceremony's part of the day has gone from the Timeline", () => {
+    const found = wedding(ceremonyOn("blk-gone", [10]));
+    expect(found.find((item) => item.id === "ceremony-lost")).toMatchObject({ severity: "blocking", href: "/ceremony" });
+    expect(ids(ceremonyOn("blk-ceremony", [10]))).not.toContain("ceremony-lost");
+  });
+
+  it("says when the order of service runs longer than the ceremony's block, by how much", () => {
+    expect(wedding(ceremonyOn("blk-ceremony", [20, 15])).find((item) => item.id === "ceremony-overruns")?.message).toBe(
+      "The order of service runs 5 minutes longer than the ceremony on the Timeline.",
+    );
+    expect(ids(ceremonyOn("blk-ceremony", [20, 10]))).not.toContain("ceremony-overruns");
+  });
+
+  it("names a witness nobody has been cast as, as it does a walker", () => {
+    const withWitness = { guests: GUESTS, ceremony: { witnesses: [{ kind: "role", ref: "a-party" }] } };
+    expect(ids(withWitness)).toContain("ceremony-dangling");
+  });
+});
+
 describe("the boxes", () => {
   const boxesNeededAt = (blockId: string | null, packed = false) => ({
     boxes: { boxes: [{ id: "b1", number: 1, name: "Getting ready", blockId, personIds: [], items: [{ id: "i1", label: "Shoes", quantity: 1, packed }] }] },

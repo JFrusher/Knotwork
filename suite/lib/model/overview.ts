@@ -5,9 +5,10 @@ import { money } from "@/lib/money/money";
 import { todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
 import { stationery } from "./readiness";
-import { isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
-import { dayPlaces, neededAt, packingOf } from "@/lib/boxes/view";
+import { dayPlaces, isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
+import { neededAt, packingOf } from "@/lib/boxes/view";
 import { hiddenToolIds } from "./toolbox";
+import { lengthOf } from "@/lib/ceremony/checks";
 import { barSum } from "@/lib/bar/sum";
 
 /**
@@ -176,18 +177,26 @@ function groupShots(doc: Trousseau): Area {
 }
 
 function ceremony(doc: Trousseau): Area {
-  const processional = readCeremony(doc).processional;
-  if (processional.length === 0) return { id: "ceremony", summary: "No processional yet", detail: "", progress: null };
+  const { order, processional, witnesses } = readCeremony(doc);
+  if (order.length === 0 && processional.length === 0) return { id: "ceremony", summary: "No ceremony planned yet", detail: "", progress: null };
   const guestList = readGuests(doc);
   const room = readSeating(doc);
   const cast = readCast(doc);
-  const troubled = processional.filter(
+  const named = [
+    ...processional,
+    ...order.filter((moment) => moment.members.length > 0).map((moment) => ({ label: moment.title, members: moment.members })),
+    ...(witnesses.length > 0 ? [{ label: "The witnesses", members: witnesses }] : []),
+  ];
+  const troubled = named.filter(
     (group) => resolveMembers(group, guestList, room, cast.roles, cast.customRoles, doc.event).problems.length > 0,
   ).length;
+  const minutes = lengthOf(order);
   return {
     id: "ceremony",
-    summary: plural(processional.length, "group walking", "groups walking"),
-    detail: troubled > 0 ? `${troubled} to look at` : "",
+    summary: order.length > 0 ? `${plural(order.length, "part", "parts")}${minutes > 0 ? `, ${minutes} minutes` : ""}` : plural(processional.length, "group walking", "groups walking"),
+    detail: [order.length > 0 && processional.length > 0 ? plural(processional.length, "group walking", "groups walking") : "", troubled > 0 ? `${troubled} to look at` : ""]
+      .filter(Boolean)
+      .join(" · "),
     progress: null,
   };
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
-import { coerceGuests, personName, readBoxes, readCast, readCeremony, readCrew, readShots, readTimeline } from "./slices";
+import { coerceGuests, personName, PROCESSIONAL_MOMENT_ID, readBoxes, readCast, readCeremony, readCrew, readShots, readTimeline } from "./slices";
 
 describe("coerceGuests keeps what it has no opinion about", () => {
   it("preserves fields owned by a tool rather than by the suite", () => {
@@ -159,10 +159,35 @@ describe("readCeremony", () => {
         ],
       },
     });
+    const canon = { title: "Canon in D", artist: "", playedBy: "", startSec: null, endSec: null, lyrics: "" };
     expect(readCeremony(doc).processional).toEqual([
-      { id: "w1", label: "", members: [{ kind: "role", ref: "a" }], formation: "threes", side: "b", music: "Canon in D", cue: "" },
-      { id: "w2", label: "", members: [], formation: "single", side: "", music: "", cue: "" },
+      { id: "w1", label: "", members: [{ kind: "role", ref: "a" }], formation: "threes", side: "b", song: canon, cue: "" },
+      { id: "w2", label: "", members: [], formation: "single", side: "", song: null, cue: "" },
     ]);
+  });
+
+  it("reads a ceremony stored before the order of service with one holding its processional, the same every time", () => {
+    const doc = migrate({ ceremony: { processional: [{ id: "w1" }] } });
+    const { order, kind, witnesses } = readCeremony(doc);
+    expect(order).toHaveLength(1);
+    expect(order[0]).toMatchObject({ id: PROCESSIONAL_MOMENT_ID, kind: "processional", title: "The processional" });
+    expect(readCeremony(migrate({ ceremony: { processional: [{ id: "w1" }] } })).order[0]!.id).toBe(PROCESSIONAL_MOMENT_ID);
+    expect({ kind, witnesses }).toEqual({ kind: "civil", witnesses: [] });
+    // Once an order is stored, even an empty one, it is the couple's.
+    expect(readCeremony(migrate({ ceremony: { processional: [{ id: "w1" }], order: [] } })).order).toEqual([]);
+  });
+
+  it("reads each moment's song and times, refusing what a track time cannot be", () => {
+    const doc = migrate({
+      ceremony: {
+        kind: "humanist",
+        order: [{ id: "m1", kind: "reading", minutes: 3, print: true, song: { title: "Air", startSec: 45, endSec: -2 } }, { id: "m2", kind: "juggling" }],
+      },
+    });
+    const [reading, other] = readCeremony(doc).order;
+    expect(reading).toMatchObject({ kind: "reading", minutes: 3, print: true, approved: false, song: { title: "Air", startSec: 45, endSec: null } });
+    expect(other).toMatchObject({ kind: "other", minutes: null, song: null });
+    expect(readCeremony(doc).kind).toBe("humanist");
   });
 });
 

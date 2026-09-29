@@ -1,14 +1,16 @@
 import { migrate, type SliceName } from "@jfrusher/trousseau";
 import { choices } from "@/lib/bar/actions";
 import { daysUntil } from "@/lib/dates";
-import { emptyBar, readBar } from "@/lib/model/slices";
+import { emptyBar, readBar, readCeremony } from "@/lib/model/slices";
+import type { ShotMember } from "@/lib/model/types";
 
 /**
  * What a planner keeps from one wedding to use in another, and how it goes
  * into the next: a card design without its rows, a running order without its
  * date or its suppliers' numbers, a room without its guests, a checklist
  * without its dates — each task kept as so many days before the day — a
- * processional with its roles and music and nobody named, a set of boxes
+ * ceremony — its order of service and processional, with roles, music and
+ * readings and nobody named — a set of boxes
  * with what goes in each, but not who takes them or when, and bar settings
  * without the guest count or what a couple already has.
  *
@@ -30,7 +32,7 @@ export const KIND_NAMES: Record<Kind, string> = {
   day: "Running order",
   room: "Room",
   checklist: "Checklist",
-  processional: "Processional",
+  processional: "Ceremony",
   boxes: "Boxes",
   bar: "Bar settings",
 };
@@ -102,18 +104,36 @@ export function extract(kind: Kind, raw: Raw): Raw | null {
       return tasks.length > 0 ? { tasks } : null;
     }
     case "processional": {
-      const groups = Array.isArray(record(raw["ceremony"])["processional"]) ? (record(raw["ceremony"])["processional"] as unknown[]) : [];
-      if (groups.length === 0) return null;
+      // A ceremony, kept under the name it had when it was only a processional
+      // (the database knows the kind by that name). Read through Ceremony's own
+      // reader, so an older ceremony is kept in the current shape.
+      const ceremony = readCeremony(migrate(raw));
+      if (ceremony.order.length === 0 && ceremony.processional.length === 0) return null;
+      // Who walks or leads by what they are to the couple, or by the words
+      // typed for them: never a guest, a family, a group or a role of this
+      // wedding's own devising, none of which exist in another wedding.
+      const portable = (members: ShotMember[]) => members.filter((member) => member.kind === "role" || member.kind === "text");
       return {
-        processional: groups.map(record).map((group) => ({
-          ...pick(group, ["label", "formation", "side", "music", "cue"]),
-          // Who walks by what they are to the couple, or by the words typed
-          // for them: never a guest, a family, a group or a role of this
-          // wedding's own devising, none of which exist in another wedding.
-          members: (Array.isArray(group["members"]) ? (group["members"] as unknown[]) : [])
-            .map(record)
-            .filter((member) => member["kind"] === "role" || member["kind"] === "text")
-            .map((member) => pick(member, ["kind", "ref"])),
+        kind: ceremony.kind,
+        // Not the vows, which are the couple's own; not who approved what,
+        // the notes, the officiant, the witnesses or the part of the day.
+        order: ceremony.order.map((moment) => ({
+          kind: moment.kind,
+          title: moment.title,
+          members: portable(moment.members),
+          minutes: moment.minutes,
+          cue: moment.cue,
+          song: moment.song,
+          words: moment.kind === "vows" ? "" : moment.words,
+          print: moment.print,
+        })),
+        processional: ceremony.processional.map((group) => ({
+          label: group.label,
+          formation: group.formation,
+          side: group.side,
+          song: group.song,
+          cue: group.cue,
+          members: portable(group.members),
         })),
       };
     }
@@ -244,15 +264,17 @@ export function applyTo(kind: Kind, content: Raw, raw: Raw): Array<[SliceName, u
         ],
       ];
     }
-    case "processional":
-      return [
-        [
-          "ceremony",
-          {
-            ...record(raw["ceremony"]),
-            processional: (content["processional"] as Raw[]).map((group) => ({ ...group, id: newId("walk") })),
-          },
-        ],
-      ];
+    case "processional": {
+      // The order and the processional replace this wedding's; its officiant,
+      // witnesses, notes and part of the day stay, as does nothing approved.
+      const { order: _order, ...current } = record(raw["ceremony"]);
+      const processional = (content["processional"] as Raw[]).map((group) => ({ ...group, id: newId("walk") }));
+      // One kept before ceremonies had an order has none: leaving it out has
+      // the processional read into an order, as an older wedding's is.
+      const order = Array.isArray(content["order"])
+        ? { order: (content["order"] as Raw[]).map((moment) => ({ ...moment, id: newId("moment"), approved: false, notes: "" })) }
+        : {};
+      return [["ceremony", { ...current, kind: content["kind"] ?? current["kind"], ...order, processional }]];
+    }
   }
 }

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { migrate } from "@jfrusher/trousseau";
+import { dayPlaces } from "@/lib/model/slices";
 import type { Box } from "@/lib/model/types";
-import { dayPlaces, find, neededAt, packing } from "./view";
+import { find, neededAt, packing } from "./view";
 
 const box = (patch: Partial<Box>): Box => ({ id: "b1", number: 1, name: "Getting ready", items: [], blockId: null, personIds: [], notes: "", ...patch });
 
@@ -17,7 +18,7 @@ const doc = migrate({
 describe("where a box is needed, and by when", () => {
   it("is where its block is, by when its block starts", () => {
     expect(neededAt(box({ blockId: "blk-prep" }), dayPlaces(doc))).toEqual({
-      place: { label: "Getting ready", location: "The house", startMin: 540 },
+      place: { label: "Getting ready", location: "The house", startMin: 540, endMin: 720 },
       lost: false,
     });
   });

@@ -5,11 +5,10 @@ import { migrate } from "@jfrusher/trousseau";
 import { nodeFontSource } from "@/apps/brigade/render/pdf/nodeFontSource";
 import { textOf } from "@/apps/brigade/render/pdf/readPdf";
 import { parseCsv } from "@/lib/data/csv";
-import { readBoxes, readCrew, readGuests } from "@/lib/model/slices";
+import { dayPlaces, readBoxes, readCrew, readGuests } from "@/lib/model/slices";
 import { renderBoxLabels } from "./render/pdf/labels";
 import { renderPackingList } from "./render/pdf/packingList";
 import { boxesCsv, boxRows, itemText } from "./rows";
-import { dayPlaces } from "./view";
 
 const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
 const doc = migrate(raw);

@@ -57,6 +57,8 @@ export const USUAL_TASKS: ReadonlyArray<{ label: string; daysBefore: number }> =
   { label: "Send the invitations", daysBefore: 120 },
   { label: "Order the cake", daysBefore: 120 },
   { label: "Buy the rings", daysBefore: 90 },
+  // At least 29 days before, and at most a year, in England and Wales.
+  { label: "Give notice of marriage", daysBefore: 90 },
   { label: "Chase the replies still to come", daysBefore: 45 },
   { label: "Final numbers to the caterer", daysBefore: 14 },
   { label: "Finish the seating plan", daysBefore: 14 },

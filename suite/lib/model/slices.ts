@@ -32,8 +32,13 @@ import {
   defaultStyles,
   emptyDoc,
 } from "@/apps/cadence/core/model/defaults";
-import { BAR_KINDS, BAR_LINES, CAST_ROLES, CROWDS, FIGURES, MIXED_PARTS, POURS, SHOPS } from "./types";
+import { newMoment } from "@/lib/ceremony/moments";
+import { BAR_KINDS, BAR_LINES, CAST_ROLES, CEREMONY_KINDS, CROWDS, FIGURES, MIXED_PARTS, MOMENT_KINDS, POURS, SHOPS } from "./types";
 import type {
+  CeremonyKind,
+  Moment,
+  MomentKind,
+  Song,
   Bar,
   BarKind,
   BarLine,
@@ -662,6 +667,30 @@ export function resolvedDay(doc: Trousseau) {
   return cached(doc, "resolved", () => resolve(readTimeline(doc)));
 }
 
+/** Where and when a block of the day is, for a tool that points at one: a box, the ceremony. */
+export interface Place {
+  label: string;
+  location: string;
+  startMin: number;
+  /** When what happens in it ends, before any buffer. */
+  endMin: number;
+}
+
+/** Every block of the day by id, with where it is and when it starts and ends. */
+export function dayPlaces(doc: Trousseau): ReadonlyMap<string, Place> {
+  return cached(doc, "dayPlaces", () => {
+    const times = new Map(resolvedDay(doc).map((block) => [block.id, block]));
+    return new Map(
+      readTimeline(doc)
+        .blocks.filter((block) => times.has(block.id))
+        .map((block) => {
+          const { startMin, contentEndMin } = times.get(block.id)!;
+          return [block.id, { label: block.label, location: block.location.trim(), startMin, endMin: contentEndMin }];
+        }),
+    );
+  });
+}
+
 /**
  * The `day` slice: the timeline with every clock time worked out.
  *
@@ -913,29 +942,90 @@ export function readCast(doc: Trousseau): CastSlice {
 
 // ceremony --------------------------------------------------------------------
 
+const seconds = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) && v >= 0 ? Math.round(v) : null);
+
+function readSong(raw: unknown): Song | null {
+  if (!isRecord(raw)) return null;
+  return {
+    title: str(raw["title"]),
+    artist: str(raw["artist"]),
+    playedBy: str(raw["playedBy"]),
+    startSec: seconds(raw["startSec"]),
+    endSec: seconds(raw["endSec"]),
+    lyrics: str(raw["lyrics"]),
+  };
+}
+
+/** A song of that title alone: what a group's music was before it was a song. */
+const songTitled = (title: string): Song => ({ title, artist: "", playedBy: "", startSec: null, endSec: null, lyrics: "" });
+
 function readWalkGroup(raw: unknown): WalkGroup | null {
   if (!isRecord(raw) || typeof raw["id"] !== "string") return null;
   const formation = raw["formation"];
   const side = raw["side"];
+  // Older ceremonies kept a group's music as words; it is the title of its song now.
+  const music = str(raw["music"]).trim();
   return {
     id: raw["id"],
     label: str(raw["label"]),
     members: list(raw["members"], readMember),
     formation: formation === "pairs" || formation === "threes" ? formation : "single",
     side: side === "a" || side === "b" || side === "both" ? side : "",
-    music: str(raw["music"]),
+    song: "song" in raw ? readSong(raw["song"]) : music ? songTitled(music) : null,
     cue: str(raw["cue"]),
   };
 }
 
-export function emptyCeremony(): Ceremony {
-  return { processional: [] };
+function readMoment(raw: unknown): Moment | null {
+  if (!isRecord(raw) || typeof raw["id"] !== "string") return null;
+  const minutes = raw["minutes"];
+  return {
+    id: raw["id"],
+    kind: MOMENT_KINDS.includes(raw["kind"] as MomentKind) ? (raw["kind"] as MomentKind) : "other",
+    title: str(raw["title"]),
+    members: list(raw["members"], readMember),
+    minutes: typeof minutes === "number" && Number.isFinite(minutes) && minutes >= 0 ? minutes : null,
+    cue: str(raw["cue"]),
+    song: readSong(raw["song"]),
+    words: str(raw["words"]),
+    print: bool(raw["print"], false),
+    approved: bool(raw["approved"], false),
+    notes: str(raw["notes"]),
+  };
 }
 
+/** The id of the moment an older ceremony's processional is read into: fixed, so every read agrees. */
+export const PROCESSIONAL_MOMENT_ID = "moment-processional";
+
+export function emptyCeremony(): Ceremony {
+  return { kind: "civil", blockId: null, officiant: "", witnesses: [], notes: "", order: [], processional: [] };
+}
+
+/**
+ * The ceremony as planned. A ceremony stored before it had an order of service
+ * is read with one holding its processional, so nothing already planned
+ * disappears from the order or the prints; the first change stores it so.
+ */
 export function readCeremony(doc: Trousseau): Ceremony {
   return cached(doc, "ceremony", () => {
     const raw = (doc as Record<string, unknown>)["ceremony"];
-    return { processional: list(isRecord(raw) ? raw["processional"] : null, readWalkGroup) };
+    if (!isRecord(raw)) return emptyCeremony();
+    const processional = list(raw["processional"], readWalkGroup);
+    const order =
+      "order" in raw
+        ? list(raw["order"], readMoment)
+        : processional.length > 0
+          ? [{ ...newMoment("processional"), id: PROCESSIONAL_MOMENT_ID }]
+          : [];
+    return {
+      kind: CEREMONY_KINDS.includes(raw["kind"] as CeremonyKind) ? (raw["kind"] as CeremonyKind) : "civil",
+      blockId: typeof raw["blockId"] === "string" ? raw["blockId"] : null,
+      officiant: str(raw["officiant"]),
+      witnesses: list(raw["witnesses"], readMember),
+      notes: str(raw["notes"]),
+      order,
+      processional,
+    };
   });
 }
 

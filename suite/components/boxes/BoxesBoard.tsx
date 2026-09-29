@@ -7,10 +7,10 @@ import { Button, Empty, IconButton, NumberField, Panel, SelectField, TextArea, T
 import { NumberInput } from "@/components/ui/NumberInput";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 import { addBox, addItem, moveItem, patchBox, patchItem, removeBox, removeItem, USUAL_BOXES, withUsualBoxes } from "@/lib/boxes/actions";
-import { dayPlaces, find, neededAt, packing, whereBy, type Place } from "@/lib/boxes/view";
+import { find, neededAt, packing, whereBy } from "@/lib/boxes/view";
 import { boxesCsv, boxRows } from "@/lib/boxes/rows";
 import { download } from "@/lib/data/file";
-import { personName } from "@/lib/model/slices";
+import { dayPlaces, personName, type Place } from "@/lib/model/slices";
 import { useBoxes, useCrew, useEvent, useGuests, useStatus, useWriters } from "@/lib/model/useSuite";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import type { Box, Boxes, Crew, Guest } from "@/lib/model/types";

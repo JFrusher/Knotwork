@@ -182,3 +182,21 @@ test("two people packing two different boxes both keep what they ticked", () => 
   expect(result.conflicts).toEqual([]);
   expect(result.raw.boxes).toEqual({ boxes: [box("ready", true), box("overnight", true)] });
 });
+
+const moment = (id: string, words: string) => ({ id, kind: "reading", title: id, words });
+
+test("two people writing two different readings both keep what they wrote, and the processional with them", () => {
+  const walking = [{ id: "w1", label: "The couple" }];
+  const base = doc({ ceremony: { kind: "civil", processional: walking, order: [moment("first", ""), moment("second", "")] } });
+  const local = doc({ ceremony: { kind: "civil", processional: walking, order: [moment("first", "Sonnet 116"), moment("second", "")] } });
+  const server = doc({ ceremony: { kind: "civil", processional: walking, order: [moment("first", ""), moment("second", "The Owl and the Pussycat")] } });
+
+  const result = merge(local, server, fingerprintParts(base));
+
+  expect(result.conflicts).toEqual([]);
+  expect(result.raw.ceremony).toEqual({
+    kind: "civil",
+    processional: walking,
+    order: [moment("first", "Sonnet 116"), moment("second", "The Owl and the Pussycat")],
+  });
+});

@@ -23,7 +23,7 @@ const WHOLE: Partial<Record<SliceName, string>> = {
   stationery: "The card design",
   tools: "Which tools the wedding uses",
   cast: "Who is who",
-  ceremony: "The processional",
+  ceremony: "The ceremony",
   boxes: "The boxes",
   bar: "The bar",
 };
@@ -34,6 +34,7 @@ const COLLECTION: Record<string, { one: string; many: string }> = {
   blocks: { one: "block of the day", many: "blocks of the day" },
   jobs: { one: "job or task", many: "jobs and tasks" },
   boxes: { one: "box", many: "boxes" },
+  order: { one: "part of the ceremony", many: "parts of the ceremony" },
 };
 
 /** What a part is: "Ada Byron", "Table 3", "Speeches", or a slice in words. */
@@ -48,7 +49,9 @@ export function partName(key: string, value: unknown): string {
           ? record["label"]
           : typeof record["name"] === "string"
             ? record["name"]
-            : "";
+            : typeof record["title"] === "string"
+              ? record["title"]
+              : "";
     const noun = COLLECTION[info.record.collection]?.one ?? "record";
     return name ? `${name} (a ${noun})` : `A ${noun}`;
   }

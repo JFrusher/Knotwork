@@ -5644,6 +5644,230 @@
     "customRoles": []
   },
   "ceremony": {
+    "kind": "civil",
+    "blockId": "blk-ceremony",
+    "officiant": "Mrs Ada Hartley, the registrar",
+    "witnesses": [
+      {
+        "kind": "guest",
+        "ref": "g_vofkec66"
+      },
+      {
+        "kind": "guest",
+        "ref": "g_8in4f7z4"
+      }
+    ],
+    "notes": "No confetti inside the Orangery: petals on the lawn afterwards.",
+    "order": [
+      {
+        "id": "moment-music",
+        "kind": "music",
+        "title": "Music as guests arrive",
+        "members": [],
+        "minutes": null,
+        "cue": "From 13:00, as guests take their seats",
+        "song": {
+          "title": "Gymnopédie No. 1",
+          "artist": "Erik Satie",
+          "playedBy": "String quartet",
+          "startSec": null,
+          "endSec": null,
+          "lyrics": ""
+        },
+        "words": "",
+        "print": false,
+        "approved": true,
+        "notes": ""
+      },
+      {
+        "id": "moment-processional",
+        "kind": "processional",
+        "title": "The processional",
+        "members": [],
+        "minutes": 4,
+        "cue": "",
+        "song": null,
+        "words": "",
+        "print": false,
+        "approved": true,
+        "notes": ""
+      },
+      {
+        "id": "moment-welcome",
+        "kind": "welcome",
+        "title": "The registrar's welcome",
+        "members": [
+          {
+            "kind": "text",
+            "ref": "The registrar"
+          }
+        ],
+        "minutes": 3,
+        "cue": "",
+        "song": null,
+        "words": "",
+        "print": false,
+        "approved": false,
+        "notes": ""
+      },
+      {
+        "id": "moment-reading",
+        "kind": "reading",
+        "title": "Sonnet 116, by William Shakespeare",
+        "members": [
+          {
+            "kind": "guest",
+            "ref": "g_q18mutww"
+          }
+        ],
+        "minutes": 3,
+        "cue": "When the registrar invites Jonty up",
+        "song": null,
+        "words": "Let me not to the marriage of true minds\nAdmit impediments. Love is not love\nWhich alters when it alteration finds,\nOr bends with the remover to remove.\nO no! it is an ever-fixed mark\nThat looks on tempests and is never shaken;\nIt is the star to every wand'ring bark,\nWhose worth's unknown, although his height be taken.\nLove's not Time's fool, though rosy lips and cheeks\nWithin his bending sickle's compass come;\nLove alters not with his brief hours and weeks,\nBut bears it out even to the edge of doom.\nIf this be error and upon me prov'd,\nI never writ, nor no man ever lov'd.",
+        "print": true,
+        "approved": true,
+        "notes": ""
+      },
+      {
+        "id": "moment-declaration",
+        "kind": "declaration",
+        "title": "The declaratory words",
+        "members": [],
+        "minutes": 2,
+        "cue": "",
+        "song": null,
+        "words": "",
+        "print": false,
+        "approved": false,
+        "notes": ""
+      },
+      {
+        "id": "moment-vows",
+        "kind": "vows",
+        "title": "The contracting words",
+        "members": [
+          {
+            "kind": "role",
+            "ref": "a"
+          },
+          {
+            "kind": "role",
+            "ref": "b"
+          }
+        ],
+        "minutes": 3,
+        "cue": "",
+        "song": null,
+        "words": "",
+        "print": false,
+        "approved": false,
+        "notes": ""
+      },
+      {
+        "id": "moment-rings",
+        "kind": "rings",
+        "title": "The rings",
+        "members": [],
+        "minutes": 2,
+        "cue": "",
+        "song": null,
+        "words": "",
+        "print": false,
+        "approved": false,
+        "notes": "The best man has them from 13:15, in his left pocket."
+      },
+      {
+        "id": "moment-pronouncement",
+        "kind": "words",
+        "title": "The pronouncement",
+        "members": [],
+        "minutes": 1,
+        "cue": "",
+        "song": null,
+        "words": "",
+        "print": false,
+        "approved": false,
+        "notes": ""
+      },
+      {
+        "id": "moment-kiss",
+        "kind": "kiss",
+        "title": "The kiss",
+        "members": [],
+        "minutes": 1,
+        "cue": "",
+        "song": null,
+        "words": "",
+        "print": false,
+        "approved": false,
+        "notes": ""
+      },
+      {
+        "id": "moment-song",
+        "kind": "song",
+        "title": "The Water Is Wide",
+        "members": [
+          {
+            "kind": "guest",
+            "ref": "g_8gp2bi4e"
+          }
+        ],
+        "minutes": 4,
+        "cue": "As the registrar brings out the register",
+        "song": {
+          "title": "The Water Is Wide",
+          "artist": "Traditional",
+          "playedBy": "Sung, with the quartet",
+          "startSec": null,
+          "endSec": null,
+          "lyrics": "The water is wide, I can't cross o'er,\nAnd neither have I wings to fly.\nGive me a boat that can carry two,\nAnd both shall row, my love and I."
+        },
+        "words": "",
+        "print": true,
+        "approved": false,
+        "notes": ""
+      },
+      {
+        "id": "moment-signing",
+        "kind": "signing",
+        "title": "Signing the register",
+        "members": [],
+        "minutes": 10,
+        "cue": "",
+        "song": {
+          "title": "Clair de Lune",
+          "artist": "Claude Debussy",
+          "playedBy": "String quartet",
+          "startSec": 0,
+          "endSec": 300,
+          "lyrics": ""
+        },
+        "words": "",
+        "print": false,
+        "approved": true,
+        "notes": "The photographer may photograph the signing, not the register itself."
+      },
+      {
+        "id": "moment-recessional",
+        "kind": "recessional",
+        "title": "The recessional",
+        "members": [],
+        "minutes": 3,
+        "cue": "As the registrar introduces the married couple",
+        "song": {
+          "title": "Here Comes the Sun",
+          "artist": "The Beatles, arranged for strings",
+          "playedBy": "String quartet",
+          "startSec": null,
+          "endSec": null,
+          "lyrics": ""
+        },
+        "words": "",
+        "print": false,
+        "approved": true,
+        "notes": ""
+      }
+    ],
     "processional": [
       {
         "id": "walk-registrar",
@@ -5656,7 +5880,7 @@
         ],
         "formation": "single",
         "side": "",
-        "music": "",
+        "song": null,
         "cue": "In place before the music starts"
       },
       {
@@ -5674,8 +5898,15 @@
         ],
         "formation": "pairs",
         "side": "a",
-        "music": "Air on the G String",
-        "cue": "Take their seats"
+        "song": {
+          "title": "Air on the G String",
+          "artist": "J. S. Bach",
+          "playedBy": "String quartet",
+          "startSec": null,
+          "endSec": null,
+          "lyrics": ""
+        },
+        "cue": "As the quartet begins"
       },
       {
         "id": "walk-b-parents",
@@ -5692,8 +5923,8 @@
         ],
         "formation": "pairs",
         "side": "b",
-        "music": "Air on the G String",
-        "cue": ""
+        "song": null,
+        "cue": "Once the first parents are seated"
       },
       {
         "id": "walk-a-party",
@@ -5706,8 +5937,15 @@
         ],
         "formation": "pairs",
         "side": "a",
-        "music": "Canon in D",
-        "cue": ""
+        "song": {
+          "title": "Canon in D",
+          "artist": "Johann Pachelbel",
+          "playedBy": "String quartet",
+          "startSec": null,
+          "endSec": null,
+          "lyrics": ""
+        },
+        "cue": "At the first bar of the Canon"
       },
       {
         "id": "walk-b-party",
@@ -5720,8 +5958,8 @@
         ],
         "formation": "pairs",
         "side": "b",
-        "music": "Canon in D",
-        "cue": ""
+        "song": null,
+        "cue": "Eight bars later"
       },
       {
         "id": "walk-couple",
@@ -5738,7 +5976,14 @@
         ],
         "formation": "pairs",
         "side": "",
-        "music": "The Arrival of the Queen of Sheba",
+        "song": {
+          "title": "The Arrival of the Queen of Sheba",
+          "artist": "George Frideric Handel",
+          "playedBy": "String quartet",
+          "startSec": null,
+          "endSec": 150,
+          "lyrics": ""
+        },
         "cue": "The music changes as the couple enter"
       }
     ]
