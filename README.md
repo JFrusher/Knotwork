@@ -194,7 +194,7 @@ npm run dev
 
 That gives you the whole suite locally, with no backend and no account.
 
-Adding accounts and sync means a Supabase project and seven migrations.
+Adding accounts and sync means a Supabase project and its migrations.
 **[docs/SELF-HOSTING.md](docs/SELF-HOSTING.md)** covers all of it — every
 environment variable, the migration order, and a section on how to check your
 instance actually works rather than merely starting.

@@ -106,24 +106,17 @@ links. On another host you may need an equivalent — see `originOf()` in
 
 ## 4. Apply the migrations
 
-In filename order. Later ones depend on earlier ones:
-
-```
-supabase/migrations/
-  20260830000001_suite_sync.sql
-  20260830000002_suite_sync_fixes.sql
-  20260901000001_delete_wedding.sql
-  20260901000002_retention.sql
-  20260901000003_storage_budget.sql
-  20260902000001_accounts.sql
-  20260903000001_wedding_documents.sql
-```
+Every file in `supabase/migrations/`, in filename order, skipping none. Later
+ones depend on earlier ones, and the earliest build a schema a later one
+removes, so a file left out breaks the ones after it. They are not listed here
+because a list here goes out of date the day a migration is added.
 
 Either paste each into Supabase's SQL editor in that order, or use the Supabase
 CLI (`supabase db push`) with the project linked.
 
-These create the sync tables, the account and membership tables with their
-row-level security policies, and the per-wedding document store. **The RLS
+Together they create the account and membership tables with their row-level
+security policies, the per-wedding document store and its history, the guest
+and supplier links, the planners' library, and the live channel. **The RLS
 policies are what make one couple unable to read another's wedding**, so
 applying them is not optional.
 
