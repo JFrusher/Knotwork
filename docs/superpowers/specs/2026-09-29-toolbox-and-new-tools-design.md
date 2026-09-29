@@ -1,0 +1,206 @@
+# Trousseau — the toolbox, and four new pieces: travel, ceremony, boxes, bar
+
+Date: 2026-09-29
+Status: direction approved by the maintainer (answers recorded below). Phase 0
+is built with this spec; every later phase gets its own dated plan first.
+Scope: a way to add and remove tools, and four additions proposed by the
+"Modular Workspace" PRD — a processional planner, a bar calculator, a packing
+tool and a timeline collision checker.
+
+## Why
+
+The PRD proposed an opt-in workspace ("only the basics until you add more")
+and four modules. It was read against the suite before anything was designed,
+and a good part of it turned out to exist already.
+
+- **Reproduced** — shown in a test, a build or a real browser.
+- **Traced** — every caller read; not run.
+
+| # | Finding | How established |
+|---|---|---|
+| T1 | The PRD's "shared data bus", local-first storage and lazy loading all exist: one document with one owner per slice, IndexedDB with no account needed, and every tool behind `next/dynamic`, with dialogs mounted on first open. | Traced |
+| T2 | Module 4's "hard collision" is Timeline's `tag-double-booked`: the same supplier or party in two places at once. Buffers (`bufferMin`), slack and curfew are there too. **Missing:** travel time between locations, and a calendar file. There is no `.ics` anywhere. | Traced (`apps/cadence/core/schedule/conflicts.ts`); searched |
+| T3 | Module 3's assignment exists — Checklist tasks have `personIds`, `dueOn` and `status`, and people are linked to guests. Packing as the maintainer describes it does not: boxes, what is in each, and where and when each must be. | Traced |
+| T4 | Module 1's people exist: Group shots' cast (each partner, their parents, their wedding party, custom roles) mapped to guests. Grandparents, readers, ring bearer and flower party are not roles. | Traced (`lib/model/types.ts`) |
+| T5 | A top-level key the contract does not list survives a sync, but is assembled local-over-server with no conflict (`mergeCloudDocument.ts`, lines 107 and 163), so a partner's edit to it is silently lost on the next push. **Every new slice goes into `SLICE_NAMES`.** | Traced |
+| T6 | Every page loads the same 522 KB of gzipped JavaScript; a tool's own code adds 7 KB (Checklist) to 76 KB (Seating). 144 KB of the shared part is fontkit, reached statically from the store: `useTrousseauStore → documents/assets → portableAssets → plaque/syncAssets → plaque/sliceBridge → plaque/design → template/defaults → text/fit → text/measure`. The PRD's 100 KB per module is already met; the weight is underneath every module. | Reproduced — production build, each route loaded in Chromium and its JS summed; fontkit matched by its shaper tables against `node_modules/fontkit`; the chain traced by static imports |
+| T7 | Ctrl/⌘ K is the command palette. | Traced |
+
+## Decisions
+
+The maintainer's answers, 2026-09-29. Where the answer delegated the choice,
+the choice made is recorded with its reason.
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | The PRD against the 2026-09-28 master plan | **The master plan wins.** The header, not a left sidebar; partners' names, not "bride"; one document, not micro-frontends. |
+| 2 | What is opt-in | **The five stay, on by default, and can be removed** by someone who really wants to. New tools are added from the toolbox. |
+| 3 | Where "which tools" lives | **In the wedding** — the partner and the planner see the same set. |
+| 4 | The toolbox | **A slide-over at the right edge, with Add.** No keyboard shortcut of its own. |
+| 5 | Public calculator pages for search | **Not intended.** Everything here is inside the planning app. |
+| 6 | Module 4 | **Timeline features.** Travel times are typed by the couple: no lookup, no new `connect-src`. |
+| 7 | Packing | **Its own tool**: boxes, what is in each, found easily, and each box tied to a part of the day — "this box has my shoes in it and needs to be at the house for 9". |
+| 8 | Processional and group shots | **They share their people.** |
+| 9 | Bar | **UK first, and every number adjustable.** |
+| 10 | Tools feeding each other | Delegated: **proposed below**, each for the maintainer to accept on its own. |
+| 11 | The wedding pack | **New printed pieces join it.** |
+| 12 | Planners | **New tools' work can be kept in the library.** |
+| 13 | Where the set is stored | Delegated: **a slice of its own, `tools`.** `event` is the wedding's who, where and when, and merges as one part: a list kept there would conflict whenever one partner changed the date while the other added a tool. A slice of its own merges on its own. |
+| 14 | What removing a tool does | Delegated: **hides it, deletes nothing.** Its tab, its area on the front page, its entries in What is left, its tour chapter and its palette entry go. Its work is kept, the removal is one undo step, and adding it back brings it back as it was. Its page still opens from its address. |
+| 15 | Where the shared people live | Delegated, for Phase 2: **a slice of their own, `cast`**, moved out of `shots` on load. A tool rewrites only its own slice; once two tools edit the cast, it is neither tool's. |
+
+## Phase 0 — the toolbox
+
+**Built 2026-09-29**, with [its plan](../plans/2026-09-29-toolbox.md).
+
+- **The `tools` slice** is `{ shown: string[] }`. With nothing stored, the five
+  are shown, which is every wedding today and every new one. Once somebody
+  adds or removes a tool the list is stored as written, and it keeps ids this
+  build does not know: a tool a newer version added is never removed by an
+  older one writing its own change.
+- **The registry** (`lib/tools.ts`) gives each tool a stable `id`, which is
+  what is stored; an address could be renamed. `shownTools(doc)` gives the
+  shown tools in the registry's order, cached per document like every other
+  derived view.
+- **The header** shows the shown tools and ends the row with **+**, which opens
+  **Tools** (`?panel=tools`): every tool with what it is for, and Add or
+  Remove. A removal says the work is kept, and is one step on the wedding's
+  history ("Undo removing Seating").
+- **Removed means out of sight everywhere at once**: the header, the front
+  page's areas, What is left (in `readiness` itself, so the planner's Weddings
+  page, which runs it on the server, agrees), "Take a tour", and the palette's
+  pages. Records in the palette — a table, a block — still open where they
+  live.
+
+## Phase 1 — Timeline: travel between places, and calendars
+
+- **Travel times** the couple types: `timeline.travel`, a list of
+  `{ between: [placeA, placeB], minutes }`, the same either way. The panel lists
+  the pairs the day actually moves between (from the blocks' locations), so
+  there is nothing to invent, only blanks to fill.
+- **A new advisory, `no-travel-time`**: a lane or a tag that ends one block at
+  one place and starts its next somewhere else sooner than the typed time
+  allows — "Hair and make-up ends at 13:00 at the house; the first look starts
+  at 13:05 at the venue, 15 minutes away." A pair with no time typed is never
+  guessed at and never flagged. Advisory, because a person running is not a
+  print run that should stop.
+- **Calendar files**: the day as `.ics`, whole or for one supplier (a tag's
+  blocks), written in the browser. Times go out in UTC from the wedding's own
+  `utcOffsetMin`, so a phone abroad shows the venue's clock correctly.
+
+## Phase 2 — one cast, and Ceremony
+
+- **`cast`** takes Group shots' cast and custom roles, moved on load by the
+  existing load-time pass. The fixed roles gain each partner's grandparents
+  (a party role, as the wedding party is). Readers, ring bearer, flower party
+  and the like are custom roles, as "Me and my family" already is. Group shots
+  reads it exactly as before.
+- **Ceremony** (`/ceremony`, slice `ceremony`, added from the toolbox): the
+  processional as an ordered list of groups. Each group names who walks —
+  a role, a custom role, a guest, a family, a crew person (the officiant is
+  usually a supplier, not a guest) or free text — how they walk (alone, in
+  pairs, in threes), which side they go to (named after the partners), and a
+  cue: the music and the moment it changes.
+- **"Suggest an order"** from the cast, as Group shots' `propose` does: a
+  starting point in the usual UK order, entirely editable.
+- **Checks**: someone in the processional who has declined; a role nobody has
+  been cast in. Both through the cast's own resolver, as group shots do now.
+- **Prints**: one page for the officiant and whoever runs the day, and plain
+  text to paste into an email. The page joins the wedding pack.
+
+## Phase 3 — Boxes
+
+The maintainer's words: boxes, what is in each, "in a good intuitive way", and
+each box attached to a part of the day.
+
+```ts
+interface Box {
+  id: string;
+  /** Printed large on its label: "3". */
+  number: number;
+  name: string;               // "Getting ready — Alex"
+  items: Item[];
+  /** The part of the day it is needed for: where and when come from the block. */
+  blockId: string | null;     // null: not for the day — the honeymoon case
+  personIds: string[];        // who gets it there
+  notes: string;
+}
+interface Item { id: string; label: string; quantity: number; packed: boolean; notes: string }
+```
+
+- **Where and when are the block's.** "Needs to be at the house for 9" is a box
+  on the block "Getting ready", at the house, at 09:00; move the block and the
+  box moves with it. A drop-off that is not a block of its own is a moment
+  (a block with no length), which Timeline already has. One way to say where
+  and when, not a second one typed on the box.
+- **Finding things**: one search over every box ("shoes" → Box 3), items moved
+  between boxes by dragging, and each box's packed count on its card.
+- **Checks**: a box whose block is gone (as a job's can be); unpacked items
+  close to the day; a box nobody is taking.
+- **Prints**: a label per box — its number, name, where and when, and what is
+  in it — and a packing list, as PDF and CSV. The list joins the wedding pack.
+- **Starter boxes** are UK first: rings, the paperwork the ceremony needs,
+  supplier envelopes, the emergency kit, the guest book, and so on — a list to
+  edit, as "Add the usual tasks" is.
+
+## Phase 4 — Bar
+
+UK first, and every figure on screen, editable, and resettable to its default.
+
+- **Who is drinking**: the guests coming (`isComing`), live, less a share not
+  drinking. The count can be overridden, and says so while it is.
+- **By part of the day**, because a UK wedding drinks in parts: the drinks
+  reception, the toast, the meal's wine, and the evening bar. Each part has its
+  own hours and per-head rate.
+- **UK units**: wine and fizz in 75cl bottles, 125ml or 175ml glasses; beer in
+  330ml bottles, 500ml cans, cases of 24; spirits in 70cl bottles, 25ml
+  measures; soft drinks and mixers in litres; ice in kilos.
+- **Bar types**: full bar; beer and wine; signature cocktails with beer and
+  wine; low and no alcohol.
+- **Adjusting**: a lighter or heavier crowd; prices per bottle or case, giving
+  an estimated spend; "we already have" per line; round up to whole cases for
+  sale or return, which UK merchants commonly offer.
+- **The shopping list** grouped by where it is bought — supermarket, wine
+  merchant, cash and carry — editable.
+- **The defaults are the product's credibility**, and are agreed with the
+  maintainer in Phase 4's plan before they are built.
+
+## Tools feeding each other — proposals
+
+None of these is built without the maintainer accepting it. Each keeps the
+rule that a tool writes only its own slice and reads the others'.
+
+| From | To | What |
+|---|---|---|
+| Boxes | Delegation | A person taking a box sees "Box 3 to the house by 09:00" on their job sheet. Derived from the box, never stored as a job, so it follows the block. |
+| Boxes | Binder | Find a box or an item on the day: "where are the rings?" |
+| Ceremony | Timeline | The processional's cues shown inside the ceremony block, read-only. |
+| Ceremony | Binder | The order of walking, on the phone, on the day. |
+| Bar | Timeline | Reception, meal and evening hours read from the blocks the couple picks, rather than typed twice. |
+| Bar | Money | The estimated spend shown against the budget as planned, not paid. |
+| Bar | Checklist | "Buy the drinks" and "Collect the ice", dated back from the day. |
+| Bar | Boxes | Crates as boxes, attached to the bar's block. |
+| Timeline | Supplier links | Each supplier's calendar file on their own call sheet. |
+
+## Library
+
+A planner keeps, as the existing kinds are kept, without anything personal:
+a **processional** as roles and formations with no guest named; a **set of
+boxes** with their items and no people or blocks; **bar settings** — rates,
+units and prices — with no guest count.
+
+## Open questions
+
+1. **T6**: take fontkit off every page by breaking the static chain above, and
+   add a CI check on each page's own JavaScript? And the limit, if so.
+2. **S18** (from the master plan), since the PRD says "zero tracking": remove
+   Vercel Analytics, or say in the Privacy Policy what it counts?
+3. **Cues on the day**: is the Ceremony → Timeline proposal wanted, or do the
+   cues stay in Ceremony?
+4. **Order of phases**: proposed 1 Timeline (smallest, most already there),
+   2 Ceremony, 3 Boxes, 4 Bar.
+
+## Explicitly deferred
+
+- Public calculator pages for search (decision 5).
+- A keyboard shortcut for the toolbox (decision 4).
