@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { allTags } from "../../core/model/tags";
 import { formatClock, parseClock } from "../../core/time/minutes";
-import { getDoc, useStore } from "../../state/store";
+import { useStore, useTimelineDoc } from "../../state/store";
 import { Button, Panel, TextArea, TextField } from "@/components/ui/fields";
 import styles from "./TagsPanel.module.css";
 
 export function TagsPanel() {
-  const doc = useStore(getDoc);
+  const doc = useTimelineDoc();
   const setTagDetail = useStore((state) => state.setTagDetail);
   const removeTagDetail = useStore((state) => state.removeTagDetail);
   const [open, setOpen] = useState<string | null>(null);

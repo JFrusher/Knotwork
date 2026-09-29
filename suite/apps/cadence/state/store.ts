@@ -1,7 +1,11 @@
 import { create } from "zustand";
-import { emptyDoc, DEFAULT_BLOCK_OUTPUTS } from "../core/model/defaults";
+import type { Trousseau } from "@jfrusher/trousseau";
+import { readTimeline } from "@/lib/model/slices";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { DEFAULT_BLOCK_OUTPUTS } from "../core/model/defaults";
 import { newId } from "../core/model/ids";
-import type { Block, DaySettings, OutputId, StyleSpec, TagDetail, TimelineDoc } from "../core/model/types";
+import type { Block, DaySettings, OutputId, StyleSpec, TagDetail, TimelineDoc, UploadedFont } from "../core/model/types";
+import { writeSlice } from "./sliceBridge";
 
 /** The zoom range, in pixels per minute, and the ratio each press moves it by. */
 export const ZOOM_MIN = 0.4;
@@ -20,16 +24,6 @@ import { byId, resolve, type ResolvedBlock } from "../core/schedule/resolve";
 import { slack as computeSlack, type SlackReport } from "../core/schedule/slack";
 import { whatIf, type Change, type WhatIf } from "../core/schedule/whatIf";
 import { sunForDay, type SunTimes } from "../core/sun/solar";
-import {
-  canRedo,
-  canUndo,
-  initHistory,
-  push,
-  redo,
-  reset,
-  undo,
-  type History,
-} from "./history";
 
 export interface Schedule {
   resolved: ResolvedBlock[];
@@ -85,8 +79,12 @@ export interface UiState {
   sheetOutput: OutputId;
 }
 
+/**
+ * What is Timeline's own: the picked block, a drag in progress, the zoom, a
+ * notice. The day itself is the wedding's — every edit below goes straight
+ * into it, on the one history the header's undo drives.
+ */
 export interface StoreState {
-  history: History<TimelineDoc>;
   selectedId: string | null;
   /** The live drag preview. Never committed until the drag ends. */
   preview: WhatIf | null;
@@ -103,6 +101,8 @@ export interface StoreState {
   setTagDetail: (detail: TagDetail) => void;
   removeTagDetail: (tag: string) => void;
   setStyle: (output: OutputId, patch: Partial<StyleSpec>) => void;
+  addFont: (font: UploadedFont) => void;
+  removeFont: (blobKey: string) => void;
   addLane: (name: string) => void;
   renameLane: (from: string, to: string) => void;
   deleteLane: (name: string) => void;
@@ -116,38 +116,41 @@ export interface StoreState {
   previewChange: (change: Change) => void;
   commitPreview: () => void;
   cancelPreview: () => void;
-
-  undo: () => void;
-  redo: () => void;
-  canUndo: () => boolean;
-  canRedo: () => boolean;
-
-  loadDoc: (doc: TimelineDoc) => void;
-  replaceDoc: (doc: TimelineDoc) => void;
 }
 
-/** The document currently on screen. */
-export function getDoc(state: StoreState): TimelineDoc {
-  return state.history.present;
+let view: { doc: Trousseau; timeline: TimelineDoc } | null = null;
+
+/**
+ * The day as Timeline reads it, from the one wedding. Memoised on the
+ * wedding's identity: every edit anywhere replaces it, so a stale view is
+ * impossible, and React sees the same object until something changed.
+ */
+export function timelineDoc(doc: Trousseau): TimelineDoc {
+  if (view?.doc === doc) return view.timeline;
+  view = { doc, timeline: readTimeline(doc) };
+  return view.timeline;
 }
 
-export const selectDoc = (state: StoreState): TimelineDoc => state.history.present;
-export const selectSchedule = (state: StoreState): Schedule =>
-  scheduleFor(state.history.present);
+/** The day as it is now, for code outside React. */
+export const currentDoc = (): TimelineDoc => timelineDoc(useTrousseauStore.getState().doc);
+
+/** What Timeline shows: the wedding's day as it is now, wherever it was last changed. */
+export const useTimelineDoc = (): TimelineDoc => useTrousseauStore((state) => timelineDoc(state.doc));
+export const useSchedule = (): Schedule => useTrousseauStore((state) => scheduleFor(timelineDoc(state.doc)));
 
 function withBlocks(doc: TimelineDoc, blocks: Block[]): TimelineDoc {
   return { ...doc, blocks };
 }
 
 export const useStore = create<StoreState>((set, get) => {
-  /** Every document edit goes through here, so undo never misses one. */
-  const commit = (next: TimelineDoc) =>
-    set((state) => ({ history: push(state.history, next) }));
-
-  const edit = (change: (doc: TimelineDoc) => TimelineDoc) => commit(change(getDoc(get())));
+  /** Every edit to the day goes through here, into the wedding. Shown as "Undo <label>". */
+  const edit = (label: string, change: (doc: TimelineDoc) => TimelineDoc) => {
+    const current = currentDoc();
+    const next = change(current);
+    if (next !== current) writeSlice(next, { label });
+  };
 
   return {
-    history: initHistory(emptyDoc()),
     selectedId: null,
     preview: null,
     ui: { pxPerMin: 1.3, presentation: false, sheetOutput: "run-sheet" },
@@ -170,13 +173,13 @@ export const useStore = create<StoreState>((set, get) => {
         ...seed,
       };
       // Land it at the end of its own lane, not the end of the document.
-      const doc = getDoc(get());
+      const doc = currentDoc();
       const lastInLane = doc.blocks.reduce(
         (last, entry, index) => (entry.lane === lane ? index : last),
         -1,
       );
       const at = lastInLane === -1 ? doc.blocks.length : lastInLane + 1;
-      edit((current) =>
+      edit("a new block", (current) =>
         withBlocks(current, [
           ...current.blocks.slice(0, at),
           block,
@@ -188,7 +191,7 @@ export const useStore = create<StoreState>((set, get) => {
     },
 
     updateBlock: (id, patch) =>
-      edit((doc) =>
+      edit("changing a block", (doc) =>
         withBlocks(
           doc,
           doc.blocks.map((block) => (block.id === id ? { ...block, ...patch } : block)),
@@ -196,12 +199,12 @@ export const useStore = create<StoreState>((set, get) => {
       ),
 
     deleteBlock: (id) => {
-      edit((doc) => withBlocks(doc, doc.blocks.filter((block) => block.id !== id)));
+      edit("removing a block", (doc) => withBlocks(doc, doc.blocks.filter((block) => block.id !== id)));
       if (get().selectedId === id) set({ selectedId: null });
     },
 
     reorderBlock: (id, delta) =>
-      edit((doc) => {
+      edit("the order of the day", (doc) => {
         const blocks = [...doc.blocks];
         const from = blocks.findIndex((block) => block.id === id);
         const moving = blocks[from];
@@ -223,7 +226,7 @@ export const useStore = create<StoreState>((set, get) => {
       }),
 
     toggleAnchor: (id) => {
-      const doc = getDoc(get());
+      const doc = currentDoc();
       const block = doc.blocks.find((entry) => entry.id === id);
       if (!block) return;
       if (block.anchorMin !== null) {
@@ -237,10 +240,10 @@ export const useStore = create<StoreState>((set, get) => {
 
     setAnchor: (id, anchorMin) => get().updateBlock(id, { anchorMin }),
 
-    setDay: (patch) => edit((doc) => ({ ...doc, day: { ...doc.day, ...patch } })),
+    setDay: (patch) => edit("the day's settings", (doc) => ({ ...doc, day: { ...doc.day, ...patch } })),
 
     setTagDetail: (detail) =>
-      edit((doc) => {
+      edit("a supplier's details", (doc) => {
         const exists = doc.tagDetails.some((entry) => entry.tag === detail.tag);
         return {
           ...doc,
@@ -253,25 +256,33 @@ export const useStore = create<StoreState>((set, get) => {
       }),
 
     removeTagDetail: (tag) =>
-      edit((doc) => ({
+      edit("removing a supplier's details", (doc) => ({
         ...doc,
         tagDetails: doc.tagDetails.filter((entry) => entry.tag !== tag),
       })),
 
     setStyle: (output, patch) =>
-      edit((doc) => ({
+      edit("the run sheet's style", (doc) => ({
         ...doc,
         styles: { ...doc.styles, [output]: { ...doc.styles[output], ...patch } },
       })),
 
+    addFont: (font) =>
+      edit("adding a font", (doc) =>
+        doc.fonts.some((entry) => entry.blobKey === font.blobKey) ? doc : { ...doc, fonts: [...doc.fonts, font] },
+      ),
+
+    removeFont: (blobKey) =>
+      edit("removing a font", (doc) => ({ ...doc, fonts: doc.fonts.filter((entry) => entry.blobKey !== blobKey) })),
+
     addLane: (name) =>
-      edit((doc) => {
+      edit("a new lane", (doc) => {
         const lane = name.trim();
         return !lane || doc.lanes.includes(lane) ? doc : { ...doc, lanes: [...doc.lanes, lane] };
       }),
 
     renameLane: (from, to) =>
-      edit((doc) => {
+      edit("renaming a lane", (doc) => {
         const lane = to.trim();
         if (!lane || lane === from || !doc.lanes.includes(from) || doc.lanes.includes(lane)) {
           return doc;
@@ -291,7 +302,7 @@ export const useStore = create<StoreState>((set, get) => {
      * hour, which is the failure this app exists to prevent.
      */
     deleteLane: (name) => {
-      const doc = getDoc(get());
+      const doc = currentDoc();
       if (doc.blocks.some((block) => block.lane === name)) {
         set({ notice: `“${name}” still has blocks. Move or delete them first.` });
         return;
@@ -300,7 +311,7 @@ export const useStore = create<StoreState>((set, get) => {
         set({ notice: "A day needs at least one lane." });
         return;
       }
-      edit((current) => ({ ...current, lanes: current.lanes.filter((lane) => lane !== name) }));
+      edit("removing a lane", (current) => ({ ...current, lanes: current.lanes.filter((lane) => lane !== name) }));
     },
 
     select: (id) => set({ selectedId: id }),
@@ -319,7 +330,7 @@ export const useStore = create<StoreState>((set, get) => {
       ),
 
     previewChange: (change) => {
-      const doc = getDoc(get());
+      const doc = currentDoc();
       const sun = scheduleFor(doc).sun;
       set({
         preview: whatIf(
@@ -333,18 +344,10 @@ export const useStore = create<StoreState>((set, get) => {
     commitPreview: () => {
       const preview = get().preview;
       if (!preview) return;
-      commit(preview.doc);
       set({ preview: null });
+      writeSlice(preview.doc, { label: "moving a block" });
     },
 
     cancelPreview: () => set({ preview: null }),
-
-    undo: () => set((state) => ({ history: undo(state.history), preview: null })),
-    redo: () => set((state) => ({ history: redo(state.history), preview: null })),
-    canUndo: () => canUndo(get().history),
-    canRedo: () => canRedo(get().history),
-
-    loadDoc: (doc) => set({ history: reset(doc), selectedId: null, preview: null }),
-    replaceDoc: (doc) => commit(doc),
   };
 });

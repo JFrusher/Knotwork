@@ -473,6 +473,17 @@ replaced by the converted originals rather than kept beside them.
   400ms autosave and its unload flushes, and the canvas's gesture-start
   hook. A design that cannot be read still says so, until the next edit
   starts fresh.
+- **Timeline: built 2026-09-29**, as Delegation: the day is read from the
+  wedding through one memoised view, and every edit writes the timeline,
+  republishes the resolved day and echoes the curfew and clock into the
+  event in one labelled change on the wedding's history ("Undo changing a
+  block"). A drag is still previewed locally and written once when it
+  ends. An edit that changes nothing ("add a lane" that exists) writes
+  nothing, so no empty step lands on the history. Found on the way:
+  adding a font wrote back the day as it was before the file was read —
+  a stale copy inside one panel — and now reads the day when it writes.
+  Its history module, restore and 400ms autosave are gone, and it is out
+  of `HOLDS`; only Seating still keeps a copy.
 
 **Real-time sync** (Supabase Realtime in place of the 20-second poll, and
 presence) lands after this, not before: an instant pull into a tool that still

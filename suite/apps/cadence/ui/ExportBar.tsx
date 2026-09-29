@@ -3,7 +3,7 @@ import type { OutputId } from "../core/model/types";
 import { blockingConflicts } from "../core/schedule/conflicts";
 import { browserFontSource } from "../render/pdf/fontSource";
 import { getBlob } from "../state/blobStore";
-import { getDoc, selectSchedule, useStore } from "../state/store";
+import { useSchedule, useStore, useTimelineDoc } from "../state/store";
 import { Button } from "@/components/ui/fields";
 import styles from "./ExportBar.module.css";
 
@@ -15,8 +15,8 @@ const FILENAMES: Record<OutputId, string> = {
 };
 
 export function ExportBar() {
-  const doc = useStore(getDoc);
-  const schedule = useStore(selectSchedule);
+  const doc = useTimelineDoc();
+  const schedule = useSchedule();
   const output = useStore((state) => state.ui.sheetOutput);
   const setUi = useStore((state) => state.setUi);
   const setNotice = useStore((state) => state.setNotice);

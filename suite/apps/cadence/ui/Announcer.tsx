@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { selectSchedule, useStore } from "../state/store";
+import { useSchedule, useStore } from "../state/store";
 import styles from "./Announcer.module.css";
 
 /**
@@ -7,7 +7,7 @@ import styles from "./Announcer.module.css";
  * says what changed, politely, once the edits settle.
  */
 export function Announcer() {
-  const conflicts = useStore(selectSchedule).conflicts;
+  const conflicts = useSchedule().conflicts;
   const notice = useStore((state) => state.notice);
   const [message, setMessage] = useState("");
 

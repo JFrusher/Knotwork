@@ -1,19 +1,17 @@
-import { publishDay, readTimeline } from "@/lib/model/slices";
-import { mayWrite, noteRead } from "@/lib/store/toolGeneration";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { publishDay } from "@/lib/model/slices";
+import { useTrousseauStore, type WriteOptions } from "@/lib/store/useTrousseauStore";
 import type { TimelineDoc } from "../core/model/types";
 
 /**
- * Where Cadence's autosave actually lands.
+ * Where Cadence's edits land.
  *
  * Cadence was a standalone app that owned a localStorage key; here it is one
  * tool among four, and the day it plans is the same day the delegation board
  * hands out and the place cards are printed for. So its document lives in the
  * shared wedding's `timeline` slice instead.
  *
- * Nothing above this file knows. The store, the panels, the undo history, the
- * drag-to-move blocks are all Cadence's own code, unchanged — only the two
- * functions in `persist.ts` point somewhere new.
+ * Timeline keeps no copy of it: its store reads the day from the wedding, and
+ * every edit is written here at once, on the wedding's one history.
  *
  * Two things happen on every write that did not happen in standalone Cadence,
  * both because other tools are now reading:
@@ -35,15 +33,7 @@ import type { TimelineDoc } from "../core/model/types";
  * and Timeline shows them.
  */
 
-/** The day as Cadence wants it, with the envelope's own fields already applied. */
-export function readSlice(): TimelineDoc {
-  noteRead("cadence");
-  return readTimeline(useTrousseauStore.getState().doc);
-}
-
-export function writeSlice(next: TimelineDoc): void {
-  // Refused when the document has been replaced since this was read.
-  if (!mayWrite("cadence")) return;
+export function writeSlice(next: TimelineDoc, options: WriteOptions): void {
   const store = useTrousseauStore.getState();
   const { doc } = store;
 
@@ -60,6 +50,6 @@ export function writeSlice(next: TimelineDoc): void {
         },
       ],
     ],
-    { label: "the day", silent: true, by: "cadence" },
+    options,
   );
 }

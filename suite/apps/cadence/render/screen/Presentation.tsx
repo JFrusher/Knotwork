@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { formatClock } from "../../core/time/minutes";
-import { getDoc, selectSchedule, useStore } from "../../state/store";
+import { useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import { Timeline } from "./Timeline";
 import styles from "./Presentation.module.css";
 
@@ -9,8 +9,8 @@ import styles from "./Presentation.module.css";
  * for walking a couple through the plan, not editing in front of them.
  */
 export function Presentation() {
-  const doc = useStore(getDoc);
-  const schedule = useStore(selectSchedule);
+  const doc = useTimelineDoc();
+  const schedule = useSchedule();
   const setUi = useStore((state) => state.setUi);
   const container = useRef<HTMLDivElement>(null);
 

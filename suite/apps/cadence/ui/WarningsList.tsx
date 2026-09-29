@@ -1,8 +1,8 @@
-import { selectSchedule, useStore } from "../state/store";
+import { useSchedule, useStore } from "../state/store";
 import styles from "./WarningsList.module.css";
 
 export function WarningsList() {
-  const schedule = useStore(selectSchedule);
+  const schedule = useSchedule();
   const select = useStore((state) => state.select);
 
   if (schedule.conflicts.length === 0) {

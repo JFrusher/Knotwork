@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { isMoment, OUTPUT_IDS, type OutputId } from "../../core/model/types";
 import { formatClock, formatDuration } from "../../core/time/minutes";
-import { getDoc, selectSchedule, useStore } from "../../state/store";
+import { useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import {
   Button,
   CheckField,
@@ -18,7 +18,7 @@ import { roomPlaces } from "../../state/roomPlaces";
 import styles from "./InspectorPanel.module.css";
 
 export function InspectorPanel() {
-  const doc = useStore(getDoc);
+  const doc = useTimelineDoc();
   // Subscribed to the shared wedding: draw a new space in the room and it turns
   // up here without a reload. Recomputed from the raw slice on each change,
   // which is cheap and avoids holding a second copy that could go stale.
@@ -28,7 +28,7 @@ export function InspectorPanel() {
   // merely a wasted one.
   const seating = useTrousseauStore((state) => state.raw["seating"]);
   const places = useMemo(() => roomPlaces(seating), [seating]);
-  const schedule = useStore(selectSchedule);
+  const schedule = useSchedule();
   const selectedId = useStore((state) => state.selectedId);
   const updateBlock = useStore((state) => state.updateBlock);
   const toggleAnchor = useStore((state) => state.toggleAnchor);

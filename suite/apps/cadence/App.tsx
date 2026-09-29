@@ -1,29 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSelectFromAddress } from "@/components/shell/useSelectFromAddress";
 import { Presentation } from "./render/screen/Presentation";
 import { Timeline } from "./render/screen/Timeline";
 import { formatDuration } from "./core/time/minutes";
 import { restoreFonts } from "./state/fontLoader";
-import { createPersister, restore } from "./state/persist";
 import { spanOf } from "./render/screen/ticks";
-import { getDoc, selectSchedule, useStore, ZOOM_STEP } from "./state/store";
+import { ZOOM_STEP, currentDoc, useSchedule, useStore, useTimelineDoc } from "./state/store";
 import { useKeyboard } from "./state/useKeyboard";
 import { Announcer } from "./ui/Announcer";
 import { Button } from "@/components/ui/fields";
 import { ChromeFill } from "@/components/shell/chrome";
 import { ToolUndo } from "@/components/shell/ToolUndo";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { ExportBar } from "./ui/ExportBar";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
 import styles from "./App.module.css";
 
-const persister = createPersister();
-
 export function App() {
-  const doc = useStore(getDoc);
-  const schedule = useStore(selectSchedule);
+  const doc = useTimelineDoc();
+  const schedule = useSchedule();
   const presentation = useStore((state) => state.ui.presentation);
   const notice = useStore((state) => state.notice);
   const setUi = useStore((state) => state.setUi);
@@ -32,57 +30,20 @@ export function App() {
   const fitDay = useStore((state) => state.fitDay);
   useKeyboard();
 
-  // Bring back the last session once, on boot.
-  /**
-   * Nothing is written until the saved day has been read back.
-   *
-   * The autosave effect below runs on the first render, when the store still
-   * holds the empty document it was created with — and the effect that restores
-   * the real one has only just run, so this render's `doc` is still the empty
-   * one. Standalone, that was harmless: a second render followed immediately
-   * and replaced the pending write before the debounce elapsed, and in any case
-   * a write that arrived too early was dropped by a store that had not loaded.
-   *
-   * Neither of those safety nets exists now. The shared document is ready
-   * before the tool mounts, so an early write lands, and it lands on a real
-   * wedding — blanking the day and, through the mirror, the couple and venue
-   * with it. A restore is a read; writing before it finishes is never right.
-   */
-  const [restored, setRestored] = useState(false);
-  // Booleans out of the store, so nothing is allocated on the way through.
-  const canUndo = useStore((state) => state.canUndo());
-  const canRedo = useStore((state) => state.canRedo());
+  // Timeline keeps no copy and no history of its own: its edits are on the
+  // wedding's, so that is the one the header's undo drives. The stack is
+  // shared, so saying what the next undo takes back is what makes it safe.
+  const past = useTrousseauStore((state) => state.past);
+  const future = useTrousseauStore((state) => state.future);
 
+  // Uploaded faces are loaded once, for the fonts this day names.
   useEffect(() => {
-    const saved = restore();
-    useStore.getState().loadDoc(saved);
-    void restoreFonts(saved.fonts).then((missing) => {
+    void restoreFonts(currentDoc().fonts).then((missing) => {
       if (missing.length > 0) setNotice(`Missing font${missing.length === 1 ? "" : "s"}: ${missing.join(", ")}.`);
     });
-    setRestored(true);
   }, [setNotice]);
-  // A link to one block — the command palette's — opens on it, after the load.
+  // A link to one block — the command palette's — opens on it.
   useSelectFromAddress(useStore.getState().select);
-
-  // Autosave into the shared wedding, debounced, and flushed if the window goes
-  // away mid-edit.
-  useEffect(() => {
-    if (!restored) return;
-    persister.schedule(doc);
-  }, [doc, restored]);
-  useEffect(() => {
-    const flush = () => persister.flush();
-    window.addEventListener("beforeunload", flush);
-    // The listener is not enough on its own. Each tool used to *be* the page,
-    // so unmounting only ever happened as the page went away and `beforeunload`
-    // had already flushed. They are tabs now: switching to another tool unmounts
-    // this one with no unload event, which would drop whatever the debounce was
-    // still holding.
-    return () => {
-      window.removeEventListener("beforeunload", flush);
-      flush();
-    };
-  }, []);
 
   if (presentation) return <Presentation />;
 
@@ -129,10 +90,12 @@ export function App() {
         <Button onClick={() => setUi({ presentation: true })}>Present</Button>
       </ChromeFill>
       <ToolUndo
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onUndo={() => useStore.getState().undo()}
-        onRedo={() => useStore.getState().redo()}
+        canUndo={past.length > 0}
+        canRedo={future.length > 0}
+        onUndo={() => useTrousseauStore.getState().undo()}
+        onRedo={() => useTrousseauStore.getState().redo()}
+        undoLabel={past[past.length - 1]?.label ?? null}
+        redoLabel={future[future.length - 1]?.label ?? null}
       />
 
       {notice && (

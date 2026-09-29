@@ -1,5 +1,5 @@
 import { formatClock } from "../../core/time/minutes";
-import { getDoc, selectSchedule, useStore } from "../../state/store";
+import { useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import { Button, Field, NumberField, Panel, Row, TimeField } from "@/components/ui/fields";
 import { useDataPanel } from "@/components/shell/dataPanel";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
@@ -23,9 +23,9 @@ const OFFSETS = [
  * clocks and the venue's coordinates are the schedule's alone, and stay here.
  */
 export function DayPanel() {
-  const doc = useStore(getDoc);
+  const doc = useTimelineDoc();
   const setDay = useStore((state) => state.setDay);
-  const sun = useStore(selectSchedule).sun;
+  const sun = useSchedule().sun;
   // Live from the wedding rather than from Timeline's copy of it.
   const event = useTrousseauStore((state) => state.doc.event);
   const showData = useDataPanel((state) => state.show);

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { blocksById } from "../../core/schedule/resolve";
 import { isMoment } from "../../core/model/types";
-import { getDoc, selectSchedule, useStore, ZOOM_STEP } from "../../state/store";
+import { ZOOM_STEP, useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import { BlockView } from "./BlockView";
 import { blockDetail, LABEL_PX, placeLabels, type LabelBox } from "./labelPlacement";
 import { GUTTER_PX, Ruler } from "./Ruler";
@@ -15,8 +15,8 @@ interface Props {
 }
 
 export function Timeline({ readOnly = false }: Props) {
-  const doc = useStore(getDoc);
-  const schedule = useStore(selectSchedule);
+  const doc = useTimelineDoc();
+  const schedule = useSchedule();
   const preview = useStore((state) => state.preview);
   const selectedId = useStore((state) => state.selectedId);
   const select = useStore((state) => state.select);

@@ -1,10 +1,10 @@
 import { BUNDLED_FONTS } from "../../assets/fonts";
 import type { OutputId } from "../../core/model/types";
-import { getDoc, useStore } from "../../state/store";
+import { useStore, useTimelineDoc } from "../../state/store";
 import { CheckField, ColourField, NumberField, Panel, SelectField } from "@/components/ui/fields";
 
 export function StylePanel() {
-  const doc = useStore(getDoc);
+  const doc = useTimelineDoc();
   const sheetOutput = useStore((state) => state.ui.sheetOutput);
   const setUi = useStore((state) => state.setUi);
   const setStyle = useStore((state) => state.setStyle);

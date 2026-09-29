@@ -25,7 +25,7 @@ const App = dynamic(() => import("@/apps/cadence/App").then((m) => m.App), { ssr
 export function CadenceApp() {
   return (
     <div className="cadence-scope">
-      <WhenDocumentReady tool="cadence">
+      <WhenDocumentReady>
         <App />
       </WhenDocumentReady>
     </div>

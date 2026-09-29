@@ -135,15 +135,12 @@ async function floorPlan(): Promise<Uint8Array | null> {
 }
 
 async function runSheet(): Promise<Uint8Array | null> {
-  const [{ renderRunSheet }, { browserFontSource }, { readSlice }, { getBlob }] = await Promise.all(
-    [
-      import("@/apps/cadence/render/pdf/runSheet"),
-      import("@/apps/cadence/render/pdf/fontSource"),
-      import("@/apps/cadence/state/sliceBridge"),
-      import("@/apps/cadence/state/blobStore"),
-    ],
-  );
-  const doc = readSlice();
+  const [{ renderRunSheet }, { browserFontSource }, { getBlob }] = await Promise.all([
+    import("@/apps/cadence/render/pdf/runSheet"),
+    import("@/apps/cadence/render/pdf/fontSource"),
+    import("@/apps/cadence/state/blobStore"),
+  ]);
+  const doc = readTimeline(useTrousseauStore.getState().doc);
   if (doc.blocks.length === 0) return null;
 
   // Any typeface uploaded for the printed pieces, by family name. Without this
