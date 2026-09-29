@@ -16,7 +16,6 @@ function open(event: Record<string, unknown>) {
   useTrousseauStore.setState({
     status: "ready",
     error: null,
-    generation: 0,
     raw: raw as unknown as Record<string, unknown>,
     doc: migrate(raw),
     past: [],

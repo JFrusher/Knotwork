@@ -1,12 +1,15 @@
 import { create } from 'zustand'
-import { withHistory } from './undoMiddleware.js'
+import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
 import { actionCreators } from './actions.js'
+import { applyPatch } from './patch.js'
+import { isWriting, readDoc, writeDoc } from './sliceBridge'
 import { makeId } from '../utils/ids.js'
 import { DEFAULT_PPU, DEFAULT_CHAIR_CM, deriveSizeUnits } from '../utils/seatPositions.js'
 import { localeDefaultUnitSystem } from '../utils/units.js'
 
-// Keys that make up the persisted document (saved to / loaded from the server).
-// Everything else in the store is ephemeral UI state.
+// Keys that make up the plan: the wedding's guests and seating. Everything else
+// in the store — the selection, a modal, where the canvas is looking — is this
+// window's own.
 export const DOC_KEYS = [
   'meta',
   'guests',
@@ -18,7 +21,6 @@ export const DOC_KEYS = [
   'room',
   'wallElements',
   'pillars',
-  'canvas',
   'snapshots',
   'constraints',
   'settings',
@@ -43,7 +45,6 @@ function emptyDoc() {
       height: 900,
       backgroundColour: '#FAF8F5',
     },
-    canvas: { zoom: 1, panX: 0, panY: 0 },
     snapshots: [],
     constraints: [],
     settings: {
@@ -64,11 +65,14 @@ function emptyDoc() {
 
 const round2 = (n) => Math.round(n * 100) / 100
 
-// ── document normalization (lazy, on every load) ────────────────────────────
+// ── document normalization (on every read of the wedding) ───────────────────
 // Older saved plans predate real-world units / per-side seats. We upgrade them
-// on read so the rest of the app can assume the richer shape; the next
-// auto-save persists it. Migration is non-destructive and pixel-identical:
-// `sizeUnits` is reverse-derived from the legacy px geometry ÷ the locked ppu.
+// on read so the rest of the app can assume the richer shape; the next edit
+// writes it. Migration is non-destructive and pixel-identical: `sizeUnits` is
+// reverse-derived from the legacy px geometry ÷ the locked ppu.
+//
+// Deterministic, because the plan is read again whenever the wedding changes:
+// a space given a fresh random id on every read could never stay selected.
 
 const ensureSettingsShape = (s = {}) => ({
   ...s,
@@ -87,9 +91,9 @@ const ensureSettingsShape = (s = {}) => ({
 
 // A single floor space: a rectangle (x/y/width/height) or a polygon (vertices
 // relative to x/y). Coordinates are canvas px, matching tables and zones.
-const ensureSpaceShape = (sp = {}) => {
+const ensureSpaceShape = (sp = {}, index = 0) => {
   const base = {
-    id: sp.id || makeId('space'),
+    id: sp.id || `space_${index}`,
     label: sp.label || 'Space',
     shape: sp.shape === 'polygon' ? 'polygon' : 'rect',
     x: sp.x || 0,
@@ -121,7 +125,7 @@ const ensureRoomShape = (r = {}, ppu) => {
       ? r.spaces.map(ensureSpaceShape)
       : [
           {
-            id: makeId('space'),
+            id: 'space_room',
             label: 'Room',
             shape: 'rect',
             x: 0,
@@ -191,9 +195,9 @@ const initialUi = {
   toasts: [],
   dragGuides: [], // active alignment/spacing guide lines while dragging a table
   neighbourDragAdaptations: {}, // { [tableId]: seats[] } — live chair overrides on tables near the one being dragged
-  save: { status: 'idle', lastSavedAt: null, lastSavedRev: 0 }, // status: idle|saving|saved|error
-  loaded: false,
-  planId: null, // server-side plan id when running in SaaS (Supabase) mode
+  // Where this window is looking. Not the wedding's: a partner panning their
+  // room must not move yours.
+  canvas: { zoom: 1, panX: 0, panY: 0 },
 }
 
 const ensureSubgroupShape = (sg, id) => ({
@@ -213,158 +217,180 @@ const ensureFamilyShape = (f, id) => ({
   memberIds: Array.isArray(f.memberIds) ? f.memberIds : [],
 })
 
-export const useStore = create(
-  withHistory(
-    (set, get) => {
-      // Bind every action creator to a thin dispatcher: components call
-      // `addTable({...})` and the command flows through history automatically.
-      const bound = {}
-      for (const [name, creator] of Object.entries(actionCreators)) {
-        bound[name] = (...args) => get().dispatch(creator(...args))
-      }
+/** The plan the wedding holds, in the shape the rest of Seating assumes. */
+function planOf() {
+  const doc = readDoc()
+  const clean = {}
+  DOC_KEYS.forEach((k) => {
+    if (doc[k] !== undefined) clean[k] = doc[k]
+  })
+  return { ...emptyDoc(), ...normalizeDoc(clean) }
+}
 
-      return {
-        ...emptyDoc(),
-        ...initialUi,
-        ...bound,
+/** Shown as "Undo <label>": the commands' own labels, read mid-sentence. */
+const asUndo = (label) => (label ? label.charAt(0).toLowerCase() + label.slice(1) : 'a change to the room')
 
-        // ── lifecycle ──────────────────────────────────────────────────────
-        hydrate: (doc) => {
-          const clean = {}
-          DOC_KEYS.forEach((k) => {
-            if (doc && doc[k] !== undefined) clean[k] = doc[k]
-          })
-          set({
-            ...emptyDoc(),
-            ...normalizeDoc(clean),
-            _history: { past: [], future: [] },
-            loaded: true,
-          })
-          set({
-            save: { status: 'idle', lastSavedAt: null, lastSavedRev: get()._rev },
-          })
-        },
+export const useStore = create((set, get) => {
+  /**
+   * Into the wedding: this window's plan with `update` applied, as one step on
+   * the wedding's history. The store shows it at once, and the wedding's copy
+   * coming back is not read again (see `isWriting`).
+   */
+  const commit = (update, label) => {
+    set(update)
+    const s = get()
+    const doc = {}
+    DOC_KEYS.forEach((k) => {
+      doc[k] = s[k]
+    })
+    writeDoc(doc, { label })
+  }
 
-        serialize: () => {
-          const s = get()
-          const doc = {}
-          DOC_KEYS.forEach((k) => {
-            doc[k] = s[k]
-          })
-          return doc
-        },
+  // Bind every action creator to a thin dispatcher: components call
+  // `addTable({...})` and the command flows into the wedding.
+  const bound = {}
+  for (const [name, creator] of Object.entries(actionCreators)) {
+    bound[name] = (...args) => get().dispatch(creator(...args))
+  }
 
-        isDirty: () => get()._rev !== get().save.lastSavedRev,
+  return {
+    ...planOf(),
+    ...initialUi,
+    loaded: useTrousseauStore.getState().status === 'ready',
+    ...bound,
 
-        // ── direct (non-undoable) document edits — bump _rev for auto-save ──
-        // Both are deliberately outside history: setCanvas is pan/zoom, and
-        // updateRoom is the live channel for space move/resize drags, which
-        // call it once per pointermove and dispatch a single EDIT_SPACE
-        // command on pointer-up (RoomSpaces.jsx). Routing either through
-        // dispatch would push one undo entry per animation frame.
-        // updateSettings/addConstraint/removeConstraint are now
-        // undoable action creators in actions.js.
-        updateRoom: (patch) => get()._touch({ room: { ...get().room, ...patch } }),
-        setCanvas: (patch) => get()._touch({ canvas: { ...get().canvas, ...patch } }),
-
-        // Live (non-undoable) entity patch — used during drag/resize for smooth
-        // feedback. The final, undoable step is dispatched on pointer-up.
-        patchEntityLive: (collection, id, patch) => {
-          const coll = get()[collection]
-          const entity = coll[id]
-          if (!entity) return
-          get()._touch({ [collection]: { ...coll, [id]: { ...entity, ...patch } } })
-        },
-
-
-        // ── snapshots (kept in the document, persisted via normal save) ────
-        saveSnapshot: (name) => {
-          const s = get()
-          // eslint-disable-next-line no-unused-vars
-          const { snapshots, ...rest } = s.serialize()
-          const snap = {
-            id: makeId('snap'),
-            name: (name || '').trim() || 'Untitled snapshot',
-            savedAt: new Date().toISOString(),
-            state: rest,
-          }
-          const next = [snap, ...(s.snapshots || [])].slice(0, 10)
-          get()._touch({ snapshots: next })
-          return snap
-        },
-        restoreSnapshot: (id) => {
-          const s = get()
-          const snap = (s.snapshots || []).find((x) => x.id === id)
-          if (!snap) return
-          set({
-            ...emptyDoc(),
-            ...normalizeDoc(snap.state),
-            snapshots: s.snapshots, // keep the snapshot list itself
-            _history: { past: [], future: [] },
-            _rev: (s._rev || 0) + 1,
-            selection: { type: null, id: null },
-          })
-        },
-        deleteSnapshot: (id) =>
-          get()._touch({ snapshots: (get().snapshots || []).filter((x) => x.id !== id) }),
-
-        // TODO(ux-audit): addConstraint (actions.js) has no duplicate-pair or
-        // contradiction check — the same pair can be added twice (double-counts
-        // warnings), and "A & B apart" + "A & B together" can coexist
-        // silently. See tmp/ux-audit.md #G21.
-
-        // ── ephemeral UI ───────────────────────────────────────────────────
-        setDragGuides: (guides) => set({ dragGuides: guides }),
-        setNeighbourDragAdaptations: (map) => set({ neighbourDragAdaptations: map }),
-        select: (type, id) => set({ selection: { type, id }, selectedGuestIds: [] }),
-        clearSelection: () => set({ selection: { type: null, id: null }, selectedGuestIds: [] }),
-        setSelectedGuestIds: (ids) =>
-          set({ selectedGuestIds: ids, selection: { type: null, id: null } }),
-        toggleGuestSelected: (id) => {
-          const cur = get().selectedGuestIds
-          set({
-            selectedGuestIds: cur.includes(id)
-              ? cur.filter((x) => x !== id)
-              : [...cur, id],
-            selection: { type: null, id: null },
-          })
-        },
-        setSearch: (search) => set({ search }),
-        toggleFilter: (key) => {
-          const cur = get().filters
-          set({ filters: cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key] })
-        },
-        clearFilters: () => set({ filters: [] }),
-        setActiveTool: (activeTool) => set({ activeTool }),
-        togglePanel: (which) =>
-          set({ panels: { ...get().panels, [which]: !get().panels[which] } }),
-        openModal: (name, props = {}) => set({ modal: { name, props } }),
-        closeModal: () => set({ modal: null }),
-
-        addToast: ({ type = 'info', message, duration = 3000 } = {}) => {
-          const id = makeId('toast')
-          set({ toasts: [...get().toasts, { id, type, message, duration }] })
-          return id
-        },
-        dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
-
-        setSaveStatus: (status) => set({ save: { ...get().save, status } }),
-        markSaved: () =>
-          set({
-            save: {
-              status: 'saved',
-              lastSavedAt: new Date().toISOString(),
-              lastSavedRev: get()._rev,
-            },
-          }),
-      }
+    dispatch: (action) => {
+      const state = get()
+      const command = typeof action === 'function' ? action(state) : action
+      if (!command || !command.payload) return null
+      commit(applyPatch(state, command.payload), asUndo(command.label))
+      return command // callers can read command.meta (e.g. newTableId)
     },
-    { limit: 50 }
-  )
-)
 
-// Convenience hooks (stable selector functions → no needless re-renders).
-export const selectCanUndo = (s) => s._history.past.length > 0
-export const selectCanRedo = (s) => s._history.future.length > 0
-export const useCanUndo = () => useStore(selectCanUndo)
-export const useCanRedo = () => useStore(selectCanRedo)
+    serialize: () => {
+      const s = get()
+      const doc = {}
+      DOC_KEYS.forEach((k) => {
+        doc[k] = s[k]
+      })
+      return doc
+    },
+
+    // ── live previews, this window's own until the gesture ends ──────────
+    // A drag calls these every frame, and dispatches one command on
+    // pointer-up (RoomSpaces.jsx, TableNode.jsx). Nothing here reaches the
+    // wedding, so the step undo takes back starts where the drag did.
+    updateRoom: (patch) => set({ room: { ...get().room, ...patch } }),
+    patchEntityLive: (collection, id, patch) => {
+      const coll = get()[collection]
+      const entity = coll[id]
+      if (!entity) return
+      set({ [collection]: { ...coll, [id]: { ...entity, ...patch } } })
+    },
+    setCanvas: (patch) => set({ canvas: { ...get().canvas, ...patch } }),
+
+    // ── snapshots (kept in the plan, so they travel with the wedding) ─────
+    saveSnapshot: (name) => {
+      const s = get()
+      // eslint-disable-next-line no-unused-vars
+      const { snapshots, ...rest } = s.serialize()
+      const snap = {
+        id: makeId('snap'),
+        name: (name || '').trim() || 'Untitled snapshot',
+        savedAt: new Date().toISOString(),
+        state: rest,
+      }
+      commit({ snapshots: [snap, ...(s.snapshots || [])].slice(0, 10) }, 'keeping a snapshot')
+      return snap
+    },
+    restoreSnapshot: (id) => {
+      const s = get()
+      const snap = (s.snapshots || []).find((x) => x.id === id)
+      if (!snap) return
+      const clean = {}
+      DOC_KEYS.forEach((k) => {
+        if (snap.state[k] !== undefined) clean[k] = snap.state[k]
+      })
+      // One step on the wedding's history, so putting a snapshot back can be
+      // undone like anything else.
+      commit(
+        { ...emptyDoc(), ...normalizeDoc(clean), snapshots: s.snapshots, selection: { type: null, id: null } },
+        'putting back a snapshot'
+      )
+    },
+    deleteSnapshot: (id) =>
+      commit({ snapshots: (get().snapshots || []).filter((x) => x.id !== id) }, 'deleting a snapshot'),
+
+    // TODO(ux-audit): addConstraint (actions.js) has no duplicate-pair or
+    // contradiction check — the same pair can be added twice (double-counts
+    // warnings), and "A & B apart" + "A & B together" can coexist
+    // silently. See tmp/ux-audit.md #G21.
+
+    // ── ephemeral UI ───────────────────────────────────────────────────
+    setDragGuides: (guides) => set({ dragGuides: guides }),
+    setNeighbourDragAdaptations: (map) => set({ neighbourDragAdaptations: map }),
+    select: (type, id) => set({ selection: { type, id }, selectedGuestIds: [] }),
+    clearSelection: () => set({ selection: { type: null, id: null }, selectedGuestIds: [] }),
+    setSelectedGuestIds: (ids) => set({ selectedGuestIds: ids, selection: { type: null, id: null } }),
+    toggleGuestSelected: (id) => {
+      const cur = get().selectedGuestIds
+      set({
+        selectedGuestIds: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
+        selection: { type: null, id: null },
+      })
+    },
+    setSearch: (search) => set({ search }),
+    toggleFilter: (key) => {
+      const cur = get().filters
+      set({ filters: cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key] })
+    },
+    clearFilters: () => set({ filters: [] }),
+    setActiveTool: (activeTool) => set({ activeTool }),
+    togglePanel: (which) => set({ panels: { ...get().panels, [which]: !get().panels[which] } }),
+    openModal: (name, props = {}) => set({ modal: { name, props } }),
+    closeModal: () => set({ modal: null }),
+
+    addToast: ({ type = 'info', message, duration = 3000 } = {}) => {
+      const id = makeId('toast')
+      set({ toasts: [...get().toasts, { id, type, message, duration }] })
+      return id
+    },
+    dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
+  }
+})
+
+/** True when `id` names something the plan still has. */
+function inPlan(plan, id) {
+  return (
+    ['guests', 'groups', 'subgroups', 'families', 'tables', 'zones', 'wallElements', 'pillars'].some((c) =>
+      Boolean(plan[c]?.[id])
+    ) || (plan.room.spaces || []).some((space) => space.id === id)
+  )
+}
+
+/**
+ * The plan is whatever the wedding holds — edited here, put back by the
+ * header's undo, changed on the Guests page or on a partner's device alike.
+ * Followed as it changes, synchronously, so there is never a moment the two
+ * disagree. What is selected and no longer there is let go.
+ */
+function follow() {
+  const plan = planOf()
+  const s = useStore.getState()
+  useStore.setState({
+    ...plan,
+    loaded: true,
+    selection: s.selection.id !== null && !inPlan(plan, s.selection.id) ? { type: null, id: null } : s.selection,
+    selectedGuestIds: s.selectedGuestIds.filter((id) => plan.guests[id]),
+  })
+}
+
+useTrousseauStore.subscribe((state, prev) => {
+  if (state.status !== 'ready' || isWriting()) return
+  const changed =
+    prev.status !== 'ready' ||
+    state.raw.guests !== prev.raw.guests ||
+    state.raw.seating !== prev.raw.seating ||
+    state.raw.event !== prev.raw.event
+  if (changed) follow()
+})

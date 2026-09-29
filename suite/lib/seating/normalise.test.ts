@@ -1,4 +1,4 @@
-import { beforeEach, expect, test, vi } from "vitest";
+import { expect, test, vi } from "vitest";
 
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined, del: async () => undefined }));
 
@@ -14,7 +14,6 @@ function load(raw: Record<string, unknown>) {
   useTrousseauStore.setState({
     status: "ready",
     error: null,
-    generation: 0,
     raw,
     doc: migrate(raw),
     past: [],
@@ -23,10 +22,6 @@ function load(raw: Record<string, unknown>) {
   reconcileLoadedDocument();
   return useTrousseauStore.getState().raw as Record<string, Record<string, unknown>>;
 }
-
-beforeEach(() => {
-  useTrousseauStore.setState({ held: {} });
-});
 
 test("a diet stored as the file's words is stored as its key", () => {
   const raw = load({ ...emptyTrousseau(), guests: { g1: { id: "g1", firstName: "Ann", dietary: "Vegetarian" } } });

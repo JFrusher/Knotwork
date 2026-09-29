@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { useStore } from './useStore.js'
 import { validatePlanDoc } from './planSchema'
+import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { openPlan } from '../test/openPlan.js'
 
 // A deliberately rich document touching every field that has been suspected of
 // "not persisting": table rotation, seat-level assignments (incl. gaps), seat
 // mode, resized dimensions, per-side seat distribution, zones, groups (colour +
-// membership), room sizing/background and canvas pan/zoom.
+// membership) and room sizing/background.
 const richDoc = () => ({
   meta: { weddingName: 'Round Trip', venue: 'Barn', date: '2026-09-01' },
   guests: {
@@ -84,14 +86,14 @@ const richDoc = () => ({
 const s = () => useStore.getState()
 
 describe('persistence round-trip', () => {
-  it('preserves every field through serialize → server validation → hydrate', () => {
-    s().hydrate(richDoc())
-    const a = s().serialize() // already normalised by hydrate
+  it('preserves every field through serialize → server validation → a fresh read', () => {
+    openPlan(richDoc())
+    const a = s().serialize() // already normalised on the way in
 
     // Push through the exact server-side validation used on save…
     const validated = validatePlanDoc(a)
     // …and reload it, as a fresh session would.
-    s().hydrate(validated)
+    openPlan(validated)
     const b = s().serialize()
 
     // Whole-document idempotency: nothing dropped or mutated on the way through.
@@ -106,12 +108,13 @@ describe('persistence round-trip', () => {
     expect(b.groups.grp1.colour).toBe('#4A7C59')
     expect(b.groups.grp1.memberIds).toEqual(['g1'])
     expect(b.zones.z1.label).toBe('Dance floor')
-    expect(b.canvas).toEqual({ zoom: 1.4, panX: -120, panY: 60 })
+    // Where the canvas was looking is the window's own, not the plan's.
+    expect(b.canvas).toBeUndefined()
     expect(b.room.backgroundColour).toBe('#FAF8F5')
   })
 
   it('createEmptyGroup creates a fillable group that persists and undoes', () => {
-    s().hydrate(richDoc())
+    openPlan(richDoc())
     const before = Object.keys(s().groups).length
     s().createEmptyGroup({ name: 'Family', colour: '#A6576A' })
     const ids = Object.keys(s().groups)
@@ -122,14 +125,14 @@ describe('persistence round-trip', () => {
 
     // Survives a save→reload round-trip.
     const reloaded = validatePlanDoc(s().serialize())
-    s().hydrate(reloaded)
+    openPlan(reloaded)
     expect(Object.values(s().groups).some((g) => g.name === 'Family')).toBe(true)
 
     // …and the creation is undoable.
-    s().hydrate(richDoc())
+    openPlan(richDoc())
     s().createEmptyGroup({ name: 'Temp' })
     expect(Object.keys(s().groups).length).toBe(before + 1)
-    s().undo()
+    useTrousseauStore.getState().undo()
     expect(Object.keys(s().groups).length).toBe(before)
   })
 })

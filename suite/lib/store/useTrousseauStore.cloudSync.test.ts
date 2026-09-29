@@ -54,7 +54,6 @@ beforeEach(() => {
   useTrousseauStore.setState({
     status: "ready",
     error: null,
-    generation: 0,
     raw: doc as unknown as Record<string, unknown>,
     doc,
     past: [],
@@ -320,14 +319,8 @@ test("a surfaced conflict pushes nothing until it is resolved, then pushes the r
     coupleNames: "mine",
   });
 
-  const generationBefore = useTrousseauStore.getState().generation;
   pushDocumentMock.mockResolvedValue({ ok: true, version: 3, warnings: [] });
   useTrousseauStore.getState().resolveConflict("event", "theirs");
-
-  // A tool mounted before the resolution holds the pre-resolution slice;
-  // without a new generation its next autosave writes that value back over
-  // the user's choice and pushes the revert.
-  expect(useTrousseauStore.getState().generation).toBe(generationBefore + 1);
 
   await settle();
 
@@ -377,22 +370,21 @@ test("pullFromCloud merges against the document as it is when the fetch lands", 
 
 test("a pull that brings back nothing new neither replaces the document nor pushes", async () => {
   // Two tabs open: this is our own write coming back at a moved version.
-  // Replacing anyway remounts every tool (generation), and pushing it back is
-  // what made the two tabs bounce the document between them forever.
+  // Replacing anyway hands every page a new document for nothing, and pushing
+  // it back is what made the two tabs bounce the document between them forever.
   const base = emptyTrousseau() as unknown as Record<string, unknown>;
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
     cloudAgreed: fingerprintParts(base),
     raw: base,
-    generation: 3,
   });
   fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: base, version: 2 });
 
   await useTrousseauStore.getState().pullFromCloud();
 
   expect(pushDocumentMock).not.toHaveBeenCalled();
-  expect(useTrousseauStore.getState().generation).toBe(3);
+  expect(useTrousseauStore.getState().raw).toBe(base);
   expect(useTrousseauStore.getState().cloudVersion).toBe(2);
 });
 

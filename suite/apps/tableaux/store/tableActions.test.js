@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore.js'
 import { getTableGeometry } from '../utils/seatPositions.js'
+import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { openPlan } from '../test/openPlan.js'
 
 const baseDoc = () => ({
   meta: { weddingName: 'T', venue: '', date: '', createdAt: '', updatedAt: '' },
@@ -18,7 +20,7 @@ const baseDoc = () => ({
 const s = () => useStore.getState()
 
 beforeEach(() => {
-  s().hydrate(baseDoc())
+  openPlan(baseDoc())
 })
 
 describe('table geometry actions', () => {
@@ -36,7 +38,7 @@ describe('table geometry actions', () => {
     s().resizeTable(id, { diameter: s().tables[id].sizeUnits.diameter * 2 })
     const after = getTableGeometry(s().tables[id], s().settings.pixelsPerUnit).radius
     expect(after).toBeGreaterThan(before)
-    s().undo()
+    useTrousseauStore.getState().undo()
     expect(s().tables[id].sizeUnits.diameter).toBeCloseTo(before * 2 / s().settings.pixelsPerUnit, 0)
   })
 
@@ -44,7 +46,7 @@ describe('table geometry actions', () => {
     const id = s().addTable({ type: 'rect', x: 0, y: 0 }).meta.newTableId
     s().rotateTable(id, 45)
     expect(s().tables[id].rotation).toBe(45)
-    s().undo()
+    useTrousseauStore.getState().undo()
     expect(s().tables[id].rotation).toBe(0)
   })
 
@@ -66,7 +68,7 @@ describe('table geometry actions', () => {
     const id = s().addTable({ type: 'rect', x: 0, y: 0 }).meta.newTableId
     s().setPerSideSeats(id, { top: 5, right: 0, bottom: 5, left: 2 })
     expect(s().tables[id].capacity).toBe(12)
-    s().undo()
+    useTrousseauStore.getState().undo()
     expect(s().tables[id].perSideSeats).toBeNull()
   })
 
@@ -88,7 +90,7 @@ describe('table geometry actions', () => {
       // `left` has one free seat (index 4) and one occupied (index 5).
       assignedGuestIds: ['top0', 'top1', 'bottom0', 'bottom1', null, 'left1', 'right0', 'right1'],
     }
-    s().hydrate(doc)
+    openPlan(doc)
 
     // Shrink `left` from 2 to 1 — it already has a free seat, so nobody
     // should be evicted anywhere, least of all on the untouched `right` side.
@@ -113,7 +115,7 @@ describe('table geometry actions', () => {
     const before = s().settings.pixelsPerUnit
     s().calibrate(before * 2)
     expect(s().settings.pixelsPerUnit).toBe(before * 2)
-    s().undo()
+    useTrousseauStore.getState().undo()
     expect(s().settings.pixelsPerUnit).toBe(before)
   })
 })
@@ -161,9 +163,9 @@ describe('table presets', () => {
     const presetId = s().settings.customTablePresets[0].id
     s().deleteTablePreset(presetId)
     expect(s().settings.customTablePresets).toHaveLength(0)
-    s().undo() // undo delete
+    useTrousseauStore.getState().undo() // undo delete
     expect(s().settings.customTablePresets).toHaveLength(1)
-    s().undo() // undo save
+    useTrousseauStore.getState().undo() // undo save
     expect(s().settings.customTablePresets).toHaveLength(0)
   })
 })

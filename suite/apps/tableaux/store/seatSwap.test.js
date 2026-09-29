@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore.js'
 import { seatId } from '../utils/ids.js'
+import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { openPlan } from '../test/openPlan.js'
 
 const mkGuest = (id, first, last) => ({
   id,
@@ -57,7 +59,7 @@ const s = () => useStore.getState()
 
 beforeEach(() => {
   const st = useStore.getState()
-  st.hydrate(fixture())
+  openPlan(fixture())
   // Seat g1 at index 0 and g2 at index 1.
   st.assignGuest('g1', 't1', 0)
   st.assignGuest('g2', 't1', 1)
@@ -78,14 +80,14 @@ describe('swapSeatGuests', () => {
 
   it('is exactly reversible via undo / redo', () => {
     s().swapSeatGuests('t1', 0, 1)
-    s().undo()
+    useTrousseauStore.getState().undo()
 
     expect(s().tables.t1.assignedGuestIds[0]).toBe('g1')
     expect(s().tables.t1.assignedGuestIds[1]).toBe('g2')
     expect(s().guests.g1.assignedSeatId).toBe(seatId('t1', 0))
     expect(s().guests.g2.assignedSeatId).toBe(seatId('t1', 1))
 
-    s().redo()
+    useTrousseauStore.getState().redo()
     expect(s().tables.t1.assignedGuestIds[0]).toBe('g2')
     expect(s().guests.g1.assignedSeatId).toBe(seatId('t1', 1))
   })

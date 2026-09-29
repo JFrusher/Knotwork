@@ -10,7 +10,6 @@ import {
   pointerWithin,
   getClientRect,
 } from '@dnd-kit/core'
-import { useAutoSave } from './hooks/useAutoSave.js'
 import { useCanvasDnd } from './hooks/useCanvasDnd.js'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js'
 import { WarningsProvider } from './store/warningsContext.jsx'
@@ -25,7 +24,6 @@ import { useSelectFromAddress } from '@/components/shell/useSelectFromAddress'
 const selectTable = (id) => useStore.getState().select('table', id)
 
 export default function App() {
-  useAutoSave()
   useKeyboardShortcuts()
   useSelectFromAddress(selectTable)
 

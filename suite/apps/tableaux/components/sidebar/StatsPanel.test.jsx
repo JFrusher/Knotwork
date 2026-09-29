@@ -2,9 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import StatsPanel from './StatsPanel.jsx'
 import { useStore } from '../../store/useStore.js'
+import { openPlan } from '../../test/openPlan.js'
 
 beforeEach(() => {
-  useStore.getState().hydrate({
+  openPlan({
     guests: {
       g1: { id: 'g1', fullName: 'Ada Lovelace', assignedTableId: 't1', dietary: 'vegan', rsvpStatus: 'confirmed' },
       g2: { id: 'g2', fullName: 'Alan Turing', assignedTableId: null, dietary: '', rsvpStatus: 'confirmed' },
@@ -32,7 +33,7 @@ describe('StatsPanel', () => {
   })
 
   it('counts someone who declined as neither unseated nor a meal', () => {
-    useStore.getState().hydrate({
+    openPlan({
       guests: {
         g1: { id: 'g1', fullName: 'Ada Lovelace', assignedTableId: 't1', dietary: 'vegan', rsvpStatus: 'confirmed' },
         g2: { id: 'g2', fullName: 'Alan Turing', assignedTableId: null, dietary: 'kosher', rsvpStatus: 'declined' },
@@ -48,7 +49,7 @@ describe('StatsPanel', () => {
   })
 
   it('prompts to import when there are no guests', () => {
-    useStore.getState().hydrate({ guests: {}, tables: {} })
+    openPlan({ guests: {}, tables: {} })
     render(<StatsPanel />)
     expect(screen.getByText(/import your guest list/i)).toBeInTheDocument()
   })

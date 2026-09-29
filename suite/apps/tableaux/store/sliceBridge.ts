@@ -1,7 +1,6 @@
 import { eventSchema } from '@jfrusher/trousseau'
 import { coerceGuests } from '@/lib/model/slices'
-import { mayWrite, noteRead } from '@/lib/store/toolGeneration'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useTrousseauStore, type WriteOptions } from '@/lib/store/useTrousseauStore'
 import type { Guest, TableEntity } from './planSchema'
 
 /**
@@ -58,8 +57,13 @@ type _DateExists = Assert<'date' extends EventKeys ? true : false>
  * back: those facts are edited in the Data panel and nowhere else.
  */
 
-/** Everything Tableaux keeps out of its own document, minus the guest list. */
-const SEATING_KEYS = [
+/**
+ * Everything Tableaux keeps out of its own document, minus the guest list.
+ *
+ * Not the pan and zoom: where this window is looking is its own, as every
+ * tool's zoom is, and a partner panning their room must not move yours.
+ */
+export const SEATING_KEYS = [
   'meta',
   'groups',
   'subgroups',
@@ -69,7 +73,6 @@ const SEATING_KEYS = [
   'room',
   'wallElements',
   'pillars',
-  'canvas',
   'snapshots',
   'constraints',
   'settings',
@@ -132,7 +135,6 @@ function named(guests: Record<string, Guest>): Record<string, Guest> {
 
 /** The plan as Tableaux's store wants it, assembled from the shared wedding. */
 export function readDoc(): TableauxDoc {
-  noteRead('tableaux')
   const { raw, doc } = useTrousseauStore.getState()
   const seating = isRecord(raw.seating) ? raw.seating : {}
   // Through the suite's one definition of a guest, which keeps every field it
@@ -159,29 +161,38 @@ export function readDoc(): TableauxDoc {
   }
 }
 
-/** True when this wedding has nothing in it yet, so a fresh plan is not overwritten. */
-export function isEmpty(): boolean {
-  const doc = readDoc()
-  return Object.keys(doc.guests).length === 0 && Object.keys(doc.tables ?? {}).length === 0
+/** True only while Seating's own write is being made. */
+let writing = false
+
+/**
+ * Whether the change the wedding is announcing is Seating's own write, being
+ * made now. The store already shows it, so it is not read back.
+ *
+ * Asked of the moment rather than of the objects: an undo can bring back the
+ * very objects Seating last wrote while it is showing something newer.
+ */
+export function isWriting(): boolean {
+  return writing
 }
 
-export function writeDoc(doc: TableauxDoc): void {
-  // Refused when the document has been replaced since this was read — see
-  // `toolGeneration`. Writing here would put the previous wedding back.
-  if (!mayWrite('tableaux')) return
+export function writeDoc(doc: TableauxDoc, options: WriteOptions): void {
   const seating: Record<string, unknown> = {}
   for (const key of SEATING_KEYS) {
     if (doc[key] !== undefined) seating[key] = doc[key]
   }
-
   // Not `event`: the names, venue and date are edited in the Data panel only.
   // Seating used to write its copy of them back here, over whatever the panel
   // had just set.
-  useTrousseauStore.getState().setSlices(
-    [
-      ['guests', doc.guests ?? {}],
-      ['seating', seating],
-    ],
-    { label: 'the room', silent: true, by: 'tableaux' },
-  )
+  writing = true
+  try {
+    useTrousseauStore.getState().setSlices(
+      [
+        ['guests', doc.guests ?? {}],
+        ['seating', seating],
+      ],
+      options,
+    )
+  } finally {
+    writing = false
+  }
 }

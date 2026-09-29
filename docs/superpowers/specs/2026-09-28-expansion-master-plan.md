@@ -484,6 +484,22 @@ replaced by the converted originals rather than kept beside them.
   a stale copy inside one panel — and now reads the day when it writes.
   Its history module, restore and 400ms autosave are gone, and it is out
   of `HOLDS`; only Seating still keeps a copy.
+- **Seating on the live document: built 2026-09-29.** Its plan is the
+  wedding's guests and seating, followed synchronously as they change, and
+  every command is applied and written into the wedding as one labelled
+  step ("Undo rename table"). Seating recognises its own write coming back
+  by the moment, not by the objects — an undo can bring back the very
+  objects it last wrote while it shows something newer — so an edit
+  redraws only what it touched. A drag's frames stay in the window until
+  pointer-up, so the step undo takes back starts where the drag did. Pan
+  and zoom are the window's own, as every tool's zoom is (a partner
+  panning their room must not move yours), and the room opens framed.
+  Restoring a snapshot is one undoable step. Gone: the command-inverse
+  history, `hydrate`, the autosave and its save indicator.
+  With no tool keeping a copy, the machinery that guarded copies went too:
+  `HOLDS`, `noteRead`/`mayWrite`, the store's `held`/`hold`/`release`,
+  the `by` write option, `generation` and the remount on it.
+  `WhenDocumentReady` only waits for the wedding to be read.
 
 **Real-time sync** (Supabase Realtime in place of the 20-second poll, and
 presence) lands after this, not before: an instant pull into a tool that still

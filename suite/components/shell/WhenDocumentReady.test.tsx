@@ -1,10 +1,9 @@
-import { cleanup, render } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined }));
 
 const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
-const { HOLDS } = await import("@/lib/store/toolGeneration");
 const { WhenDocumentReady } = await import("./WhenDocumentReady");
 
 afterEach(() => {
@@ -13,18 +12,25 @@ afterEach(() => {
   cleanup();
 });
 
-/**
- * The gate is what tells the store a tool is open and what it copied, so a
- * write from anywhere else can send that tool back to re-read.
- */
-test("declares what the tool holds while it is open, and nothing once it closes", () => {
-  const { unmount } = render(
-    <WhenDocumentReady tool="tableaux">
+const gate = () =>
+  render(
+    <WhenDocumentReady>
       <p>Seating</p>
     </WhenDocumentReady>,
   );
-  expect(useTrousseauStore.getState().held["tableaux"]).toEqual(HOLDS.tableaux);
 
-  unmount();
-  expect(useTrousseauStore.getState().held["tableaux"]).toBeUndefined();
+test("shows nothing until the stored wedding has been read, then the tool", () => {
+  useTrousseauStore.setState({ status: "loading", error: null });
+  gate();
+  expect(screen.queryByText("Seating")).toBeNull();
+
+  act(() => useTrousseauStore.setState({ status: "ready" }));
+  expect(screen.getByText("Seating")).toBeTruthy();
+});
+
+test("says so when the stored wedding cannot be read, and shows no tool to act on it", () => {
+  useTrousseauStore.setState({ status: "error", error: "The saved wedding could not be read: bad bytes" });
+  gate();
+  expect(screen.getByRole("alert").textContent).toMatch(/bad bytes/);
+  expect(screen.queryByText("Seating")).toBeNull();
 });

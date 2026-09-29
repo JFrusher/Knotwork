@@ -1,4 +1,4 @@
-import { applyPatch } from "@/apps/tableaux/store/undoMiddleware.js";
+import { applyPatch } from "@/apps/tableaux/store/patch.js";
 import { assignGuest, unassignGuest, updateGuest } from "@/apps/tableaux/store/actions.js";
 import { normaliseDietary } from "@/lib/model/dietary";
 import type { RsvpStatus, Side } from "@/lib/model/types";

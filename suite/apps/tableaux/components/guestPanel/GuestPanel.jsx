@@ -303,12 +303,9 @@ export default function GuestPanel() {
       {hasGuests && <GuestSearch />}
 
       <div className={styles.scroll}>
-        {/* TODO(ux-audit): !hasGuests is derived from `guests` (default {}
-            before hydrate() runs) without gating on s.loaded, unlike
-            RoomCanvas.jsx which correctly checks `loaded && !hasTables`. A
-            returning user with guests already saved can briefly see this
-            import prompt flash before hydration finishes. See
-            tmp/ux-audit.md #A5. */}
+        {/* No flash of this prompt for a list that is on its way: Seating
+            renders only once the wedding has been read, and its guests are
+            the wedding's from the first frame. */}
         {!hasGuests && (
           <div className={styles.empty}>
             <div className={styles.emptyIcon}>

@@ -28,7 +28,6 @@ import { hasContent, summarise } from "@/lib/model/content";
 import { useCopies } from "./copies";
 import { useWeddings } from "./weddings";
 import { readOpenChoice } from "./openWedding";
-import type { ToolId } from "./toolGeneration";
 
 /**
  * The one store the whole suite reads.
@@ -86,40 +85,9 @@ export interface WriteOptions {
    * not make — reconciling a restored document, republishing the resolved day.
    */
   silent?: boolean;
-  /**
-   * The tool making this write, when it is one. Its own write is not news to
-   * the copy it holds; a write to that slice from anywhere else is — see `held`.
-   */
-  by?: ToolId;
 }
 
 export interface TrousseauState {
-  /**
-   * Bumped whenever the whole document is swapped rather than edited — a
-   * restore from file, or a shared wedding opened from another machine — and
-   * whenever a slice an open tool holds is written by something else.
-   *
-   * The tools each keep a store of their own, seeded once when they mount, so
-   * replacing the document underneath a tool leaves it holding the previous
-   * wedding with no idea anything happened. It shows the old guest list, and
-   * then autosaves it over the new one. This is how anything that read the
-   * document can tell that what it read has been thrown away.
-   */
-  generation: number;
-
-  /**
-   * The slices each open tool has copied into a store of its own.
-   *
-   * A write to one of them from anywhere but that tool starts a new
-   * `generation`, for the same reason a restore does: the tool's copy is now
-   * older than the document, and its next save would write the old one back.
-   * The Data panel is where that happened — it opens over the tool on screen.
-   */
-  held: Partial<Record<ToolId, readonly SliceName[]>>;
-  /** Called by `WhenDocumentReady` as a tool opens, and `release` as it closes. */
-  hold: (tool: ToolId, slices: readonly SliceName[]) => void;
-  release: (tool: ToolId) => void;
-
   status: StoreStatus;
   /** Set when the stored bytes could not be read. Writes are refused while it is. */
   error: string | null;
@@ -205,15 +173,6 @@ function freshDoc(): { raw: Record<string, unknown>; doc: Trousseau } {
 }
 
 export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
-  generation: 0,
-  held: {},
-  hold: (tool, slices) => set((state) => ({ held: { ...state.held, [tool]: slices } })),
-  release: (tool) =>
-    set((state) => {
-      const held = { ...state.held };
-      delete held[tool];
-      return { held };
-    }),
   status: "idle",
   error: null,
   saveError: null,
@@ -279,18 +238,9 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
       (acc, [slice, value]) => mergeSlice(acc, slice, value),
       state.raw,
     );
-    // An open tool's copy of one of these slices is now out of date — unless
-    // that tool is the one writing.
-    const outdated = (Object.keys(state.held) as ToolId[]).some(
-      (tool) =>
-        tool !== options.by &&
-        entries.some(([slice]) => state.held[tool]?.includes(slice)),
-    );
-
     set({
       raw,
       doc: migrate(raw),
-      ...(outdated ? { generation: state.generation + 1 } : {}),
       ...(options.silent
         ? {}
         : {
@@ -315,7 +265,6 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
       error: null,
       raw,
       doc: migrate(raw),
-      generation: state.generation + 1,
       // A restore is undoable: opening the wrong file should not cost the work.
       // Adopting the cloud's copy is `silent`, though — the user did not make
       // that change, and offering to undo it would offer to overwrite the
@@ -604,11 +553,6 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
     set({
       raw,
       doc: migrate(raw),
-      // Bumped for the same reason `replaceDocument` bumps it: a tool mounted
-      // before the resolution still holds the pre-resolution slice, and
-      // `toolGeneration`'s `mayWrite()` would let its next autosave write that
-      // back — silently undoing the choice and pushing the undo to the cloud.
-      generation: state.generation + 1,
       cloudConflicts: remaining,
       cloudAgreed,
       // Still "conflict" while any remain, which keeps `syncToCloud` refusing

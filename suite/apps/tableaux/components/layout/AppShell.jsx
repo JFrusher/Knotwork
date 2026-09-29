@@ -7,11 +7,9 @@ import RightSidebar from '../sidebar/RightSidebar.jsx'
 import ErrorBoundary from '../ui/ErrorBoundary.jsx'
 import styles from './AppShell.module.css'
 
-// TODO(ux-audit): no reference to s.loaded anywhere in this component — the
-// full shell (toolbar, panels, canvas) renders immediately regardless of
-// load state, no spinner/skeleton for the initial plan fetch. Every reload
-// briefly looks like a blank, brand-new account until reloadPlan()/hydrate()
-// resolves. See tmp/ux-audit.md #A6.
+// Renders straight away: Seating is shown only once the wedding has been read
+// (`WhenDocumentReady`), and its plan is the wedding's from the first frame,
+// so there is no blank moment to cover with a skeleton (ux-audit #A6).
 export default function AppShell() {
   const panels = useStore((s) => s.panels)
 

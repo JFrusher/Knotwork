@@ -50,12 +50,12 @@ export default function SnapshotsModal() {
   // Fixed 2026-08-08 (ux-audit #M13): was missing danger:true, so this
   // plan-wiping action rendered with the normal button colour instead of the
   // red danger style every other destructive confirm in the app uses.
-  // See tmp/ux-audit.md #M13 / #M15 (message still doesn't mention the
-  // undo-stack also being cleared on restore — left as a follow-up).
+  // See tmp/ux-audit.md #M13 / #M15. Restoring is one step on the wedding's
+  // history, so the header's undo takes it back.
   const restore = (snap) =>
     openModal('confirm', {
       title: 'Restore snapshot?',
-      message: `This replaces your current plan with "${snap.name}".`,
+      message: `This replaces your current plan with "${snap.name}". Undo puts it back.`,
       confirmLabel: 'Restore',
       danger: true,
       onConfirm: () => {

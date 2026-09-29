@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { openSeating, seedExampleWedding, unassignedCount } from "./wedding";
+import { openSeating, seedExampleWedding, storedDocument, unassignedCount } from "./wedding";
 
 test.beforeEach(async ({ page }) => {
   await seedExampleWedding(page);
@@ -101,4 +101,22 @@ test.describe("with a pointer", () => {
     await drag(page, { x: item.x + item.width / 2, y: item.y + item.height / 2 }, { x: 1000, y: 650 });
     await expect(tables(page)).toHaveCount(before + 1);
   });
+});
+
+/*
+ * Seating keeps no copy: an edit is in the wedding as it is made, and the
+ * header's undo — the wedding's one history — takes it back.
+ */
+test("a table renamed is stored at once, and the header's undo takes it back", async ({ page }) => {
+  const topTable = async () =>
+    ((await storedDocument(page)).seating.tables as Record<string, { label: string }>)["tbl_mulleqvk1f43i"]!.label;
+
+  await page.getByRole("button", { name: /^Top table, / }).click();
+  await page.getByLabel("Table name").fill("Head table");
+  await page.getByLabel("Table name").press("Enter");
+  await expect.poll(topTable).toBe("Head table");
+
+  await page.getByRole("button", { name: "Undo rename table" }).click();
+  await expect.poll(topTable).toBe("Top table");
+  await expect(page.getByLabel("Table name")).toHaveValue("Top table");
 });

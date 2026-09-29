@@ -23,7 +23,7 @@ const App = dynamic(() => import("@/apps/tableaux/App"), { ssr: false });
 export function TableauxApp() {
   return (
     <div className="tableaux-scope">
-      <WhenDocumentReady tool="tableaux">
+      <WhenDocumentReady>
         <App />
       </WhenDocumentReady>
     </div>

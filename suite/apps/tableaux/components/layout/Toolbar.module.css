@@ -90,15 +90,3 @@
   border: 1.5px solid var(--surface-raised);
 }
 
-.saveStatus {
-  font-size: var(--text-xs);
-  color: var(--ink-muted);
-  min-width: 78px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.saveError {
-  color: var(--danger);
-  font-weight: var(--weight-medium);
-}

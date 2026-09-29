@@ -22,6 +22,9 @@ export function useCanvasPanZoom() {
   useEffect(() => {
     const el = viewportRef.current
     canvasViewportRef.current = el
+    // Where the canvas looks is this window's own and is not saved, so the
+    // room opens framed rather than wherever it was last left.
+    fitCanvasToContent()
     return () => {
       if (canvasViewportRef.current === el) canvasViewportRef.current = null
     }

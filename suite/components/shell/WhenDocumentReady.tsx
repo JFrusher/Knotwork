@@ -1,8 +1,6 @@
 "use client";
 
-import { Fragment, useEffect } from "react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
-import { HOLDS, type ToolId } from "@/lib/store/toolGeneration";
 
 /**
  * Holds a tool back until the stored wedding has actually been read.
@@ -10,42 +8,19 @@ import { HOLDS, type ToolId } from "@/lib/store/toolGeneration";
  * The document is loaded from IndexedDB by an effect, so for the first moments
  * after the page appears the store is empty but perfectly willing to answer
  * questions about itself. A tool mounted into that window sees a wedding with
- * nothing in it, decides that is the truth, and autosaves it — writing an empty
- * day over a real one. The store refuses writes until it is ready, which turns
- * the loud version of that bug into a silent one: the edit simply vanishes.
+ * nothing in it, and anything it does from there acts on nothing.
  *
  * Each tool is loaded as its own chunk, so whether it arrives before or after
  * the document is a race between a network fetch and a database read. Nothing
  * here should depend on who wins.
  *
- * A gate rather than a fix inside each tool, because all four have the same
- * shape — read the document on mount, autosave on change — and none of them
- * should have to know that the thing they are reading arrives late.
- *
- * It also handles the document arriving *twice*. Restoring from a file, or
- * opening a wedding shared from another machine, swaps the whole document while
- * a tool is on screen — and a tool only reads on mount, so it carries on
- * showing the previous wedding. Keying the children on the generation remounts
- * the tool, which sends it back down the path that already works rather than
- * teaching each of the four to re-read.
- *
- * The same remount handles one slice changing rather than all of them. While
- * a tool that keeps a copy is open the gate tells the store what it copied, so
- * a write to any of that from outside — the Data panel, over the top of it —
- * starts a new generation too, instead of being overwritten by the tool's next
- * save. A tool that reads the wedding live names no `tool`: it holds nothing.
+ * That is all it does. The tools keep no copy of the wedding, so a document
+ * replaced or changed underneath one — a restore, the Data panel, a partner's
+ * edit — is simply what it shows next, with nothing to remount.
  */
-export function WhenDocumentReady({ tool, children }: { tool?: ToolId; children: React.ReactNode }) {
+export function WhenDocumentReady({ children }: { children: React.ReactNode }) {
   const status = useTrousseauStore((s) => s.status);
   const error = useTrousseauStore((s) => s.error);
-  const generation = useTrousseauStore((s) => s.generation);
-
-  useEffect(() => {
-    if (!tool) return;
-    const { hold, release } = useTrousseauStore.getState();
-    hold(tool, HOLDS[tool]);
-    return () => release(tool);
-  }, [tool]);
 
   if (status === "error") {
     return (
@@ -59,5 +34,5 @@ export function WhenDocumentReady({ tool, children }: { tool?: ToolId; children:
   // over in a frame or two, and a flash of loading text is worse than nothing.
   if (status !== "ready") return null;
 
-  return <Fragment key={generation}>{children}</Fragment>;
+  return <>{children}</>;
 }

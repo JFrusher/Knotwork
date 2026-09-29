@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore.js'
+import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { openPlan } from '../test/openPlan.js'
 
 const guest = (id, first, extra = {}) => ({
   id,
@@ -40,7 +42,7 @@ const baseDoc = () => ({
 })
 
 const s = () => useStore.getState()
-beforeEach(() => s().hydrate(baseDoc()))
+beforeEach(() => openPlan(baseDoc()))
 
 describe('removeGuest', () => {
   it('deletes a guest, unseats them, degroups them and detaches plus-ones', () => {
@@ -53,7 +55,7 @@ describe('removeGuest', () => {
 
   it('undoes a deletion exactly', () => {
     s().removeGuest('g1')
-    s().undo()
+    useTrousseauStore.getState().undo()
     expect(s().guests.g1).toBeDefined()
     expect(s().tables.t1.assignedGuestIds).toContain('g1')
     expect(s().groups.grp1.memberIds).toContain('g1')

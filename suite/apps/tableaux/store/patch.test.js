@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { applyPatch } from './undoMiddleware.js'
+import { applyPatch } from './patch.js'
 
 describe('applyPatch', () => {
   it('adds and replaces entities in a collection', () => {
@@ -27,7 +27,7 @@ describe('applyPatch', () => {
     expect(update.snapshots).toBeUndefined() // untouched key not returned
   })
 
-  it('never mutates the input state (inverses stay valid)', () => {
+  it('never mutates the input state', () => {
     const original = { tables: { t1: { id: 't1', x: 0 } } }
     const snapshot = JSON.stringify(original)
     applyPatch(original, { tables: { t1: { id: 't1', x: 99 }, t2: { id: 't2' } } })

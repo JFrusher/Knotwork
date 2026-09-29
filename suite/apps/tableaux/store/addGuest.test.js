@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore.js'
+import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { openPlan } from '../test/openPlan.js'
 
 const emptyDoc = () => ({
   meta: { weddingName: 'Test', venue: '', date: '', createdAt: '', updatedAt: '' },
@@ -23,7 +25,7 @@ const emptyDoc = () => ({
 const s = () => useStore.getState()
 
 beforeEach(() => {
-  s().hydrate(emptyDoc())
+  openPlan(emptyDoc())
 })
 
 describe('addGuest', () => {
@@ -36,7 +38,7 @@ describe('addGuest', () => {
     expect(g.assignedTableId).toBeNull()
     expect(g.dietary).toBe('') // raw is stored verbatim; normalisation happens on edit
 
-    s().undo()
+    useTrousseauStore.getState().undo()
     expect(s().guests[id]).toBeUndefined()
   })
 

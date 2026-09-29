@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
+import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
 import { useStore } from '../store/useStore.js'
-import { saveNow } from './useAutoSave.js'
 import { fitCanvasToContent, zoomCanvasBy } from '../utils/canvasCoords.js'
 
 const isEditable = (el) =>
@@ -18,10 +18,11 @@ export function useKeyboardShortcuts() {
       const mod = e.metaKey || e.ctrlKey
       const key = e.key
 
-      // Save works even while typing.
+      // Every change is in the wedding as it is made, so there is nothing to
+      // save — but the habit is strong, and the browser's own Save Page is
+      // never what was meant.
       if (mod && key.toLowerCase() === 's') {
         e.preventDefault()
-        saveNow({ manual: true })
         return
       }
 
@@ -37,15 +38,17 @@ export function useKeyboardShortcuts() {
       // Don't hijack keys while typing in a field.
       if (isEditable(document.activeElement)) return
 
+      // The wedding's one history: what the header's buttons drive.
+      const history = useTrousseauStore.getState()
       if (mod && key.toLowerCase() === 'z') {
         e.preventDefault()
-        if (e.shiftKey) s.redo()
-        else s.undo()
+        if (e.shiftKey) history.redo()
+        else history.undo()
         return
       }
       if (mod && key.toLowerCase() === 'y') {
         e.preventDefault()
-        s.redo()
+        history.redo()
         return
       }
       if (mod && key.toLowerCase() === 'a') {

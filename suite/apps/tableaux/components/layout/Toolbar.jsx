@@ -1,5 +1,5 @@
-import clsx from 'clsx'
-import { useStore, selectCanUndo, selectCanRedo } from '../../store/useStore.js'
+import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useStore } from '../../store/useStore.js'
 import { useWarnings } from '../../store/warningsContext.jsx'
 import IconButton from '../ui/IconButton.jsx'
 import { ToolUndo } from '@/components/shell/ToolUndo'
@@ -25,31 +25,11 @@ function WarningsButton() {
   )
 }
 
-const fmtTime = (iso) => {
-  try {
-    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  } catch {
-    return ''
-  }
-}
-
-function SaveIndicator() {
-  const save = useStore((s) => s.save)
-  if (save.status === 'saving') return <span className={styles.saveStatus}>Saving…</span>
-  if (save.status === 'conflict')
-    return <span className={clsx(styles.saveStatus, styles.saveError)}>Sync conflict</span>
-  if (save.status === 'error')
-    return <span className={clsx(styles.saveStatus, styles.saveError)}>Save failed</span>
-  if (save.status === 'saved' && save.lastSavedAt)
-    return <span className={styles.saveStatus}>Saved {fmtTime(save.lastSavedAt)}</span>
-  return <span className={styles.saveStatus} />
-}
-
 export default function Toolbar() {
-  const undo = useStore((s) => s.undo)
-  const redo = useStore((s) => s.redo)
-  const canUndo = useStore(selectCanUndo)
-  const canRedo = useStore(selectCanRedo)
+  // Seating keeps no history of its own: its edits are on the wedding's. The
+  // stack is shared, so saying what the next undo takes back makes it safe.
+  const past = useTrousseauStore((s) => s.past)
+  const future = useTrousseauStore((s) => s.future)
   const openModal = useStore((s) => s.openModal)
   const togglePanel = useStore((s) => s.togglePanel)
 
@@ -60,14 +40,20 @@ export default function Toolbar() {
         * palette you drag a room out of, so it stays. Undo and redo went up
         * into the shell's header. There is no Save: the plan saves itself.
         */}
-      <ToolUndo canUndo={canUndo} canRedo={canRedo} onUndo={undo} onRedo={redo} />
+      <ToolUndo
+        canUndo={past.length > 0}
+        canRedo={future.length > 0}
+        onUndo={() => useTrousseauStore.getState().undo()}
+        onRedo={() => useTrousseauStore.getState().redo()}
+        undoLabel={past[past.length - 1]?.label ?? null}
+        redoLabel={future[future.length - 1]?.label ?? null}
+      />
 
       <div className={styles.center}>
         <TablePalette />
       </div>
 
       <div className={styles.right}>
-        <SaveIndicator />
         <WarningsButton />
         <span className={styles.divider} />
         <div className={styles.group}>
