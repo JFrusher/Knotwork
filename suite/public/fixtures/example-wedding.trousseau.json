@@ -5604,6 +5604,7 @@
       "group-shots",
       "ceremony",
       "boxes",
+      "bar",
       "money",
       "checklist",
       "binder"
@@ -5899,6 +5900,33 @@
         ]
       }
     ]
+  },
+  "bar": {
+    "kind": "full",
+    "crowd": "usual",
+    "people": null,
+    "figures": {
+      "eveningGuests": 30
+    },
+    "mix": {},
+    "lines": {
+      "fizz": {
+        "price": 8.5
+      },
+      "white": {
+        "price": 7
+      },
+      "red": {
+        "price": 7.5
+      },
+      "beer": {
+        "price": 24
+      },
+      "spirits": {
+        "have": 2
+      }
+    },
+    "wholeCases": true
   },
   "sources": {}
 }

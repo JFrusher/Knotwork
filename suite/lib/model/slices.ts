@@ -32,8 +32,17 @@ import {
   defaultStyles,
   emptyDoc,
 } from "@/apps/cadence/core/model/defaults";
-import { CAST_ROLES } from "./types";
+import { BAR_KINDS, BAR_LINES, CAST_ROLES, CROWDS, FIGURES, MIXED_PARTS, POURS, SHOPS } from "./types";
 import type {
+  Bar,
+  BarKind,
+  BarLine,
+  Crowd,
+  Figure,
+  LineChoice,
+  Mix,
+  MixedPart,
+  Shop,
   Cast,
   CastRole,
   Box,
@@ -964,5 +973,67 @@ export function readBoxes(doc: Trousseau): Boxes {
     const raw = (doc as Record<string, unknown>)["boxes"];
     const stored = isRecord(raw) && Array.isArray(raw["boxes"]) ? raw["boxes"] : [];
     return { boxes: stored.map(readBox).filter((box): box is Box => box !== null) };
+  });
+}
+
+// bar -------------------------------------------------------------------------
+
+const amount = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : null);
+
+function readMix(raw: unknown): Mix | null {
+  if (!isRecord(raw)) return null;
+  const mix = {} as Mix;
+  for (const pour of POURS) mix[pour] = amount(raw[pour]) ?? 0;
+  return mix;
+}
+
+function readLineChoice(raw: unknown): LineChoice | null {
+  if (!isRecord(raw)) return null;
+  const choice: LineChoice = {};
+  const price = amount(raw["price"]);
+  const have = amount(raw["have"]);
+  if (price !== null) choice.price = price;
+  if (have !== null && have > 0) choice.have = have;
+  if (SHOPS.includes(raw["shop"] as Shop)) choice.shop = raw["shop"] as Shop;
+  return Object.keys(choice).length > 0 ? choice : null;
+}
+
+export function emptyBar(): Bar {
+  return { kind: "full", crowd: "usual", people: null, figures: {}, mix: {}, lines: {}, wholeCases: true };
+}
+
+/** The bar as the couple left it: only their choices, each checked; the rest is the defaults'. */
+export function readBar(doc: Trousseau): Bar {
+  return cached(doc, "bar", () => {
+    const raw = (doc as Record<string, unknown>)["bar"];
+    if (!isRecord(raw)) return emptyBar();
+    const figures: Partial<Record<Figure, number>> = {};
+    const storedFigures = isRecord(raw["figures"]) ? raw["figures"] : {};
+    for (const figure of FIGURES) {
+      const value = amount(storedFigures[figure]);
+      if (value !== null) figures[figure] = value;
+    }
+    const mix: Partial<Record<MixedPart, Mix>> = {};
+    const storedMix = isRecord(raw["mix"]) ? raw["mix"] : {};
+    for (const part of MIXED_PARTS) {
+      const read = readMix(storedMix[part]);
+      if (read) mix[part] = read;
+    }
+    const lines: Partial<Record<BarLine, LineChoice>> = {};
+    const storedLines = isRecord(raw["lines"]) ? raw["lines"] : {};
+    for (const line of BAR_LINES) {
+      const read = readLineChoice(storedLines[line]);
+      if (read) lines[line] = read;
+    }
+    const people = amount(raw["people"]);
+    return {
+      kind: BAR_KINDS.includes(raw["kind"] as BarKind) ? (raw["kind"] as BarKind) : "full",
+      crowd: CROWDS.includes(raw["crowd"] as Crowd) ? (raw["crowd"] as Crowd) : "usual",
+      people: people === null ? null : Math.round(people),
+      figures,
+      mix,
+      lines,
+      wholeCases: bool(raw["wholeCases"], true),
+    };
   });
 }

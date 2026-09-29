@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { pairKey, travelPairs } from "../../core/schedule/travel";
 import { useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import { Button, Panel } from "@/components/ui/fields";
-import { WholeNumberInput } from "@/components/ui/WholeNumberInput";
+import { NumberInput } from "@/components/ui/NumberInput";
 import fields from "@/components/ui/fields.module.css";
 import styles from "./TravelPanel.module.css";
 
@@ -39,7 +39,7 @@ export function TravelPanel() {
                 </span>
                 <span className={styles.who}>{pair.who.join(", ")}</span>
               </span>
-              <WholeNumberInput
+              <NumberInput
                 label={`Minutes between ${from} and ${to}`}
                 value={pair.minutes}
                 onCommit={(minutes) => setJourney(pair.between, minutes)}

@@ -8,6 +8,7 @@ import { stationery } from "./readiness";
 import { isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
 import { dayPlaces, neededAt, packingOf } from "@/lib/boxes/view";
 import { hiddenToolIds } from "./toolbox";
+import { barSum } from "@/lib/bar/sum";
 
 /**
  * How far along each part of the wedding is, for the front page.
@@ -27,7 +28,8 @@ export type AreaId =
   | "delegation"
   | "group-shots"
   | "ceremony"
-  | "boxes";
+  | "boxes"
+  | "bar";
 
 export interface Area {
   id: AreaId;
@@ -204,10 +206,22 @@ function boxes(doc: Trousseau): Area {
   };
 }
 
+function bar(doc: Trousseau): Area {
+  const { heads, spend, unpriced } = barSum(doc);
+  if (heads.people + heads.evening === 0) return { id: "bar", summary: "No guests to buy for yet", detail: "", progress: null };
+  const priced = spend > 0 ? `About ${Math.round(spend).toLocaleString()}${unpriced > 0 ? `, ${plural(unpriced, "line", "lines")} with no price` : ""}` : "No prices yet";
+  return {
+    id: "bar",
+    summary: `Drinks for ${heads.people}${heads.evening > 0 ? `, and ${heads.evening} in the evening` : ""}`,
+    detail: priced,
+    progress: null,
+  };
+}
+
 /** Every area, less those of the tools the wedding has removed. */
 export function overview(doc: Trousseau, raw: unknown, today: string = todayIso()): Area[] {
   const hidden = hiddenToolIds(doc);
-  return [guests(doc), costs(doc), tasks(doc, today), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc), ceremony(doc), boxes(doc)].filter(
+  return [guests(doc), costs(doc), tasks(doc, today), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc), ceremony(doc), boxes(doc), bar(doc)].filter(
     (area) => !hidden.has(area.id),
   );
 }

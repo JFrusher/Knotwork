@@ -54,7 +54,7 @@ test("a removal is kept in the wedding and survives a reload", async ({ page }) 
   // Stored before the reload is relied on: the write is what is being tested.
   await expect
     .poll(async () => (await storedDocument(page)).tools?.shown)
-    .toEqual(["seating", "place-cards", "timeline", "delegation", "ceremony", "boxes", "money", "checklist", "binder"]);
+    .toEqual(["seating", "place-cards", "timeline", "delegation", "ceremony", "boxes", "bar", "money", "checklist", "binder"]);
   await page.goto("/");
 
   const tabs = page.getByRole("navigation", { name: "Tools" });

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { FileSpreadsheet, ListChecks, PackagePlus, Plus, Tag, Trash2, X } from "lucide-react";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { Button, Empty, IconButton, NumberField, Panel, SelectField, TextArea, TextField } from "@/components/ui/controls";
-import { WholeNumberInput } from "@/components/ui/WholeNumberInput";
+import { NumberInput } from "@/components/ui/NumberInput";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 import { addBox, addItem, moveItem, patchBox, patchItem, removeBox, removeItem, USUAL_BOXES, withUsualBoxes } from "@/lib/boxes/actions";
 import { dayPlaces, find, neededAt, packing, whereBy, type Place } from "@/lib/boxes/view";
@@ -307,7 +307,7 @@ function BoxInspector({
                 onChange={(event) => onChange(patchItem(boxes, box.id, item.id, { label: event.target.value }), { label: "what is in a box" })}
                 className={`${CONTROL} min-w-0 flex-1 ${item.packed ? "text-slate line-through" : ""}`}
               />
-              <WholeNumberInput
+              <NumberInput
                 label={`How many of ${item.label}`}
                 value={item.quantity}
                 onCommit={(quantity) => onChange(patchItem(boxes, box.id, item.id, { quantity: Math.max(1, quantity ?? 1) }), { label: "what is in a box" })}
