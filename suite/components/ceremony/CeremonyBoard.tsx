@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Plus, Trash2, Wand2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, Plus, Printer, Trash2, Wand2 } from "lucide-react";
 import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import { Button, Empty, IconButton, Panel, Segmented, TextField } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
@@ -9,11 +9,11 @@ import { MemberPicker } from "@/components/cast/MemberPicker";
 import { resolveMembers, type MemberProblem } from "@/lib/cast/resolve";
 import { addGroup, addMembers, moveGroup, patchGroup, removeGroup, removeMember } from "@/lib/ceremony/actions";
 import { suggestOrder } from "@/lib/ceremony/propose";
+import { FORMATION_WORDS, processionalRows, processionalText } from "@/lib/ceremony/rows";
+import { download } from "@/lib/data/file";
 import { sideLabel } from "@/lib/model/partners";
 import { useCast, useCeremony, useEvent, useGuests, useSeating, useStatus, useWriters } from "@/lib/model/useSuite";
 import type { CastSlice, Ceremony, Formation, Guest, Seating, Side, WalkGroup } from "@/lib/model/types";
-
-const FORMATION_WORDS: Record<Formation, string> = { single: "One at a time", pairs: "In pairs", threes: "In threes" };
 
 /**
  * The processional: who walks, in the order they walk, how, which side they
@@ -30,12 +30,43 @@ export function CeremonyBoard() {
   const ceremony = useCeremony();
   const { setCeremony } = useWriters();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
 
   if (status !== "ready") return null;
 
   const processional = ceremony.processional;
   const selected = processional.find((group) => group.id === selectedId) ?? null;
   const resolve = (group: WalkGroup) => resolveMembers(group, guests, seating, cast.roles, cast.customRoles, event);
+
+  const rows = () => processionalRows(processional, guests, seating, cast, event);
+
+  const print = async () => {
+    setNote(null);
+    try {
+      const [{ renderProcessionalSheet }, { browserFontSource }] = await Promise.all([
+        import("@/lib/ceremony/render/pdf/processionalSheet"),
+        import("@/apps/brigade/render/pdf/fontSource"),
+      ]);
+      const bytes = await renderProcessionalSheet(rows(), {
+        fontSource: browserFontSource(),
+        coupleNames: event.coupleNames,
+        generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+      });
+      const slug = (event.coupleNames || "wedding").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      download(`${slug || "wedding"}-processional.pdf`, new Blob([bytes as BlobPart], { type: "application/pdf" }));
+    } catch (cause) {
+      setNote(cause instanceof Error ? cause.message : "The page could not be made.");
+    }
+  };
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(processionalText(rows(), event));
+      setNote("Copied — paste it into an email to the wedding party.");
+    } catch {
+      setNote("This browser would not copy. Print the page instead.");
+    }
+  };
 
   const add = () => {
     const next = addGroup(ceremony);
@@ -51,12 +82,26 @@ export function CeremonyBoard() {
           <Button icon={Plus} onClick={add}>
             Add a group
           </Button>
-          {processional.length === 0 && (
+          {processional.length === 0 ? (
             <Button icon={Wand2} onClick={() => setCeremony({ ...ceremony, processional: suggestOrder(cast) }, { label: "suggesting an order" })}>
               Suggest an order
             </Button>
+          ) : (
+            <>
+              <Button icon={Printer} onClick={() => void print()}>
+                Print
+              </Button>
+              <Button icon={Copy} onClick={() => void copy()}>
+                Copy as text
+              </Button>
+            </>
           )}
         </div>
+        {note && (
+          <p role="status" className="border-b border-charcoal/10 px-3 py-2 text-xs text-slate">
+            {note}
+          </p>
+        )}
 
         {processional.length === 0 ? (
           <div className="p-4">

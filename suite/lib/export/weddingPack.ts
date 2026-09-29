@@ -9,8 +9,9 @@ import { PDFDocument } from "pdf-lib";
  * chances to be holding a version of one of them from last Tuesday.
  *
  * So they are printed together, in the order you would want them in a binder:
- * what the room looks like, what happens when, who is doing what, and who to
- * photograph.
+ * what the room looks like, what happens when, who walks down the aisle, who
+ * is doing what, and who to photograph. The processional is Ceremony's, a
+ * fifth tool's, and is in the pack only once there is one.
  *
  * The place cards are deliberately not here. They print on 85×55 card stock
  * through a sheet layout of their own, and an A4 binder and a tray of card are

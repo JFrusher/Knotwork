@@ -20,6 +20,7 @@ const CARRIES: Record<Kind, string> = {
   day: "The blocks, lanes and times, with each block’s notes — without the date, the couple or the suppliers’ numbers.",
   room: "The tables and the floor, with every chair empty.",
   checklist: "The tasks, each as so many days before the day.",
+  processional: "The order, who walks by what they are to the couple, how, and the music — nobody by name.",
 };
 
 /** What putting it in does to the wedding it goes into, said before it is done. */
@@ -27,6 +28,7 @@ const REPLACES: Record<Exclude<Kind, "checklist">, string> = {
   cards: "The card design here is replaced. Who the cards are for is not.",
   day: "The running order here is replaced. Jobs tied to its blocks will need new ones.",
   room: "The room here is replaced, and everyone is unseated. Families and groups stay.",
+  processional: "The processional here is replaced. Who is who is not.",
 };
 
 type Listing = { status: "loading" } | { status: "ready"; items: LibraryListing[] } | { status: "signed-out" } | { status: "failed"; message: string };

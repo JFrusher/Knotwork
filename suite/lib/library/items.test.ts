@@ -77,3 +77,52 @@ describe("putting it into another wedding", () => {
     expect(crew.jobs.find((job) => job.label === "Order the cake")?.dueOn).toBe("2029-05-04");
   });
 });
+
+describe("a processional", () => {
+  const withGuestWalking = {
+    ...example,
+    ceremony: {
+      processional: [
+        ...(example.ceremony.processional as object[]),
+        {
+          id: "walk-extra",
+          label: "",
+          members: [
+            { kind: "guest", ref: Object.keys(example.guests)[0] },
+            { kind: "customRole", ref: "crole-readers" },
+            { kind: "family", ref: "fam-1" },
+            { kind: "role", ref: "b-grandparents" },
+          ],
+          formation: "pairs",
+          side: "b",
+          music: "",
+          cue: "",
+        },
+      ],
+    },
+  };
+
+  it("is kept by roles, words and music, with nobody named and nothing of this wedding's own", () => {
+    const kept = extract("processional", withGuestWalking)!;
+    const groups = kept["processional"] as Array<{ members: Array<{ kind: string }> }>;
+    expect(groups).toHaveLength(7);
+    expect(groups[5]).toMatchObject({ formation: "pairs", side: "", music: "The Arrival of the Queen of Sheba" });
+    expect(groups[6]!.members).toEqual([{ kind: "role", ref: "b-grandparents" }]);
+    expect(groups.flatMap((group) => group.members).every((member) => member.kind === "role" || member.kind === "text")).toBe(true);
+    expect(JSON.stringify(kept)).not.toContain('"id"');
+    expect(mentionsAnyGuest(kept)).toEqual([]);
+  });
+
+  it("is nothing to keep from a wedding with no processional", () => {
+    expect(extract("processional", { ...example, ceremony: { processional: [] } })).toBeNull();
+  });
+
+  it("goes into another wedding as its processional, each group with an id of its own", () => {
+    const kept = extract("processional", example)!;
+    const [[slice, value]] = applyTo("processional", kept, { ceremony: { processional: [{ id: "old" }] } }) as [[string, { processional: Array<{ id: string }> }]];
+    expect(slice).toBe("ceremony");
+    expect(value.processional).toHaveLength(6);
+    expect(new Set(value.processional.map((group) => group.id)).size).toBe(6);
+    expect(value.processional.map((group) => group.id)).not.toContain("old");
+  });
+});

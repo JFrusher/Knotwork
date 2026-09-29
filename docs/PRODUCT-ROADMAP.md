@@ -52,7 +52,7 @@ instead (see subsystem F).
 | M | Windows around the tools: Overview, Guests, Money, Checklist, Sync & history, palette | E, L | ⬜ planned — master plan, phase 2 |
 | N | Day-of binder and vendor links | E, J | ⬜ planned — master plan, phase 3 |
 | O | One live document: tools stop keeping copies; real-time sync | — | ⬜ planned — master plan, phase 4 |
-| P | The toolbox, and travel, ceremony, boxes and bar | L, O | 🟡 **phases 0–1 built** — [spec](superpowers/specs/2026-09-29-toolbox-and-new-tools-design.md), plans for [the toolbox](superpowers/plans/2026-09-29-toolbox.md) and [travel and calendars](superpowers/plans/2026-09-29-timeline-travel-and-calendars.md), 2026-09-29; phases 2–4 each get a plan first |
+| P | The toolbox, and travel, ceremony, boxes and bar | L, O | 🟡 **phases 0–2 built** — [spec](superpowers/specs/2026-09-29-toolbox-and-new-tools-design.md), plans for [the toolbox](superpowers/plans/2026-09-29-toolbox.md), [travel and calendars](superpowers/plans/2026-09-29-timeline-travel-and-calendars.md) and [the cast and Ceremony](superpowers/plans/2026-09-29-cast-and-ceremony.md), 2026-09-29; phases 3–4 each get a plan first |
 
 ## Decisions log
 

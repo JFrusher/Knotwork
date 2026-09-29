@@ -126,6 +126,12 @@ are the **venue's clock**, not UTC.
 
 ## Phase 2 — one cast, and Ceremony
 
+**Built 2026-09-29**, with [its plan](../plans/2026-09-29-cast-and-ceremony.md).
+As built, where it differs from below: the suggested order ends with the
+couple walking in together, since who walks with whom is theirs to say; the
+officiant is words rather than a crew member; and there is no tour chapter,
+the tour being held under thirty steps.
+
 - **`cast`** takes Group shots' cast and custom roles, moved on load by the
   existing load-time pass. The fixed roles gain each partner's grandparents
   (a party role, as the wedding party is). Readers, ring bearer, flower party

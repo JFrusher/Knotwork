@@ -5,14 +5,15 @@ import { FileDown } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { KO_FI_URL } from "@/lib/support";
 import type { PackSection } from "@/lib/export/weddingPack";
-import { readCast, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
+import { readCast, readCeremony, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 
 /**
  * The one button that produces everything you carry on the day.
  *
  * It lives here rather than in any one tool because it is the only
  * thing in the suite that is not any one tool's job: the plan comes from the
- * room, the running order from the day, the jobs from the crew, and the whole
+ * room, the running order from the day, the processional from the ceremony,
+ * the jobs from the crew, and the whole
  * point is that they are printed from the same wedding at the same moment.
  *
  * Sections are gathered one at a time and a failure is reported rather than
@@ -41,6 +42,7 @@ export function WeddingPack() {
     for (const [title, make] of [
       ["The room", floorPlan],
       ["The day", runSheet],
+      ["The processional", processional],
       ["The jobs", jobList],
       ["The shots", shotSheet],
     ] as const) {
@@ -169,6 +171,24 @@ async function jobList(): Promise<Uint8Array | null> {
 
   return renderJobList(doc, {
     fontSource: browserFontSource(),
+    generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+  });
+}
+
+async function processional(): Promise<Uint8Array | null> {
+  const { doc } = useTrousseauStore.getState();
+  const groups = readCeremony(doc).processional;
+  if (groups.length === 0) return null;
+
+  const [{ renderProcessionalSheet }, { browserFontSource }, { processionalRows }] = await Promise.all([
+    import("@/lib/ceremony/render/pdf/processionalSheet"),
+    import("@/apps/brigade/render/pdf/fontSource"),
+    import("@/lib/ceremony/rows"),
+  ]);
+
+  return renderProcessionalSheet(processionalRows(groups, readGuests(doc), readSeating(doc), readCast(doc), doc.event), {
+    fontSource: browserFontSource(),
+    coupleNames: doc.event.coupleNames,
     generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
   });
 }
