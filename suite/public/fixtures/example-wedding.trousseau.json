@@ -5626,5 +5626,17 @@
     },
     "fonts": []
   },
+  "tools": {
+    "shown": [
+      "seating",
+      "place-cards",
+      "timeline",
+      "delegation",
+      "group-shots",
+      "money",
+      "checklist",
+      "binder"
+    ]
+  },
   "sources": {}
 }

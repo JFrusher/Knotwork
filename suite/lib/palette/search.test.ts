@@ -13,14 +13,14 @@ describe("finding anything by name", () => {
     expect(search(all, "").map((entry) => entry.name)).toEqual([
       "Overview",
       "Guests",
-      "Money",
-      "Checklist",
-      "Binder",
       "Seating",
       "Place cards",
       "Timeline",
       "Delegation",
       "Group shots",
+      "Money",
+      "Checklist",
+      "Binder",
     ]);
   });
 
@@ -28,7 +28,7 @@ describe("finding anything by name", () => {
     const pages = entries(migrate({ ...raw, tools: { shown: ["seating"] } }))
       .filter((entry) => entry.kind === "Page")
       .map((entry) => entry.name);
-    expect(pages).toEqual(["Overview", "Guests", "Money", "Checklist", "Binder", "Seating"]);
+    expect(pages).toEqual(["Overview", "Guests", "Seating"]);
   });
 
   it("finds a guest and says where they sit, opening the list found to them by id", () => {

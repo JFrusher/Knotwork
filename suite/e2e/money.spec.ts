@@ -35,5 +35,6 @@ test("a balance paid, and a budget cut, show wherever money is counted", async (
 
   await page.getByRole("navigation", { name: "Tools" }).getByRole("link", { name: "Delegation" }).click();
   await expect(page.getByRole("spinbutton", { name: "Budget" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Money" })).toBeVisible();
+  // Delegation's own pointer to Money, not the header's tab of the same name.
+  await expect(page.getByRole("main").getByRole("link", { name: "Money" })).toBeVisible();
 });

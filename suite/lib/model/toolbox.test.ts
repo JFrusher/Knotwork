@@ -6,16 +6,17 @@ import { hiddenToolIds, shownTools, withTool } from "./toolbox";
 const ids = (doc: Parameters<typeof shownTools>[0]) => shownTools(doc).map((tool) => tool.id);
 
 describe("shownTools", () => {
-  it("shows the five when the wedding has never chosen", () => {
+  it("shows the five when the wedding has never chosen, and leaves the rest in the toolbox", () => {
     const doc = emptyTrousseau();
-    expect(shownTools(doc)).toBe(TOOLS);
-    expect(hiddenToolIds(doc).size).toBe(0);
+    expect(ids(doc)).toEqual(["seating", "place-cards", "timeline", "delegation", "group-shots"]);
+    expect([...hiddenToolIds(doc)]).toEqual(["money", "checklist", "binder"]);
+    expect(shownTools(doc)).toBe(shownTools(emptyTrousseau()));
   });
 
   it("shows what is stored, in the registry's order rather than the stored one", () => {
     const doc = migrate({ tools: { shown: ["group-shots", "seating"] } });
     expect(ids(doc)).toEqual(["seating", "group-shots"]);
-    expect([...hiddenToolIds(doc)]).toEqual(["place-cards", "timeline", "delegation"]);
+    expect([...hiddenToolIds(doc)]).toEqual(["place-cards", "timeline", "delegation", "money", "checklist", "binder"]);
   });
 
   it("shows nothing when everything has been removed", () => {
@@ -35,6 +36,12 @@ describe("withTool", () => {
   it("removing from a wedding that never chose keeps the other four", () => {
     expect(withTool({}, "seating", false)).toEqual({
       shown: ["place-cards", "timeline", "delegation", "group-shots"],
+    });
+  });
+
+  it("adding one of the rest to a wedding that never chose keeps the five", () => {
+    expect(withTool({}, "money", true)).toEqual({
+      shown: ["seating", "place-cards", "timeline", "delegation", "group-shots", "money"],
     });
   });
 

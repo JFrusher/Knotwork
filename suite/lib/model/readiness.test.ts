@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
 import { readiness } from "./readiness";
+import { TOOLS } from "@/lib/tools";
 
 /**
  * These only fire on the gaps between tools, so what is worth holding is that
@@ -8,8 +9,11 @@ import { readiness } from "./readiness";
  * are not so eager they fire on a wedding nobody has started yet.
  */
 
+// Every tool shown, so each check here is heard; what hiding a tool does has tests of its own.
+const EVERY_TOOL = { tools: { shown: TOOLS.map((tool) => tool.id) } };
+
 const wedding = (raw: Record<string, unknown>) => {
-  const full = { ...emptyTrousseau(), ...raw };
+  const full = { ...emptyTrousseau(), ...EVERY_TOOL, ...raw };
   return readiness(migrate(full), full);
 };
 
@@ -39,6 +43,17 @@ describe("what is left to do", () => {
     // Nobody is seated on the day the guest list arrives, and saying so then is
     // just restating that the work has not been done yet.
     expect(ids({ guests: { g1: { id: "g1", firstName: "Charis" } } })).toEqual([]);
+  });
+
+  it("says nothing of money or tasks to a wedding that has never added Money or the Checklist", () => {
+    const crew = {
+      teams: [{ id: "tm1", name: "Florist", cost: 500, deposit: null, balanceDueOn: "2000-01-01", balancePaidOn: "" }],
+      people: [],
+      jobs: [{ id: "j1", blockId: null, label: "Book the cars", personIds: [], status: "todo", dueOn: "2000-01-01" }],
+    };
+    const left = (raw: Record<string, unknown>) => wedding(raw).map((item) => item.href);
+    expect(left({ guests: GUESTS, ...TABLES, crew })).toEqual(expect.arrayContaining(["/money", "/checklist"]));
+    expect(left({ guests: GUESTS, ...TABLES, crew, tools: {} })).toEqual([]);
   });
 
   it("says nothing about a tool the wedding has removed", () => {
@@ -186,7 +201,7 @@ describe("jobs with nobody on them", () => {
 
 describe("the checklist", () => {
   const on = (today: string, jobs: unknown[]) => {
-    const full = { ...emptyTrousseau(), guests: GUESTS, crew: { jobs } };
+    const full = { ...emptyTrousseau(), ...EVERY_TOOL, guests: GUESTS, crew: { jobs } };
     return readiness(migrate(full), full, today).find((entry) => entry.id === "tasks-overdue");
   };
 
@@ -208,6 +223,7 @@ describe("payments", () => {
   const on = (today: string, balanceDueOn: string, balancePaidOn = "") => {
     const full = {
       ...emptyTrousseau(),
+      ...EVERY_TOOL,
       guests: GUESTS,
       crew: { teams: [{ id: "t1", name: "Granary Kitchen", cost: 9400, deposit: 2000, balanceDueOn, balancePaidOn }] },
     };

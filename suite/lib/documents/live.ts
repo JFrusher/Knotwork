@@ -2,7 +2,7 @@
 
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
 import { create } from "zustand";
-import { TOOLS, WEDDING_PAGES } from "@/lib/tools";
+import { GUESTS, TOOLS, WEDDING_PAGES } from "@/lib/tools";
 
 /**
  * A wedding's live channel: told the moment the account's copy moves, and
@@ -27,7 +27,7 @@ export const usePresence = create<{ others: Here[] }>(() => ({ others: [] }));
 
 /** The name a page goes by, for saying where someone is. */
 export function pageName(pathname: string): string | null {
-  return [...WEDDING_PAGES, ...TOOLS].find((page) => page.href === pathname)?.name ?? null;
+  return [...WEDDING_PAGES, GUESTS, ...TOOLS].find((page) => page.href === pathname)?.name ?? null;
 }
 
 /** Everyone in `state` but `me`, once each, at the page they were last seen on. */

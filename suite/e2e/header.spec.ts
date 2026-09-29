@@ -11,7 +11,8 @@ import { seedExampleWedding } from "./wedding";
 test.describe("at 1024px", () => {
   test.use({ viewport: { width: 1024, height: 768 } });
 
-  for (const tool of TOOLS) {
+  // The Binder is a page for a phone, outside the planning app's header.
+  for (const tool of TOOLS.filter((candidate) => candidate.id !== "binder")) {
     test(`${tool.name}'s own controls are all in view`, async ({ page }) => {
       await seedExampleWedding(page);
       await page.goto(tool.href);

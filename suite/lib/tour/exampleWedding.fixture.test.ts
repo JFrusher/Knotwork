@@ -7,6 +7,8 @@ import { readCrew, readGuests, readSeating, readShots, readTimeline } from "@/li
 import { readiness } from "@/lib/model/readiness";
 import { resolveShot } from "@/lib/ensemble/resolve";
 import { computeWarnings } from "@/apps/tableaux/utils/warnings";
+import { shownTools } from "@/lib/model/toolbox";
+import { TOOLS } from "@/lib/tools";
 
 /*
  * The example wedding exists to show what Trousseau does once a wedding is
@@ -89,4 +91,8 @@ test("the place cards are drawn from the room, and agree with it", () => {
   expect(stationery.fileName).toBe("the room");
   expect(stationery.rows?.length).toBeGreaterThan(0);
   expect(readiness(doc, raw).filter((r) => r.severity === "blocking")).toEqual([]);
+});
+
+test("every tool is shown, including those a new wedding adds itself, so there is nothing it cannot demonstrate", () => {
+  expect(shownTools(doc)).toEqual(TOOLS);
 });

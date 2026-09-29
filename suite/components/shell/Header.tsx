@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Plus, Search } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { shownTools } from "@/lib/model/toolbox";
+import { GUESTS } from "@/lib/tools";
 import { AccountStatus } from "./AccountStatus";
 import { WeddingMenu } from "./WeddingMenu";
 import { HowThisWorks } from "./TourButtons";
@@ -74,7 +75,8 @@ export function Header() {
   const [toolsEverOpened, setToolsEverOpened] = useState(false);
   if (toolsOpen && !toolsEverOpened) setToolsEverOpened(true);
   useEffect(() => useToolsPanel.getState().fromAddress(), []);
-  // The wedding's own choice of tools, the same for everyone planning it.
+  // The guest list, then the wedding's own choice of tools, the same for
+  // everyone planning it.
   const tools = useTrousseauStore((s) => shownTools(s.doc));
   // The palette: its button, and Ctrl/⌘ K from anywhere.
   const paletteOpen = usePalette((s) => s.open);
@@ -109,7 +111,7 @@ export function Header() {
           {/* Scrolls within the header on a narrow screen, rather than making
               the whole page wider than it and pushing Data off the edge. */}
           <nav aria-label="Tools" className="flex min-w-0 items-center gap-1 overflow-x-auto">
-            {tools.map((tool) => {
+            {[GUESTS, ...tools].map((tool) => {
               const active = pathname === tool.href;
               return (
                 <Link
@@ -149,8 +151,13 @@ export function Header() {
             * `safe` end alignment: plain `justify-end` pushes overflow out of
             * the start edge, where no scrollbar can reach it, and Timeline's
             * zoom and Present buttons sat there invisible at 1440px.
+            *
+            * Never narrower than what the tool put here: when the row is short
+            * of room, the tabs give way and scroll instead. With every tool
+            * added, the tabs took the room at 1024px and four of Timeline's
+            * controls sat out of sight — measured, and the header test's case.
             */}
-          <div className="flex min-w-0 flex-1 items-center justify-end-safe gap-1 overflow-x-auto [&_button]:whitespace-nowrap [&>*]:shrink-0">
+          <div className="flex shrink-0 grow basis-auto items-center justify-end-safe gap-1 [&_button]:whitespace-nowrap [&>*]:shrink-0">
             <ChromeSlot name="tool-actions" />
           </div>
           <div className="hidden shrink-0 items-center sm:flex">
