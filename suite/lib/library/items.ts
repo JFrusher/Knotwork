@@ -1,20 +1,23 @@
-import type { SliceName } from "@jfrusher/trousseau";
+import { migrate, type SliceName } from "@jfrusher/trousseau";
+import { choices } from "@/lib/bar/actions";
 import { daysUntil } from "@/lib/dates";
+import { emptyBar, readBar } from "@/lib/model/slices";
 
 /**
  * What a planner keeps from one wedding to use in another, and how it goes
  * into the next: a card design without its rows, a running order without its
  * date or its suppliers' numbers, a room without its guests, a checklist
  * without its dates — each task kept as so many days before the day — a
- * processional with its roles and music and nobody named, and a set of boxes
- * with what goes in each, but not who takes them or when.
+ * processional with its roles and music and nobody named, a set of boxes
+ * with what goes in each, but not who takes them or when, and bar settings
+ * without the guest count or what a couple already has.
  *
  * Nothing personal leaves a wedding this way. Each kind is built from a
  * whitelist of what it is, never by removing what it is not, so a field a tool
  * adds later stays out until someone decides it belongs.
  */
 
-export const KINDS = ["cards", "day", "room", "checklist", "processional", "boxes"] as const;
+export const KINDS = ["cards", "day", "room", "checklist", "processional", "boxes", "bar"] as const;
 
 /** Kinds that add to a wedding rather than replace what it has, so ask nothing first. */
 const ADDING = ["checklist", "boxes"] as const satisfies readonly Kind[];
@@ -29,6 +32,7 @@ export const KIND_NAMES: Record<Kind, string> = {
   checklist: "Checklist",
   processional: "Processional",
   boxes: "Boxes",
+  bar: "Bar settings",
 };
 
 type Raw = Record<string, unknown>;
@@ -112,6 +116,20 @@ export function extract(kind: Kind, raw: Raw): Raw | null {
             .map((member) => pick(member, ["kind", "ref"])),
         })),
       };
+    }
+    case "bar": {
+      // Read through the Bar's own reader, so only figures, shares, prices
+      // and shops it knows are kept. Not how many are coming, the evening
+      // guests or what this couple already has: those are this wedding's.
+      const bar = readBar(migrate(raw));
+      const { eveningGuests: _eveningGuests, ...figures } = bar.figures;
+      const lines = Object.fromEntries(
+        Object.entries(bar.lines)
+          .map(([line, choice]) => [line, pick(choice as Raw, ["price", "shop"])] as const)
+          .filter(([, choice]) => Object.keys(choice).length > 0),
+      );
+      const kept = { kind: bar.kind, crowd: bar.crowd, figures, mix: bar.mix, lines, wholeCases: bar.wholeCases };
+      return choices({ ...emptyBar(), ...kept }) === 0 ? null : kept;
     }
     case "boxes": {
       const boxes = Array.isArray(record(raw["boxes"])["boxes"]) ? (record(raw["boxes"])["boxes"] as unknown[]) : [];
@@ -203,6 +221,28 @@ export function applyTo(kind: Kind, content: Raw, raw: Raw): Array<[SliceName, u
           notes: "",
         }));
       return [["boxes", { ...current, boxes: [...boxes, ...added] }]];
+    }
+    case "bar": {
+      // The settings replace this wedding's; its head count, its evening
+      // guests and what it already has stay.
+      const current = readBar(migrate(raw));
+      const evening = current.figures.eveningGuests;
+      const lines = { ...(content["lines"] as Raw) };
+      for (const [line, choice] of Object.entries(current.lines)) {
+        if (choice.have !== undefined) lines[line] = { ...record(lines[line]), have: choice.have };
+      }
+      return [
+        [
+          "bar",
+          {
+            ...record(raw["bar"]),
+            ...content,
+            people: current.people,
+            figures: { ...(content["figures"] as Raw), ...(evening === undefined ? {} : { eveningGuests: evening }) },
+            lines,
+          },
+        ],
+      ];
     }
     case "processional":
       return [

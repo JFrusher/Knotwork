@@ -45,7 +45,7 @@ test("a saved design is removed, never edited in place", async () => {
   expect((await db.query("delete from library_items where id = $1", [id])).affectedRows).toBe(1);
 });
 
-test("a name is required, and only the six kinds are kept", async () => {
+test("a name is required, and only the seven kinds are kept", async () => {
   const planner = await userExists(db, "planner@example.com");
   await actAs(db, planner);
   await expect(save(planner, "")).rejects.toThrow();
@@ -54,5 +54,6 @@ test("a name is required, and only the six kinds are kept", async () => {
   ).rejects.toThrow();
   await db.query("insert into library_items (owner, kind, name, content) values ($1, 'processional', 'Church, both sides', '{}')", [planner]);
   await db.query("insert into library_items (owner, kind, name, content) values ($1, 'boxes', 'For a barn', '{}')", [planner]);
-  expect((await db.query("select kind from library_items order by kind")).rows).toEqual([{ kind: "boxes" }, { kind: "processional" }]);
+  await db.query("insert into library_items (owner, kind, name, content) values ($1, 'bar', 'Beer and wine, a heavy crowd', '{}')", [planner]);
+  expect((await db.query("select kind from library_items order by kind")).rows).toEqual([{ kind: "bar" }, { kind: "boxes" }, { kind: "processional" }]);
 });

@@ -165,3 +165,51 @@ describe("a set of boxes", () => {
     expect(adds("room")).toBe(false);
   });
 });
+
+describe("bar settings", () => {
+  const settled = {
+    ...example,
+    bar: {
+      ...example.bar,
+      kind: "beer-and-wine",
+      people: 120,
+      figures: { eveningGuests: 30, eveningHours: 5 },
+      lines: { fizz: { price: 8.5, have: 12, shop: "supermarket" }, spirits: { have: 2 } },
+      unknown: "from a newer build",
+    },
+  };
+
+  it("are kept without the guest count, the evening guests or what the couple already has", () => {
+    expect(extract("bar", settled)).toEqual({
+      kind: "beer-and-wine",
+      crowd: "usual",
+      figures: { eveningHours: 5 },
+      mix: {},
+      lines: { fizz: { price: 8.5, shop: "supermarket" } },
+      wholeCases: true,
+    });
+  });
+
+  it("are nothing to keep from a wedding that changed nothing", () => {
+    expect(extract("bar", { ...example, bar: {} })).toBeNull();
+    // Only a guest count and evening guests: nothing another wedding could use.
+    expect(extract("bar", { ...example, bar: { people: 80, figures: { eveningGuests: 20 } } })).toBeNull();
+  });
+
+  it("replace this wedding's, keeping its head count, its evening guests and what it already has", () => {
+    const kept = extract("bar", settled)!;
+    const into = { bar: { kind: "cocktails", people: 60, figures: { eveningGuests: 10, toastGlasses: 2 }, lines: { ice: { have: 20 }, red: { price: 9 } } } };
+    const [[slice, value]] = applyTo("bar", kept, into) as [[string, Record<string, unknown>]];
+    expect(slice).toBe("bar");
+    expect(value).toEqual({
+      kind: "beer-and-wine",
+      crowd: "usual",
+      people: 60,
+      figures: { eveningHours: 5, eveningGuests: 10 },
+      mix: {},
+      lines: { fizz: { price: 8.5, shop: "supermarket" }, ice: { have: 20 } },
+      wholeCases: true,
+    });
+    expect(adds("bar")).toBe(false);
+  });
+});
