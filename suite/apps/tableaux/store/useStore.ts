@@ -29,6 +29,30 @@ export interface Canvas {
   panY: number
 }
 
+/** A question put before a change that cannot be taken back with a click. */
+export interface ConfirmRequest {
+  title: string
+  message: string
+  confirmLabel: string
+  danger?: boolean
+  onConfirm: () => void
+}
+
+/** Each modal, and what it is opened with. */
+export interface Modals {
+  warnings: undefined
+  constraints: undefined
+  snapshots: undefined
+  export: undefined
+  settings: undefined
+  customTable: undefined
+  print: undefined
+  calibrate: { pixelDistance: number }
+  confirm: ConfirmRequest
+}
+
+export type OpenModal = { [N in keyof Modals]: { name: N; props: Modals[N] } }[keyof Modals]
+
 /** Every action, bound: `addTable({...})` runs the command and returns it, or null. */
 type Bound = { [K in keyof ActionCreators]: (...args: Parameters<ActionCreators[K]>) => Command | null }
 
@@ -48,7 +72,7 @@ export interface SeatingState extends Plan, Bound {
   filters: string[]
   activeTool: Tool
   panels: { left: boolean; right: boolean; history: boolean }
-  modal: { name: string; props: Record<string, unknown> } | null
+  modal: OpenModal | null
   toasts: Toast[]
   /** Alignment and spacing guides while a table is dragged. */
   dragGuides: Guide[]
@@ -82,7 +106,7 @@ export interface SeatingState extends Plan, Bound {
   clearFilters: () => void
   setActiveTool: (tool: Tool) => void
   togglePanel: (which: keyof SeatingState['panels']) => void
-  openModal: (name: string, props?: Record<string, unknown>) => void
+  openModal: <N extends keyof Modals>(name: N, ...props: Modals[N] extends undefined ? [] : [Modals[N]]) => void
   closeModal: () => void
   addToast: (toast: { type?: Toast['type']; message: string; duration?: number }) => string
   dismissToast: (id: string) => void
@@ -204,7 +228,7 @@ export const useStore = create<SeatingState>()((set, get) => {
     clearFilters: () => set({ filters: [] }),
     setActiveTool: (activeTool) => set({ activeTool }),
     togglePanel: (which) => set({ panels: { ...get().panels, [which]: !get().panels[which] } }),
-    openModal: (name, props = {}) => set({ modal: { name, props } }),
+    openModal: (name, ...props) => set({ modal: { name, props: props[0] } as OpenModal }),
     closeModal: () => set({ modal: null }),
 
     addToast: ({ type = 'info', message, duration = 3000 }) => {

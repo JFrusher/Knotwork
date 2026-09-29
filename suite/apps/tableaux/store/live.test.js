@@ -63,7 +63,6 @@ it('a selected table undone out of existence is no longer selected', () => {
     type: 'ADD_TABLE',
     label: 'Add table',
     payload: { tables: { t_new: { ...state.tables[t1], id: 't_new', assignedGuestIds: [] } } },
-    inverse: { tables: { t_new: null } },
   }))
   seating().select('table', 't_new')
   shared().undo()

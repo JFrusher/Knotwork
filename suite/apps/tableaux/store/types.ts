@@ -124,6 +124,7 @@ export interface Settings {
   showGroupColours: boolean
   gridSnap: boolean
   gridSize: number
+  gridStyle: 'dots' | 'lines' | 'off'
   snapAlign: boolean
   unitSystem: UnitSystem
   /** Canvas pixels per centimetre. Locked per plan — see `DEFAULT_PPU`. */

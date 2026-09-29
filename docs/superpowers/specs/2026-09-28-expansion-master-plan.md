@@ -43,6 +43,7 @@ several turned out differently once tested than they looked when read.
 | S17 | Seating's "worth checking" note counted a guest who answered "None" as having no dietary note. Six of its seven notes on the example were those guests. | Reproduced — unit. **Fixed 2026-09-28**. |
 | S18 | The Privacy Policy says "no analytics … and no third-party scripts", with Sentry the only third party; but on a Vercel deployment the root layout renders Vercel Web Analytics, added by Vercel's bot on 2026-09-08. The policy is false there. | Traced (`app/layout.tsx`, commit e63d4be). **Open — the maintainer's call**: remove the analytics, or say in the policy what it counts. Found with it, and fixed: the command palette put a guest's name in the address (`/guests?q=…`); it now goes by id. |
 | S19 | In Place cards, undoing any edit — even adding a rectangle — silently dropped the card's row scope (per-table menus went back to one card per guest) and every per-row tweak: its undo history kept only the elements and the background. | Reproduced against the old store. **Fixed** by Place cards moving onto the wedding's one history, which puts back the whole slice; the reproduction is now a test. |
+| S20 | In Seating, a zone, a pillar, a room shape or a calibration line could not be started on the floor of a room — only off it. The canvas gave every press on a room to the room before any tool ran, and the room took it as a click or a pan. | Reproduced with a browser test (no zone drawn inside the room; a pillar only off the floor). **Fixed**: the tools act wherever they are pressed, and a press on a room is the room's only for the select tool; the tests now draw a zone and put a pillar down on the floor. |
 
 ### Architecture
 
@@ -500,6 +501,15 @@ replaced by the converted originals rather than kept beside them.
   `HOLDS`, `noteRead`/`mayWrite`, the store's `held`/`hold`/`release`,
   the `by` write option, `generation` and the remount on it.
   `WhenDocumentReady` only waits for the wedding to be read.
+- **Seating in TypeScript: built 2026-09-29.** Every file — model, store,
+  commands, utilities and all its components — is typed, and the types
+  caught what they are for: a guest's side cleared to `null` rather than
+  the model's `''`, a table resize with nothing resized written as an empty
+  step, and three confirm options (`onCancel`, `cancelLabel`, `keepOpen`)
+  no caller used. The modals are a typed map, so opening one without what
+  it needs does not compile. The canvas's drags commit through the same
+  commands as everything else, and are now tested end to end — which found
+  S20.
 
 **Real-time sync** (Supabase Realtime in place of the 20-second poll, and
 presence) lands after this, not before: an instant pull into a tool that still
