@@ -282,7 +282,7 @@ suite/           the web application
   app/           routes, API, account and guest-link pages
 src/             the data contract, published as @jfrusher/trousseau
 supabase/        database migrations
-docs/            self-hosting, data notes, specs and plans
+docs/            self-hosting, data notes, building a tool, specs and plans
 ```
 
 ---
@@ -318,6 +318,10 @@ Issues and pull requests are welcome.
   Design decisions are written down in `docs/superpowers/specs/` rather than
   living in anyone's head, so it should be possible to tell whether an idea
   fits before writing any code.
+- **Want to build a tool?** A job nothing in Trousseau does for you yet is the
+  best reason to. **[docs/BUILDING-A-TOOL.md](docs/BUILDING-A-TOOL.md)** walks
+  through the whole process: whether the idea is a tool, proposing it,
+  connecting it to the other tools, and every file it touches.
 - **Running the tests:** `npx vitest run` from `suite/` covers all five tools
   and the shell; `npm test` at the root covers the contract package.
 

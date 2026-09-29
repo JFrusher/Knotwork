@@ -87,6 +87,18 @@ Our CI pipeline enforces type safety, unit testing, and linting. Make sure these
 
 ---
 
+## Building a New Tool
+
+Most new tools start as a job someone needed doing for their own wedding. Before writing code, read **[docs/BUILDING-A-TOOL.md](docs/BUILDING-A-TOOL.md)**. It covers:
+
+* deciding whether an idea is a tool, a feature of an existing tool, or already built;
+* proposing it with a spec and a plan;
+* the rules every tool keeps;
+* connecting it to the other tools;
+* every file a new tool touches, and how to test it.
+
+---
+
 ## Submitting a Pull Request
 
 1. **Keep changes focused:** A PR should address a single bug fix or feature enhancement.
