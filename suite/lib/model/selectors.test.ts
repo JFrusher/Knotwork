@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
-import { readCrew, readGuests, readSeating, readShots, readTimeline, resolvedDay, timelineDoc } from "./slices";
+import { readCast, readCrew, readGuests, readSeating, readShots, readTimeline, resolvedDay, timelineDoc } from "./slices";
 import { hiddenToolIds, shownTools } from "./toolbox";
 
 /**
@@ -30,6 +30,7 @@ test.each([
   ["timeline", () => readTimeline(doc)],
   ["crew", () => readCrew(doc)],
   ["shots", () => readShots(doc)],
+  ["cast", () => readCast(doc)],
   ["timelineDoc", () => timelineDoc(doc)],
   ["resolved day", () => resolvedDay(doc)],
   ["shown tools", () => shownTools(doc)],

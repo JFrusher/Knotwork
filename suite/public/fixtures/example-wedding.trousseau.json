@@ -4573,37 +4573,6 @@
     "sheetCollapsed": false
   },
   "shots": {
-    "cast": {
-      "a": [
-        "g_ex000"
-      ],
-      "b": [
-        "g_ex001"
-      ],
-      "a-mother": [
-        "g_ex002"
-      ],
-      "a-father": [
-        "g_ex003"
-      ],
-      "b-mother": [
-        "g_ex004"
-      ],
-      "b-father": [
-        "g_ex005"
-      ],
-      "a-party": [
-        "g_vofkec66",
-        "g_4lnex3bq",
-        "g_q18mutww"
-      ],
-      "b-party": [
-        "g_8in4f7z4",
-        "g_wkewk4ut",
-        "g_8gp2bi4e"
-      ]
-    },
-    "customRoles": [],
     "sections": [
       {
         "id": "sec_dovdlg5o",
@@ -5637,6 +5606,39 @@
       "checklist",
       "binder"
     ]
+  },
+  "cast": {
+    "roles": {
+      "a": [
+        "g_ex000"
+      ],
+      "b": [
+        "g_ex001"
+      ],
+      "a-mother": [
+        "g_ex002"
+      ],
+      "a-father": [
+        "g_ex003"
+      ],
+      "b-mother": [
+        "g_ex004"
+      ],
+      "b-father": [
+        "g_ex005"
+      ],
+      "a-party": [
+        "g_vofkec66",
+        "g_4lnex3bq",
+        "g_q18mutww"
+      ],
+      "b-party": [
+        "g_8in4f7z4",
+        "g_wkewk4ut",
+        "g_8gp2bi4e"
+      ]
+    },
+    "customRoles": []
   },
   "sources": {}
 }

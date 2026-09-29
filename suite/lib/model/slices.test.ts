@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
-import { coerceGuests, readCrew, readTimeline } from "./slices";
+import { coerceGuests, readCast, readCrew, readShots, readTimeline } from "./slices";
 
 describe("coerceGuests keeps what it has no opinion about", () => {
   it("preserves fields owned by a tool rather than by the suite", () => {
@@ -122,5 +122,28 @@ describe("readTimeline's travel", () => {
 
   it("is empty on a wedding that has never typed one", () => {
     expect(readTimeline(emptyTrousseau()).travel).toEqual([]);
+  });
+});
+
+describe("readCast", () => {
+  it("reads who is who from its own slice", () => {
+    const cast = readCast(migrate({ cast: { roles: { "b-grandparents": ["g1", "g2"] }, customRoles: [{ id: "c1", name: "Readers", guestIds: [] }] } }));
+    expect(cast.roles["b-grandparents"]).toEqual(["g1", "g2"]);
+    expect(cast.roles.a).toEqual([]);
+    expect(cast.customRoles).toEqual([{ id: "c1", name: "Readers", guestIds: [] }]);
+  });
+
+  it("reads a document written before the cast had a slice, old role names and all", () => {
+    // The server reads stored documents nobody has opened since, so these
+    // must not read as having no cast.
+    const doc = migrate({ shots: { cast: { bride: ["g1"] }, customRoles: [{ id: "c1", name: "Readers", guestIds: [] }], sections: [] } });
+    expect(readCast(doc).roles.a).toEqual(["g1"]);
+    expect(readCast(doc).customRoles).toHaveLength(1);
+    expect(readShots(doc)).toEqual({ sections: [] });
+  });
+
+  it("is empty on a wedding with no cast anywhere", () => {
+    expect(readCast(emptyTrousseau()).customRoles).toEqual([]);
+    expect(Object.values(readCast(emptyTrousseau()).roles).every((ids) => ids.length === 0)).toBe(true);
   });
 });

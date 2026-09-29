@@ -59,11 +59,29 @@ test("group-shot roles stored as bride and groom are stored as the partners'", (
       sections: [{ id: "s", name: "Family", shots: [{ id: "x", label: "", notes: "", members: [{ kind: "role", ref: "groomsmen" }] }] }],
     },
   });
-  const shots = raw["shots"] as { cast: Record<string, string[]>; sections: Array<{ shots: Array<{ members: unknown[] }> }> };
-  expect(shots.cast["a"]).toEqual(["g1"]);
-  expect(shots.cast["b-mother"]).toEqual(["g2"]);
-  expect(shots.cast["bride"]).toBeUndefined();
+  const shots = raw["shots"] as { sections: Array<{ shots: Array<{ members: unknown[] }> }> };
+  const cast = raw["cast"] as { roles: Record<string, string[]> };
+  expect(cast.roles["a"]).toEqual(["g1"]);
+  expect(cast.roles["b-mother"]).toEqual(["g2"]);
+  expect(cast.roles["bride"]).toBeUndefined();
   expect(shots.sections[0]!.shots[0]!.members).toEqual([{ kind: "role", ref: "b-party" }]);
+});
+
+test("a cast kept inside the shots moves to a slice of its own, without an undo step", () => {
+  const raw = load({
+    ...emptyTrousseau(),
+    shots: {
+      cast: { "a-mother": ["g1"] },
+      customRoles: [{ id: "crole-1", name: "Readers", guestIds: ["g2"] }],
+      sections: [],
+    },
+  });
+  expect(raw["cast"]).toMatchObject({
+    roles: { "a-mother": ["g1"] },
+    customRoles: [{ id: "crole-1", name: "Readers", guestIds: ["g2"] }],
+  });
+  expect(raw["shots"]).toEqual({ sections: [] });
+  expect(useTrousseauStore.getState().past).toEqual([]);
 });
 
 test("a wedding titled with two names learns who the two partners are", () => {

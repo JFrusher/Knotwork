@@ -5,7 +5,7 @@ import { FileDown } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { KO_FI_URL } from "@/lib/support";
 import type { PackSection } from "@/lib/export/weddingPack";
-import { readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
+import { readCast, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 
 /**
  * The one button that produces everything you carry on the day.
@@ -176,6 +176,7 @@ async function jobList(): Promise<Uint8Array | null> {
 async function shotSheet(): Promise<Uint8Array | null> {
   const { doc } = useTrousseauStore.getState();
   const shots = readShots(doc);
+  const cast = readCast(doc);
   const total = shots.sections.reduce((sum, section) => sum + section.shots.length, 0);
   if (total === 0) return null;
 
@@ -188,13 +189,13 @@ async function shotSheet(): Promise<Uint8Array | null> {
     shots.sections,
     readGuests(doc),
     readSeating(doc),
-    shots.cast,
+    cast.roles,
     {
       fontSource: browserFontSource(),
       coupleNames: doc.event.coupleNames,
       partners: doc.event.partners,
       generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
     },
-    shots.customRoles,
+    cast.customRoles,
   );
 }

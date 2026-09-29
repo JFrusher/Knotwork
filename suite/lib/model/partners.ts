@@ -52,13 +52,14 @@ export function sideShort(side: Exclude<Side, "">, event: Pick<WeddingEvent, "pa
   return "Both";
 }
 
-/** A group-shot role in words: "Alex", "Sam’s mother", "Alex’s wedding party". */
+/** A role in words: "Alex", "Sam’s mother", "Sam’s grandparents", "Alex’s wedding party". */
 export function roleLabel(role: CastRole, event: Pick<WeddingEvent, "partners">): string {
   const [a, b] = partnerNames(event);
   const name = role.startsWith("a") ? a : b;
   if (role === "a" || role === "b") return name;
   if (role.endsWith("-mother")) return `${possessive(name)} mother`;
   if (role.endsWith("-father")) return `${possessive(name)} father`;
+  if (role.endsWith("-grandparents")) return `${possessive(name)} grandparents`;
   return `${possessive(name)} wedding party`;
 }
 

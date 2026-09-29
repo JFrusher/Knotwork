@@ -5,7 +5,7 @@ import { money } from "@/lib/money/money";
 import { todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
 import { stationery } from "./readiness";
-import { isComing, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
+import { isComing, readCast, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
 import { hiddenToolIds } from "./toolbox";
 
 /**
@@ -146,12 +146,13 @@ function delegation(doc: Trousseau): Area {
 
 function groupShots(doc: Trousseau): Area {
   const shots = readShots(doc);
+  const cast = readCast(doc);
   const all = shots.sections.flatMap((section) => section.shots);
   if (all.length === 0) return { id: "group-shots", summary: "No shots yet", detail: "", progress: null };
   const guestList = readGuests(doc);
   const room = readSeating(doc);
   const troubled = all.filter(
-    (shot) => resolveShot(shot, guestList, room, shots.cast, shots.customRoles, doc.event).problems.length > 0,
+    (shot) => resolveShot(shot, guestList, room, cast.roles, cast.customRoles, doc.event).problems.length > 0,
   ).length;
   return {
     id: "group-shots",

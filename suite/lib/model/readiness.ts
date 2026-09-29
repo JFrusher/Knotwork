@@ -1,5 +1,5 @@
 import type { Trousseau } from "@jfrusher/trousseau";
-import { guestName, isComing, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
+import { guestName, isComing, readCast, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
 import { hiddenToolIds } from "./toolbox";
 import { resolveShot } from "@/lib/ensemble/resolve";
 import { DUE_SOON_DAYS, money } from "@/lib/money/money";
@@ -226,9 +226,10 @@ export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso
    * double-reporting this module exists to avoid.
    */
   const shots = readShots(doc);
+  const cast = readCast(doc);
   const dangling = shots.sections
     .flatMap((section) => section.shots)
-    .flatMap((shot) => resolveShot(shot, guests, seating, shots.cast, shots.customRoles, doc.event).problems)
+    .flatMap((shot) => resolveShot(shot, guests, seating, cast.roles, cast.customRoles, doc.event).problems)
     .filter((problem) => problem.kind === "dangling").length;
 
   if (dangling > 0) {

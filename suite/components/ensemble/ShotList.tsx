@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { ChevronDown, ChevronUp, Copy, GripVertical, Plus, Trash2 } from "lucide-react";
 import { IconButton } from "@/components/ui/controls";
 import { newId } from "@/lib/model/ids";
-import type { Cast, CustomRole, Guest, Seating, Shot, Shots } from "@/lib/model/types";
+import type { Cast, CastSlice, CustomRole, Guest, Seating, Shot, Shots } from "@/lib/model/types";
 import { resolveShot } from "@/lib/ensemble/resolve";
 import {
   addSection,
@@ -36,6 +36,7 @@ import {
 
 export function ShotList({
   shots,
+  cast,
   guests,
   seating,
   event,
@@ -44,6 +45,7 @@ export function ShotList({
   onChange,
 }: {
   shots: Shots;
+  cast: CastSlice;
   guests: Record<string, Guest>;
   seating: Seating;
   event: WeddingEvent;
@@ -142,8 +144,8 @@ export function ShotList({
                         number={numbers.get(shot.id) ?? 0}
                         guests={guests}
                         seating={seating}
-                        cast={shots.cast}
-                        customRoles={shots.customRoles}
+                        cast={cast.roles}
+                        customRoles={cast.customRoles}
                         event={event}
                         selected={shot.id === selectedId}
                         onSelect={() => onSelect(shot.id)}

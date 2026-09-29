@@ -1,5 +1,5 @@
 import { splitTitle } from "@/lib/model/partners";
-import { hasLegacyGuests, hasLegacyShots, readGuests, readSeating, readShots } from "@/lib/model/slices";
+import { hasLegacyCast, hasLegacyGuests, hasLegacyShots, readCast, readGuests, readSeating, readShots } from "@/lib/model/slices";
 import type { Guest, Seating } from "@/lib/model/types";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 
@@ -49,11 +49,11 @@ function reconcile(plan: Plan): Plan {
  *
  * The same pass converts what older versions stored differently: diets as the
  * file's words rather than a key, sides and group-shot roles as "bride" and
- * "groom" rather than after the partners, and the partners themselves only as
- * a title.
+ * "groom" rather than after the partners, the partners themselves only as a
+ * title, and the cast inside the shots rather than in a slice of its own.
  */
 export function reconcileLoadedDocument(): void {
-  const { doc, raw, status, setSlice } = useTrousseauStore.getState();
+  const { doc, raw, status, setSlice, setSlices } = useTrousseauStore.getState();
   if (status !== "ready") return;
 
   const before = readGuests(doc);
@@ -66,7 +66,19 @@ export function reconcileLoadedDocument(): void {
   if (after.guests !== before || hasLegacyGuests(raw["guests"])) {
     setSlice("guests", after.guests, { silent: true });
   }
-  if (hasLegacyShots(raw["shots"])) setSlice("shots", readShots(doc), { silent: true });
+  // The cast moves out of the shots into its own slice, both read from the
+  // same document and written together, so nothing is between the two.
+  if (hasLegacyCast(raw)) {
+    setSlices(
+      [
+        ["cast", readCast(doc)],
+        ["shots", readShots(doc)],
+      ],
+      { silent: true },
+    );
+  } else if (hasLegacyShots(raw["shots"])) {
+    setSlice("shots", readShots(doc), { silent: true });
+  }
 
   // A wedding named before the partners were stored apart: "Alex & Sam" is
   // two people, and each side of the family is named after one of them.

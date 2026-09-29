@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { migrate } from "@jfrusher/trousseau";
-import { readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
+import { readCast, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 import { readiness } from "@/lib/model/readiness";
 import { resolveShot } from "@/lib/ensemble/resolve";
 import { computeWarnings } from "@/apps/tableaux/utils/warnings";
@@ -78,10 +78,11 @@ test("there is a crew, with jobs hanging off the day", () => {
 
 test("the shot list names real people, with nobody missing from it", () => {
   const shots = readShots(doc);
+  const cast = readCast(doc);
   const all = shots.sections.flatMap((s) => s.shots);
   expect(all.length).toBeGreaterThanOrEqual(12);
   for (const shot of all) {
-    const resolved = resolveShot(shot, readGuests(doc), seating, shots.cast, shots.customRoles, doc.event);
+    const resolved = resolveShot(shot, readGuests(doc), seating, cast.roles, cast.customRoles, doc.event);
     expect(resolved.problems.filter((p) => p.kind !== "declined"), resolved.label).toEqual([]);
   }
 });

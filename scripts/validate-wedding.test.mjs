@@ -183,6 +183,17 @@ describe("shots slice", () => {
     expect(check(doc).errors).toEqual([expect.stringContaining("bride")]);
   });
 
+  it("reads the cast from its own slice, and a custom role there names a shot's member", () => {
+    const doc = {
+      ...base,
+      cast: { roles: { "a-mother": ["ghost"] }, customRoles: [{ id: "crole-1", name: "Readers", guestIds: [] }] },
+      shots: {
+        sections: [{ id: "s1", name: "Family", shots: [{ id: "sh1", label: "x", members: [{ kind: "customRole", ref: "crole-1" }] }] }],
+      },
+    };
+    expect(check(doc).errors).toEqual([expect.stringContaining("a-mother")]);
+  });
+
   it("catches a shot member naming a custom role that does not exist", () => {
     const doc = {
       ...base,
