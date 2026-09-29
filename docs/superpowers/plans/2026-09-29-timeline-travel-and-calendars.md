@@ -87,3 +87,13 @@ No new dependencies.
   regular-expression flag the suite's target does not allow. The flag did
   nothing — `[^;]` already crosses lines — and is gone; the guard was proved
   again to fail with the old import put back.
+
+**Fixed after, at the maintainer's request: the clocks.** Reproduced first: a
+wedding with no offset, one block added in Timeline, and the event said 60 —
+`writeSlice` echoes the timeline's offset into `event` on every edit, and the
+timeline's offset was the BST fallback. The offset is now `number | null` in
+Cadence's day, the contract's published day and Delegation's reader, with no
+fallback anywhere; the Day panel offers *Not set*; `sunForDay` gives nothing
+without clocks, so no sunset or golden-hour advisory is worked out from a
+guess. The Binder's own rule — the phone's clock when the wedding has none —
+now gets to apply.
