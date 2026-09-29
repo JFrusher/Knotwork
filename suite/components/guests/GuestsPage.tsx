@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { ArrowDown, ArrowUp, FileUp, Trash2 } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { DIETARY_KEYS, dietaryLabel, type DietaryKey } from "@/lib/model/dietary";
 import { sideLabel } from "@/lib/model/partners";
-import { readSeating } from "@/lib/model/slices";
+import { guestName, readGuests, readSeating } from "@/lib/model/slices";
+import { useSelectFromAddress } from "@/components/shell/useSelectFromAddress";
 import type { RsvpStatus, Side } from "@/lib/model/types";
 import { changeGuests, dropGuests, seatGuests, type GuestChange, type GuestSlices } from "@/lib/guests/edit";
 import { guestRows, NO_FILTER, shownRows, type GuestRow, type ListFilter, type ListSort, type SortKey } from "@/lib/guests/list";
@@ -50,15 +50,13 @@ export function GuestsPage() {
   const confirm = useConfirm();
 
   const [filter, setFilter] = useState<ListFilter>(NO_FILTER);
-  // A link to one guest — the command palette's — opens the list found to them.
-  const asked = useSearchParams().get("q");
-  const router = useRouter();
-  const pathname = usePathname();
-  useEffect(() => {
-    if (asked === null) return;
-    setFilter({ ...NO_FILTER, text: asked });
-    router.replace(pathname, { scroll: false });
-  }, [asked, pathname, router]);
+  // A link to one guest — the command palette's — opens the list found to
+  // them. By id: their name is looked up here, never carried in the address.
+  const findGuest = useCallback((id: string) => {
+    const guest = readGuests(useTrousseauStore.getState().doc)[id];
+    if (guest) setFilter({ ...NO_FILTER, text: guestName(guest) });
+  }, []);
+  useSelectFromAddress(findGuest);
   const [sort, setSort] = useState<ListSort>({ key: "name", direction: "ascending" });
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
 

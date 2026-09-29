@@ -34,7 +34,8 @@ export function entries(doc: Trousseau): Entry[] {
     ...Object.values(guests).map((guest) => {
       const name = guestName(guest);
       const table = guest.assignedTableId ? tables[guest.assignedTableId]?.label : "";
-      return { kind: "Guest" as const, name, detail: table || "No table yet", href: `/guests?q=${encodeURIComponent(name)}` };
+      // By id, never by name: an address is logged, and a guest's name is not ours to spread.
+      return { kind: "Guest" as const, name, detail: table || "No table yet", href: `/guests?select=${encodeURIComponent(guest.id)}` };
     }),
     ...Object.values(tables).map((table) => ({
       kind: "Table" as const,

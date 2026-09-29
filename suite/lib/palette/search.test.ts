@@ -23,9 +23,12 @@ describe("finding anything by name", () => {
     ]);
   });
 
-  it("finds a guest and says where they sit, opening the list found to them", () => {
+  it("finds a guest and says where they sit, opening the list found to them by id", () => {
     const [zainab] = search(all, "zainab thist");
-    expect(zainab).toEqual({ kind: "Guest", name: "Zainab Thistlewood", detail: "No table yet", href: "/guests?q=Zainab%20Thistlewood" });
+    expect(zainab).toMatchObject({ kind: "Guest", name: "Zainab Thistlewood", detail: "No table yet" });
+    // Their id in the address, never their name.
+    expect(zainab!.href).toMatch(/^\/guests\?select=[\w-]+$/);
+    expect(zainab!.href).not.toContain("Zainab");
   });
 
   it("finds a table, a block, a job and a task, each opening where it lives", () => {

@@ -14,13 +14,13 @@ test("a balance paid, and a budget cut, show wherever money is counted", async (
   await expect(totals).toContainText("Paid3,325");
 
   const toPay = page.getByRole("region", { name: "To pay" });
-  const caterer = toPay.getByRole("listitem").filter({ hasText: "Granary Kitchen — balance" });
+  const caterer = toPay.getByRole("listitem").filter({ hasText: "Smith & Doyle Catering — balance" });
   await expect(caterer).toContainText("Due 18 May 2028");
   await expect(caterer).toContainText("7,400");
   await caterer.getByRole("button", { name: "Paid today" }).click();
   await expect(caterer).toHaveCount(0);
   await expect(totals).toContainText("Paid10,725");
-  await expect(page.getByRole("row", { name: /Granary Kitchen/ }).getByLabel("Granary Kitchen: balance paid on")).not.toHaveValue("");
+  await expect(page.getByRole("row", { name: /Smith & Doyle Catering/ }).getByLabel("Smith & Doyle Catering: balance paid on")).not.toHaveValue("");
 
   await totals.getByLabel("Budget").fill("15000");
   await page.keyboard.press("Tab");

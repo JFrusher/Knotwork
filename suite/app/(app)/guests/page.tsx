@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export default function Guests() {
-  // The page reads `?q=` from the address, which waits for the browser.
+  // The page reads `?select=` from the address, which waits for the browser.
   return (
     <Suspense>
       <GuestsPage />
