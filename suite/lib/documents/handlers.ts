@@ -1,6 +1,6 @@
 import { migrate, suggestedFilename, TROUSSEAU_EXTENSION } from "@jfrusher/trousseau";
 import { checkCrossSlice } from "./crossSliceValidation";
-import { retentionCutoff } from "@/lib/sync/handlers";
+import { retentionCutoff } from "./retention";
 import type { DocumentStore } from "./store";
 
 export interface Reply {
@@ -14,7 +14,41 @@ const invalid = (body: unknown): Reply => ({ status: 422, body });
 
 export async function getDocumentHandler(store: DocumentStore, weddingId: string): Promise<Reply> {
   const record = await store.getDocument(weddingId);
-  return ok({ document: record?.document ?? null, version: record?.version ?? 0 });
+  // The wedding travels with its document, so a device can tell whether what
+  // it holds belongs to this wedding or another one without a second request
+  // that could answer about a different moment.
+  return ok({ weddingId, document: record?.document ?? null, version: record?.version ?? 0 });
+}
+
+/** How many saved versions the history shows: weeks of editing, not years. */
+export const HISTORY_LIMIT = 50;
+
+/**
+ * The versions saved, newest first, each with who saved it — by email, from
+ * the wedding's people now, so someone who has since left is not named — and
+ * whether it was the person asking.
+ */
+export async function historyHandler(
+  store: DocumentStore,
+  people: ReadonlyArray<{ userId: string; email: string }>,
+  weddingId: string,
+  askingUserId: string,
+): Promise<Reply> {
+  const emails = new Map(people.map((person) => [person.userId, person.email]));
+  const entries = await store.history(weddingId, HISTORY_LIMIT);
+  return ok({
+    entries: entries.map((entry) => ({
+      id: entry.id,
+      savedAt: entry.savedAt,
+      savedBy: entry.savedBy === null ? null : (emails.get(entry.savedBy) ?? null),
+      yours: entry.savedBy === askingUserId,
+    })),
+  });
+}
+
+export async function historyDocumentHandler(store: DocumentStore, weddingId: string, id: string): Promise<Reply> {
+  const document = await store.historyDocument(weddingId, id);
+  return document === null ? { status: 404, body: { error: "That version is not in this wedding's history." } } : ok({ document });
 }
 
 /**
@@ -99,8 +133,7 @@ function exportFilename(document: unknown): string {
 
 /**
  * Delete account-held weddings nobody has written to inside the retention
- * period. Mirrors lib/sync/handlers.ts's sweepAbandoned exactly — same cutoff,
- * same shape — for the account-based system that one doesn't cover.
+ * period (`retention.ts`).
  */
 export async function sweepAbandonedDocuments(
   store: DocumentStore,

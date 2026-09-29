@@ -25,24 +25,22 @@ afterEach(() => {
   // The "suite" vitest project has no global afterEach, so Testing Library
   // does not auto-unmount between tests here (unlike "tableaux", which opts
   // into that via `globals: true`). Without this, the previous test's
-  // interval and visibilitychange listener stay live and double-count.
+  // visibilitychange listener stays live and double-counts.
   cleanup();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
-test("polls pullFromCloud on an interval after mounting", async () => {
+// The account's copy is followed live (LiveWedding), not polled.
+test("does not poll the account while the tab is open", async () => {
   render(<StoreHydrator />);
   // flush the hydrate().then(...).then(startCloudSync) chain
   await Promise.resolve();
   await Promise.resolve();
   await Promise.resolve();
 
-  await vi.advanceTimersByTimeAsync(20_000);
-  expect(useTrousseauStore.getState().pullFromCloud).toHaveBeenCalledTimes(1);
-
-  await vi.advanceTimersByTimeAsync(20_000);
-  expect(useTrousseauStore.getState().pullFromCloud).toHaveBeenCalledTimes(2);
+  await vi.advanceTimersByTimeAsync(120_000);
+  expect(useTrousseauStore.getState().pullFromCloud).not.toHaveBeenCalled();
 });
 
 test("pulls when the tab becomes visible again", async () => {

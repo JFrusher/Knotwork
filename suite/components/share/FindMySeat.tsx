@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { importShareKey, unseal } from "@/lib/sync/crypto";
-import { findSeat, type ShareSnapshot, type SharedGuest } from "@/lib/sync/shareSnapshot";
-import { getTableGeometry } from "@/lib/seating/geometry";
+import { importShareKey, unseal } from "@/lib/share/crypto";
+import { findSeat, type ShareSnapshot, type SharedGuest } from "@/lib/share/snapshot";
+import { getTableGeometry } from "@/apps/tableaux/utils/seatPositions";
 import { newTable } from "@/lib/model/factories";
 
 /**
@@ -33,7 +33,7 @@ export function FindMySeat({ token }: { token: string }) {
       }
 
       try {
-        const response = await fetch(`/api/sync/share/${token}`);
+        const response = await fetch(`/api/share/${token}`);
         if (!response.ok) {
           setProblem("This link is not live. Ask the couple for a new one.");
           return;

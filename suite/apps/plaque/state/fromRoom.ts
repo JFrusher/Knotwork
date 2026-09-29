@@ -1,4 +1,6 @@
-import { guestName, readGuests, readSeating } from "@/lib/model/slices";
+import { guestName, isComing, readGuests, readSeating } from "@/lib/model/slices";
+import { dietaryText } from "@/lib/model/dietary";
+import { sideLabel } from "@/lib/model/partners";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import type { RowIssue, GuestRow } from "../core/data/rows";
 
@@ -48,17 +50,21 @@ export function rowsFromRoom(only?: ReadonlySet<string>): RoomRows {
     tableLabel.set(id, table.label || id);
   }
 
-  const people = Object.values(guests).sort((a, b) =>
-    guestName(a).localeCompare(guestName(b), "en"),
-  );
+  // Somebody who said they are not coming is not at the wedding — no card,
+  // and not a guest "with no table yet". The guest link keeps the same rule.
+  const people = Object.values(guests)
+    .filter(isComing)
+    .sort((a, b) => guestName(a).localeCompare(guestName(b), "en"));
 
   const rows: GuestRow[] = people.map((guest) => ({
     "First Name": guest.firstName,
     "Last Name": guest.lastName,
     Name: guestName(guest),
     Table: guest.assignedTableId ? (tableLabel.get(guest.assignedTableId) ?? "") : "",
-    Dietary: guest.dietary,
-    Side: guest.side,
+    // What the guest said, so the card reads "Coeliac" rather than "gluten-free".
+    Dietary: dietaryText(guest),
+    // "Alex’s side", as everywhere else — the stored "a" means nothing on a card.
+    Side: sideLabel(guest.side, doc.event),
   }));
 
   /**

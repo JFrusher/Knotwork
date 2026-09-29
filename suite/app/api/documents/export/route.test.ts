@@ -21,8 +21,14 @@ vi.mock("@/lib/accounts/serverClient", () => ({
 }));
 
 vi.mock("@/lib/accounts/supabaseStore", () => ({
-  accountsStore: () => ({ memberOf: async () => membership }),
+  accountsStore: () => ({
+    membersOf: async (weddingId: string) =>
+      membership?.weddingId === weddingId && currentUserResult ? [{ userId: currentUserResult.id }] : [],
+  }),
 }));
+
+const exported = () =>
+  route.GET(new Request(`http://localhost/api/documents/export?wedding=${membership?.weddingId ?? "not-mine"}`));
 
 vi.mock("@/lib/documents/supabaseStore", () => ({
   documentStore: () => store,
@@ -49,7 +55,7 @@ test("a member downloads their own wedding as an attachment", async () => {
   const document = wedding("Charis & Jacob");
   await store.saveDocument(membership!.weddingId, document, 0);
 
-  const response = await route.GET();
+  const response = await exported();
   expect(response.status).toBe(200);
   expect(response.headers.get("content-disposition")).toBe(
     'attachment; filename="charis-and-jacob.trousseau.json"',
@@ -61,21 +67,21 @@ test("a member downloads their own wedding as an attachment", async () => {
 
 test("a signed-out caller gets nothing", async () => {
   currentUserResult = null;
-  const response = await route.GET();
+  const response = await exported();
   expect(response.status).toBe(401);
 });
 
-test("a caller who belongs to no wedding cannot export one", async () => {
+test("a caller cannot export a wedding they are not on", async () => {
   // The application-layer half of the spec's negative test. The database half
   // already exists in lib/documents/migrations.test.ts, against real Postgres.
   membership = null;
-  const response = await route.GET();
+  const response = await exported();
   expect(response.status).toBe(404);
   expect(response.headers.get("content-disposition")).toBeNull();
 });
 
 test("a member of a wedding that has never been saved gets 404, not an empty file", async () => {
-  const response = await route.GET();
+  const response = await exported();
   expect(response.status).toBe(404);
 });
 
@@ -84,13 +90,13 @@ test("downloads past the limit are throttled, per account", async () => {
 
   // EXPORT_LIMIT is 20 an hour.
   for (let i = 0; i < 20; i += 1) {
-    expect((await route.GET()).status).toBe(200);
+    expect((await exported()).status).toBe(200);
   }
-  expect((await route.GET()).status).toBe(429);
+  expect((await exported()).status).toBe(429);
 
   // A different account still gets theirs.
   currentUserResult = { id: "someone-else", email: "b@example.com" };
   membership = { weddingId: "someone-elses-wedding" };
   await store.saveDocument("someone-elses-wedding", wedding("Ana & Bo"), 0);
-  expect((await route.GET()).status).toBe(200);
+  expect((await exported()).status).toBe(200);
 });

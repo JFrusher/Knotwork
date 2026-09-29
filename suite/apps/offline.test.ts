@@ -72,7 +72,10 @@ describe("the tools reach no further than this device", () => {
 
   it("finds the tools to check", () => {
     // A rename that emptied this list would make every assertion below vacuous.
-    expect(sources.length).toBeGreaterThan(250);
+    // A floor well under the real count, not the count itself: the tools shed
+    // files as their duplicates of shared code are retired — Seating's own
+    // importer and dietary module went on 2026-09-28, taking it to 249.
+    expect(sources.length).toBeGreaterThan(200);
   });
 
   it.each(NETWORK_APIS)("no tool calls %s", (api) => {

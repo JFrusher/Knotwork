@@ -27,6 +27,7 @@ export interface TourChapter {
 
 export type ChapterId =
   | "shell"
+  | "guests"
   | "seating"
   | "timeline"
   | "place-cards"
@@ -45,21 +46,15 @@ export const CHAPTERS: readonly TourChapter[] = [
         route: "/",
       },
       {
-        anchor: "shell.stats",
+        anchor: "shell.next",
+        title: "What to do next",
+        body: "The one thing that most needs doing, picked from everything left across the tools — a problem before a nudge. The rest of the list is further down the page. Each tool reports its own problems itself.",
+        route: "/",
+      },
+      {
+        anchor: "shell.areas",
         title: "Where things stand",
-        body: "Guests, how many are seated, tables, and blocks of the day. These count the one shared wedding — not four separate copies of it.",
-        route: "/",
-      },
-      {
-        anchor: "shell.tools",
-        title: "Five tools, one wedding",
-        body: "Each tool owns one part of the day and reads what the others own. Seat someone in Seating and the place cards already know their table. You never type the same guest twice.",
-        route: "/",
-      },
-      {
-        anchor: "shell.whatisleft",
-        title: "What is left",
-        body: "Problems that no single tool can see on its own — a guest seated at a table that no longer exists, a job in a lane that was deleted. Each tool reports its own problems itself.",
+        body: "Each part of the wedding, how far along it is, and the way into it. They count one shared wedding: seat someone in Seating and the place cards already know their table. You never type the same guest twice.",
         route: "/",
       },
       {
@@ -73,6 +68,24 @@ export const CHAPTERS: readonly TourChapter[] = [
         title: "Your data lives here",
         body: "Everything is saved in this browser as you work. Export a backup from here — without an account, it is the only copy that survives clearing your browser.",
         route: "/",
+      },
+    ],
+  },
+  {
+    id: "guests",
+    title: "Everyone on the list",
+    steps: [
+      {
+        anchor: "guests.filters",
+        title: "Find anyone",
+        body: "Search by name, table, what they eat or a tag, and narrow the list by reply, side, table or dietary requirement.",
+        route: "/guests",
+      },
+      {
+        anchor: "guests.list",
+        title: "Change them where they are",
+        body: "A reply, a side, what someone eats and where they sit can all be changed in their row. Tick several to change them at once — a family to one table, a batch of replies in. It is the same list Seating, the place cards and the group shots read.",
+        route: "/guests",
       },
     ],
   },
@@ -241,6 +254,7 @@ export const CHAPTERS: readonly TourChapter[] = [
 ];
 
 const BY_ROUTE = new Map<string, ChapterId>([
+  ["/guests", "guests"],
   ["/seating", "seating"],
   ["/timeline", "timeline"],
   ["/place-cards", "place-cards"],

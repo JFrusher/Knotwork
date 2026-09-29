@@ -11,15 +11,23 @@ import {
 } from "@jfrusher/trousseau";
 import {
   fetchCloudDocument,
-  fetchWeddingId,
-  getPendingWrite,
+  fetchWeddings,
   pushDocument,
-  replayPendingWrite,
+  readLink,
+  writeLink,
+  type CloudLink,
   type PushResult,
 } from "@/lib/documents/cloudSync";
-import { fingerprintAllSlices, mergeCloudDocument, type SliceConflict } from "@/lib/documents/mergeCloudDocument";
+import type { WeddingListing } from "@/lib/accounts/handlers";
+import { fingerprintParts, mergeCloudDocument, type Agreed, type PartConflict } from "@/lib/documents/mergeCloudDocument";
+import { partInfo, partsOf, withPart } from "@/lib/documents/parts";
+import { publishDay, readTimeline } from "@/lib/model/slices";
 import { fingerprint } from "@/lib/documents/fingerprint";
 import { syncAssets } from "@/lib/documents/assets";
+import { hasContent, summarise } from "@/lib/model/content";
+import { useCopies } from "./copies";
+import { useWeddings } from "./weddings";
+import { readOpenChoice } from "./openWedding";
 
 /**
  * The one store the whole suite reads.
@@ -80,21 +88,16 @@ export interface WriteOptions {
 }
 
 export interface TrousseauState {
-  /**
-   * Bumped whenever the whole document is swapped rather than edited — a
-   * restore from file, or a shared wedding opened from another machine.
-   *
-   * The tools each keep a store of their own, seeded once when they mount, so
-   * replacing the document underneath a tool leaves it holding the previous
-   * wedding with no idea anything happened. It shows the old guest list, and
-   * then autosaves it over the new one. This is how anything that read the
-   * document can tell that what it read has been thrown away.
-   */
-  generation: number;
-
   status: StoreStatus;
   /** Set when the stored bytes could not be read. Writes are refused while it is. */
   error: string | null;
+  /**
+   * Set when the last write to this device failed — a full disk, a browser
+   * that stopped allowing storage — and cleared by the next one that lands.
+   * Kept apart from `error`: that one means the wedding could not be read and
+   * every write is refused; this one means the edit on screen is not stored.
+   */
+  saveError: string | null;
   /** ISO time of the last successful write. Drives the "saved 13:42" notice. */
   savedAt: string | null;
   /** The stored document, exactly as stored. Never the parsed one. */
@@ -126,25 +129,42 @@ export interface TrousseauState {
    * `"disabled"` until `startCloudSync()` runs (accounts configured and the
    * caller has a wedding) — every other state is only reachable after that.
    */
-  cloudStatus: "disabled" | "idle" | "syncing" | "queued" | "conflict" | "error";
+  cloudStatus: "disabled" | "idle" | "syncing" | "queued" | "conflict" | "choosing" | "error";
   cloudError: string | null;
   /** The version this device last confirmed the cloud holds, or null before the first sync. */
   cloudVersion: number | null;
-  /** Fingerprint of each slice as last agreed with the server - the merge baseline. */
-  cloudAgreed: Partial<Record<SliceName, string>>;
-  /** Slices changed on both sides since the last agreement. Surfaced, never auto-merged. */
-  cloudConflicts: SliceConflict[];
-  /** This device's wedding id, once known. Needed for asset sync's Storage paths. */
+  /** Fingerprint of each part as last agreed with the server — the merge baseline. See `lib/documents/parts`. */
+  cloudAgreed: Agreed;
+  /** Parts changed on both sides since the last agreement. Surfaced, never auto-merged. */
+  cloudConflicts: PartConflict[];
+  /**
+   * The account wedding this device's document is synced with, once settled.
+   * Also asset sync's Storage path. Stored with `cloudVersion` and
+   * `cloudAgreed` as the link — see `CloudLink`.
+   */
   weddingId: string | null;
+  /**
+   * While `choosing`: the account's wedding, held until the person picks
+   * between it and the different one on this device. Nothing syncs meanwhile.
+   */
+  cloudChoice: { weddingId: string; version: number; document: Record<string, unknown> } | null;
 
-  /** Called once, after local hydration, when accounts + a wedding are both available. */
+  /** Called once, after local hydration. Decides how this device and the account's wedding meet. */
   startCloudSync: () => Promise<void>;
+  /** Settle `choosing`: keep one wedding, and keep the other as a copy on this device. */
+  chooseWedding: (keep: "device" | "account") => Promise<void>;
   /** Push the current document now. Called after every local write, and on reconnect for the queue. */
   syncToCloud: () => Promise<void>;
-  /** Pull the server's current document and merge it in, per slice. Called on an interval and on focus. */
+  /** Pull the server's current document and merge it in, part by part. Called on an interval and on focus. */
   pullFromCloud: () => Promise<void>;
-  /** Settle one slice's conflict: take the server's value, or keep the local one. */
-  resolveConflict: (slice: SliceName, choice: "theirs" | "mine") => void;
+  /** Settle one part's conflict: take the server's value, or keep the local one. */
+  resolveConflict: (key: string, choice: "theirs" | "mine") => void;
+}
+
+/** The day as published from a document's own timeline and event. */
+function dayOf(raw: Record<string, unknown>): Record<string, unknown> {
+  const doc = migrate(raw);
+  return publishDay(doc, readTimeline(doc));
 }
 
 function freshDoc(): { raw: Record<string, unknown>; doc: Trousseau } {
@@ -153,9 +173,9 @@ function freshDoc(): { raw: Record<string, unknown>; doc: Trousseau } {
 }
 
 export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
-  generation: 0,
   status: "idle",
   error: null,
+  saveError: null,
   savedAt: null,
   ...freshDoc(),
 
@@ -218,7 +238,6 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
       (acc, [slice, value]) => mergeSlice(acc, slice, value),
       state.raw,
     );
-
     set({
       raw,
       doc: migrate(raw),
@@ -246,7 +265,6 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
       error: null,
       raw,
       doc: migrate(raw),
-      generation: state.generation + 1,
       // A restore is undoable: opening the wrong file should not cost the work.
       // Adopting the cloud's copy is `silent`, though — the user did not make
       // that change, and offering to undo it would offer to overwrite the
@@ -305,65 +323,125 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
   cloudAgreed: {},
   cloudConflicts: [],
   weddingId: null,
+  cloudChoice: null,
 
   startCloudSync: async () => {
+    // A document this device could not read is never synced over: adopting
+    // the account's copy would write over the bytes `hydrate` refused to touch.
+    if (get().status !== "ready") return;
     set({ cloudStatus: "syncing" });
-    const result = await fetchCloudDocument();
+    const [listed, link, chosen] = await Promise.all([fetchWeddings(), readLink(), readOpenChoice()]);
+    if (!listed.ok) {
+      if (listed.reason === "unreachable" && link) {
+        // Out of reach, but a wedding this device knows. Keep measuring
+        // against what the two last agreed, so the push on reconnect merges
+        // instead of conflicting over every slice.
+        set({
+          cloudStatus: "error",
+          cloudError: "The cloud could not be reached.",
+          weddingId: link.weddingId,
+          cloudVersion: link.version,
+          cloudAgreed: link.agreed,
+        });
+        return;
+      }
+      // "unavailable" covers "accounts not configured" and "signed out" —
+      // either way cloud sync does not start, and local-only behaviour
+      // continues exactly as it already does.
+      set({ cloudStatus: listed.reason === "unreachable" ? "error" : "disabled" });
+      return;
+    }
+    useWeddings.getState().listed(listed.weddings);
+
+    const target = weddingToOpen(listed.weddings, chosen, link);
+    // No wedding yet, or a planner with several and none of them open here:
+    // the switcher offers them, and opening one starts this again.
+    if (target === null) {
+      set({ cloudStatus: "disabled" });
+      return;
+    }
+    const result = await fetchCloudDocument(target);
     if (!result.ok) {
-      // "unavailable" covers both "accounts not configured" and "no wedding
-      // yet" — either way, cloud sync simply does not start, and local-only
-      // behaviour continues exactly as it already does.
       set({ cloudStatus: result.reason === "unreachable" ? "error" : "disabled" });
       return;
     }
 
-    if (result.document !== null) {
-      get().replaceDocument(result.document, { silent: true });
+    const local = get().raw;
+    const account = asRecord(result.document);
+    // Nothing is replaced silently when both sides have work in them.
+    if (!hasContent(summarise(account))) {
+      set({ weddingId: result.weddingId });
+      if (hasContent(summarise(local))) {
+        applyCloudResult(await pushDocument(result.weddingId, local, result.version), local);
+      } else {
+        agreeOn(local, result.version);
+      }
+    } else if (!hasContent(summarise(local))) {
+      get().replaceDocument(account, { silent: true });
+      set({ weddingId: result.weddingId });
+      agreeOn(account, result.version);
+    } else if (link !== null && link.weddingId === result.weddingId) {
+      // The same wedding: what changed here while the account was out of
+      // reach, merged with what changed there, exactly as a poll would.
+      const merged = mergeCloudDocument(local, account, link.agreed, dayOf);
+      if (merged.adopted || merged.conflicts.length > 0) get().replaceDocument(merged.raw, { silent: true });
       set({
-        cloudStatus: "idle",
+        weddingId: result.weddingId,
+        cloudStatus: merged.conflicts.length > 0 ? "conflict" : "idle",
         cloudVersion: result.version,
-        cloudAgreed: fingerprintAllSlices(result.document as Record<string, unknown>),
-        cloudConflicts: [],
+        cloudAgreed: merged.agreed,
+        cloudConflicts: merged.conflicts,
         cloudError: null,
       });
+      const kept = fingerprintParts(merged.raw);
+      const unpushed = Object.entries(kept).some(([key, fp]) => merged.agreed[key] !== fp);
+      if (merged.conflicts.length === 0 && unpushed) void get().syncToCloud();
     } else {
-      // Nothing saved for this account yet. A wedding built entirely offline
-      // and then signed into would otherwise sit stranded until the user's
-      // next edit — persist is the only other thing that calls
-      // syncToCloud, and it fires on a write, not on sign-in. Empty stays
-      // untouched: nothing to lose, and one fewer round trip on a brand-new
-      // account.
-      const local = get().raw;
-      const guests = local["guests"];
-      const day = local["day"] as { blocks?: unknown[] } | null | undefined;
-      const hasContent =
-        (guests !== null && typeof guests === "object" && Object.keys(guests).length > 0) ||
-        (day?.blocks?.length ?? 0) > 0;
-      if (hasContent) {
-        applyCloudResult(await pushDocument(local, 0), local);
-      } else {
-        set({
-          cloudStatus: "idle",
-          cloudVersion: result.version,
-          cloudAgreed: fingerprintAllSlices(local),
-          cloudConflicts: [],
-          cloudError: null,
-        });
+      set({
+        cloudStatus: "choosing",
+        cloudChoice: { weddingId: result.weddingId, version: result.version, document: account },
+      });
+      return;
+    }
+    void syncAssets(result.weddingId);
+  },
+
+  chooseWedding: async (keep) => {
+    const { cloudChoice: choice, raw } = get();
+    if (!choice) throw new Error("There is no choice between weddings to make.");
+    if (keep === "account") {
+      // The copy first, and awaited: this device's wedding is stored before
+      // anything replaces it.
+      await useCopies.getState().keep(raw, "This device’s wedding, replaced by your account’s when you signed in.");
+      set({ cloudChoice: null, weddingId: choice.weddingId });
+      get().replaceDocument(choice.document, { silent: true });
+      // Undo reaches back into the other wedding otherwise.
+      set({ past: [], future: [] });
+      agreeOn(choice.document, choice.version);
+    } else {
+      const result = await pushDocument(choice.weddingId, raw, choice.version);
+      if (!result.ok) {
+        // The question stays open either way. Moved while it was open:
+        // merging would mix two weddings a slice at a time, so it is asked
+        // again about what the account holds now. Not sent: nothing changed.
+        set(
+          result.reason === "conflict"
+            ? {
+                cloudChoice: { weddingId: choice.weddingId, version: result.version, document: asRecord(result.document) },
+                cloudError: null,
+              }
+            : { cloudError: "Your account could not be reached, so nothing has changed. Try again." },
+        );
+        return;
       }
+      // After the push rather than before: the account's own history already
+      // holds what it replaced, so this copy is the convenient one, not the
+      // only one.
+      await useCopies.getState().keep(choice.document, "Your account’s wedding, replaced by this device’s when you signed in.");
+      set({ cloudChoice: null, weddingId: choice.weddingId });
+      applyCloudResult(result, raw);
     }
-
-    const { weddingId } = await fetchWeddingId();
-    if (weddingId) {
-      set({ weddingId });
-      void syncAssets(weddingId);
-    }
-
-    // Read before the replay, because the replay clears it: the queued
-    // document is what gets pushed, so it is what agreement is recorded
-    // against (see `applyCloudResult`'s `pushed`).
-    const pending = await getPendingWrite();
-    const replay = await replayPendingWrite();
-    if (replay) applyCloudResult(replay, pending ? asRecord(pending.document) : undefined);
+    void syncAssets(choice.weddingId);
   },
 
   syncToCloud: async () => {
@@ -376,38 +454,48 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
     // would be gone, and the conflict UI would clear itself having chosen
     // "keep mine" on the user's behalf. Nothing is pushed until the last
     // conflict is resolved; `resolveConflict` then schedules its own push.
-    if (state.cloudStatus === "disabled" || state.cloudStatus === "conflict") return;
+    // "choosing" refuses too: until the person picks, this device's document
+    // is not the account's to overwrite. So does not knowing which wedding
+    // this is — a start that never reached the account.
+    const { weddingId } = state;
+    if (
+      weddingId === null ||
+      state.cloudStatus === "disabled" ||
+      state.cloudStatus === "conflict" ||
+      state.cloudStatus === "choosing"
+    ) {
+      return;
+    }
     set({ cloudStatus: "syncing" });
     const pushed = state.raw;
-    const result = await pushDocument(pushed, state.cloudVersion ?? 0);
+    const result = await pushDocument(weddingId, pushed, state.cloudVersion ?? 0);
     applyCloudResult(result, pushed);
   },
 
   pullFromCloud: async () => {
     const before = get();
-    if (before.cloudStatus === "disabled" || before.cloudStatus === "syncing") return;
+    if (before.cloudStatus === "disabled" || before.cloudStatus === "syncing" || before.cloudStatus === "choosing") {
+      return;
+    }
     // A pull with nothing agreed yet is not a valid pull: with an empty
     // `cloudAgreed`, every slice classifies as changed-on-both-sides against
     // every other slice. `startCloudSync` leaves exactly that state
     // (`cloudVersion: null`) when its first fetch was unreachable, so the
     // next successful poll would otherwise turn a transient network failure
     // into a document-wide conflict. Wait for a full sync to set a baseline.
-    if (before.cloudVersion === null) return;
+    if (before.cloudVersion === null || before.weddingId === null) return;
 
-    const result = await fetchCloudDocument();
+    const result = await fetchCloudDocument(before.weddingId);
     if (!result.ok) {
       if (result.reason === "unreachable") {
         set({ cloudStatus: "error", cloudError: "The cloud could not be reached." });
+      } else {
+        // Refused: most likely this account was taken off the wedding while
+        // the tab was open. Which wedding this device holds is a start's
+        // decision, not a merge's.
+        await get().startCloudSync();
       }
       return;
-    }
-
-    // The one retry for a wedding id `startCloudSync` could not resolve.
-    // Cheap, and the alternative is a session with no asset sync at all and
-    // nothing on screen to say why.
-    if (get().weddingId === null) {
-      const resolved = await fetchWeddingId();
-      if (resolved.weddingId) set({ weddingId: resolved.weddingId });
     }
 
     // Re-read after the awaits above. The snapshot taken before the fetch is
@@ -420,7 +508,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
     if (result.version === state.cloudVersion) return;
 
     const serverRaw = (result.document ?? {}) as Record<string, unknown>;
-    const merged = mergeCloudDocument(state.raw, serverRaw, state.cloudAgreed);
+    const merged = mergeCloudDocument(state.raw, serverRaw, state.cloudAgreed, dayOf);
 
     if (merged.conflicts.length > 0) {
       get().replaceDocument(merged.raw, { silent: true });
@@ -447,24 +535,26 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
     if (weddingId) void syncAssets(weddingId);
   },
 
-  resolveConflict: (slice, choice) => {
+  resolveConflict: (key, choice) => {
     const state = get();
-    const conflict = state.cloudConflicts.find((c) => c.slice === slice);
+    const conflict = state.cloudConflicts.find((c) => c.key === key);
     if (!conflict) return;
-    const remaining = state.cloudConflicts.filter((c) => c.slice !== slice);
-    const raw = choice === "theirs" ? mergeSlice(state.raw, slice, conflict.theirs) : state.raw;
-    const resolvedValue = raw[slice];
+    const remaining = state.cloudConflicts.filter((c) => c.key !== key);
+    let raw = choice === "theirs" ? withPart(state.raw, key, conflict.theirs) : state.raw;
+    // The published day follows the timeline and the event it is made from.
+    const { slice } = partInfo(key);
+    if (choice === "theirs" && (slice === "timeline" || slice === "event")) raw = { ...raw, day: dayOf(raw) };
+    const resolved = partsOf(raw).get(key);
+    const cloudAgreed = { ...state.cloudAgreed };
+    // A part taken out on the side chosen is agreed as not there.
+    if (resolved === undefined) delete cloudAgreed[key];
+    else cloudAgreed[key] = fingerprint(resolved);
 
     set({
       raw,
       doc: migrate(raw),
-      // Bumped for the same reason `replaceDocument` bumps it: a tool mounted
-      // before the resolution still holds the pre-resolution slice, and
-      // `toolGeneration`'s `mayWrite()` would let its next autosave write that
-      // back — silently undoing the choice and pushing the undo to the cloud.
-      generation: state.generation + 1,
       cloudConflicts: remaining,
-      cloudAgreed: { ...state.cloudAgreed, [slice]: fingerprint(resolvedValue) },
+      cloudAgreed,
       // Still "conflict" while any remain, which keeps `syncToCloud` refusing
       // to push a half-resolved document. The last resolution flips it to
       // "idle", and the persist scheduled below then pushes normally.
@@ -515,12 +605,12 @@ function persist(raw: Record<string, unknown>): void {
   const noted = (cause: unknown) =>
     // A save the user believes happened and did not is the worst outcome
     // here, so it goes on screen rather than into the console.
-    useTrousseauStore.setState({ error: `The wedding could not be saved: ${message(cause)}` });
+    useTrousseauStore.setState({ saveError: `The wedding could not be saved: ${message(cause)}` });
   try {
     // `idbSet` opens the database synchronously, so a browser that refuses
     // one throws here rather than rejecting.
     void idbSet(STORAGE_KEY, raw).then(() => {
-      useTrousseauStore.setState({ savedAt: new Date().toISOString(), error: null });
+      useTrousseauStore.setState({ savedAt: new Date().toISOString(), saveError: null });
       // Only after the local write has landed. Local storage is the record
       // of what the user has if the cloud is unreachable, so it goes first.
       scheduleCloudPush();
@@ -536,6 +626,52 @@ function scheduleCloudPush(): void {
   clearTimeout(cloudPushTimer);
   cloudPushTimer = setTimeout(() => void useTrousseauStore.getState().syncToCloud(), CLOUD_PUSH_DELAY_MS);
 }
+
+/**
+ * Which of the account's weddings this device holds, while the account is
+ * still on it: the one last opened here; else the one it last synced with;
+ * else the couple's own; else the only one. A planner with several clients
+ * and none opened here chooses.
+ */
+export function weddingToOpen(
+  weddings: ReadonlyArray<Pick<WeddingListing, "weddingId" | "role">>,
+  chosen: string | null,
+  link: CloudLink | null,
+): string | null {
+  const on = (weddingId: string | undefined) => weddings.some((w) => w.weddingId === weddingId);
+  if (chosen && on(chosen)) return chosen;
+  if (link && on(link.weddingId)) return link.weddingId;
+  const own = weddings.find((w) => w.role === "partner");
+  if (own) return own.weddingId;
+  return weddings.length === 1 ? weddings[0]!.weddingId : null;
+}
+
+/** Record that this device and the account hold the same document. */
+function agreeOn(raw: Record<string, unknown>, version: number): void {
+  useTrousseauStore.setState({
+    cloudStatus: "idle",
+    cloudVersion: version,
+    cloudAgreed: fingerprintParts(raw),
+    cloudConflicts: [],
+    cloudError: null,
+  });
+}
+
+// Whatever changes the agreement is stored with it — see `CloudLink`. One
+// subscription rather than a write beside every `setState` that touches these,
+// so no path can move the baseline without storing it.
+useTrousseauStore.subscribe((state, prev) => {
+  if (typeof window === "undefined") return;
+  if (state.weddingId === null || state.cloudVersion === null) return;
+  if (
+    state.weddingId === prev.weddingId &&
+    state.cloudVersion === prev.cloudVersion &&
+    state.cloudAgreed === prev.cloudAgreed
+  ) {
+    return;
+  }
+  void writeLink({ weddingId: state.weddingId, version: state.cloudVersion, agreed: state.cloudAgreed });
+});
 
 /**
  * Fold a write's answer back into the store.
@@ -560,7 +696,7 @@ function applyCloudResult(result: PushResult, pushed?: Record<string, unknown>):
       cloudStatus: "idle",
       cloudVersion: result.version,
       cloudConflicts: [],
-      cloudAgreed: fingerprintAllSlices(pushed ?? useTrousseauStore.getState().raw),
+      cloudAgreed: fingerprintParts(pushed ?? useTrousseauStore.getState().raw),
       cloudError: null,
     });
     // No asset sync here. This runs after every debounced edit burst, and
@@ -572,11 +708,7 @@ function applyCloudResult(result: PushResult, pushed?: Record<string, unknown>):
   }
   if (result.reason === "conflict") {
     const state = useTrousseauStore.getState();
-    const merged = mergeCloudDocument(
-      state.raw,
-      result.document as Record<string, unknown>,
-      state.cloudAgreed,
-    );
+    const merged = mergeCloudDocument(state.raw, result.document as Record<string, unknown>, state.cloudAgreed, dayOf);
     state.replaceDocument(merged.raw, { silent: true });
 
     if (merged.conflicts.length > 0) {

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { accountsConfigured } from "@/lib/env";
 import { currentUser, serverClient } from "@/lib/accounts/serverClient";
-import { accountsStore } from "@/lib/accounts/supabaseStore";
+import { requestedWedding } from "@/lib/accounts/requestedWedding";
 import { documentStore } from "@/lib/documents/supabaseStore";
 import { exportDocumentHandler } from "@/lib/documents/handlers";
-import { allow, EXPORT_LIMIT } from "@/lib/sync/rateLimit";
+import { allow, EXPORT_LIMIT } from "@/lib/server/rateLimit";
 
 /**
  * "Download my wedding" — the honest answer to "can I get my data out".
@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 const unconfigured = () =>
   NextResponse.json({ error: "Accounts are not set up on this deployment." }, { status: 501 });
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     if (!accountsConfigured()) return unconfigured();
 
@@ -40,14 +40,14 @@ export async function GET() {
     const client = await serverClient();
     if (!client) return unconfigured();
 
-    // A caller with no membership resolves to no wedding, so there is nothing
-    // to export. RLS enforces the same thing a second time at the database.
-    const membership = await accountsStore(client).memberOf(user.id);
-    if (!membership?.weddingId) {
-      return NextResponse.json({ error: "You don't have a wedding yet." }, { status: 404 });
+    // Only a wedding the caller is on. RLS enforces the same thing a second
+    // time at the database.
+    const weddingId = await requestedWedding(request, client, user.id);
+    if (!weddingId) {
+      return NextResponse.json({ error: "That is not a wedding you are on." }, { status: 404 });
     }
 
-    const reply = await exportDocumentHandler(documentStore(client), membership.weddingId);
+    const reply = await exportDocumentHandler(documentStore(client), weddingId);
     if (reply.status === 404) return NextResponse.json(reply.body, { status: 404 });
 
     return new NextResponse(reply.file.text, {

@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { HISTORY_LIMIT } from "./history";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { usePlaque } from "./store";
 
 const HEADERS = ["First Name", "Last Name", "Table", "Dietary"];
@@ -10,9 +11,18 @@ const ROWS = [
 
 const csv = () => ({ headers: HEADERS, rows: ROWS, issues: [], fileName: "guests.csv" });
 const state = () => usePlaque.getState();
+// Place cards' undo is the wedding's.
+const undo = () => useTrousseauStore.getState().undo();
+const redo = () => useTrousseauStore.getState().redo();
+const past = () => useTrousseauStore.getState().past;
 
 beforeEach(() => {
+  const raw = emptyTrousseau() as unknown as Record<string, unknown>;
+  useTrousseauStore.setState({ status: "ready", raw, doc: migrate(raw), past: [], future: [] });
   state().clearAll();
+});
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("first upload", () => {
@@ -121,59 +131,57 @@ describe("copying the front onto the back", () => {
   it("is undoable like any other design change", () => {
     const before = state().template.elements.length;
     state().copyFrontToBack();
-    state().undo();
+    undo();
     expect(state().template.elements).toHaveLength(before);
     expect(state().sheet.duplex).toBe(false);
   });
 });
 
 describe("undo", () => {
-  it("steps back through changes", () => {
+  it("steps back through changes made a moment apart", () => {
+    vi.useFakeTimers();
     state().setCard({ widthMm: 100 });
+    vi.advanceTimersByTime(1000);
     state().setCard({ widthMm: 120 });
-    state().undo();
+    undo();
     expect(state().card.widthMm).toBe(100);
-    state().undo();
+    undo();
+    expect(state().card.widthMm).toBe(85);
+  });
+
+  it("takes a width typed in quick keystrokes back in one step", () => {
+    state().setCard({ widthMm: 1 });
+    state().setCard({ widthMm: 10 });
+    state().setCard({ widthMm: 100 });
+    undo();
     expect(state().card.widthMm).toBe(85);
   });
 
   it("redoes what it undid", () => {
     state().setCard({ widthMm: 100 });
-    state().undo();
-    state().redo();
+    undo();
+    redo();
     expect(state().card.widthMm).toBe(100);
   });
 
   it("drops the redo stack once a new change is made", () => {
     state().setCard({ widthMm: 100 });
-    state().undo();
+    undo();
     state().setCard({ widthMm: 70 });
-    state().redo();
+    redo();
     expect(state().card.widthMm).toBe(70);
-  });
-
-  it("does nothing at the ends of history", () => {
-    expect(() => state().undo()).not.toThrow();
-    expect(() => state().redo()).not.toThrow();
-    expect(state().card.widthMm).toBe(85);
   });
 
   it("records one entry for a whole drag, not one per frame", () => {
     state().addElement("rect");
     const id = state().selectedId!;
-    const depth = state().past.length;
+    const depth = past().length;
 
-    state().beginEdit();
     for (let i = 0; i < 50; i++) state().setElementBox(id, { x: i, y: i, w: 10, h: 10 });
 
-    expect(state().past).toHaveLength(depth + 1);
-    state().undo();
+    expect(past()).toHaveLength(depth + 1);
+    undo();
     expect(state().template.elements[0]!.x).not.toBe(49);
-  });
-
-  it("forgets the oldest entries past the limit rather than growing without bound", () => {
-    for (let i = 0; i < HISTORY_LIMIT + 20; i++) state().setCard({ widthMm: 50 + i });
-    expect(state().past.length).toBeLessThanOrEqual(HISTORY_LIMIT);
   });
 });
 
@@ -209,15 +217,18 @@ describe("fonts", () => {
 });
 
 describe("clearAll", () => {
-  it("wipes the guest list, the design and the history", () => {
+  it("wipes the guest list and the design — and can be undone", () => {
     state().setCsv(csv());
     state().addElement("rect");
+    const elements = state().template.elements;
     state().clearAll();
     expect(state().rows).toEqual([]);
     expect(state().headers).toEqual([]);
     expect(state().template.elements).toEqual([]);
-    expect(state().past).toEqual([]);
     expect(state().fileName).toBeNull();
+
+    undo();
+    expect(state().template.elements).toEqual(elements);
   });
 });
 
@@ -282,14 +293,18 @@ describe("combining rows (S-I.3)", () => {
     expect(state().rows).toHaveLength(2);
   });
 
-  it("stays out of undo history — split is its inverse, and rows are not design", () => {
-    // Fifty snapshots each carrying 2000 rows would be its own kind of data loss.
+  it("is taken back by undo as by its inverse, split", () => {
+    vi.useFakeTimers();
     state().setCsv(threeRows());
-    const historyBefore = state().past.length;
+    const rows = state().rows;
+    vi.advanceTimersByTime(1000);
     state().combineRows([0, 2]);
-    expect(state().past).toHaveLength(historyBefore);
+    undo();
+    expect(state().rows).toEqual(rows);
+
+    redo();
     state().splitRow(state().rowIds[0]!);
-    expect(state().rows).toHaveLength(3);
+    expect(state().rows).toEqual(rows);
   });
 
   it("drops ids and combines when a new CSV arrives", () => {
@@ -320,7 +335,7 @@ describe("per-row overrides (D1)", () => {
     state().addElement("text");
     const elementId = state().template.elements[0]!.id;
     state().overrideForRow(state().rowIds[0]!, elementId, { fontSizePt: 11 });
-    state().undo();
+    undo();
     expect(state().template.overrides ?? {}).toEqual({});
   });
 });

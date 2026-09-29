@@ -33,13 +33,13 @@ export const CONTROLLER = {
   jurisdiction: "England and Wales",
 } as const;
 
-/** Also stated in `lib/sync/handlers.ts`. The two must not drift. */
+/** Also stated in `lib/documents/retention.ts`. The two must not drift. */
 export const RETENTION_MONTHS = 24;
 
 export const PRIVACY: Policy = {
   title: "Privacy",
-  updated: "2026-09-09",
-  digest: "b09f5ee56d8145dc",
+  updated: "2026-09-29",
+  digest: "7a705f9d10fe7dba",
   intro:
     "Trousseau is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
   sections: [
@@ -48,57 +48,57 @@ export const PRIVACY: Policy = {
       paragraphs: [
         `This is run by ${CONTROLLER.name}, who can be reached at ${CONTROLLER.email}. It is a personal project, not a company.`,
         "For a wedding you create, you decide what goes into it.",
-        "There are two ways it can reach a server, and they are not equally private. If you sync with a passphrase, or publish a guest link, I hold bytes I genuinely cannot read. If you make an account, I hold your wedding in a database — encrypted at rest, walled off from every other account, but readable by whoever runs the server. Both are described below. Neither happens unless you choose it.",
+        "It reaches a server only if you make an account. Then I hold your wedding in a database — encrypted at rest, walled off from every other account, but readable by whoever runs the server. That is described below, and it does not happen unless you choose it.",
       ],
     },
     {
       heading: "Where your wedding lives",
       paragraphs: [
         "In your browser. Guests, seating, the running order, the crew and the stationery are all stored on the device you are using, in IndexedDB, and nothing is sent anywhere by default.",
-        "You can use the whole application without any of it ever reaching a server. Two things change that, and both are things you have to turn on: syncing between machines, and publishing a link for your guests.",
-      ],
-    },
-    {
-      heading: "What the server holds when you sync",
-      paragraphs: [
-        "Ciphertext, and nothing else. Your passphrase is stretched in your browser with 600,000 rounds of PBKDF2 and split into two keys. One encrypts the wedding and never leaves the device. The other proves you are allowed to write, and the server keeps only a hash of it.",
-        "That means the server cannot read a guest name, a dietary requirement, a phone number or a note, and neither could anyone who obtained a copy of the database. This is not a promise about how carefully the data is guarded; it is a statement about what is possible.",
-        "Uploaded typefaces and artwork are encrypted the same way.",
-        "Your passphrase is never sent, and cannot be recovered. If you lose it, nobody can open that wedding again — including me.",
+        "You can use the whole application without any of it ever reaching a server. Making an account changes that — to plan on more than one device, with your partner, or with your planner — and so does publishing a link for your guests or your suppliers, which needs one.",
       ],
     },
     {
       heading: "What an account holds, and who can read it",
       paragraphs: [
         "An account exists so you and your partner can plan on separate devices. Making one stores your email address, and nothing else about you — there is no password, no profile, and no name field. Signing in sends a link to that address; clicking it is what proves it is you.",
-        "Your wedding is then stored in a database as one document, encrypted at rest, with database rules that make it unreadable to any other account. Inviting your partner adds exactly one more person to that wedding, by the email address you name.",
-        "Being straight about the difference: this is ordinary, well-guarded storage, not the passphrase system above. I do not read your wedding and there is no support tool that would let me browse it, but I administer the database, so I could. If that matters more to you than syncing does, use the app without an account — it is the default, and nothing leaves your browser.",
+        "Your wedding is then stored in a database as one document, encrypted at rest, with database rules that make it unreadable to any other account. Inviting your partner or your planner adds exactly that person, by the email address you name. Either of you can see everyone who has access, and remove your planner at any time.",
+        "Being straight about it: this is ordinary, well-guarded storage, not encryption I cannot undo. I do not read your wedding and there is no support tool that would let me browse it, but I administer the database, so I could. If that matters more to you than planning across devices does, use the app without an account — it is the default, and nothing leaves your browser.",
         "Every version you save is kept alongside the current one, so a mistake can be recovered rather than being final.",
+        "While more than one of you has the wedding open, each change reaches the others as it is saved. What travels to announce it is a version number, not the wedding; each device then fetches the change the way it fetches everything else. The others with it open see your email address and which page you are on — nobody outside the wedding does.",
+        "A planner can also keep a library of their own — card designs, rooms, running orders and checklists — to use again for other weddings. It is theirs alone: no other account can see it, and nothing personal goes into it, so no guests, no dates and no suppliers' names or numbers. It stays until they remove it or delete their account.",
       ],
     },
     {
       heading: "What a guest link contains",
       paragraphs: [
         "Deliberately less than the wedding does. A published link carries names and table numbers, and optionally the shape of the room. It does not carry email addresses, phone numbers, dietary requirements, notes, or anybody who has declined.",
-        "It is encrypted under a key that lives in the link's own fragment — the part after the # — which browsers never send to a server. The server stores bytes it cannot read, and hands them to whoever has the link.",
-        "There is only ever one live link per wedding. Publishing again replaces what the existing link shows, so a link you have already given out stays correct. Taking it down deletes it outright.",
+        "It is encrypted under a key that travels in the link's own fragment — the part after the # — which browsers never send to a server. What the server hands out is sealed; without the whole link, it cannot be read.",
+        "The key is also kept with your wedding on your account, so whichever of you changes the seating can keep the link current. That makes it exactly as readable to whoever runs the server as the wedding itself — which already holds everything the link does, and more.",
+        "There is only ever one live link per wedding, and it updates itself as seats change, so a link you have already given out stays correct. Taking it down deletes it outright.",
+      ],
+    },
+    {
+      heading: "What a supplier's link contains",
+      paragraphs: [
+        "Each supplier can be given a link to their own call sheet: when to arrive, which of their people are named, and their jobs with the times, places and dates — with the couple's names, the date and the venue. It carries no guests at all, and nothing of any other supplier's.",
+        "It is sealed the same way as the guest link, under a key in the link's fragment that is also kept with your wedding, and it updates itself as their jobs and times change.",
+        "It has one button, Confirm. Pressing it records when, against that link and nothing else, and that date shows on your wedding as the day they confirmed. Taking the link down deletes it outright, and it goes by itself if that supplier is removed from your wedding.",
       ],
     },
     {
       heading: "How long it is kept",
       paragraphs: [
-        `A wedding that is not written to for ${RETENTION_MONTHS} months is deleted automatically, along with its uploaded files and its guest link. That is long enough to cover an engagement, the wedding, and a year of still wanting the seating plan.`,
+        `A wedding on an account that is not written to for ${RETENTION_MONTHS} months is deleted automatically, along with its history, its uploaded files, its guest link and its suppliers' links. That is long enough to cover an engagement, the wedding, and a year of still wanting the seating plan.`,
         "There is no backup that outlives this. When it is deleted, it is gone.",
-        `A wedding held under an account follows the same rule: ${RETENTION_MONTHS} months with nobody writing to it, and it is deleted the same way. Deleting your account deletes it immediately, regardless of that timer — unless your partner is still on it, in which case it stays with them, because it is their wedding too.`,
       ],
     },
     {
       heading: "Deleting it yourself",
       paragraphs: [
-        "There is a button. In the Data manager, under Sharing, 'Erase this wedding from the server' removes everything: every slice, every uploaded file, and the guest link. It takes effect immediately.",
-        "It erases the server copy only. The wedding stays in your own browser, because withdrawing from a server is not the same as wanting to lose your seating plan. To remove that too, clear this site's data in your browser.",
-        "If you have an account, deleting it is on the account page and needs no passphrase — signing in is what proves it is yours. It removes your membership, and the wedding with it if nobody else is on it.",
-        "Erasing a passphrase-synced wedding is different. It needs your passphrase, like every other write. That is the unavoidable cost of a server that cannot read what it stores: there is no reset link and nobody to appeal to. If you have lost your passphrase I cannot delete your wedding on request, because I have no way to tell it is yours — the automatic deletion above is what eventually removes it.",
+        "Deleting your account is on the account page — signing in is what proves it is yours. It takes you off every wedding you are on, and deletes each one nobody else is still on, with its history, its files, its guest link and its suppliers' links, immediately. A wedding someone else is on stays with them, because it is their wedding too.",
+        "Leaving one wedding works the same way, for that wedding alone. Deleting your account also deletes your library, if you kept one.",
+        "Your own browser keeps its copy unless you choose otherwise, because withdrawing from a server is not the same as wanting to lose your seating plan. Signing out asks whether to remove it from the device; clearing this site's data in your browser removes it too.",
       ],
     },
     {
@@ -120,8 +120,7 @@ export const PRIVACY: Policy = {
     {
       heading: "Staying signed in",
       paragraphs: [
-        "If you sync, the credential derived from your passphrase stays in this browser until you sign out or clear the site's data. It is what lets the application keep syncing without asking for the passphrase again.",
-        "An account works the same way from your side, with a session that lasts until you sign out.",
+        "Signing in keeps a session in this browser until you sign out, so you are not asked for a link on every visit.",
         "The practical consequence is worth stating: on a shared or borrowed computer, signing out matters. Anyone using that browser afterwards can reach the wedding.",
       ],
     },
@@ -143,8 +142,8 @@ export const PRIVACY: Policy = {
 
 export const TERMS: Policy = {
   title: "Terms",
-  updated: "2026-09-08",
-  digest: "02792f062632755c",
+  updated: "2026-09-28",
+  digest: "2e9a45548776337c",
   intro:
     "Short, because there is not much to agree about: this is free software, given as it is, that mostly runs on your own machine.",
   sections: [
@@ -152,7 +151,7 @@ export const TERMS: Policy = {
       heading: "What this is",
       paragraphs: [
         "A free wedding planning tool, and open source: the application is under the AGPL, and the data format it is built on is under the MIT licence. There is no subscription, no paid tier, and nothing to pay. There never will be — that is the point of it.",
-        "An account is optional and also free. It exists to sync between devices and to share a wedding with your partner, not to unlock anything.",
+        "An account is optional and also free. It exists to plan on more than one device and to share a wedding with your partner or your planner, not to unlock anything.",
         "It was built for one wedding and then made available to anyone who wants it. It is offered as it is, with no warranty and no promise that it is fit for any particular purpose.",
       ],
     },
@@ -167,7 +166,7 @@ export const TERMS: Policy = {
       heading: "Using the shared backend fairly",
       paragraphs: [
         "Accounts, syncing and guest links run on a small server paid for personally. There are limits — how often a wedding can be created, how large a wedding can get, and how much can be uploaded to one — and they are set generously for planning a wedding and meanly for anything else.",
-        "Do not use it as file storage, do not try to work around the limits, and do not attempt to reach a wedding that is not yours — by guessing a passphrase, a guest link, or anything else.",
+        "Do not use it as file storage, do not try to work around the limits, and do not attempt to reach a wedding that is not yours — by guessing a guest link, an invite, or anything else.",
       ],
     },
     {

@@ -18,6 +18,7 @@ describe("eventSchema", () => {
     expect(parsed).toEqual({
       date: "",
       coupleNames: "",
+      partners: ["", ""],
       venueName: "",
       curfewMin: null,
       utcOffsetMin: null,
@@ -27,6 +28,11 @@ describe("eventSchema", () => {
   it("preserves keys it does not know about", () => {
     const parsed = eventSchema.parse({ coupleNames: "A & B", hashtag: "#ab2026" });
     expect(parsed).toMatchObject({ hashtag: "#ab2026" });
+  });
+
+  it("holds the two partners by name", () => {
+    expect(eventSchema.parse({ partners: ["Alex", "Sam"] }).partners).toEqual(["Alex", "Sam"]);
+    expect(eventSchema.safeParse({ partners: ["Alex"] }).success).toBe(false);
   });
 
   it("rejects a field of the wrong type", () => {

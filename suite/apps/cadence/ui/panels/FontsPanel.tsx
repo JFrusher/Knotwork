@@ -1,13 +1,14 @@
 import { useRef } from "react";
 import { BUNDLED_FONTS } from "../../assets/fonts";
 import { addFont } from "../../state/fontLoader";
-import { getDoc, useStore } from "../../state/store";
+import { useStore, useTimelineDoc } from "../../state/store";
 import { Button, Panel } from "@/components/ui/fields";
 import styles from "./FontsPanel.module.css";
 
 export function FontsPanel() {
-  const doc = useStore(getDoc);
-  const replaceDoc = useStore((state) => state.replaceDoc);
+  const doc = useTimelineDoc();
+  const addToDay = useStore((state) => state.addFont);
+  const removeFromDay = useStore((state) => state.removeFont);
   const setNotice = useStore((state) => state.setNotice);
   const input = useRef<HTMLInputElement>(null);
 
@@ -22,7 +23,8 @@ export function FontsPanel() {
       setNotice(`${result.font.family} is already here.`);
       return;
     }
-    replaceDoc({ ...doc, fonts: [...doc.fonts, result.font] });
+    // The day as it is once the file has been read, not as it was before.
+    addToDay(result.font);
     setNotice(`${result.font.family} added.`);
   };
 
@@ -41,12 +43,7 @@ export function FontsPanel() {
             <button
               type="button"
               className={styles.remove}
-              onClick={() =>
-                replaceDoc({
-                  ...doc,
-                  fonts: doc.fonts.filter((entry) => entry.blobKey !== font.blobKey),
-                })
-              }
+              onClick={() => removeFromDay(font.blobKey)}
             >
               remove
             </button>

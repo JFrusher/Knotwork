@@ -1,41 +1,47 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { emptyDoc, sampleDoc } from "../core/model/defaults";
-import { getDoc, scheduleComputeCount, scheduleFor, selectSchedule, useStore, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "./store";
+import { currentDoc, scheduleComputeCount, scheduleFor, useStore, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "./store";
+import { openDay } from "./testing";
 
 function state() {
   return useStore.getState();
 }
-function doc() {
-  return getDoc(state());
-}
+const doc = currentDoc;
+const schedule = () => scheduleFor(currentDoc());
+// Timeline's undo is the wedding's.
+const history = () => useTrousseauStore.getState();
 
 beforeEach(() => {
-  useStore.getState().loadDoc(sampleDoc());
+  openDay(sampleDoc());
+});
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("schedule selector", () => {
   it("computes once for repeated reads of the same document", () => {
     const before = scheduleComputeCount();
-    selectSchedule(state());
-    selectSchedule(state());
+    schedule();
+    schedule();
     scheduleFor(doc());
     expect(scheduleComputeCount()).toBe(before + 1);
   });
 
   it("recomputes after an edit", () => {
-    selectSchedule(state());
+    schedule();
     const before = scheduleComputeCount();
     state().updateBlock("blk-cake", { durationMin: 25 });
-    selectSchedule(state());
+    schedule();
     expect(scheduleComputeCount()).toBe(before + 1);
   });
 
   it("carries the conflicts, slack and sun for the day", () => {
-    const schedule = selectSchedule(state());
-    expect(schedule.conflicts).toEqual([]);
-    expect(schedule.slack.toCurfewMin).toBe(0);
-    expect(schedule.sun?.sunsetMin).toBeGreaterThan(20 * 60);
-    expect(schedule.positions.get("blk-ceremony")?.startMin).toBe(810);
+    const day = schedule();
+    expect(day.conflicts).toEqual([]);
+    expect(day.slack.toCurfewMin).toBe(0);
+    expect(day.sun?.sunsetMin).toBeGreaterThan(20 * 60);
+    expect(day.positions.get("blk-ceremony")?.startMin).toBe(810);
   });
 });
 
@@ -147,19 +153,34 @@ describe("document actions", () => {
 });
 
 describe("undo and redo", () => {
-  it("walks back and forward through edits", () => {
+  it("walks back and forward through edits made a moment apart", () => {
+    vi.useFakeTimers();
     state().updateBlock("blk-ceremony", { label: "One" });
+    vi.advanceTimersByTime(1000);
     state().updateBlock("blk-ceremony", { label: "Two" });
-    state().undo();
+    history().undo();
     expect(doc().blocks.find((b) => b.id === "blk-ceremony")?.label).toBe("One");
-    state().redo();
+    history().redo();
     expect(doc().blocks.find((b) => b.id === "blk-ceremony")?.label).toBe("Two");
   });
 
-  it("starts clean after loading a document", () => {
-    expect(state().canUndo()).toBe(false);
-    state().loadDoc(emptyDoc());
-    expect(state().canUndo()).toBe(false);
+  it("takes a label typed in quick keystrokes back in one step", () => {
+    state().updateBlock("blk-ceremony", { label: "C" });
+    state().updateBlock("blk-ceremony", { label: "Ci" });
+    state().updateBlock("blk-ceremony", { label: "Civil" });
+    history().undo();
+    expect(doc().blocks.find((b) => b.id === "blk-ceremony")?.label).toBe("Ceremony");
+  });
+
+  it("puts no step on the history for an edit that changes nothing", () => {
+    state().reorderBlock("blk-carriages", 1);
+    state().addLane("Main day");
+    expect(history().past).toEqual([]);
+  });
+
+  it("opens an empty day with nothing to undo", () => {
+    openDay(emptyDoc());
+    expect(history().past).toEqual([]);
     expect(doc().blocks).toEqual([]);
   });
 });
@@ -174,7 +195,7 @@ describe("what-if preview", () => {
     state().cancelPreview();
     expect(state().preview).toBeNull();
     expect(doc()).toBe(before);
-    expect(state().canUndo()).toBe(false);
+    expect(history().past).toEqual([]);
   });
 
   it("commits the previewed document as one undoable edit", () => {
@@ -182,16 +203,12 @@ describe("what-if preview", () => {
     state().commitPreview();
     expect(doc().blocks.find((b) => b.id === "blk-ceremony")?.anchorMin).toBe(830);
     expect(state().preview).toBeNull();
-    state().undo();
+    history().undo();
     expect(doc().blocks.find((b) => b.id === "blk-ceremony")?.anchorMin).toBe(810);
   });
 });
 
 describe("zoom", () => {
-  beforeEach(() => {
-    useStore.getState().loadDoc(sampleDoc());
-  });
-
   it("opens at a scale that shows a half hour as a readable box", () => {
     expect(useStore.getState().ui.pxPerMin).toBe(1.3);
   });
@@ -223,6 +240,6 @@ describe("zoom", () => {
 
   it("does not put zoom in the undo history", () => {
     useStore.getState().zoomBy(ZOOM_STEP);
-    expect(useStore.getState().canUndo()).toBe(false);
+    expect(history().past).toEqual([]);
   });
 });

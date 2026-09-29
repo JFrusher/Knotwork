@@ -33,6 +33,7 @@
 }
 
 .block,
+.tasks,
 .orphans {
   max-width: 780px;
   margin: 0 auto var(--sp-3);
@@ -45,13 +46,33 @@
   border-color: var(--danger);
 }
 
+.tasksHead,
 .orphanHead {
   margin: 0;
   padding: var(--sp-2) var(--sp-3);
   border-bottom: 1px solid var(--border);
-  color: var(--danger);
+  color: var(--text-muted);
   font-size: var(--text-sm);
   font-weight: 600;
+}
+
+.orphanHead {
+  color: var(--danger);
+}
+
+.tasksHead {
+  cursor: pointer;
+}
+
+.tasks:not([open]) > .tasksHead {
+  border-bottom: 0;
+}
+
+.tasksNote {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3) 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
 }
 
 .head {

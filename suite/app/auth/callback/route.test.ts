@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sameOriginPath } from "./route";
+import { sameOriginPath, startsAWedding } from "./route";
 
 const origin = "https://good.example";
 
@@ -33,5 +33,20 @@ describe("sameOriginPath", () => {
 
   it("rejects an absolute URL to the same origin but a different scheme/port (still an origin mismatch)", () => {
     expect(sameOriginPath("http://good.example", origin)).toBe("/account");
+  });
+});
+
+describe("startsAWedding", () => {
+  it("starts one on an ordinary sign-in", () => {
+    expect(startsAWedding("/account")).toBe(true);
+    expect(startsAWedding("/seating")).toBe(true);
+  });
+
+  it("does not on the way to an invite, which would block joining it", () => {
+    expect(startsAWedding("/invite/abc123")).toBe(false);
+  });
+
+  it("does not for a planner arriving at their clients' weddings", () => {
+    expect(startsAWedding("/weddings")).toBe(false);
   });
 });

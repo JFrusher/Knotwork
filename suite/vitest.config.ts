@@ -115,7 +115,7 @@ export default defineConfig({
           // global `afterEach`. Without this each render is left in the
           // document and the next query finds several copies of the panel.
           globals: true,
-          setupFiles: ["apps/tableaux/test/setup.js"],
+          setupFiles: ["apps/tableaux/test/setup.ts"],
         },
       },
       {

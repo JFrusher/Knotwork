@@ -17,6 +17,7 @@ export function newGuest(partial: Partial<Guest> = {}): Guest {
     email: "",
     rsvpStatus: "pending",
     dietary: "",
+    dietaryRaw: "",
     entree: "",
     notes: "",
     side: "",

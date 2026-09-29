@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { selectCover, useStore } from "../state/store";
+import { useCover, useStore } from "../state/store";
 import styles from "./Announcer.module.css";
 
 /**
@@ -7,7 +7,7 @@ import styles from "./Announcer.module.css";
  * what changed, politely, once the edits settle.
  */
 export function Announcer() {
-  const warnings = useStore(selectCover).warnings;
+  const warnings = useCover().warnings;
   const notice = useStore((state) => state.notice);
   const [message, setMessage] = useState("");
 

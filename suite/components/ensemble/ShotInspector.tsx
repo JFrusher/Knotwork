@@ -6,19 +6,23 @@ import { Button, Panel, TextArea, TextField } from "@/components/ui/controls";
 import { GuestChip, GuestPicker } from "./GuestPicker";
 import { memberDescriptor } from "@/lib/ensemble/resolve";
 import { addMember, patchShot, removeMember } from "@/lib/ensemble/actions";
-import { CAST_ROLES, ROLE_LABEL, type Guest, type Seating, type Shot, type ShotMember, type Shots } from "@/lib/model/types";
+import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import { roleLabel } from "@/lib/model/partners";
+import { CAST_ROLES, type Guest, type Seating, type Shot, type ShotMember, type Shots } from "@/lib/model/types";
 
 export function ShotInspector({
   shot,
   shots,
   guests,
   seating,
+  event,
   onChange,
 }: {
   shot: Shot;
   shots: Shots;
   guests: Record<string, Guest>;
   seating: Seating;
+  event: WeddingEvent;
   onChange: (next: Shots) => void;
 }) {
   const [textValue, setTextValue] = useState("");
@@ -28,8 +32,8 @@ export function ShotInspector({
 
   const addCouple = () => {
     let next = shots;
-    if (!hasRole("bride")) next = addMember(next, shot.id, { kind: "role", ref: "bride" });
-    if (!hasRole("groom")) next = addMember(next, shot.id, { kind: "role", ref: "groom" });
+    if (!hasRole("a")) next = addMember(next, shot.id, { kind: "role", ref: "a" });
+    if (!hasRole("b")) next = addMember(next, shot.id, { kind: "role", ref: "b" });
     onChange(next);
   };
 
@@ -60,7 +64,7 @@ export function ShotInspector({
           {shot.members.map((member, index) => (
             <li key={index}>
               <GuestChip
-                name={memberDescriptor(member, guests, seating, shots.customRoles)}
+                name={memberDescriptor(member, guests, seating, shots.customRoles, event)}
                 onRemove={() => onChange(removeMember(shots, shot.id, index))}
               />
             </li>
@@ -68,7 +72,7 @@ export function ShotInspector({
           {shot.members.length === 0 && <li className="text-sm text-slate">Nobody added yet.</li>}
         </ul>
 
-        {!(hasRole("bride") && hasRole("groom")) && (
+        {!(hasRole("a") && hasRole("b")) && (
           <div className="mb-2">
             <Button icon={Heart} tone="primary" onClick={addCouple}>
               + The couple
@@ -79,7 +83,7 @@ export function ShotInspector({
         <ul className="mb-2 flex flex-wrap gap-1.5">
           {availableRoles.map((role) => (
             <li key={role}>
-              <QuickAddChip label={ROLE_LABEL[role]} onClick={() => add({ kind: "role", ref: role })} />
+              <QuickAddChip label={roleLabel(role, event)} onClick={() => add({ kind: "role", ref: role })} />
             </li>
           ))}
           {availableCustomRoles.map((r) => (

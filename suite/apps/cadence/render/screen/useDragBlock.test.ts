@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { sampleDoc } from "../../core/model/defaults";
-import { getDoc, useStore } from "../../state/store";
+import { currentDoc, useStore } from "../../state/store";
+import { openDay } from "../../state/testing";
 import { minutesFromDelta, SNAP_MIN } from "./useDragBlock";
 
 describe("minutesFromDelta", () => {
@@ -26,34 +28,33 @@ describe("minutesFromDelta", () => {
 
 describe("drag through the store", () => {
   beforeEach(() => {
-    useStore.getState().loadDoc(sampleDoc());
+    openDay(sampleDoc());
   });
 
   it("previews without changing the document, and cancels clean", () => {
-    const before = getDoc(useStore.getState());
+    const before = currentDoc();
     useStore.getState().previewChange({ type: "shift", blockId: "blk-ceremony", deltaMin: 20 });
     expect(useStore.getState().preview?.movedIds).toContain("blk-confetti");
-    expect(getDoc(useStore.getState())).toBe(before);
+    expect(currentDoc()).toBe(before);
 
     useStore.getState().cancelPreview();
-    expect(getDoc(useStore.getState())).toBe(before);
-    expect(useStore.getState().canUndo()).toBe(false);
+    expect(currentDoc()).toBe(before);
+    expect(useTrousseauStore.getState().past).toEqual([]);
   });
 
   it("commits one undoable edit when the drag ends", () => {
     useStore.getState().previewChange({ type: "shift", blockId: "blk-ceremony", deltaMin: 20 });
     useStore.getState().commitPreview();
-    expect(getDoc(useStore.getState()).blocks.find((b) => b.id === "blk-ceremony")?.anchorMin).toBe(830);
-    expect(useStore.getState().canUndo()).toBe(true);
-    useStore.getState().undo();
-    expect(getDoc(useStore.getState()).blocks.find((b) => b.id === "blk-ceremony")?.anchorMin).toBe(810);
+    expect(currentDoc().blocks.find((b) => b.id === "blk-ceremony")?.anchorMin).toBe(830);
+    expect(useTrousseauStore.getState().past.at(-1)?.label).toBe("moving a block");
+    useTrousseauStore.getState().undo();
+    expect(currentDoc().blocks.find((b) => b.id === "blk-ceremony")?.anchorMin).toBe(810);
   });
 
   it("moves a block to a later time when dragged downward", () => {
-    useStore.getState().loadDoc(sampleDoc());
     const downward = minutesFromDelta(26, 1.3);
     useStore.getState().previewChange({ type: "shift", blockId: "blk-ceremony", deltaMin: downward });
     useStore.getState().commitPreview();
-    expect(getDoc(useStore.getState()).blocks.find((b) => b.id === "blk-ceremony")?.anchorMin).toBe(830);
+    expect(currentDoc().blocks.find((b) => b.id === "blk-ceremony")?.anchorMin).toBe(830);
   });
 });

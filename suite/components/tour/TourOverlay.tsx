@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useTour } from "@/lib/tour/useTour";
 
@@ -15,6 +15,12 @@ import { useTour } from "@/lib/tour/useTour";
  * A missing anchor is deliberately not an error: the card shows centred with
  * no ring. A control that moved should cost a slightly worse explanation, not
  * a broken page. `steps.test.ts` is what makes sure that never ships silently.
+ *
+ * A native modal `<dialog>` covering the viewport, rather than a positioned
+ * div that said `aria-modal` and did nothing it promised: focus now moves into
+ * the card and stays there, the page behind is inert, Escape leaves, and the
+ * arrow keys are heard only while the tour has focus instead of by every text
+ * field on the page.
  */
 
 interface Box {
@@ -29,6 +35,21 @@ const PADDING = 6;
 export function TourOverlay() {
   const { step, chapterTitle, index, total, next, back, stop } = useTour();
   const [box, setBox] = useState<Box | null>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const nextButton = useRef<HTMLButtonElement>(null);
+
+  const open = step !== null;
+  useEffect(() => {
+    const element = dialog.current;
+    if (!element) return;
+    if (open && !element.open) {
+      element.showModal();
+      // The way forward, rather than the close button that happens to come
+      // first: someone who asked for a tour is most likely to want the next step.
+      nextButton.current?.focus();
+    }
+    if (!open && element.open) element.close();
+  }, [open]);
 
   useEffect(() => {
     if (!step) {
@@ -71,30 +92,25 @@ export function TourOverlay() {
     };
   }, [step]);
 
-  useEffect(() => {
-    if (!step) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") stop();
-      if (event.key === "ArrowRight") next();
-      if (event.key === "ArrowLeft") back();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [back, next, step, stop]);
-
   return (
-    <AnimatePresence>
+    <dialog
+      ref={dialog}
+      aria-label={step ? `${chapterTitle}: ${step.title}` : "Tour"}
+      // Escape, as well as every other way the dialog closes.
+      onClose={stop}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowRight") next();
+        if (event.key === "ArrowLeft") back();
+      }}
+      // The dim around the card is the dialog itself: clicking it leaves the
+      // tour, as the Data panel's backdrop does.
+      onClick={(event) => {
+        if (event.target === event.currentTarget) stop();
+      }}
+      className="m-0 h-dvh max-h-none w-dvw max-w-none bg-transparent p-0 backdrop:bg-charcoal/40"
+    >
       {step ? (
-        <motion.div
-          className="fixed inset-0 z-50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-        >
-          {/* The scrim. Clicking it leaves the tour, as the Data panel does. */}
-          <div className="absolute inset-0 bg-charcoal/40" onClick={stop} />
-
+        <>
           {box ? (
             <motion.div
               className="pointer-events-none absolute rounded-md ring-2 ring-gold ring-offset-2"
@@ -106,13 +122,9 @@ export function TourOverlay() {
           ) : null}
 
           <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-label={`${chapterTitle}: ${step.title}`}
             className="absolute bottom-6 left-1/2 w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 rounded-lg border border-charcoal/10 bg-parchment p-5 shadow-2xl"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
           >
             <div className="mb-2 flex items-start justify-between gap-3">
@@ -144,6 +156,7 @@ export function TourOverlay() {
                   Back
                 </button>
                 <button
+                  ref={nextButton}
                   type="button"
                   onClick={next}
                   className="rounded border border-gold bg-gold/15 px-3 py-1.5 text-sm text-charcoal transition hover:bg-gold/25"
@@ -153,8 +166,8 @@ export function TourOverlay() {
               </div>
             </div>
           </motion.div>
-        </motion.div>
+        </>
       ) : null}
-    </AnimatePresence>
+    </dialog>
   );
 }

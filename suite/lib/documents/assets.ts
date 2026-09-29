@@ -1,12 +1,10 @@
-import { acceptAsset, collectAssets, heldAssetIds } from "@/lib/sync/assets";
+import { acceptAsset, collectAssets, heldAssetIds } from "@/lib/documents/portableAssets";
 import { browserClient } from "@/lib/accounts/browserClient";
 
 /**
- * Fonts and artwork, over Supabase Storage instead of the encrypted
- * Postgres-row transport lib/sync/assets.ts's caller (lib/sync/client.ts)
- * uses. Reuses the same per-tool asset registry - the wedding-assets bucket
- * only wants opaque bytes under stable ids, exactly like the old transport
- * did.
+ * Fonts and artwork, over Supabase Storage. Uses the tools' own asset
+ * registry (`portableAssets.ts`): the wedding-assets bucket only wants opaque
+ * bytes under stable ids.
  */
 
 export interface AssetSyncResult {

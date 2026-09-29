@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { useStore } from "./store";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { currentDoc, useStore } from "./store";
 
 /** True while the user is typing into a field, where our shortcuts must not fire. */
 function inTextEntry(target: EventTarget | null): boolean {
@@ -15,9 +16,13 @@ export function handleKey(event: KeyboardEvent): void {
 
   if (mod && event.key.toLowerCase() === "z") {
     // Undo works from a field too — it is what people reach for there as well.
+    // The wedding's one history, which the header's buttons drive; a drag in
+    // progress is dropped first, since it was a change to the day being undone.
     event.preventDefault();
-    if (event.shiftKey) state.redo();
-    else state.undo();
+    state.cancelPreview();
+    const history = useTrousseauStore.getState();
+    if (event.shiftKey) history.redo();
+    else history.undo();
     return;
   }
 
@@ -31,7 +36,7 @@ export function handleKey(event: KeyboardEvent): void {
   }
 
   if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-    const doc = state.history.present;
+    const doc = currentDoc();
     const current = doc.blocks.find((block) => block.id === state.selectedId);
     if (!current) return;
     const lane = doc.blocks.filter((block) => block.lane === current.lane);

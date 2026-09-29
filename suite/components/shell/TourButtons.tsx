@@ -6,6 +6,7 @@ import { Compass, HelpCircle } from "lucide-react";
 import { chapterForRoute } from "@/lib/tour/steps";
 import { useTour } from "@/lib/tour/useTour";
 import { isWeddingEmpty, loadExampleWedding } from "@/lib/tour/exampleWedding";
+import { useConfirm } from "@/components/ui/Confirm";
 
 /**
  * The two ways in.
@@ -16,14 +17,15 @@ import { isWeddingEmpty, loadExampleWedding } from "@/lib/tour/exampleWedding";
 
 /** The front page: start at the beginning, optionally on the example wedding. */
 export function TakeTheTour() {
-  const { start, hasSeenTour } = useTour();
+  const { startAll, hasSeenTour } = useTour();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
 
   async function begin(withExample: boolean) {
     setBusy(true);
     try {
-      if (withExample && (await loadExampleWedding()) === "cancelled") return;
-      start("shell");
+      if (withExample && (await loadExampleWedding(confirm)) === "cancelled") return;
+      startAll();
     } finally {
       setBusy(false);
     }

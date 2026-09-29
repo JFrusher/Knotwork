@@ -1,0 +1,88 @@
+import { useRef, useState, useCallback, useEffect, type PointerEvent as ReactPointerEvent } from 'react'
+import { useStore } from '../store/useStore'
+import {
+  canvasViewportRef,
+  screenToCanvas,
+  canvasToScreen,
+  zoomCanvasAt,
+  zoomCanvasBy,
+  fitCanvasToContent,
+} from '../utils/canvasCoords'
+
+/**
+ * Pan/zoom for the room canvas. The world layer is transformed with
+ * `translate(panX, panY) scale(zoom)`; the maths live in canvasCoords so the
+ * drag controller and keyboard shortcuts can share them.
+ */
+export function useCanvasPanZoom() {
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const setCanvas = useStore((s) => s.setCanvas)
+  const [isPanning, setIsPanning] = useState(false)
+
+  useEffect(() => {
+    const el = viewportRef.current
+    canvasViewportRef.current = el
+    // Where the canvas looks is this window's own and is not saved, so the
+    // room opens framed rather than wherever it was last left.
+    fitCanvasToContent()
+    return () => {
+      if (canvasViewportRef.current === el) canvasViewportRef.current = null
+    }
+  }, [])
+
+  // Wheel to zoom, centred on the cursor.
+  useEffect(() => {
+    const el = viewportRef.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      zoomCanvasAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.1 : 1 / 1.1)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [])
+
+  const beginPan = useCallback(
+    (e: ReactPointerEvent, onClick?: () => void) => {
+      if (e.button !== 0) return
+      const startX = e.clientX
+      const startY = e.clientY
+      const start = useStore.getState().canvas
+      let moved = false
+      setIsPanning(true)
+      const onMove = (ev: PointerEvent) => {
+        const dx = ev.clientX - startX
+        const dy = ev.clientY - startY
+        if (!moved && Math.abs(dx) + Math.abs(dy) > 3) moved = true
+        if (moved) setCanvas({ panX: start.panX + dx, panY: start.panY + dy })
+      }
+      const onUp = () => {
+        setIsPanning(false)
+        if (!moved) (onClick ?? (() => useStore.getState().clearSelection()))()
+        window.removeEventListener('pointermove', onMove)
+        window.removeEventListener('pointerup', onUp)
+        window.removeEventListener('pointercancel', onUp)
+      }
+      window.addEventListener('pointermove', onMove)
+      window.addEventListener('pointerup', onUp)
+      // TODO(ux-audit): no pointercancel listener (same bug class fixed in
+      // TableHandles.jsx — see tmp/ux-audit.md #C13). A pointer release/
+      // cancel outside the window here leaves isPanning stuck true (cursor
+      // stuck "grabbing"). RoomCanvas.jsx's zone-draw/calibration-line
+      // dragging has the same gap. See tmp/ux-audit.md #C14.
+      window.addEventListener('pointercancel', onUp)
+    },
+    [setCanvas]
+  )
+
+  return {
+    viewportRef,
+    screenToCanvas,
+    canvasToScreen,
+    zoomIn: () => zoomCanvasBy(1.2),
+    zoomOut: () => zoomCanvasBy(1 / 1.2),
+    fitToScreen: fitCanvasToContent,
+    beginPan,
+    isPanning,
+  }
+}

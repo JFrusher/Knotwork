@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeWarnings, buildWarningIndex } from './warnings.js'
+import { computeWarnings, buildWarningIndex } from './warnings'
 
 const guest = (id, over = {}) => ({
   id,
@@ -40,6 +40,18 @@ describe('computeWarnings', () => {
       constraints: [],
     }
     expect(computeWarnings(state).some((x) => x.kind === 'dietary-check')).toBe(true)
+  })
+
+  it('counts a guest who answered "None" as having a note, not as one to check', () => {
+    const state = {
+      guests: {
+        a: guest('a', { dietary: 'vegan', assignedTableId: 't' }),
+        b: guest('b', { dietaryRaw: 'None', assignedTableId: 't' }),
+      },
+      tables: { t: table('t', { assignedGuestIds: ['a', 'b'] }) },
+      constraints: [],
+    }
+    expect(computeWarnings(state).some((x) => x.kind === 'dietary-check')).toBe(false)
   })
 
   it('warns when more than 30% of guests are unseated', () => {

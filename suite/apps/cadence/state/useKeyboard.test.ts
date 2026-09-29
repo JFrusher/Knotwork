@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
 import { sampleDoc } from "../core/model/defaults";
-import { getDoc, useStore } from "./store";
+import { currentDoc, useStore } from "./store";
+import { openDay } from "./testing";
 import { handleKey } from "./useKeyboard";
 
 function press(init: KeyboardEventInit & { target?: HTMLElement }) {
@@ -12,12 +13,12 @@ function press(init: KeyboardEventInit & { target?: HTMLElement }) {
 }
 
 function label(id: string): string | undefined {
-  return getDoc(useStore.getState()).blocks.find((block) => block.id === id)?.label;
+  return currentDoc().blocks.find((block) => block.id === id)?.label;
 }
 
 beforeEach(() => {
   document.body.replaceChildren();
-  useStore.getState().loadDoc(sampleDoc());
+  openDay(sampleDoc());
 });
 
 describe("keyboard shortcuts", () => {

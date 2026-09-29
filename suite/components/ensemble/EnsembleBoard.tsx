@@ -5,7 +5,6 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { Button, Empty, Segmented } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 import { useEvent, useGuests, useSeating, useShots, useStatus, useWriters } from "@/lib/model/useSuite";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { propose } from "@/lib/ensemble/propose";
 import { CastPanel } from "./CastPanel";
 import { PrintPanel } from "./PrintPanel";
@@ -24,25 +23,14 @@ export function EnsembleBoard() {
 
   // Ensemble has no store of its own — its edits land on the suite-wide undo
   // stack, so that is the one the header's undo has to drive.
-  const past = useTrousseauStore((s) => s.past);
-  const future = useTrousseauStore((s) => s.future);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("shot");
 
   if (status !== "ready") return null;
 
-  // The stack is shared, so the next undo may take back an edit made in another
-  // tool. Saying which is the difference between a safe button and a surprise.
   const undo = (
-    <ToolUndo
-      canUndo={past.length > 0}
-      canRedo={future.length > 0}
-      onUndo={() => useTrousseauStore.getState().undo()}
-      onRedo={() => useTrousseauStore.getState().redo()}
-      undoLabel={past[past.length - 1]?.label ?? null}
-      redoLabel={future[future.length - 1]?.label ?? null}
-    />
+    <ToolUndo />
   );
 
   if (Object.keys(guests).length === 0) {
@@ -63,10 +51,10 @@ export function EnsembleBoard() {
       {undo}
       <div className="flex w-96 shrink-0 flex-col border-r border-charcoal/10">
         <div data-tour="groupshots.seed" className="flex gap-2 border-b border-charcoal/10 p-3">
-          <Button icon={Wand2} onClick={() => setShots({ ...shots, sections: propose(shots.sections, guests, seating, "template") })}>
+          <Button icon={Wand2} onClick={() => setShots({ ...shots, sections: propose(shots.sections, guests, seating, "template", event) })}>
             Seed the classic list
           </Button>
-          <Button icon={Sparkles} onClick={() => setShots({ ...shots, sections: propose(shots.sections, guests, seating, "generate") })}>
+          <Button icon={Sparkles} onClick={() => setShots({ ...shots, sections: propose(shots.sections, guests, seating, "generate", event) })}>
             + families and groups
           </Button>
         </div>
@@ -74,6 +62,7 @@ export function EnsembleBoard() {
           shots={shots}
           guests={guests}
           seating={seating}
+          event={event}
           selectedId={selectedId}
           onSelect={(id) => {
             setSelectedId(id);
@@ -99,14 +88,14 @@ export function EnsembleBoard() {
         <div data-tour="groupshots.panel" className="flex-1 overflow-y-auto">
           {tab === "shot" &&
             (selectedShot ? (
-              <ShotInspector shot={selectedShot} shots={shots} guests={guests} seating={seating} onChange={setShots} />
+              <ShotInspector shot={selectedShot} shots={shots} guests={guests} seating={seating} event={event} onChange={setShots} />
             ) : (
               <div className="flex h-full items-center justify-center">
                 <Empty>Pick a shot on the left, or add one.</Empty>
               </div>
             ))}
-          {tab === "cast" && <CastPanel shots={shots} guests={guests} onChange={setShots} />}
-          {tab === "print" && <PrintPanel shots={shots} guests={guests} seating={seating} coupleNames={event.coupleNames} />}
+          {tab === "cast" && <CastPanel shots={shots} guests={guests} event={event} onChange={setShots} />}
+          {tab === "print" && <PrintPanel shots={shots} guests={guests} seating={seating} event={event} />}
         </div>
       </div>
     </div>

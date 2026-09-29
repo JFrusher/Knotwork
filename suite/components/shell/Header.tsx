@@ -1,46 +1,97 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Database, Users } from "lucide-react";
+import { Search } from "lucide-react";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { TOOLS } from "@/lib/tools";
 import { AccountStatus } from "./AccountStatus";
+import { WeddingMenu } from "./WeddingMenu";
 import { HowThisWorks } from "./TourButtons";
 import { ChromeSlot } from "./chrome";
+import { DataButton } from "./DataButton";
+import { WhoIsHere } from "./WhoIsHere";
+import { useDataPanel } from "./dataPanel";
+import { useGuestImport } from "./guestImportPanel";
+import { useSyncPanel } from "./syncPanel";
+import { usePalette } from "./CommandPalette";
 
 const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataManager), {
+  ssr: false,
+});
+const GuestImport = dynamic(() => import("./GuestImport").then((m) => m.GuestImport), {
+  ssr: false,
+});
+const SyncHistory = dynamic(() => import("./SyncHistory").then((m) => m.SyncHistory), {
+  ssr: false,
+});
+const CommandPalette = dynamic(() => import("./CommandPalette").then((m) => m.CommandPalette), {
   ssr: false,
 });
 
 /**
  * The one header, on every page.
  *
- * The guest count sits in it deliberately: four tools reading one list is the
- * whole point of putting them together, and a number that moves when the
- * seating changes is the cheapest possible proof that they are.
+ * One row, which has to hold the tool's own controls at 1024px, the narrowest
+ * width the tools support: Timeline's zoom, Fit day and Present once scrolled
+ * out of sight inside it there. So below 1280px the tabs are icons (named for
+ * a screen reader and on hover) and the gaps close up. The guest count that
+ * used to sit here went for the same room: the front page now says what the
+ * tools share, area by area.
  */
 export function Header() {
-  const [dataOpen, setDataOpen] = useState(false);
+  const dataOpen = useDataPanel((s) => s.open);
+  const showData = useDataPanel((s) => s.show);
+  const hideData = useDataPanel((s) => s.hide);
   // DataManager's chunk (CSV and guest-import parsing, the guest link panel)
   // is dynamically imported — keep it out of the tree entirely until the user
   // has opened it once, so the chunk isn't fetched on every route's first
   // render. Once opened, its dialog element stays mounted and is opened and
   // closed in place.
   const [dataEverOpened, setDataEverOpened] = useState(false);
+  if (dataOpen && !dataEverOpened) setDataEverOpened(true);
+  // The importer, loaded the same way: only once somebody has asked for it.
+  const importOpen = useGuestImport((s) => s.open);
+  const [importEverOpened, setImportEverOpened] = useState(false);
+  if (importOpen && !importEverOpened) setImportEverOpened(true);
+  // Sync & history, loaded the same way; `?panel=sync` opens it on arrival.
+  const syncOpen = useSyncPanel((s) => s.open);
+  const showSync = useSyncPanel((s) => s.show);
+  const hideSync = useSyncPanel((s) => s.hide);
+  const [syncEverOpened, setSyncEverOpened] = useState(false);
+  if (syncOpen && !syncEverOpened) setSyncEverOpened(true);
+  useEffect(() => useSyncPanel.getState().fromAddress(), []);
+  // The palette: its button, and Ctrl/⌘ K from anywhere.
+  const paletteOpen = usePalette((s) => s.open);
+  const showPalette = usePalette((s) => s.show);
+  const [paletteEverOpened, setPaletteEverOpened] = useState(false);
+  if (paletteOpen && !paletteEverOpened) setPaletteEverOpened(true);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        usePalette.getState().show();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  // A conflict is settled there, so the button that says so opens it.
+  const conflict = useTrousseauStore((s) => s.cloudStatus === "conflict");
+  // The one question that stops sync opens the panel that asks it.
+  const choosing = useTrousseauStore((s) => s.cloudStatus === "choosing");
+  useEffect(() => {
+    if (choosing) showData();
+  }, [choosing, showData]);
   const pathname = usePathname();
-  const guestCount = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
-  const dirty = useTrousseauStore((s) => s.status === "error");
 
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-charcoal/10 bg-parchment/95 backdrop-blur">
-        <div className="mx-auto flex h-[var(--shell-header-h)] max-w-7xl items-center gap-2 px-4 sm:gap-6">
-          <Link href="/" className="shrink-0 font-display text-xl text-charcoal">
-            Trousseau
-          </Link>
+        <div className="mx-auto flex h-[var(--shell-header-h)] max-w-7xl items-center gap-2 px-4 xl:gap-3">
+          <WeddingMenu />
 
           {/* Scrolls within the header on a narrow screen, rather than making
               the whole page wider than it and pushing Data off the edge. */}
@@ -51,14 +102,17 @@ export function Header() {
                 <Link
                   key={tool.href}
                   href={tool.href}
+                  aria-label={tool.name}
+                  title={tool.name}
                   aria-current={active ? "page" : undefined}
-                  className={`${tool.tokens} shrink-0 rounded-t border-b-2 px-2.5 py-1.5 text-sm whitespace-nowrap transition ${
+                  className={`${tool.tokens} flex shrink-0 items-center rounded-t border-b-2 px-2.5 py-1.5 text-sm whitespace-nowrap transition ${
                     active
                       ? "border-[var(--accent-bright)] bg-stone text-charcoal"
                       : "border-transparent text-slate hover:bg-stone/60 hover:text-charcoal"
                   }`}
                 >
-                  {tool.name}
+                  <tool.icon size={16} aria-hidden className="xl:hidden" />
+                  <span className="hidden xl:inline">{tool.name}</span>
                 </Link>
               );
             })}
@@ -81,38 +135,28 @@ export function Header() {
             <ChromeSlot name="tool-undo" />
           </div>
 
-          <span
-            title={`${guestCount} guests on this device`}
-            className="hidden shrink-0 items-center gap-1.5 rounded-full border border-charcoal/10 bg-stone px-2.5 py-1 text-xs text-slate sm:inline-flex"
-          >
-            <Users size={13} />
-            {guestCount}
-          </span>
-
           <button
             type="button"
-            data-tour="shell.data"
-            onClick={() => {
-              setDataEverOpened(true);
-              setDataOpen(true);
-            }}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded border px-2.5 py-1.5 text-sm transition ${
-              dirty
-                ? "border-danger bg-danger-soft text-charcoal"
-                : "border-charcoal/15 text-slate hover:border-gold hover:text-charcoal"
-            }`}
+            onClick={showPalette}
+            aria-label="Find anything"
+            title="Find anything (Ctrl K)"
+            aria-keyshortcuts="Control+K Meta+K"
+            className="shrink-0 rounded border border-charcoal/15 p-1.5 text-slate transition hover:border-gold hover:text-charcoal"
           >
-            <Database size={15} />
-            {/* Still the button's name when the word does not fit on screen. */}
-            <span className="sr-only sm:not-sr-only">Data</span>
+            <Search size={15} aria-hidden />
           </button>
+          <WhoIsHere />
+          <DataButton onOpen={conflict ? showSync : showData} />
 
           <HowThisWorks />
           <AccountStatus />
         </div>
       </header>
 
-      {dataEverOpened ? <DataManager open={dataOpen} onClose={() => setDataOpen(false)} /> : null}
+      {dataEverOpened ? <DataManager open={dataOpen} onClose={hideData} /> : null}
+      {importEverOpened ? <GuestImport /> : null}
+      {syncEverOpened ? <SyncHistory open={syncOpen} onClose={hideSync} /> : null}
+      {paletteEverOpened ? <CommandPalette /> : null}
     </>
   );
 }

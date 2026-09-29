@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSelectFromAddress } from "@/components/shell/useSelectFromAddress";
 import { Board } from "./render/screen/Board";
-import { createPersister, restore } from "./state/persist";
-import { getDoc, useStore } from "./state/store";
+import { useBrigadeDoc, useStore } from "./state/store";
 import { Announcer } from "./ui/Announcer";
 import { Button } from "@/components/ui/fields";
 import { ChromeFill } from "@/components/shell/chrome";
@@ -13,61 +12,24 @@ import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
 import styles from "./App.module.css";
 
-const persister = createPersister();
-
 export function App() {
-  const doc = useStore(getDoc);
+  const doc = useBrigadeDoc();
   const notice = useStore((state) => state.notice);
   const filter = useStore((state) => state.filter);
   const setFilter = useStore((state) => state.setFilter);
   const setNotice = useStore((state) => state.setNotice);
 
-  // Bring back the last session once, on boot.
-  /**
-   * Nothing is written until the saved day has been read back.
-   *
-   * The autosave effect below runs on the first render, when the store still
-   * holds the empty document it was created with — and the effect that restores
-   * the real one has only just run, so this render's `doc` is still the empty
-   * one. Standalone, that was harmless: a second render followed immediately
-   * and replaced the pending write before the debounce elapsed, and in any case
-   * a write that arrived too early was dropped by a store that had not loaded.
-   *
-   * Neither of those safety nets exists now. The shared document is ready
-   * before the tool mounts, so an early write lands, and it lands on a real
-   * wedding — blanking the day and, through the mirror, the couple and venue
-   * with it. A restore is a read; writing before it finishes is never right.
-   */
-  const [restored, setRestored] = useState(false);
-  const canUndo = useStore((state) => state.canUndo());
-  const canRedo = useStore((state) => state.canRedo());
+  // Delegation keeps no copy and no history of its own: its edits are on the
+  // wedding's, so that is the one the header's undo drives. The stack is
+  // shared, so saying what the next undo takes back is what makes it safe.
 
-  useEffect(() => {
-    useStore.getState().loadDoc(restore());
-    setRestored(true);
-  }, []);
+  // A link to one job — the command palette's — opens on it.
+  useSelectFromAddress(useStore.getState().select);
 
-  // Autosave into the shared wedding, debounced, and flushed if the window goes
-  // away mid-edit.
-  useEffect(() => {
-    if (!restored) return;
-    persister.schedule(doc);
-  }, [doc, restored]);
-  useEffect(() => {
-    const flush = () => persister.flush();
-    window.addEventListener("beforeunload", flush);
-    // The listener is not enough on its own. Each tool used to *be* the page,
-    // so unmounting only ever happened as the page went away and `beforeunload`
-    // had already flushed. They are tabs now: switching to another tool unmounts
-    // this one with no unload event, which would drop whatever the debounce was
-    // still holding.
-    return () => {
-      window.removeEventListener("beforeunload", flush);
-      flush();
-    };
-  }, []);
-
-  const unassigned = doc.jobs.filter((job) => job.personIds.length === 0).length;
+  // The jobs on the day. A task before it with nobody named is the couple's
+  // own, kept on the Checklist, and is not a gap in the crew.
+  const onTheDay = doc.jobs.filter((job) => job.blockId !== null);
+  const unassigned = onTheDay.filter((job) => job.personIds.length === 0).length;
 
   return (
     <div className={styles.app}>
@@ -81,11 +43,11 @@ export function App() {
       <ChromeFill name="tool-actions" tokens="brigade-tokens">
         {/* Nothing to report leaves nothing behind, rather than an empty
             styled span sitting in the header as a stray mark. */}
-        {doc.jobs.length > 0 && (
+        {onTheDay.length > 0 && (
           <span className={unassigned > 0 ? styles.over : styles.slack}>
             {unassigned > 0
-              ? `${unassigned} of ${doc.jobs.length} jobs have nobody`
-              : `${doc.jobs.length} jobs, all covered`}
+              ? `${unassigned} of ${onTheDay.length} jobs have nobody`
+              : `${onTheDay.length} jobs, all covered`}
           </span>
         )}
         <Button
@@ -96,12 +58,7 @@ export function App() {
           Unassigned only
         </Button>
       </ChromeFill>
-      <ToolUndo
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onUndo={() => useStore.getState().undo()}
-        onRedo={() => useStore.getState().redo()}
-      />
+      <ToolUndo />
 
       {notice && (
         <p className={styles.notice} role="status">

@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { guestName, readGuests } from "@/lib/model/slices";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useSupplierLinks } from "@/lib/suppliers/links";
 import { assigneeNames, type Person } from "../../core/model/types";
-import { getDoc, useStore } from "../../state/store";
+import { useBrigadeDoc, useStore } from "../../state/store";
 import { Button, Panel, TextField } from "@/components/ui/fields";
+import { SupplierLinkField } from "./SupplierLinkField";
 import styles from "./CrewPanel.module.css";
 
 /**
@@ -11,12 +14,11 @@ import styles from "./CrewPanel.module.css";
  * click, and a click cannot be dropped in the wrong lane.
  */
 export function CrewPanel() {
-  const doc = useStore(getDoc);
+  const doc = useBrigadeDoc();
   const selectedJobId = useStore((state) => state.selectedJobId);
   const filter = useStore((state) => state.filter);
   const addTeam = useStore((state) => state.addTeam);
   const updateTeam = useStore((state) => state.updateTeam);
-  const setBudget = useStore((state) => state.setBudget);
   const deleteTeam = useStore((state) => state.deleteTeam);
   const addPerson = useStore((state) => state.addPerson);
   const updatePerson = useStore((state) => state.updatePerson);
@@ -35,6 +37,9 @@ export function CrewPanel() {
   const addable = Object.values(guests)
     .filter((guest) => !linked.has(guest.id) && guestName(guest))
     .sort((a, b) => guestName(a).localeCompare(guestName(b), "en"));
+
+  const links = useSupplierLinks((state) => state.links);
+  const withLink = new Set((links ?? []).map((link) => link.teamId));
 
   const job = doc.jobs.find((entry) => entry.id === selectedJobId) ?? null;
   const unteamed = doc.people.filter((person) => person.teamId === null);
@@ -109,34 +114,19 @@ export function CrewPanel() {
         </p>
       )}
 
-      {(() => {
-        const committed = doc.teams.reduce((total, t) => total + (t.cost ?? 0), 0);
-        // A wedding that has neither set a budget nor agreed a cost is not
-        // shown a number it never asked for.
-        if (doc.budget === null && committed === 0) return null;
-        const left = doc.budget === null ? null : doc.budget - committed;
-        return (
-          <section className={styles.budget}>
-            <p>
-              <strong>{committed.toLocaleString()}</strong> committed
-              {doc.budget !== null && ` of ${doc.budget.toLocaleString()}`}
-              {left !== null && ` — ${Math.abs(left).toLocaleString()} ${left < 0 ? "over" : "left"}`}
-            </p>
-            <TextField
-              label="Budget"
-              type="number"
-              value={doc.budget === null ? "" : String(doc.budget)}
-              onChange={(value) => setBudget(value === "" ? null : Number(value))}
-            />
-          </section>
-        );
-      })()}
+      {/* Money has one place to be changed, and it is not here. */}
+      <p className={styles.hint}>
+        Costs, deposits and payments are on the <Link href="/money" className="underline">
+          Money
+        </Link> page.
+      </p>
 
       {doc.teams.map((team) => (
         <section key={team.id} className={styles.team}>
           <div className={styles.teamHead}>
             <TextField
-              label=""
+              label="Team name"
+              hideLabel
               value={team.name}
               onChange={(name) => updateTeam(team.id, { name })}
             />
@@ -159,12 +149,14 @@ export function CrewPanel() {
             </button>
           </div>
 
-          {/* Folded away: most teams are friends doing a job, not suppliers
-              with a contract, and they should not be shown six empty fields. */}
-          <details className={styles.contract} open={team.cost !== null || team.confirmedOn !== ""}>
+          {/* Folded away: most teams are friends doing a job, with nobody to
+              email and nothing to confirm. */}
+          <details
+            className={styles.contract}
+            open={team.email !== "" || team.confirmedOn !== "" || withLink.has(team.id)}
+          >
             <summary>
-              Contract
-              {team.cost !== null && ` — ${team.cost.toLocaleString()}`}
+              Contact
               {team.confirmedOn !== "" && " · confirmed"}
             </summary>
             <TextField
@@ -174,35 +166,12 @@ export function CrewPanel() {
               onChange={(email) => updateTeam(team.id, { email })}
             />
             <TextField
-              label="Cost"
-              type="number"
-              value={team.cost === null ? "" : String(team.cost)}
-              onChange={(v) => updateTeam(team.id, { cost: v === "" ? null : Number(v) })}
-            />
-            <TextField
-              label="Deposit"
-              type="number"
-              value={team.deposit === null ? "" : String(team.deposit)}
-              onChange={(v) => updateTeam(team.id, { deposit: v === "" ? null : Number(v) })}
-            />
-            <TextField
-              label="Deposit paid"
-              type="date"
-              value={team.depositPaidOn}
-              onChange={(depositPaidOn) => updateTeam(team.id, { depositPaidOn })}
-            />
-            <TextField
-              label="Balance due"
-              type="date"
-              value={team.balanceDueOn}
-              onChange={(balanceDueOn) => updateTeam(team.id, { balanceDueOn })}
-            />
-            <TextField
               label="Confirmed"
               type="date"
               value={team.confirmedOn}
               onChange={(confirmedOn) => updateTeam(team.id, { confirmedOn })}
             />
+            <SupplierLinkField teamId={team.id} name={team.name} />
           </details>
 
           <ul className={styles.list}>

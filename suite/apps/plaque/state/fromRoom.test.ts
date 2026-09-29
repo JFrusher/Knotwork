@@ -33,6 +33,19 @@ describe("printing from the room", () => {
     });
   });
 
+  it("prints a side as the partners call it, not the id it is stored under", () => {
+    useTrousseauStore.getState().replaceDocument({
+      event: { partners: ["Alex", "Sam"] },
+      guests: {
+        g1: { id: "g1", firstName: "Charis", side: "a" },
+        g2: { id: "g2", firstName: "Tobias", side: "both" },
+      },
+      seating: { tables: {} },
+    });
+
+    expect(rowsFromRoom().rows.map((row) => row["Side"])).toEqual(["Alex’s side", "Both sides"]);
+  });
+
   it("still prints a card for someone with no table, and says so once", () => {
     seat(
       {
@@ -50,6 +63,19 @@ describe("printing from the room", () => {
     expect(rows.filter((row) => row["Table"] === "")).toHaveLength(2);
     expect(issues).toHaveLength(1);
     expect(issues[0]?.message).toMatch(/2 guests have no table/);
+  });
+
+  it("prints no card for someone who said they are not coming, nor counts them unseated", () => {
+    seat(
+      {
+        g1: { id: "g1", firstName: "Charis", assignedTableId: "t1" },
+        g2: { id: "g2", firstName: "Tobias", rsvpStatus: "declined" },
+      },
+      { t1: { id: "t1", label: "Table 1" } },
+    );
+    const { rows, issues } = rowsFromRoom();
+    expect(rows.map((row) => row["First Name"])).toEqual(["Charis"]);
+    expect(issues).toEqual([]);
   });
 
   it("says nothing when everyone is seated", () => {

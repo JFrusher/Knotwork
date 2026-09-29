@@ -1,22 +1,29 @@
 import { create } from "zustand";
+import type { Trousseau } from "@jfrusher/trousseau";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { coverage, warningsByJob, type Warning } from "../core/jobs/coverage";
-import { emptyDoc } from "../core/model/defaults";
 import { newId } from "../core/model/ids";
 import type { BrigadeDoc, Job, Person, Team } from "../core/model/types";
-import {
-  canRedo,
-  canUndo,
-  initHistory,
-  push,
-  redo,
-  reset,
-  undo,
-  type History,
-} from "./history";
+import { crewSlice, readSlice } from "./sliceBridge";
 
 export interface Cover {
   warnings: Warning[];
   byJob: Map<string, Warning[]>;
+}
+
+let view: { doc: Trousseau; brigade: BrigadeDoc } | null = null;
+
+/**
+ * The crew and the day as Brigade reads them, from the one wedding.
+ *
+ * Memoised on the wedding's identity: every edit anywhere replaces it, so a
+ * stale view is impossible, and React sees the same object until something
+ * changed.
+ */
+export function brigadeDoc(doc: Trousseau): BrigadeDoc {
+  if (view?.doc === doc) return view.brigade;
+  view = { doc, brigade: readSlice(doc) };
+  return view.brigade;
 }
 
 let cache: { doc: BrigadeDoc; cover: Cover } | null = null;
@@ -34,6 +41,10 @@ export function coverFor(doc: BrigadeDoc): Cover {
   return cover;
 }
 
+/** What Delegation shows: the wedding as it is now, wherever it was last changed. */
+export const useBrigadeDoc = (): BrigadeDoc => useTrousseauStore((state) => brigadeDoc(state.doc));
+export const useCover = (): Cover => useTrousseauStore((state) => coverFor(brigadeDoc(state.doc)));
+
 /** Which jobs the board shows. */
 export interface Filter {
   personId: string | null;
@@ -41,17 +52,18 @@ export interface Filter {
   unassignedOnly: boolean;
 }
 
+/**
+ * What is Delegation's own: which job is picked, the filter, a notice. The
+ * crew itself is the wedding's — every edit below goes straight into it, on
+ * the one history the header's undo drives.
+ */
 export interface StoreState {
-  history: History<BrigadeDoc>;
   selectedJobId: string | null;
   filter: Filter;
   notice: string | null;
 
-  loadDoc: (doc: BrigadeDoc) => void;
-
   addTeam: (seed?: Partial<Team>) => string;
   updateTeam: (id: string, patch: Partial<Team>) => void;
-  setBudget: (budget: number | null) => void;
   deleteTeam: (id: string) => void;
 
   addPerson: (seed?: Partial<Person>) => string;
@@ -66,31 +78,23 @@ export interface StoreState {
   select: (id: string | null) => void;
   setFilter: (patch: Partial<Filter>) => void;
   setNotice: (notice: string | null) => void;
-  undo: () => void;
-  redo: () => void;
-  canUndo: () => boolean;
-  canRedo: () => boolean;
 }
 
-export const getDoc = (state: StoreState): BrigadeDoc => state.history.present;
-export const selectCover = (state: StoreState): Cover => coverFor(state.history.present);
-
 export const useStore = create<StoreState>((set, get) => {
-  const commit = (next: BrigadeDoc) => set((state) => ({ history: push(state.history, next) }));
-  const edit = (change: (doc: BrigadeDoc) => BrigadeDoc) => commit(change(getDoc(get())));
+  /** Shown as "Undo <label>"; edits with one label close together are one step. */
+  const edit = (label: string, change: (doc: BrigadeDoc) => BrigadeDoc) => {
+    const shared = useTrousseauStore.getState();
+    shared.setSlice("crew", crewSlice(change(brigadeDoc(shared.doc))), { label });
+  };
 
   return {
-    history: initHistory(emptyDoc()),
     selectedJobId: null,
     filter: { personId: null, teamId: null, unassignedOnly: false },
     notice: null,
 
-
-    loadDoc: (doc) => set({ history: reset(doc), selectedJobId: null, notice: null }),
-
     addTeam: (seed = {}) => {
       const id = seed.id ?? newId("team");
-      edit((doc) => ({
+      edit("a new team", (doc) => ({
         ...doc,
         teams: [
           ...doc.teams,
@@ -105,6 +109,7 @@ export const useStore = create<StoreState>((set, get) => {
             deposit: null,
             depositPaidOn: "",
             balanceDueOn: "",
+            balancePaidOn: "",
             confirmedOn: "",
             ...seed,
           },
@@ -114,17 +119,16 @@ export const useStore = create<StoreState>((set, get) => {
     },
 
     updateTeam: (id, patch) =>
-      edit((doc) => ({
+      edit("a team's details", (doc) => ({
         ...doc,
         teams: doc.teams.map((team) => (team.id === id ? { ...team, ...patch } : team)),
       })),
 
-    setBudget: (budget) => edit((doc) => ({ ...doc, budget })),
 
     // People keep their jobs when their team goes: the work did not stop
     // existing because the supplier's row did.
     deleteTeam: (id) =>
-      edit((doc) => ({
+      edit("removing a team", (doc) => ({
         ...doc,
         teams: doc.teams.filter((team) => team.id !== id),
         people: doc.people.map((person) =>
@@ -135,7 +139,7 @@ export const useStore = create<StoreState>((set, get) => {
 
     addPerson: (seed = {}) => {
       const id = seed.id ?? newId("per");
-      edit((doc) => ({
+      edit("a new person", (doc) => ({
         ...doc,
         people: [
           ...doc.people,
@@ -146,13 +150,13 @@ export const useStore = create<StoreState>((set, get) => {
     },
 
     updatePerson: (id, patch) =>
-      edit((doc) => ({
+      edit("someone's details", (doc) => ({
         ...doc,
         people: doc.people.map((person) => (person.id === id ? { ...person, ...patch } : person)),
       })),
 
     deletePerson: (id) =>
-      edit((doc) => ({
+      edit("removing someone", (doc) => ({
         ...doc,
         people: doc.people.filter((person) => person.id !== id),
         jobs: doc.jobs.map((job) =>
@@ -164,7 +168,7 @@ export const useStore = create<StoreState>((set, get) => {
 
     addJob: (blockId, seed = {}) => {
       const id = seed.id ?? newId("job");
-      edit((doc) => ({
+      edit("a new job", (doc) => ({
         ...doc,
         jobs: [
           ...doc.jobs,
@@ -176,18 +180,18 @@ export const useStore = create<StoreState>((set, get) => {
     },
 
     updateJob: (id, patch) =>
-      edit((doc) => ({
+      edit("a job's details", (doc) => ({
         ...doc,
         jobs: doc.jobs.map((job) => (job.id === id ? { ...job, ...patch } : job)),
       })),
 
     deleteJob: (id) => {
-      edit((doc) => ({ ...doc, jobs: doc.jobs.filter((job) => job.id !== id) }));
+      edit("removing a job", (doc) => ({ ...doc, jobs: doc.jobs.filter((job) => job.id !== id) }));
       if (get().selectedJobId === id) set({ selectedJobId: null });
     },
 
     toggleAssignment: (jobId, personId) =>
-      edit((doc) => ({
+      edit("who is on a job", (doc) => ({
         ...doc,
         jobs: doc.jobs.map((job) =>
           job.id === jobId
@@ -204,10 +208,5 @@ export const useStore = create<StoreState>((set, get) => {
     select: (id) => set({ selectedJobId: id }),
     setFilter: (patch) => set((state) => ({ filter: { ...state.filter, ...patch } })),
     setNotice: (notice) => set({ notice }),
-
-    undo: () => set((state) => ({ history: undo(state.history) })),
-    redo: () => set((state) => ({ history: redo(state.history) })),
-    canUndo: () => canUndo(get().history),
-    canRedo: () => canRedo(get().history),
   };
 });

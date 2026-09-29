@@ -53,6 +53,34 @@ export function documentStore(client: SupabaseClient): DocumentStore {
       return { accepted: row.accepted, record };
     },
 
+    async history(weddingId, limit) {
+      // The member's own session: row-level security lets a wedding's members
+      // read its history, and nobody else.
+      const { data, error } = await client
+        .from("wedding_document_history")
+        .select("id, saved_at, saved_by")
+        .eq("wedding_id", weddingId)
+        .order("saved_at", { ascending: false })
+        .limit(limit);
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((row) => ({
+        id: row.id as string,
+        savedAt: row.saved_at as string,
+        savedBy: (row.saved_by as string | null) ?? null,
+      }));
+    },
+
+    async historyDocument(weddingId, id) {
+      const { data, error } = await client
+        .from("wedding_document_history")
+        .select("document")
+        .eq("wedding_id", weddingId)
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return data?.document ?? null;
+    },
+
     async staleWeddings(before) {
       // wedding_documents rows are created lazily, on first save (see this
       // migration's own comment on the `version` column) — a wedding that was

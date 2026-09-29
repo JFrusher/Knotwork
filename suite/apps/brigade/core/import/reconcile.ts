@@ -51,6 +51,7 @@ export function reconcile(
       deposit: null,
       depositPaidOn: "",
       balanceDueOn: "",
+      balancePaidOn: "",
       confirmedOn: "",
     }));
 

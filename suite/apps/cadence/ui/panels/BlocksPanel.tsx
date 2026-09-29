@@ -1,6 +1,6 @@
 import { isMoment } from "../../core/model/types";
 import { formatClock } from "../../core/time/minutes";
-import { getDoc, selectSchedule, useStore } from "../../state/store";
+import { currentDoc, useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import { Button, Panel } from "@/components/ui/fields";
 import styles from "./BlocksPanel.module.css";
 
@@ -28,15 +28,15 @@ function LaneName({ lane }: { lane: string }) {
       }}
       onBlur={(event) => {
         renameLane(lane, event.target.value);
-        if (getDoc(useStore.getState()).lanes.includes(lane)) event.target.value = lane;
+        if (currentDoc().lanes.includes(lane)) event.target.value = lane;
       }}
     />
   );
 }
 
 export function BlocksPanel() {
-  const doc = useStore(getDoc);
-  const schedule = useStore(selectSchedule);
+  const doc = useTimelineDoc();
+  const schedule = useSchedule();
   const selectedId = useStore((state) => state.selectedId);
   const select = useStore((state) => state.select);
   const addBlock = useStore((state) => state.addBlock);

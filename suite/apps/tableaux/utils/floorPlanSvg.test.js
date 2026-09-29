@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildFloorPlanSvg, measureFloorPlan } from './floorPlanSvg.js'
+import { buildFloorPlanSvg, measureFloorPlan } from './floorPlanSvg'
 
 // Two 8-seat trestles side by side plus a rotated 4-seat top table, matching the
 // shape of a real plan: rect tables with seats on the long sides only.

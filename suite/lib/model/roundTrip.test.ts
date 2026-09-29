@@ -15,7 +15,7 @@ const { STORAGE_KEY, flushPersist, useTrousseauStore } = await import(
 const { publishDay, readCrew, readGuests, readSeating, readTimeline, readShots, resolvedDay } = await import(
   "./slices"
 );
-const { addTable, seatGuest } = await import("@/lib/seating/actions");
+const { useStore: useSeating } = await import("@/apps/tableaux/store/useStore");
 const { addBlock, patchBlock } = await import("@/lib/model/timelineActions");
 const { addJob, addPerson, seedTeamsFromTags, toggleAssignment } = await import(
   "@/lib/model/crewActions"
@@ -71,13 +71,9 @@ function buildAWedding(): void {
   };
   store().setSlice("guests", guests);
 
-  const seating = addTable(readSeating(store().doc), "round", { x: 200, y: 200 });
-  const tableId = Object.keys(seating.tables)[0]!;
-  const plan = seatGuest({ guests: readGuests(store().doc), seating }, "g1", tableId);
-  store().setSlices([
-    ["guests", plan.guests],
-    ["seating", plan.seating],
-  ]);
+  // Through Seating itself: its commands, written into the wedding.
+  const added = useSeating.getState().addTable({ type: "round", x: 200, y: 200 });
+  useSeating.getState().assignGuest("g1", added!.meta!["newTableId"] as string);
 
   let timeline = addBlock(readTimeline(store().doc), "Couple");
   const ceremony = timeline.blocks[0]!.id;

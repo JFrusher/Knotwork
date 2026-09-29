@@ -1,11 +1,11 @@
 import { assigneeNames, blockFor, isOrphan } from "../../core/model/types";
 import { formatClock } from "../../core/time/minutes";
-import { getDoc, useStore } from "../../state/store";
+import { useBrigadeDoc, useStore } from "../../state/store";
 import { Button, Panel, SelectField, TextArea, TextField } from "@/components/ui/fields";
 import styles from "./JobPanel.module.css";
 
 export function JobPanel() {
-  const doc = useStore(getDoc);
+  const doc = useBrigadeDoc();
   const selectedJobId = useStore((state) => state.selectedJobId);
   const updateJob = useStore((state) => state.updateJob);
   const deleteJob = useStore((state) => state.deleteJob);

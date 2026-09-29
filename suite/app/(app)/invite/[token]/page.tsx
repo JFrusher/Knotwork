@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { browserClient } from "@/lib/accounts/browserClient";
+import { SignInFailed } from "@/components/shell/SignInFailed";
 
 export default function InvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
@@ -30,9 +31,13 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
         // An unhandled server error comes back as HTML, and parsing that would
         // reject inside this callback — leaving the page stuck on "One moment…"
         // with nothing on screen to explain why.
-        const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        if (response.ok) {
+        const body = (await response.json().catch(() => null)) as { error?: string; weddingId?: string } | null;
+        if (response.ok && body?.weddingId) {
           setStatus("done");
+          // Through `/open`, a full load: this device opens the wedding just
+          // joined, sync starts with it, and a wedding already on this device
+          // is asked about rather than replaced.
+          window.location.assign(`/open/${body.weddingId}`);
         } else {
           setStatus("error");
           setMessage(body?.error ?? "That invite could not be accepted.");
@@ -56,9 +61,10 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
 
         {status === "signed-out" && (
           <div className="space-y-4">
-            <p className="text-slate">Sign in with the email this invite was sent to, then come back to this link.</p>
+            <SignInFailed />
+            <p className="text-slate">Sign in with the email this invite was sent to. The link we send brings you back here.</p>
             <Link
-              href="/login"
+              href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`}
               className="inline-flex min-h-11 items-center rounded border border-gold bg-gold/15 px-4 py-2 text-sm text-charcoal transition hover:bg-gold/25"
             >
               Sign in
@@ -67,17 +73,9 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
         )}
 
         {status === "done" && (
-          <div className="space-y-4">
-            <p className="rounded border border-ok/40 bg-ok-soft px-3 py-2 text-sm text-charcoal">
-              You&rsquo;re in — welcome to the wedding.
-            </p>
-            <Link
-              href="/account"
-              className="inline-flex min-h-11 items-center rounded border border-gold bg-gold/15 px-4 py-2 text-sm text-charcoal transition hover:bg-gold/25"
-            >
-              Go to your account
-            </Link>
-          </div>
+          <p role="status" className="rounded border border-ok/40 bg-ok-soft px-3 py-2 text-sm text-charcoal">
+            You&rsquo;re in — opening the wedding…
+          </p>
         )}
 
         {status === "error" && (

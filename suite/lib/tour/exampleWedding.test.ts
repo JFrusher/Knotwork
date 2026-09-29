@@ -9,6 +9,7 @@ vi.mock("idb-keyval", () => ({
 const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
 const { isWeddingEmpty, loadExampleWedding } = await import("./exampleWedding");
 const { emptyTrousseau } = await import("@jfrusher/trousseau");
+const { useCopies } = await import("@/lib/store/copies");
 
 const example = { event: { coupleNames: "Alex & Sam" }, guests: { g1: { id: "g1" } } };
 
@@ -33,11 +34,10 @@ afterEach(() => {
 });
 
 test("an untouched wedding is empty, and loads without asking anything", async () => {
-  const confirmed = vi.fn(() => false);
-  vi.stubGlobal("confirm", confirmed);
+  const confirmed = vi.fn(async () => false);
 
   expect(isWeddingEmpty()).toBe(true);
-  await expect(loadExampleWedding()).resolves.toBe("loaded");
+  await expect(loadExampleWedding(confirmed)).resolves.toBe("loaded");
   // Nothing to lose, so nothing to ask about.
   expect(confirmed).not.toHaveBeenCalled();
 });
@@ -45,22 +45,32 @@ test("an untouched wedding is empty, and loads without asking anything", async (
 test("a wedding with guests in it is never replaced without a yes", async () => {
   const doc = { ...emptyTrousseau(), guests: { a: { id: "a" } } };
   useTrousseauStore.setState({ raw: doc as unknown as Record<string, unknown>, doc });
-  vi.stubGlobal("confirm", vi.fn(() => false));
-
   expect(isWeddingEmpty()).toBe(false);
-  await expect(loadExampleWedding()).resolves.toBe("cancelled");
+  await expect(loadExampleWedding(async () => false)).resolves.toBe("cancelled");
   // The refusal has to leave the document exactly as it was.
   expect(Object.keys(useTrousseauStore.getState().doc.guests)).toEqual(["a"]);
+});
+
+test("a wedding with only group shots planned is never replaced without a yes", async () => {
+  const empty = emptyTrousseau();
+  const doc = {
+    ...empty,
+    shots: { ...empty.shots, sections: [{ id: "s", name: "Family", shots: [{ id: "x", label: "Everyone", members: [], notes: "" }] }] },
+  };
+  useTrousseauStore.setState({ raw: doc as unknown as Record<string, unknown>, doc });
+  const confirmed = vi.fn(async () => false);
+  await expect(loadExampleWedding(confirmed)).resolves.toBe("cancelled");
+  expect(confirmed).toHaveBeenCalled();
 });
 
 test("saying yes replaces it, without becoming an undo step", async () => {
   const doc = { ...emptyTrousseau(), guests: { a: { id: "a" } } };
   useTrousseauStore.setState({ raw: doc as unknown as Record<string, unknown>, doc, past: [] });
-  vi.stubGlobal("confirm", vi.fn(() => true));
-
-  await expect(loadExampleWedding()).resolves.toBe("loaded");
+  await expect(loadExampleWedding(async () => true)).resolves.toBe("loaded");
   expect(useTrousseauStore.getState().doc.event.coupleNames).toBe("Alex & Sam");
   // Silent: offering to undo would offer to restore what the user was just
   // warned they were replacing.
   expect(useTrousseauStore.getState().past).toEqual([]);
+  // What it replaced is kept, to put back from Data.
+  expect(useCopies.getState().copies.map((copy) => Object.keys(copy.document["guests"] as object))).toEqual([["a"]]);
 });

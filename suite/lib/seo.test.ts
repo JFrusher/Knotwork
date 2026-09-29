@@ -14,8 +14,9 @@ const rule = () => {
   return Array.isArray(disallow) ? disallow : [disallow];
 };
 
-test("crawlers are refused the guest pages and the API", () => {
+test("crawlers are refused the guest pages, suppliers' pages and the API", () => {
   expect(rule()).toContain("/seat/");
+  expect(rule()).toContain("/supplier/");
   expect(rule()).toContain("/api/");
 });
 

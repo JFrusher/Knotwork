@@ -1,4 +1,5 @@
 import { eventSchema, type Trousseau } from "@jfrusher/trousseau";
+import { isDietaryKey, normaliseDietary } from "./dietary";
 
 /**
  * A build-time check that the contract still has the `event` fields this file
@@ -52,6 +53,7 @@ import type {
   ShotMember,
   ShotSection,
   Shots,
+  Side,
   Snapshot,
   Space,
   Table,
@@ -132,6 +134,7 @@ export function coerceGuests(source: unknown): Record<string, Guest> {
     if (!isRecord(raw)) continue;
     const rsvp = raw["rsvpStatus"];
     const side = raw["side"];
+    const diet = legacyDietary(raw);
     out[id] = {
       // Keep every key the suite has no opinion about. Tools own fields this
       // model has never heard of — Tableaux's `fullName`, `dietaryRaw` and
@@ -144,10 +147,11 @@ export function coerceGuests(source: unknown): Record<string, Guest> {
       lastName: str(raw["lastName"]),
       email: str(raw["email"]),
       rsvpStatus: rsvp === "confirmed" || rsvp === "declined" ? rsvp : "pending",
-      dietary: str(raw["dietary"]),
+      dietary: diet.dietary,
+      dietaryRaw: diet.dietaryRaw,
       entree: str(raw["entree"]),
       notes: str(raw["notes"]),
-      side: side === "bride" || side === "groom" || side === "both" ? side : "",
+      side: readSide(side),
       groupId: typeof raw["groupId"] === "string" ? raw["groupId"] : null,
       subgroupId: typeof raw["subgroupId"] === "string" ? raw["subgroupId"] : null,
       familyId: typeof raw["familyId"] === "string" ? raw["familyId"] : null,
@@ -160,9 +164,57 @@ export function coerceGuests(source: unknown): Record<string, Guest> {
   return out;
 }
 
+/**
+ * A guest's dietary fields in the one shape every tool reads — see
+ * `lib/model/dietary`.
+ *
+ * The Data panel's importer used to store what the file said in `dietary`
+ * itself: "Vegetarian", "Gluten-Free", "None". A value that is not one of the
+ * keys is that, and becomes the key it means, with the words kept as what the
+ * guest said. `reconcileLoadedDocument` writes the result back, so a document
+ * is converted once.
+ */
+function legacyDietary(raw: Record<string, unknown>): { dietary: string; dietaryRaw: string } {
+  const dietary = str(raw["dietary"]);
+  const dietaryRaw = str(raw["dietaryRaw"]);
+  if (dietary === "" || isDietaryKey(dietary)) return { dietary, dietaryRaw };
+  return { dietary: normaliseDietary(dietary), dietaryRaw: dietaryRaw || dietary };
+}
+
+/**
+ * A guest's side. Stored as "bride" and "groom" before sides were named after
+ * the partners; those are partner `a` and `b`, in the order they were listed.
+ */
+function readSide(side: unknown): Side {
+  if (side === "a" || side === "b" || side === "both") return side;
+  if (side === "bride") return "a";
+  if (side === "groom") return "b";
+  return "";
+}
+
+/**
+ * True when any stored guest still carries something reading has to convert —
+ * the old importer's dietary text, or a side called "bride" or "groom".
+ */
+export function hasLegacyGuests(source: unknown): boolean {
+  return Object.values(isRecord(source) ? source : {}).some((raw) => {
+    if (!isRecord(raw)) return false;
+    const dietary = str(raw["dietary"]);
+    return (dietary !== "" && !isDietaryKey(dietary)) || raw["side"] === "bride" || raw["side"] === "groom";
+  });
+}
+
 /** A guest's printed name. `firstName` may hold a whole name on a one-column import. */
 export function guestName(guest: Guest): string {
   return [guest.firstName, guest.lastName].filter(Boolean).join(" ").trim();
+}
+
+/**
+ * Everyone on the list who has not said no: who needs a seat, a card and a
+ * meal. Someone who declined stays on the list, and is none of those.
+ */
+export function isComing(guest: Pick<Guest, "rsvpStatus">): boolean {
+  return guest.rsvpStatus !== "declined";
 }
 
 // seating --------------------------------------------------------------------
@@ -619,6 +671,7 @@ export function readCrew(doc: Trousseau): Crew {
           deposit: typeof t["deposit"] === "number" ? t["deposit"] : null,
           depositPaidOn: str(t["depositPaidOn"]),
           balanceDueOn: str(t["balanceDueOn"]),
+          balancePaidOn: str(t["balancePaidOn"]),
           confirmedOn: str(t["confirmedOn"]),
         };
       }),
@@ -650,6 +703,7 @@ export function readCrew(doc: Trousseau): Crew {
           teamId: typeof j["teamId"] === "string" ? j["teamId"] : null,
           personIds: list(j["personIds"], (p) => (typeof p === "string" ? p : null)),
           status: status === "doing" || status === "done" ? status : "todo",
+          dueOn: str(j["dueOn"]),
         };
       }),
       budget: typeof raw["budget"] === "number" ? raw["budget"] : null,
@@ -661,6 +715,47 @@ export function readCrew(doc: Trousseau): Crew {
 
 const CAST_ROLE_SET = new Set<CastRole>(CAST_ROLES);
 
+/**
+ * The roles as they were stored before they were named after the partners.
+ * Partner `a` was "bride" and `b` "groom" — the order they were listed in, not
+ * a claim about either of them. Read as their new names; `reconcileLoadedDocument`
+ * writes the result back.
+ */
+const LEGACY_ROLES: Record<string, CastRole> = {
+  bride: "a",
+  groom: "b",
+  "brides-mother": "a-mother",
+  "brides-father": "a-father",
+  "grooms-mother": "b-mother",
+  "grooms-father": "b-father",
+  "bridal-party": "a-party",
+  groomsmen: "b-party",
+};
+const LEGACY_KEY_FOR = Object.fromEntries(
+  Object.entries(LEGACY_ROLES).map(([legacy, role]) => [role, legacy]),
+) as Record<CastRole, string>;
+
+/** True when the stored shots still use the roles' old names. */
+export function hasLegacyShots(source: unknown): boolean {
+  if (!isRecord(source)) return false;
+  const cast = source["cast"];
+  if (isRecord(cast) && Object.keys(cast).some((key) => key in LEGACY_ROLES)) return true;
+  const sections = Array.isArray(source["sections"]) ? source["sections"] : [];
+  return sections.some(
+    (section) =>
+      isRecord(section) &&
+      Array.isArray(section["shots"]) &&
+      section["shots"].some(
+        (shot) =>
+          isRecord(shot) &&
+          Array.isArray(shot["members"]) &&
+          shot["members"].some(
+            (member) => isRecord(member) && member["kind"] === "role" && typeof member["ref"] === "string" && member["ref"] in LEGACY_ROLES,
+          ),
+      ),
+  );
+}
+
 export function emptyCast(): Cast {
   const cast = {} as Cast;
   for (const role of CAST_ROLES) cast[role] = [];
@@ -671,7 +766,7 @@ function readCast(raw: unknown): Cast {
   const cast = emptyCast();
   if (!isRecord(raw)) return cast;
   for (const role of CAST_ROLES) {
-    cast[role] = list(raw[role], (id) => (typeof id === "string" ? id : null));
+    cast[role] = list(raw[role] ?? raw[LEGACY_KEY_FOR[role]], (id) => (typeof id === "string" ? id : null));
   }
   return cast;
 }
@@ -687,10 +782,10 @@ function readMember(raw: unknown): ShotMember | null {
     case "customRole":
     case "text":
       return typeof ref === "string" ? { kind, ref } : null;
-    case "role":
-      return typeof ref === "string" && CAST_ROLE_SET.has(ref as CastRole)
-        ? { kind: "role", ref: ref as CastRole }
-        : null;
+    case "role": {
+      const role = typeof ref === "string" ? (LEGACY_ROLES[ref] ?? ref) : null;
+      return role !== null && CAST_ROLE_SET.has(role as CastRole) ? { kind: "role", ref: role as CastRole } : null;
+    }
     default:
       return null;
   }

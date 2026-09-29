@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeSnap, buildContainers } from './alignmentSnap.js'
+import { computeSnap, buildContainers } from './alignmentSnap'
 
 const box = (cx, cy, hw = 10, hh = 10) => ({ cx, cy, hw, hh })
 

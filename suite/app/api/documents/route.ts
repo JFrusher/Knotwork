@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { accountsConfigured } from "@/lib/env";
 import { currentUser, serverClient } from "@/lib/accounts/serverClient";
-import { accountsStore } from "@/lib/accounts/supabaseStore";
+import { requestedWedding } from "@/lib/accounts/requestedWedding";
 import { documentStore } from "@/lib/documents/supabaseStore";
 import { getDocumentHandler, saveDocumentHandler } from "@/lib/documents/handlers";
-import { allow, WRITE_LIMIT } from "@/lib/sync/rateLimit";
+import { allow, WRITE_LIMIT } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ const unconfigured = () =>
 const unauthenticated = () => NextResponse.json({ error: "Sign in first." }, { status: 401 });
 
 const noWedding = () =>
-  NextResponse.json({ error: "You don't have a wedding yet." }, { status: 404 });
+  NextResponse.json({ error: "That is not a wedding you are on." }, { status: 404 });
 
 const throttled = () =>
   NextResponse.json({ error: "Too many requests. Wait a minute and try again." }, { status: 429 });
@@ -25,12 +25,7 @@ const failed = (where: string, error: unknown) => {
   return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
 };
 
-async function resolveWeddingId(client: NonNullable<Awaited<ReturnType<typeof serverClient>>>, userId: string) {
-  const membership = await accountsStore(client).memberOf(userId);
-  return membership?.weddingId ?? null;
-}
-
-export async function GET() {
+export async function GET(request: Request) {
   try {
     if (!accountsConfigured()) return unconfigured();
     const user = await currentUser();
@@ -39,7 +34,7 @@ export async function GET() {
     const client = await serverClient();
     if (!client) return unconfigured();
 
-    const weddingId = await resolveWeddingId(client, user.id);
+    const weddingId = await requestedWedding(request, client, user.id);
     if (!weddingId) return noWedding();
 
     const reply = await getDocumentHandler(documentStore(client), weddingId);
@@ -71,7 +66,7 @@ export async function PUT(request: Request) {
     const client = await serverClient();
     if (!client) return unconfigured();
 
-    const weddingId = await resolveWeddingId(client, user.id);
+    const weddingId = await requestedWedding(request, client, user.id);
     if (!weddingId) return noWedding();
 
     let body: PutBody;

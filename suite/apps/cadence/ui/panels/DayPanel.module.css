@@ -13,3 +13,23 @@
   line-height: 1.5;
   color: var(--text-muted);
 }
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-3);
+}
+
+.couple {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--text);
+}
+
+.where {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}

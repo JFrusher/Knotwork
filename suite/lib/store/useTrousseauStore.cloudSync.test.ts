@@ -8,14 +8,15 @@ vi.mock("idb-keyval", () => ({
 
 const pushDocumentMock = vi.fn();
 const fetchCloudDocumentMock = vi.fn();
-const fetchWeddingIdMock = vi.fn();
+const fetchWeddingsMock = vi.fn();
 vi.mock("@/lib/documents/cloudSync", () => ({
+  fetchWeddings: () => fetchWeddingsMock(),
   fetchCloudDocument: (...args: unknown[]) => fetchCloudDocumentMock(...args),
   pushDocument: (...args: unknown[]) => pushDocumentMock(...args),
-  replayPendingWrite: async () => null,
-  getPendingWrite: async () => null,
-  fetchWeddingId: (...args: unknown[]) => fetchWeddingIdMock(...args),
+  readLink: async () => null,
+  writeLink: async () => undefined,
 }));
+vi.mock("./openWedding", () => ({ readOpenChoice: async () => null }));
 
 // Mocked rather than left to run: the real module reaches for browserClient
 // and IndexedDB, and *when* it is called is the assertion in two tests below.
@@ -26,7 +27,7 @@ vi.mock("@/lib/documents/assets", () => ({
 
 const { useTrousseauStore, flushPersist } = await import("./useTrousseauStore");
 const { emptyTrousseau } = await import("@jfrusher/trousseau");
-const { fingerprintAllSlices } = await import("@/lib/documents/mergeCloudDocument");
+const { fingerprintParts } = await import("@/lib/documents/mergeCloudDocument");
 const { fingerprint } = await import("@/lib/documents/fingerprint");
 
 /** Long enough for the 250ms cloud-push timer, and the push it ends in, to run. */
@@ -44,16 +45,15 @@ afterEach(async () => {
 beforeEach(() => {
   pushDocumentMock.mockReset();
   fetchCloudDocumentMock.mockReset();
+  fetchWeddingsMock.mockReset();
+  // The couple's own wedding, and nothing else: which wedding to open is
+  // tested with the rest of signing in, in signingIn.test.ts.
+  fetchWeddingsMock.mockResolvedValue({ ok: true, weddings: [{ weddingId: "w1", role: "partner", names: "", date: "" }] });
   syncAssetsMock.mockClear();
-  fetchWeddingIdMock.mockReset();
-  // No wedding id by default: keeps the asset sync a no-op except in the two
-  // tests that ask about it.
-  fetchWeddingIdMock.mockResolvedValue({ ok: true, weddingId: null });
   const doc = emptyTrousseau();
   useTrousseauStore.setState({
     status: "ready",
     error: null,
-    generation: 0,
     raw: doc as unknown as Record<string, unknown>,
     doc,
     past: [],
@@ -63,18 +63,19 @@ beforeEach(() => {
     cloudConflicts: [],
     cloudAgreed: {},
     cloudError: null,
-    weddingId: null,
+    weddingId: "w1",
+    cloudChoice: null,
   });
 });
 
 test("startCloudSync stays disabled when the cloud reports unavailable", async () => {
-  fetchCloudDocumentMock.mockResolvedValue({ ok: false, reason: "unavailable" });
+  fetchWeddingsMock.mockResolvedValue({ ok: false, reason: "unavailable" });
   await useTrousseauStore.getState().startCloudSync();
   expect(useTrousseauStore.getState().cloudStatus).toBe("disabled");
 });
 
 test("startCloudSync adopts the cloud document without creating an undo entry", async () => {
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: emptyTrousseau(), version: 4 });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: emptyTrousseau(), version: 4 });
   await useTrousseauStore.getState().startCloudSync();
   const state = useTrousseauStore.getState();
   expect(state.cloudStatus).toBe("idle");
@@ -88,7 +89,7 @@ test("a rejected write surfaces per-slice conflicts, not an auto-merge", async (
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: { ...base, event: { coupleNames: "mine" } },
   });
   pushDocumentMock.mockResolvedValue({
@@ -100,7 +101,9 @@ test("a rejected write surfaces per-slice conflicts, not an auto-merge", async (
   await useTrousseauStore.getState().syncToCloud();
   const state = useTrousseauStore.getState();
   expect(state.cloudStatus).toBe("conflict");
-  expect(state.cloudConflicts).toEqual([{ slice: "event", theirs: { coupleNames: "theirs" } }]);
+  expect(state.cloudConflicts).toEqual([
+    { key: "event", slice: "event", mine: { coupleNames: "mine" }, theirs: { coupleNames: "theirs" } },
+  ]);
   // The conflicting slice keeps the local value until resolved.
   expect((state.raw as Record<string, unknown>).event).toEqual({ coupleNames: "mine" });
 });
@@ -110,7 +113,7 @@ test("a rejected write with no actual slice overlap resolves itself and re-pushe
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: { ...base, guests: { g1: { id: "g1" } } },
   });
   pushDocumentMock
@@ -138,8 +141,8 @@ test("resolveConflict(theirs) applies the server's slice and clears that conflic
   useTrousseauStore.setState({
     cloudStatus: "conflict",
     cloudVersion: 2,
-    cloudAgreed: fingerprintAllSlices(base),
-    cloudConflicts: [{ slice: "event", theirs: { coupleNames: "theirs" } }],
+    cloudAgreed: fingerprintParts(base),
+    cloudConflicts: [{ key: "event", slice: "event", mine: { coupleNames: "mine" }, theirs: { coupleNames: "theirs" } }],
     raw: { ...base, event: { coupleNames: "mine" } },
   });
 
@@ -155,8 +158,8 @@ test("resolveConflict(mine) drops the conflict and keeps the local slice", async
   useTrousseauStore.setState({
     cloudStatus: "conflict",
     cloudVersion: 2,
-    cloudAgreed: fingerprintAllSlices(base),
-    cloudConflicts: [{ slice: "event", theirs: { coupleNames: "theirs" } }],
+    cloudAgreed: fingerprintParts(base),
+    cloudConflicts: [{ key: "event", slice: "event", mine: { coupleNames: "mine" }, theirs: { coupleNames: "theirs" } }],
     raw: { ...base, event: { coupleNames: "mine" } },
   });
 
@@ -172,11 +175,12 @@ test("pullFromCloud takes a slice that only changed on the server", async () => 
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: base,
   });
   fetchCloudDocumentMock.mockResolvedValue({
     ok: true,
+    weddingId: "w1",
     document: { ...base, guests: { g1: { id: "g1" } } },
     version: 2,
   });
@@ -193,13 +197,45 @@ test("pullFromCloud takes a slice that only changed on the server", async () => 
   expect(state.cloudConflicts).toEqual([]);
 });
 
+test("a partner's change to one guest and this device's to another both stand, with nothing to choose", async () => {
+  const guests = { ada: { id: "ada", firstName: "Ada", rsvpStatus: "pending" }, alan: { id: "alan", firstName: "Alan", rsvpStatus: "pending" } };
+  const base = { ...(emptyTrousseau() as unknown as Record<string, unknown>), guests };
+  useTrousseauStore.setState({
+    cloudStatus: "idle",
+    cloudVersion: 1,
+    cloudAgreed: fingerprintParts(base),
+    raw: { ...base, guests: { ...guests, ada: { ...guests.ada, rsvpStatus: "confirmed" } } },
+  });
+  fetchCloudDocumentMock.mockResolvedValue({
+    ok: true,
+    weddingId: "w1",
+    document: { ...base, guests: { ...guests, alan: { ...guests.alan, rsvpStatus: "declined" } } },
+    version: 2,
+  });
+  pushDocumentMock.mockResolvedValue({ ok: true, version: 3, warnings: [] });
+
+  await useTrousseauStore.getState().pullFromCloud();
+
+  const state = useTrousseauStore.getState();
+  expect(state.cloudConflicts).toEqual([]);
+  expect(state.cloudStatus).not.toBe("conflict");
+  expect((state.raw as { guests: typeof guests }).guests).toMatchObject({
+    ada: { rsvpStatus: "confirmed" },
+    alan: { rsvpStatus: "declined" },
+  });
+  // Both edits go up together.
+  await vi.waitFor(() => expect(pushDocumentMock).toHaveBeenCalled());
+  const pushed = pushDocumentMock.mock.calls.at(-1)![1] as { guests: typeof guests };
+  expect(pushed.guests).toMatchObject({ ada: { rsvpStatus: "confirmed" }, alan: { rsvpStatus: "declined" } });
+});
+
 test("pullFromCloud does nothing when the server version hasn't moved", async () => {
   const raw = useTrousseauStore.getState().raw;
   useTrousseauStore.setState({ cloudStatus: "idle", cloudVersion: 5 });
   // fetchCloudDocument has no way to report a version without a round trip,
   // so pullFromCloud always calls it - the "hasn't moved" short-circuit is
   // the version-equality check right after the response comes back.
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: raw, version: 5 });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: raw, version: 5 });
   await useTrousseauStore.getState().pullFromCloud();
   const state = useTrousseauStore.getState();
   expect(state.cloudVersion).toBe(5);
@@ -226,12 +262,13 @@ test("startCloudSync pushes the local wedding up on first sign-in, when the clou
     doc: { ...state.doc, guests } as never,
   }));
 
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: null, version: 0 });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: null, version: 0 });
   pushDocumentMock.mockResolvedValue({ ok: true, version: 1, warnings: [] });
 
   await useTrousseauStore.getState().startCloudSync();
 
   expect(pushDocumentMock).toHaveBeenCalledWith(
+    "w1",
     expect.objectContaining({ guests }),
     0,
   );
@@ -255,7 +292,7 @@ test("a surfaced conflict pushes nothing until it is resolved, then pushes the r
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: { ...base, event: { coupleNames: "mine" } },
   });
   pushDocumentMock.mockResolvedValue({
@@ -276,25 +313,19 @@ test("a surfaced conflict pushes nothing until it is resolved, then pushes the r
   expect(pushDocumentMock).toHaveBeenCalledTimes(1);
   expect(useTrousseauStore.getState().cloudStatus).toBe("conflict");
   expect(useTrousseauStore.getState().cloudConflicts).toEqual([
-    { slice: "event", theirs: { coupleNames: "theirs" } },
+    { key: "event", slice: "event", mine: { coupleNames: "mine" }, theirs: { coupleNames: "theirs" } },
   ]);
   expect((useTrousseauStore.getState().raw as Record<string, unknown>).event).toEqual({
     coupleNames: "mine",
   });
 
-  const generationBefore = useTrousseauStore.getState().generation;
   pushDocumentMock.mockResolvedValue({ ok: true, version: 3, warnings: [] });
   useTrousseauStore.getState().resolveConflict("event", "theirs");
-
-  // A tool mounted before the resolution holds the pre-resolution slice;
-  // without a new generation its next autosave writes that value back over
-  // the user's choice and pushes the revert.
-  expect(useTrousseauStore.getState().generation).toBe(generationBefore + 1);
 
   await settle();
 
   expect(pushDocumentMock).toHaveBeenCalledTimes(2);
-  expect(pushDocumentMock.mock.calls[1][0]).toMatchObject({
+  expect(pushDocumentMock.mock.calls[1][1]).toMatchObject({
     event: { coupleNames: "theirs" },
   });
   expect(useTrousseauStore.getState().cloudStatus).toBe("idle");
@@ -316,7 +347,7 @@ test("pullFromCloud merges against the document as it is when the fetch lands", 
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: base,
   });
   fetchCloudDocumentMock.mockImplementation(async () => {
@@ -326,7 +357,7 @@ test("pullFromCloud merges against the document as it is when the fetch lands", 
     useTrousseauStore.setState({
       raw: { ...useTrousseauStore.getState().raw, event: { coupleNames: "typed mid-fetch" } },
     });
-    return { ok: true, document: { ...base, guests: { g1: { id: "g1" } } }, version: 2 };
+    return { ok: true, weddingId: "w1", document: { ...base, guests: { g1: { id: "g1" } } }, version: 2 };
   });
   pushDocumentMock.mockResolvedValue({ ok: true, version: 3, warnings: [] });
 
@@ -339,22 +370,21 @@ test("pullFromCloud merges against the document as it is when the fetch lands", 
 
 test("a pull that brings back nothing new neither replaces the document nor pushes", async () => {
   // Two tabs open: this is our own write coming back at a moved version.
-  // Replacing anyway remounts every tool (generation), and pushing it back is
-  // what made the two tabs bounce the document between them forever.
+  // Replacing anyway hands every page a new document for nothing, and pushing
+  // it back is what made the two tabs bounce the document between them forever.
   const base = emptyTrousseau() as unknown as Record<string, unknown>;
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: base,
-    generation: 3,
   });
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: base, version: 2 });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: base, version: 2 });
 
   await useTrousseauStore.getState().pullFromCloud();
 
   expect(pushDocumentMock).not.toHaveBeenCalled();
-  expect(useTrousseauStore.getState().generation).toBe(3);
+  expect(useTrousseauStore.getState().raw).toBe(base);
   expect(useTrousseauStore.getState().cloudVersion).toBe(2);
 });
 
@@ -363,7 +393,7 @@ test("a successful push records agreement on what was pushed, not on a later edi
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: { ...base, event: { coupleNames: "pushed" } },
   });
   pushDocumentMock.mockImplementation(async () => {
@@ -388,7 +418,7 @@ test("assets sync on a pull, not on every document push", async () => {
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
+    cloudAgreed: fingerprintParts(base),
     raw: base,
     weddingId: "w1",
   });
@@ -402,6 +432,7 @@ test("assets sync on a pull, not on every document push", async () => {
 
   fetchCloudDocumentMock.mockResolvedValue({
     ok: true,
+    weddingId: "w1",
     document: { ...base, guests: { g1: { id: "g1" } } },
     version: 3,
   });
@@ -409,29 +440,31 @@ test("assets sync on a pull, not on every document push", async () => {
   expect(syncAssetsMock).toHaveBeenCalledWith("w1");
 });
 
-test("pullFromCloud resolves a wedding id startCloudSync could not", async () => {
+test("a pull refused for a wedding this account was taken off hands the decision back to a start", async () => {
   const base = emptyTrousseau() as unknown as Record<string, unknown>;
+  const mine = { ...base, guests: { r1: { id: "r1", firstName: "Robin" } } };
   useTrousseauStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
-    cloudAgreed: fingerprintAllSlices(base),
-    raw: base,
-    weddingId: null,
+    cloudAgreed: fingerprintParts(mine),
+    raw: mine,
+    weddingId: "w1",
   });
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: base, version: 2 });
-  fetchWeddingIdMock.mockResolvedValue({ ok: true, weddingId: "w2" });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: false, reason: "unavailable" });
+  fetchWeddingsMock.mockResolvedValue({ ok: true, weddings: [] });
 
   await useTrousseauStore.getState().pullFromCloud();
 
-  expect(useTrousseauStore.getState().weddingId).toBe("w2");
-  expect(syncAssetsMock).toHaveBeenCalledWith("w2");
+  // Nothing left to sync with, and nothing on the device touched.
+  expect(useTrousseauStore.getState().cloudStatus).toBe("disabled");
+  expect(Object.keys(useTrousseauStore.getState().raw["guests"] as object)).toEqual(["r1"]);
 });
 
 test("startCloudSync does not push an empty wedding on first sign-in", async () => {
   // Nothing to lose here, and pushing an empty document would still be
   // correct -- but skipping it is one fewer network round trip for the
   // overwhelmingly common case of a brand-new account.
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: null, version: 0 });
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, weddingId: "w1", document: null, version: 0 });
 
   await useTrousseauStore.getState().startCloudSync();
 

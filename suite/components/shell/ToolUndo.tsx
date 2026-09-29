@@ -1,37 +1,27 @@
 "use client";
 
 import { Redo2, Undo2 } from "lucide-react";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { ChromeFill } from "./chrome";
 
 /**
- * The undo control in the header, driven by whichever tool is on screen.
+ * The undo control in the header, on the pages and tools that edit the
+ * wedding.
  *
  * One pair of buttons rather than four, because two undo buttons on one screen
- * is worse than either alone — and the shell's own pair was the misleading one,
- * since the tools write their slices silently and the document's history never
- * saw the edit you had just made.
- *
- * The tool passes its own state in. Nothing is unified about *how* undo works:
- * Plaque keeps snapshots, Cadence and Brigade share a history module, Tableaux
- * replays inverse commands, and all four are right for what they do. Only the
- * button is shared, so that undo is in the same place wherever you are.
+ * is worse than either alone. Every tool and page now edits the wedding itself
+ * and keeps no history of its own, so there is one history to drive: the
+ * wedding's. It is shared, so the next undo may take back an edit made in
+ * another tool; each step says what it takes back ("Undo rename table"),
+ * which is the difference between a safe button and a surprise.
  */
-export function ToolUndo({
-  canUndo,
-  canRedo,
-  onUndo,
-  onRedo,
-  undoLabel,
-  redoLabel,
-}: {
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
-  /** What the next undo would take back, when the tool can say. */
-  undoLabel?: string | null;
-  redoLabel?: string | null;
-}) {
+export function ToolUndo() {
+  const past = useTrousseauStore((s) => s.past);
+  const future = useTrousseauStore((s) => s.future);
+  const canUndo = past.length > 0;
+  const canRedo = future.length > 0;
+  const undoLabel = past[past.length - 1]?.label;
+  const redoLabel = future[future.length - 1]?.label;
   const undoText = canUndo ? `Undo${undoLabel ? ` ${undoLabel}` : ""}` : "Nothing to undo";
   const redoText = canRedo ? `Redo${redoLabel ? ` ${redoLabel}` : ""}` : "Nothing to redo";
 
@@ -39,7 +29,7 @@ export function ToolUndo({
     <ChromeFill name="tool-undo">
       <button
         type="button"
-        onClick={onUndo}
+        onClick={() => useTrousseauStore.getState().undo()}
         disabled={!canUndo}
         title={undoText}
         aria-label={undoText}
@@ -49,7 +39,7 @@ export function ToolUndo({
       </button>
       <button
         type="button"
-        onClick={onRedo}
+        onClick={() => useTrousseauStore.getState().redo()}
         disabled={!canRedo}
         title={redoText}
         aria-label={redoText}

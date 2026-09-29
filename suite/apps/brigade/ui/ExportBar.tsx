@@ -2,7 +2,7 @@ import { useState } from "react";
 import { blocking } from "../core/jobs/coverage";
 import { browserFontSource } from "../render/pdf/fontSource";
 import { download } from "../state/projectIO";
-import { getDoc, selectCover, useStore } from "../state/store";
+import { useBrigadeDoc, useCover, useStore } from "../state/store";
 import { Button } from "@/components/ui/fields";
 import styles from "./ExportBar.module.css";
 
@@ -15,8 +15,8 @@ const LABELS: Record<Piece, string> = {
 };
 
 export function ExportBar() {
-  const doc = useStore(getDoc);
-  const cover = useStore(selectCover);
+  const doc = useBrigadeDoc();
+  const cover = useCover();
   const setNotice = useStore((state) => state.setNotice);
   const [piece, setPiece] = useState<Piece>("job-list");
   const [busy, setBusy] = useState(false);

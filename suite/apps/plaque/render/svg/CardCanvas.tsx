@@ -27,8 +27,7 @@ export interface CardCanvasProps {
   /** How much bigger than "fits the pane" the card is drawn. 1 is fit. */
   zoom?: number;
   onSelect: (id: ElementId | null) => void;
-  /** Records one undo entry for the whole drag. */
-  onEditStart: () => void;
+  /** Every frame of a drag; one label, so one undo step for the whole drag. */
   onChange: (id: ElementId, box: Rect) => void;
   /** Pans and zooms the artwork inside a cropped image element. */
   onCrop?: (id: ElementId, patch: { zoom?: number; focusX?: number; focusY?: number }) => void;
@@ -39,9 +38,6 @@ export interface CardCanvasProps {
 
 /** Matches the sheet pane: past this the card is bigger than any screen use for it. */
 export const MAX_VIEW_ZOOM = 8;
-
-/** A gap this long between wheel events means the last gesture ended. */
-const IDLE_MS = 400;
 
 /**
  * The editing surface: ONE card, with real guest data in it.
@@ -66,7 +62,6 @@ export function CardCanvas({
   cropId = null,
   zoom = 1,
   onSelect,
-  onEditStart,
   onChange,
   onCrop,
   onZoomChange,
@@ -105,7 +100,6 @@ export function CardCanvas({
     svgRef,
     snapTargets,
     snapEnabled,
-    onEditStart,
     onChange,
   });
 
@@ -169,8 +163,6 @@ export function CardCanvas({
   const cropDrag = useRef<{ from: Point; focusX: number; focusY: number; started: boolean } | null>(
     null,
   );
-  /** When the last crop-zoom wheel event landed. See `IDLE_MS`. */
-  const lastWheel = useRef(0);
 
   const beginCrop = useCallback(
     (event: React.PointerEvent) => {
@@ -192,11 +184,11 @@ export function CardCanvas({
       if (!point) return;
       const dx = point.x - start.from.x;
       const dy = point.y - start.from.y;
-      // One undo entry for the whole pan, exactly as a box drag records one.
+      // Nothing is written until the pointer really moves; after that the
+      // whole pan is one undo step, exactly as a box drag is.
       if (!start.started) {
         if (Math.hypot(dx, dy) < MOVE_THRESHOLD_MM) return;
         start.started = true;
-        onEditStart();
       }
       // The artwork follows the pointer: moving it right means the focal point
       // moves left, by however much slack that axis has.
@@ -207,7 +199,7 @@ export function CardCanvas({
         focusY: Math.min(1, Math.max(0, focusY)),
       });
     },
-    [crop, onCrop, onEditStart, toMm],
+    [crop, onCrop, toMm],
   );
 
   const endCrop = useCallback(() => {
@@ -246,12 +238,9 @@ export function CardCanvas({
       const step = Math.exp(-event.deltaY / 500);
       if (crop && onCrop) {
         event.preventDefault();
-        // One wheel gesture is one undo entry, not one per tick. A run of
-        // events closer together than IDLE_MS is treated as the same gesture,
-        // which is the only signal a wheel gives that it has finished.
-        const now = event.timeStamp;
-        if (now - lastWheel.current > IDLE_MS) onEditStart();
-        lastWheel.current = now;
+        // One wheel gesture is one undo step, not one per tick: the ticks
+        // share a label, and the wedding's history keeps a quick run of them
+        // as one.
         onCrop(crop.id, { zoom: Math.min(MAX_ZOOM, Math.max(1, crop.zoom * step)) });
         return;
       }
@@ -262,7 +251,7 @@ export function CardCanvas({
     };
     node.addEventListener("wheel", onWheel, { passive: false });
     return () => node.removeEventListener("wheel", onWheel);
-  }, [crop, onCrop, onEditStart, onZoomChange, zoom]);
+  }, [crop, onCrop, onZoomChange, zoom]);
 
   const beginPan = useCallback((event: React.PointerEvent) => {
     const node = viewportRef.current;

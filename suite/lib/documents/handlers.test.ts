@@ -1,6 +1,13 @@
 import { describe, expect, it, test, vi } from "vitest";
-import { exportDocumentHandler, getDocumentHandler, saveDocumentHandler, sweepAbandonedDocuments } from "./handlers";
-import { RETENTION_MONTHS } from "@/lib/sync/handlers";
+import {
+  exportDocumentHandler,
+  getDocumentHandler,
+  historyDocumentHandler,
+  historyHandler,
+  saveDocumentHandler,
+  sweepAbandonedDocuments,
+} from "./handlers";
+import { RETENTION_MONTHS } from "./retention";
 import { memoryStore } from "./store";
 
 const validDoc = {
@@ -16,7 +23,7 @@ describe("getDocumentHandler", () => {
     const store = memoryStore();
     const reply = await getDocumentHandler(store, "w1");
     expect(reply.status).toBe(200);
-    expect(reply.body).toEqual({ document: null, version: 0 });
+    expect(reply.body).toEqual({ weddingId: "w1", document: null, version: 0 });
   });
 
   it("returns the stored document and version once one exists", async () => {
@@ -128,5 +135,33 @@ describe("sweepAbandonedDocuments", () => {
 
     expect((await sweepAbandonedDocuments(store, later)).deleted).toEqual(["old"]);
     expect(await store.getDocument("old")).toBeNull();
+  });
+});
+
+describe("the history", () => {
+  it("lists the versions newest first, naming who saved each from the wedding's people now", async () => {
+    const store = memoryStore();
+    await store.saveDocument("w1", { v: 1 }, 0, "u-ada");
+    await store.saveDocument("w1", { v: 2 }, 1, "u-alan");
+    await store.saveDocument("w1", { v: 3 }, 2, "u-gone");
+    await store.saveDocument("w2", { v: 1 }, 0, "u-ada");
+
+    const reply = await historyHandler(store, [{ userId: "u-ada", email: "ada@example.com" }, { userId: "u-alan", email: "alan@example.com" }], "w1", "u-ada");
+
+    expect(reply.body).toEqual({
+      entries: [
+        // Someone who has left the wedding is not named.
+        { id: "v3", savedAt: expect.any(String), savedBy: null, yours: false },
+        { id: "v2", savedAt: expect.any(String), savedBy: "alan@example.com", yours: false },
+        { id: "v1", savedAt: expect.any(String), savedBy: "ada@example.com", yours: true },
+      ],
+    });
+  });
+
+  it("gives one version back, and only from its own wedding", async () => {
+    const store = memoryStore();
+    await store.saveDocument("w1", { v: 1 }, 0);
+    expect((await historyDocumentHandler(store, "w1", "v1")).body).toEqual({ document: { v: 1 } });
+    expect((await historyDocumentHandler(store, "w2", "v1")).status).toBe(404);
   });
 });

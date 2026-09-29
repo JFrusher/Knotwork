@@ -1,34 +1,41 @@
 "use client";
 
+import type { Confirm } from "@/components/ui/Confirm";
+import { describe, hasContent, summarise } from "@/lib/model/content";
+import { useCopies } from "@/lib/store/copies";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 
 /**
  * The example wedding, and the guard in front of it.
  *
  * Replacing somebody's real work with a demo is the worst thing this feature
- * could do, so a non-empty wedding is never overwritten without being told
- * exactly what is about to go and being offered a backup first.
+ * could do, so a wedding with anything in it is never overwritten without
+ * being told exactly what is about to go — and a copy of it is kept on this
+ * device, to put back from Data.
  */
 
-/** Nothing worth losing: no guests and no blocks. */
+/** Nothing worth losing — by the same measure signing in uses. */
 export function isWeddingEmpty(): boolean {
-  const { doc } = useTrousseauStore.getState();
-  return Object.keys(doc.guests).length === 0 && (doc.day?.blocks.length ?? 0) === 0;
+  return !hasContent(summarise(useTrousseauStore.getState().raw));
 }
 
-export async function loadExampleWedding(): Promise<"loaded" | "cancelled"> {
+export async function loadExampleWedding(confirm: Confirm): Promise<"loaded" | "cancelled"> {
+  const { raw, cloudStatus } = useTrousseauStore.getState();
   if (!isWeddingEmpty()) {
-    const { doc } = useTrousseauStore.getState();
-    const guests = Object.keys(doc.guests).length;
-    const blocks = doc.day?.blocks.length ?? 0;
-    const confirmed = window.confirm(
-      `This replaces the wedding in this browser — ${guests} guests and ${blocks} blocks of the day — with the example one.\n\n` +
-        `Export a backup first from the Data button if you want to keep it. This cannot be undone.\n\n` +
-        `Load the example wedding?`,
-    );
+    // Synced, the example goes to the account too — and to whoever else is on
+    // the wedding. The question has to say so.
+    const shared = cloudStatus !== "disabled";
+    const confirmed = await confirm({
+      title: "Replace this wedding with the example?",
+      body: `${describe(summarise(raw))} is replaced with the example${
+        shared ? " — on your account too, so anyone else on the wedding sees the example instead" : ""
+      }. A copy is kept on this device: put it back from Data.`,
+      action: "Replace it",
+      tone: "danger",
+    });
     if (!confirmed) return "cancelled";
+    await useCopies.getState().keep(raw, "Replaced by the example wedding.");
   }
-
   const response = await fetch("/fixtures/example-wedding.trousseau.json");
   if (!response.ok) throw new Error("The example wedding could not be loaded.");
   const document: unknown = await response.json();

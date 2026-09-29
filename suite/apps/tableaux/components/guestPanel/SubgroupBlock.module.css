@@ -83,7 +83,7 @@
 
 .count {
   flex: none;
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--panel-text-muted);
   min-width: 14px;
   text-align: center;

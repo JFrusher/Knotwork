@@ -5,26 +5,20 @@ import { Trash2 } from "lucide-react";
 import { Button, IconButton, Panel, TextField } from "@/components/ui/controls";
 import { GuestChip, GuestPicker } from "./GuestPicker";
 import { guestName } from "@/lib/model/slices";
-import { CAST_ROLES, ROLE_LABEL, type Guest, type Shots } from "@/lib/model/types";
+import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import { roleLabel } from "@/lib/model/partners";
+import { CAST_ROLES, SINGLE_ROLES, type Guest, type Shots } from "@/lib/model/types";
 import { addCustomRole, removeCustomRole, renameCustomRole, setCastRole, setCustomRoleMembers } from "@/lib/ensemble/actions";
-
-/** Roles that hold at most one person. Everything else — the wedding party — holds many. */
-const SINGLE_ROLES = new Set([
-  "bride",
-  "groom",
-  "brides-mother",
-  "brides-father",
-  "grooms-mother",
-  "grooms-father",
-]);
 
 export function CastPanel({
   shots,
   guests,
+  event,
   onChange,
 }: {
   shots: Shots;
   guests: Record<string, Guest>;
+  event: WeddingEvent;
   onChange: (next: Shots) => void;
 }) {
   const [newRoleName, setNewRoleName] = useState("");
@@ -35,7 +29,7 @@ export function CastPanel({
         const chosen = shots.cast[role];
         const single = SINGLE_ROLES.has(role);
         return (
-          <Panel key={role} title={ROLE_LABEL[role]}>
+          <Panel key={role} title={roleLabel(role, event)}>
             <ul className="mb-2 flex flex-wrap gap-1.5">
               {chosen.map((guestId) => (
                 <li key={guestId}>

@@ -36,10 +36,21 @@ export function Panel({
   );
 }
 
-export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+export function Field({
+  label,
+  hint,
+  hideLabel,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  /** Named for a screen reader but not drawn, where the value says what it is. */
+  hideLabel?: boolean;
+  children: ReactNode;
+}) {
   return (
     <label className={styles.field}>
-      <span className={styles.label}>{label}</span>
+      <span className={hideLabel ? "sr-only" : styles.label}>{label}</span>
       {children}
       {hint && <span className={styles.hint}>{hint}</span>}
     </label>
@@ -53,11 +64,13 @@ export function TextField({
   placeholder,
   suggestions,
   type = "text",
+  hideLabel,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  hideLabel?: boolean;
   /**
    * Passed to the input. `date` and `number` are worth reaching for: they buy
    * a picker and a numeric keypad on every platform for nothing.
@@ -72,7 +85,7 @@ export function TextField({
 }) {
   const listId = useId();
   return (
-    <Field label={label}>
+    <Field label={label} hideLabel={hideLabel}>
       <input
         className={styles.input}
         type={type}

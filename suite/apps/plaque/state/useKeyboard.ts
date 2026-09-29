@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { usePlaque } from "./store";
 
 /** S-B.2: arrows nudge 0.5mm, Shift+arrow 5mm. Alt suppresses snapping mid-drag. */
@@ -27,15 +28,17 @@ export function useKeyboard(): void {
       const mod = event.metaKey || event.ctrlKey;
       const key = event.key.toLowerCase();
 
+      // The wedding's one history: what the header's buttons drive.
+      const history = useTrousseauStore.getState();
       if (mod && key === "z") {
         event.preventDefault();
-        if (event.shiftKey) state.redo();
-        else state.undo();
+        if (event.shiftKey) history.redo();
+        else history.undo();
         return;
       }
       if (mod && key === "y") {
         event.preventDefault();
-        state.redo();
+        history.redo();
         return;
       }
 

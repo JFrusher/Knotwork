@@ -124,7 +124,7 @@ export function WeddingPack() {
 
 async function floorPlan(): Promise<Uint8Array | null> {
   const [{ buildFloorPlanPdf }, { readDoc }] = await Promise.all([
-    import("@/apps/tableaux/utils/exportPdf.js"),
+    import("@/apps/tableaux/utils/exportPdf"),
     import("@/apps/tableaux/store/sliceBridge"),
   ]);
   const doc = readDoc();
@@ -135,15 +135,12 @@ async function floorPlan(): Promise<Uint8Array | null> {
 }
 
 async function runSheet(): Promise<Uint8Array | null> {
-  const [{ renderRunSheet }, { browserFontSource }, { readSlice }, { getBlob }] = await Promise.all(
-    [
-      import("@/apps/cadence/render/pdf/runSheet"),
-      import("@/apps/cadence/render/pdf/fontSource"),
-      import("@/apps/cadence/state/sliceBridge"),
-      import("@/apps/cadence/state/blobStore"),
-    ],
-  );
-  const doc = readSlice();
+  const [{ renderRunSheet }, { browserFontSource }, { getBlob }] = await Promise.all([
+    import("@/apps/cadence/render/pdf/runSheet"),
+    import("@/apps/cadence/render/pdf/fontSource"),
+    import("@/apps/cadence/state/blobStore"),
+  ]);
+  const doc = readTimeline(useTrousseauStore.getState().doc);
   if (doc.blocks.length === 0) return null;
 
   // Any typeface uploaded for the printed pieces, by family name. Without this
@@ -167,7 +164,7 @@ async function jobList(): Promise<Uint8Array | null> {
     import("@/apps/brigade/render/pdf/fontSource"),
     import("@/apps/brigade/state/sliceBridge"),
   ]);
-  const doc = readSlice();
+  const doc = readSlice(useTrousseauStore.getState().doc);
   if (doc.jobs.length === 0) return null;
 
   return renderJobList(doc, {
@@ -195,6 +192,7 @@ async function shotSheet(): Promise<Uint8Array | null> {
     {
       fontSource: browserFontSource(),
       coupleNames: doc.event.coupleNames,
+      partners: doc.event.partners,
       generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
     },
     shots.customRoles,

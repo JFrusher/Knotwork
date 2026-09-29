@@ -135,23 +135,45 @@
   cursor: pointer;
 }
 
-/* The budget line, above the teams. Absent entirely until there is a number. */
-.budget {
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgb(0 0 0 / 0.08);
-}
-
-.budget p {
-  margin: 0 0 0.5rem;
-  font-size: 0.85rem;
-}
-
-/* Folded away: most teams are friends doing a job, not suppliers with a
-   contract, and they should not be shown six empty fields. */
+/* Folded away: most teams are friends doing a job, with nobody to email and
+   nothing to confirm. */
 .contract > summary {
   cursor: pointer;
   padding: 0.35rem 0;
   font-size: 0.8rem;
   opacity: 0.75;
+}
+
+/* A supplier's own link, under their contact details. */
+.link {
+  display: grid;
+  gap: var(--sp-1);
+  justify-items: start;
+  margin-top: var(--sp-2);
+}
+
+.linkRow {
+  display: flex;
+  gap: var(--sp-1);
+  width: 100%;
+}
+
+.linkUrl {
+  min-width: 0;
+  flex: 1;
+  padding: 4px var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: var(--text-xs);
+}
+
+.linkNote {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.linkProblem {
+  font-size: var(--text-xs);
+  color: var(--danger);
 }

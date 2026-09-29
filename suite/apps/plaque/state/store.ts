@@ -5,7 +5,7 @@ import { defaultRowIds } from "../core/data/artefacts";
 import { defaultFoldPosition } from "../core/geometry/fold";
 import { sideOf } from "../core/imposition/duplex";
 import type { LayoutSuggestion } from "../core/geometry/suggestLayouts";
-import { defaultCard, defaultSheet, defaultTemplate, newId } from "../core/template/defaults";
+import { defaultTemplate, newId } from "../core/template/defaults";
 import {
   withOverride,
   withoutOverride,
@@ -33,29 +33,20 @@ import type {
 } from "../core/types";
 import type { LoadedFont } from "../core/text/measure";
 import type { PrinterProfile } from "../core/print/printerProfile";
-import { pushHistory, snapshot, type Snapshot } from "./history";
+import { useTrousseauStore, type WriteOptions } from "@/lib/store/useTrousseauStore";
+import { DESIGN_KEYS, designOf, initialDesign, type Design } from "./design";
+import { readDesign, writeDesign } from "./sliceBridge";
 
 /** Every kind the registry knows about — see core/template/registry. */
 export type NewElementKind = CardElement["kind"];
 
-export interface PlaqueState extends Snapshot {
-  // Guest data
-  headers: string[];
-  rows: GuestRow[];
-  /**
-   * One id per row, in the same order. Identity has to live somewhere for
-   * per-row overrides and for combine/split to be reversible, and a GuestRow is
-   * deliberately just the user's own columns.
-   */
-  rowIds: string[];
-  /**
-   * Rows that were combined onto one artefact, keyed by the synthetic row's id
-   * (S-I.3). The originals are kept whole, not just their ids, because "split it
-   * again restores the originals exactly" is the acceptance criterion.
-   */
-  merged: Record<string, { indexes: number[]; ids: string[]; rows: GuestRow[] }>;
-  csvIssues: RowIssue[];
-  fileName: string | null;
+/**
+ * Place cards' state: the design, which is the wedding's stationery slice and
+ * only ever shown here (see `design.ts`), and what belongs to this window.
+ */
+export interface PlaqueState extends Design {
+  /** Why the wedding's saved design could not be read, when it could not. */
+  designProblem: string | null;
 
   /**
    * Parsed faces, keyed by fontId — bundled and uploaded alike. Held in the
@@ -69,16 +60,8 @@ export interface PlaqueState extends Snapshot {
   images: Map<string, ResolvedImageSource>;
   imageNames: Record<string, string>;
 
-  // User-supplied assets, kept out of the autosave payload — see blobStore.
-  uploadedIcons: Record<string, string>;
+  /** Which loaded faces were uploaded, rather than bundled. */
   uploadedFontIds: string[];
-
-  /**
-   * Original filename for every uploaded asset, by id. Persisted, unlike the
-   * binaries, so a design whose blob has gone can still say "crest.png is
-   * missing" rather than naming a hash (S-D1.4).
-   */
-  assetNames: Record<string, string>;
 
   /**
    * Per-device printer calibration (S-D2.1). Kept in the store so the export bar
@@ -102,13 +85,7 @@ export interface PlaqueState extends Snapshot {
    */
   cropId: ElementId | null;
   page: number;
-  snapEnabled: boolean;
-  /** Collapses the sheet pane, giving the card the whole workspace. */
-  sheetCollapsed: boolean;
   previewGuestIndex: number;
-
-  past: Snapshot[];
-  future: Snapshot[];
 
   setCsv: (data: { headers: string[]; rows: GuestRow[]; issues: RowIssue[]; fileName: string }) => void;
   setCard: (patch: Partial<CardSpec>) => void;
@@ -128,15 +105,13 @@ export interface PlaqueState extends Snapshot {
 
   addElement: (kind: NewElementKind) => void;
   updateElement: (id: ElementId, patch: Partial<CardElement>) => void;
-  /** Records one undo entry, then leaves the caller free to make many small changes. */
-  beginEdit: () => void;
-  /** Live drag updates. Deliberately does NOT touch history. */
-  setElementBox: (id: ElementId, box: Rect) => void;
   /**
-   * Pans or zooms the artwork inside an image element. Like `setElementBox`,
-   * it records no history of its own: the canvas calls `beginEdit` once as the
-   * gesture starts, so one crop is one undo entry rather than sixty.
+   * Live drag updates, every frame. They share one label, and the wedding's
+   * history keeps a run of writes under one label as one step — one drag is
+   * one undo, not sixty.
    */
+  setElementBox: (id: ElementId, box: Rect) => void;
+  /** Pans or zooms the artwork inside an image element: one gesture, one undo, as a drag. */
   setElementCrop: (id: ElementId, patch: { zoom?: number; focusX?: number; focusY?: number }) => void;
   removeElement: (id: ElementId) => void;
   duplicateElement: (id: ElementId) => void;
@@ -149,7 +124,7 @@ export interface PlaqueState extends Snapshot {
   addImage: (source: ResolvedImageSource, name: string) => void;
   removeImage: (id: string) => void;
 
-  setFonts: (fonts: Map<string, LoadedFont>, labels: Record<string, string>) => void;
+  setFonts: (fonts: Map<string, LoadedFont>, labels: Record<string, string>, uploadedFontIds: string[]) => void;
   addFont: (font: LoadedFont, label: string, fileName?: string) => void;
   removeFont: (id: string) => void;
   /** Records what an asset id was called, even when the asset itself failed to load. */
@@ -172,34 +147,31 @@ export interface PlaqueState extends Snapshot {
   toggleSnap: () => void;
   toggleSheetCollapsed: () => void;
 
-  undo: () => void;
-  redo: () => void;
   clearAll: () => void;
-  hydrate: (patch: Partial<PlaqueState>) => void;
 }
 
-/**
- * The starting design has an EMPTY template on purpose. Building a default
- * template before any CSV exists would produce elements bound to columns that
- * do not exist, and would then block `setCsv` from laying out a real one.
- */
-function initial(): Snapshot {
-  return {
-    card: defaultCard(),
-    sheet: defaultSheet(),
-    template: { elements: [], backgroundHex: null },
+export const usePlaque = create<PlaqueState>()((set, get) => {
+  /**
+   * A change to the design goes into the wedding, which is what this store
+   * then shows (see the subscription below); the rest of it — a selection, a
+   * page — is this window's own.
+   */
+  const change = (options: WriteOptions, mutate: (s: PlaqueState) => Partial<PlaqueState>) => {
+    const s = get();
+    const next = mutate(s);
+    const design: Partial<Record<keyof Design, unknown>> = {};
+    const local: Partial<Record<keyof PlaqueState, unknown>> = {};
+    for (const [key, value] of Object.entries(next)) {
+      if ((DESIGN_KEYS as readonly string[]).includes(key)) design[key as keyof Design] = value;
+      else local[key as keyof PlaqueState] = value;
+    }
+    if (Object.keys(design).length > 0) writeDesign({ ...designOf(s), ...(design as Partial<Design>) }, options);
+    if (Object.keys(local).length > 0) set(local as Partial<PlaqueState>);
   };
-}
-
-export const usePlaque = create<PlaqueState>()((set) => {
-  /** Records the design as it stands, then applies the change. */
-  const commit = (mutate: (s: PlaqueState) => Partial<PlaqueState>) => {
-    set((s) => ({
-      past: pushHistory(s.past, snapshot(s)),
-      future: [],
-      ...mutate(s),
-    }));
-  };
+  /** An edit: shown as "Undo <label>". */
+  const commit = (label: string, mutate: (s: PlaqueState) => Partial<PlaqueState>) => change({ label }, mutate);
+  /** Bookkeeping nobody would undo: which asset had which name, which pane is open. */
+  const note = (mutate: (s: PlaqueState) => Partial<PlaqueState>) => change({ silent: true }, mutate);
 
   const replaceElement = (s: PlaqueState, id: ElementId, patch: Partial<CardElement>): Template => ({
     ...s.template,
@@ -208,35 +180,25 @@ export const usePlaque = create<PlaqueState>()((set) => {
     ),
   });
 
+  const opened = readDesign(useTrousseauStore.getState().raw);
   return {
-    ...initial(),
-    headers: [],
-    rows: [],
-    rowIds: [],
-    merged: {},
-    csvIssues: [],
-    fileName: null,
+    ...opened.design,
+    designProblem: opened.problem,
     fonts: new Map(),
     fontLabels: {},
     images: new Map(),
     imageNames: {},
-    uploadedIcons: {},
     uploadedFontIds: [],
-    assetNames: {},
     printers: [],
     activePrinterId: null,
     editingSide: "front",
     selectedId: null,
     cropId: null,
     page: 0,
-    snapEnabled: true,
-    sheetCollapsed: false,
     previewGuestIndex: 0,
-    past: [],
-    future: [],
 
     setCsv: ({ headers, rows, issues, fileName }) =>
-      commit((s) => ({
+      commit("the guest list", (s) => ({
         headers,
         rows,
         // A new file is a new dataset: old ids, and the combines built on them,
@@ -259,7 +221,7 @@ export const usePlaque = create<PlaqueState>()((set) => {
       })),
 
     setCard: (patch) =>
-      commit((s) => {
+      commit("the card", (s) => {
         const card = { ...s.card, ...patch };
         // Changing the fold axis makes the old fold position meaningless.
         if (patch.fold && patch.fold !== s.card.fold) {
@@ -268,15 +230,15 @@ export const usePlaque = create<PlaqueState>()((set) => {
         return { card };
       }),
 
-    setSheet: (patch) => commit((s) => ({ sheet: { ...s.sheet, ...patch }, page: 0 })),
+    setSheet: (patch) => commit("the sheet", (s) => ({ sheet: { ...s.sheet, ...patch }, page: 0 })),
 
     applySuggestion: (suggestion) =>
-      commit((s) => ({ sheet: { ...s.sheet, ...suggestion.patch }, page: 0 })),
+      commit("a sheet layout", (s) => ({ sheet: { ...s.sheet, ...suggestion.patch }, page: 0 })),
 
-    setBackground: (hex) => commit((s) => ({ template: { ...s.template, backgroundHex: hex } })),
+    setBackground: (hex) => commit("the background", (s) => ({ template: { ...s.template, backgroundHex: hex } })),
 
     applyGalleryTemplate: (entry) =>
-      commit((s) => ({
+      commit("a gallery design", (s) => ({
         card: { ...s.card, ...entry.card },
         // The gallery is written against the sample column names; rebinding
         // re-attaches it to whatever this CSV calls them (S-B.1).
@@ -291,18 +253,17 @@ export const usePlaque = create<PlaqueState>()((set) => {
       })),
 
     setRowScope: (rowScope) =>
-      commit((s) => ({
+      commit("what each card is for", (s) => ({
         template: { ...s.template, rowScope },
         page: 0,
         previewGuestIndex: 0,
       })),
 
-    // Combine and split change the DATA, not the design, so they stay out of
-    // undo history for the same reason a CSV upload does — and putting 2000 rows
-    // into each of fifty snapshots would be its own kind of data loss. They are
-    // each other's exact inverse, which is the recovery path.
+    // Combine and split change the guest list, not the design, and are each
+    // other's exact inverse. Undo takes either back too: the wedding's history
+    // shares what did not change, so two thousand rows cost nothing extra.
     combineRows: (indexes) =>
-      set((s) => {
+      commit("combining guests", (s) => {
         const picked = [...new Set(indexes)].sort((a, b) => a - b);
         const rows = picked.map((i) => s.rows[i]).filter((r): r is GuestRow => Boolean(r));
         if (rows.length < 2) return {};
@@ -341,7 +302,7 @@ export const usePlaque = create<PlaqueState>()((set) => {
       }),
 
     splitRow: (rowId) =>
-      set((s) => {
+      commit("splitting guests", (s) => {
         const record = s.merged[rowId];
         const at = s.rowIds.indexOf(rowId);
         if (!record || at === -1) return {};
@@ -362,7 +323,7 @@ export const usePlaque = create<PlaqueState>()((set) => {
       }),
 
     overrideForRow: (rowId, elementId, patch) =>
-      commit((s) => ({
+      commit("one guest's card", (s) => ({
         template: {
           ...s.template,
           overrides: patch
@@ -372,7 +333,7 @@ export const usePlaque = create<PlaqueState>()((set) => {
       })),
 
     addElement: (kind) =>
-      commit((s) => {
+      commit("adding to the card", (s) => {
         const el = { ...makeElement(kind, s.card, s.headers, nextZ(s.template)), side: s.editingSide };
         return {
           template: { ...s.template, elements: [...s.template.elements, el] },
@@ -380,12 +341,10 @@ export const usePlaque = create<PlaqueState>()((set) => {
         };
       }),
 
-    updateElement: (id, patch) => commit((s) => ({ template: replaceElement(s, id, patch) })),
-
-    beginEdit: () => set((s) => ({ past: pushHistory(s.past, snapshot(s)), future: [] })),
+    updateElement: (id, patch) => commit("changing the card", (s) => ({ template: replaceElement(s, id, patch) })),
 
     setElementBox: (id, box) =>
-      set((s) => ({
+      commit("moving on the card", (s) => ({
         template: {
           ...s.template,
           elements: s.template.elements.map((el) =>
@@ -395,16 +354,16 @@ export const usePlaque = create<PlaqueState>()((set) => {
       })),
 
     setElementCrop: (id, patch) =>
-      set((s) => ({ template: replaceElement(s, id, patch as Partial<CardElement>) })),
+      commit("cropping an image", (s) => ({ template: replaceElement(s, id, patch as Partial<CardElement>) })),
 
     removeElement: (id) =>
-      commit((s) => ({
+      commit("removing from the card", (s) => ({
         template: { ...s.template, elements: s.template.elements.filter((el) => el.id !== id) },
         selectedId: s.selectedId === id ? null : s.selectedId,
       })),
 
     duplicateElement: (id) =>
-      commit((s) => {
+      commit("duplicating on the card", (s) => {
         const source = s.template.elements.find((el) => el.id === id);
         if (!source) return {};
         const copy = { ...source, id: newId(), x: source.x + 3, y: source.y + 3, z: nextZ(s.template) };
@@ -429,7 +388,7 @@ export const usePlaque = create<PlaqueState>()((set) => {
      * prints an edited one.
      */
     copyFrontToBack: () =>
-      commit((s) => {
+      commit("copying the front to the back", (s) => {
         const fronts = s.template.elements.filter((el) => sideOf(el) === "front");
         if (fronts.length === 0) return {};
 
@@ -460,10 +419,10 @@ export const usePlaque = create<PlaqueState>()((set) => {
       }),
 
     raiseElement: (id) =>
-      commit((s) => ({ template: replaceElement(s, id, { z: nextZ(s.template) }) })),
+      commit("the stacking order", (s) => ({ template: replaceElement(s, id, { z: nextZ(s.template) }) })),
 
     lowerElement: (id) =>
-      commit((s) => ({
+      commit("the stacking order", (s) => ({
         template: replaceElement(s, id, {
           z: Math.min(0, ...s.template.elements.map((el) => el.z)) - 1,
         }),
@@ -480,14 +439,14 @@ export const usePlaque = create<PlaqueState>()((set) => {
       }),
 
     addImage: (source, name) =>
-      set((s) => ({
+      note((s) => ({
         images: new Map(s.images).set(source.id, source),
         imageNames: { ...s.imageNames, [source.id]: name },
         assetNames: { ...s.assetNames, [source.id]: name },
       })),
 
     removeImage: (id) =>
-      set((s) => {
+      commit("removing an image", (s) => {
         const images = new Map(s.images);
         const dropped = images.get(id);
         if (dropped) URL.revokeObjectURL(dropped.url);
@@ -510,10 +469,10 @@ export const usePlaque = create<PlaqueState>()((set) => {
         };
       }),
 
-    setFonts: (fonts, fontLabels) => set({ fonts, fontLabels }),
+    setFonts: (fonts, fontLabels, uploadedFontIds) => set({ fonts, fontLabels, uploadedFontIds }),
 
     addFont: (font, label, fileName) =>
-      set((s) => ({
+      note((s) => ({
         fonts: new Map(s.fonts).set(font.id, font),
         fontLabels: { ...s.fontLabels, [font.id]: label },
         assetNames: { ...s.assetNames, [font.id]: fileName ?? label },
@@ -523,7 +482,7 @@ export const usePlaque = create<PlaqueState>()((set) => {
       })),
 
     removeFont: (id) =>
-      set((s) => {
+      commit("removing a font", (s) => {
         const fonts = new Map(s.fonts);
         fonts.delete(id);
         const { [id]: _dropped, ...fontLabels } = s.fontLabels;
@@ -546,13 +505,13 @@ export const usePlaque = create<PlaqueState>()((set) => {
         };
       }),
 
-    noteAssetName: (id, name) => set((s) => ({ assetNames: { ...s.assetNames, [id]: name } })),
+    noteAssetName: (id, name) => note((s) => ({ assetNames: { ...s.assetNames, [id]: name } })),
 
     addUploadedIcon: (id, pathD) =>
-      set((s) => ({ uploadedIcons: { ...s.uploadedIcons, [id]: pathD } })),
+      note((s) => ({ uploadedIcons: { ...s.uploadedIcons, [id]: pathD } })),
 
     removeUploadedIcon: (id) =>
-      set((s) => {
+      commit("removing an icon", (s) => {
         const { [id]: _dropped, ...uploadedIcons } = s.uploadedIcons;
         return { uploadedIcons };
       }),
@@ -585,61 +544,38 @@ export const usePlaque = create<PlaqueState>()((set) => {
     setCropId: (cropId) => set({ cropId }),
     setPage: (page) => set({ page }),
     setPreviewGuestIndex: (previewGuestIndex) => set({ previewGuestIndex }),
-    toggleSnap: () => set((s) => ({ snapEnabled: !s.snapEnabled })),
-    toggleSheetCollapsed: () => set((s) => ({ sheetCollapsed: !s.sheetCollapsed })),
+    toggleSnap: () => note((s) => ({ snapEnabled: !s.snapEnabled })),
+    toggleSheetCollapsed: () => note((s) => ({ sheetCollapsed: !s.sheetCollapsed })),
 
-    undo: () =>
-      set((s) => {
-        const previous = s.past.at(-1);
-        if (!previous) return {};
-        return {
-          past: s.past.slice(0, -1),
-          future: [snapshot(s), ...s.future].slice(0, 50),
-          ...previous,
-          selectedId: previous.template.elements.some((el) => el.id === s.selectedId)
-            ? s.selectedId
-            : null,
-        };
-      }),
-
-    redo: () =>
-      set((s) => {
-        const [next, ...rest] = s.future;
-        if (!next) return {};
-        return {
-          past: pushHistory(s.past, snapshot(s)),
-          future: rest,
-          ...next,
-          selectedId: next.template.elements.some((el) => el.id === s.selectedId)
-            ? s.selectedId
-            : null,
-        };
-      }),
-
-    clearAll: () =>
-      set({
-        ...initial(),
-        headers: [],
-        rows: [],
-        rowIds: [],
-        merged: {},
-        csvIssues: [],
-        fileName: null,
-        uploadedIcons: {},
-        uploadedFontIds: [],
-        assetNames: {},
-        editingSide: "front",
-        // Bundled faces stay loaded; only uploaded ones are the user's data,
-        // and those are removed from the map by the caller after clearing IDB.
-        selectedId: null,
-        page: 0,
-        previewGuestIndex: 0,
-        past: [],
-        future: [],
-      }),
-
-    hydrate: (patch) => set(patch),
+    clearAll: () => {
+      writeDesign(initialDesign(), { label: "clearing the cards" });
+      // Bundled faces stay loaded; only uploaded ones are the user's data,
+      // and those are removed from the map by the caller after clearing IDB.
+      set({ uploadedFontIds: [], editingSide: "front", selectedId: null, page: 0, previewGuestIndex: 0 });
+    },
   };
+});
+
+/**
+ * The design is whatever the wedding's stationery slice holds — edited here,
+ * put back by the header's undo, brought in from the library or from a
+ * partner's device alike. Followed as it changes, synchronously, so there is
+ * never a moment the two disagree.
+ */
+function follow(raw: Record<string, unknown>): void {
+  const { design, problem } = readDesign(raw);
+  const present = (id: ElementId | null) => id !== null && design.template.elements.some((el) => el.id === id);
+  usePlaque.setState((s) => ({
+    ...design,
+    designProblem: problem,
+    // Something undone, or removed elsewhere, is no longer there to select.
+    selectedId: present(s.selectedId) ? s.selectedId : null,
+    cropId: present(s.cropId) ? s.cropId : null,
+  }));
+}
+
+useTrousseauStore.subscribe((state, prev) => {
+  if (state.raw["stationery"] !== prev.raw["stationery"]) follow(state.raw);
 });
 
 function nextZ(template: Template): number {

@@ -4,7 +4,7 @@ import { acceptInviteHandler } from "@/lib/accounts/handlers";
 import { accountsStore } from "@/lib/accounts/supabaseStore";
 import { currentUser, serverClient } from "@/lib/accounts/serverClient";
 import { check, tokenSchema } from "@/lib/accounts/schemas";
-import { allow, AUTH_LIMIT } from "@/lib/sync/rateLimit";
+import { allow, AUTH_LIMIT } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

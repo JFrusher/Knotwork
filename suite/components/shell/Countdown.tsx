@@ -2,6 +2,7 @@
 
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import { KO_FI_URL } from "@/lib/support";
+import { useDataPanel } from "./dataPanel";
 
 /**
  * The wedding, and how long there is.
@@ -19,6 +20,7 @@ export function Countdown() {
   const venue = useTrousseauStore((s) => s.doc.event.venueName);
   const date = useTrousseauStore((s) => s.doc.event.date);
   const status = useTrousseauStore((s) => s.status);
+  const showData = useDataPanel((s) => s.show);
 
   if (status !== "ready") {
     return <div className="h-20 animate-pulse rounded-lg bg-stone" />;
@@ -33,7 +35,15 @@ export function Countdown() {
         {venue && <span>{venue}</span>}
         {venue && date && <span className="px-2 text-charcoal/25">·</span>}
         {date && <span>{longDate(date)}</span>}
-        {!venue && !date && <span>No date set yet. Add one in Timeline.</span>}
+        {!venue && !date && (
+          <button
+            type="button"
+            onClick={showData}
+            className="text-slate underline decoration-gold underline-offset-4 hover:text-charcoal"
+          >
+            No date or venue yet — add them
+          </button>
+        )}
       </p>
       {date && <p className="mt-1 text-sm text-slate">{howLong(date)}</p>}
       {date && isPast(date) && (

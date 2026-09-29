@@ -1,0 +1,79 @@
+// @vitest-environment node
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { applyTo, extract } from "./items";
+
+const example = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const names = Object.values(example.guests as Record<string, { firstName: string; lastName: string }>).flatMap((guest) => [
+  guest.firstName,
+  guest.lastName,
+]);
+const mentionsAnyGuest = (value: unknown) => {
+  const text = JSON.stringify(value);
+  return names.filter((name) => name.length > 3 && text.includes(`"${name}"`));
+};
+
+describe("keeping a design from one wedding", () => {
+  it("keeps the card design without a single guest's name in it", () => {
+    const cards = extract("cards", example)!;
+    expect(Object.keys(cards).sort()).toEqual(["assetNames", "card", "sheet", "snapEnabled", "template", "uploadedIcons", "version"]);
+    expect(mentionsAnyGuest(cards)).toEqual([]);
+  });
+
+  it("keeps the running order without the date, the couple or the suppliers' numbers", () => {
+    const day = extract("day", example)!;
+    expect(Object.keys(day)).not.toContain("day");
+    expect(JSON.stringify(day)).not.toContain("07700");
+    expect((day["tagDetails"] as object[])[0]).toEqual({ tag: "photographer", arrivalMin: 465 });
+    expect((day["blocks"] as object[]).length).toBe(27);
+    expect(mentionsAnyGuest(day)).toEqual([]);
+  });
+
+  it("keeps the room with every chair empty", () => {
+    const room = extract("room", example)!;
+    const tables = Object.values(room["tables"] as Record<string, { assignedGuestIds: unknown[] }>);
+    expect(tables).toHaveLength(14);
+    expect(tables.every((table) => table.assignedGuestIds.every((seat) => seat === null))).toBe(true);
+    expect(Object.keys(room)).not.toContain("families");
+    expect(mentionsAnyGuest(room)).toEqual([]);
+  });
+
+  it("keeps the checklist as so many days before the day", () => {
+    const { tasks } = extract("checklist", example) as { tasks: Array<{ label: string; daysBefore: number | null }> };
+    expect(tasks.find((task) => task.label === "Book the venue")).toEqual({ label: "Book the venue", daysBefore: 365 });
+  });
+
+  it("says there is nothing to keep from a wedding with nothing in it", () => {
+    for (const kind of ["cards", "day", "room", "checklist"] as const) expect(extract(kind, {}), kind).toBeNull();
+  });
+});
+
+describe("putting it into another wedding", () => {
+  const other = {
+    event: { date: "2029-09-01", coupleNames: "Robin & Kit" },
+    guests: { r1: { id: "r1", firstName: "Robin", assignedTableId: "old", assignedSeatId: null } },
+    seating: { tables: { old: { id: "old", assignedGuestIds: ["r1"] } }, families: { f: { id: "f", memberIds: ["r1"] } } },
+    crew: { jobs: [{ id: "j1", blockId: null, label: "Book the venue", dueOn: "2028-01-01" }] },
+  };
+
+  it("gives a wedding with no cards a design and an empty list to fill from the room", () => {
+    const [[slice, stationery]] = applyTo("cards", extract("cards", example)!, other) as Array<[string, Record<string, unknown>]>;
+    expect(slice).toBe("stationery");
+    expect(stationery).toMatchObject({ rows: [], headers: [], version: 2 });
+    expect(stationery["template"]).toBeTruthy();
+  });
+
+  it("puts the room in, keeps the families, and unseats everyone from the tables that went", () => {
+    const changed = Object.fromEntries(applyTo("room", extract("room", example)!, other)) as Record<string, Record<string, Record<string, unknown>>>;
+    expect(Object.keys(changed["seating"]!["tables"]!)).toHaveLength(14);
+    expect(changed["seating"]!["families"]).toEqual(other.seating.families);
+    expect(changed["guests"]!["r1"]).toMatchObject({ assignedTableId: null });
+  });
+
+  it("adds the tasks this wedding does not have, dated from its own day", () => {
+    const [[, crew]] = applyTo("checklist", extract("checklist", example)!, other) as Array<[string, { jobs: Array<{ label: string; dueOn: string }> }]>;
+    expect(crew.jobs.filter((job) => job.label === "Book the venue")).toHaveLength(1);
+    expect(crew.jobs.find((job) => job.label === "Order the cake")?.dueOn).toBe("2029-05-04");
+  });
+});

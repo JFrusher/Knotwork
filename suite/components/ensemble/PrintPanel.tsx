@@ -6,18 +6,19 @@ import { Button, Empty, Panel, Segmented } from "@/components/ui/controls";
 import { download } from "@/lib/data/file";
 import { shotListCsv } from "@/lib/ensemble/exports";
 import { resolveShot } from "@/lib/ensemble/resolve";
+import type { Event as WeddingEvent } from "@jfrusher/trousseau";
 import type { Guest, Seating, Shots } from "@/lib/model/types";
 
 export function PrintPanel({
   shots,
   guests,
   seating,
-  coupleNames,
+  event,
 }: {
   shots: Shots;
   guests: Record<string, Guest>;
   seating: Seating;
-  coupleNames: string;
+  event: WeddingEvent;
 }) {
   const [pageSize, setPageSize] = useState<"A4" | "A5">("A4");
   const [busy, setBusy] = useState(false);
@@ -25,7 +26,7 @@ export function PrintPanel({
 
   const problems = shots.sections.flatMap((section) =>
     section.shots.flatMap((shot) => {
-      const resolved = resolveShot(shot, guests, seating, shots.cast, shots.customRoles);
+      const resolved = resolveShot(shot, guests, seating, shots.cast, shots.customRoles, event);
       return resolved.problems.map((problem) => ({
         shotLabel: resolved.label,
         text:
@@ -39,7 +40,7 @@ export function PrintPanel({
   );
 
   const slug = () =>
-    (coupleNames || "wedding").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "wedding";
+    (event.coupleNames || "wedding").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "wedding";
 
   const makePdf = async () => {
     setBusy(true);
@@ -54,7 +55,8 @@ export function PrintPanel({
         {
           fontSource: browserFontSource(),
           pageSize,
-          coupleNames,
+          coupleNames: event.coupleNames,
+          partners: event.partners,
           generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
         },
         shots.customRoles,
@@ -72,7 +74,7 @@ export function PrintPanel({
     try {
       download(
         `${slug()}-group-shots.csv`,
-        shotListCsv(shots.sections, guests, seating, shots.cast, shots.customRoles),
+        shotListCsv(shots.sections, guests, seating, shots.cast, shots.customRoles, event),
         "text/csv",
       );
     } catch (cause) {

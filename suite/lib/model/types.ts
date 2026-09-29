@@ -10,7 +10,11 @@
  */
 
 export type RsvpStatus = "confirmed" | "declined" | "pending";
-export type Side = "bride" | "groom" | "both" | "";
+/**
+ * Whose side of the family a guest is on: partner `a`'s, partner `b`'s, both,
+ * or not said. Named in words by `lib/model/partners`, after the partners.
+ */
+export type Side = "a" | "b" | "both" | "";
 export type SeatMode = "table" | "seat";
 
 /** A person on the list. Lives in the `guests` slice, keyed by id. */
@@ -20,7 +24,10 @@ export interface Guest {
   lastName: string;
   email: string;
   rsvpStatus: RsvpStatus;
+  /** A key from `lib/model/dietary` — "vegetarian", "other" — or "" for none. */
   dietary: string;
+  /** What the guest actually said, for the caterer and the card. */
+  dietaryRaw: string;
   /** The chosen main course, when the couple asked. Read by the place cards. */
   entree: string;
   notes: string;
@@ -91,7 +98,7 @@ export interface PerSideSeats {
   right: number;
 }
 
-/** A named collection of guests — "Bride's family", "University". */
+/** A named collection of guests — "Alex's family", "University". */
 export interface NamedGroup {
   id: string;
   name: string;
@@ -240,6 +247,8 @@ export interface Team {
   depositPaidOn: string;
   /** ISO date the balance falls due, or "". */
   balanceDueOn: string;
+  /** ISO date the balance was paid, or "" if it has not been. */
+  balancePaidOn: string;
   /** ISO date this team confirmed their jobs and times, or "". */
   confirmedOn: string;
 }
@@ -264,6 +273,8 @@ export interface Job {
   personIds: string[];
   /** Kanban column. Derived work is not stored; this is the user's own mark. */
   status: JobStatus;
+  /** ISO date a task off the day should be done by, or "". The Checklist's. */
+  dueOn: string;
 }
 
 export const JOB_STATUSES = ["todo", "doing", "done"] as const;
@@ -279,38 +290,26 @@ export interface Crew {
 
 // group shots ------------------------------------------------------------------
 
-/** Where a shot's people come from — the couple, a parent, the wedding party. */
-export type CastRole =
-  | "bride"
-  | "groom"
-  | "brides-mother"
-  | "brides-father"
-  | "grooms-mother"
-  | "grooms-father"
-  | "bridal-party"
-  | "groomsmen";
+/**
+ * Where a shot's people come from — the couple, a parent, the wedding party —
+ * by which partner they belong to. Named in words by `roleLabel`, after the
+ * partners: `b-mother` is "Sam's mother".
+ */
+export type CastRole = "a" | "b" | "a-mother" | "a-father" | "b-mother" | "b-father" | "a-party" | "b-party";
 
 export const CAST_ROLES: readonly CastRole[] = [
-  "bride",
-  "groom",
-  "brides-mother",
-  "brides-father",
-  "grooms-mother",
-  "grooms-father",
-  "bridal-party",
-  "groomsmen",
+  "a",
+  "b",
+  "a-mother",
+  "a-father",
+  "b-mother",
+  "b-father",
+  "a-party",
+  "b-party",
 ];
 
-export const ROLE_LABEL: Record<CastRole, string> = {
-  bride: "Bride",
-  groom: "Groom",
-  "brides-mother": "Bride's mother",
-  "brides-father": "Bride's father",
-  "grooms-mother": "Groom's mother",
-  "grooms-father": "Groom's father",
-  "bridal-party": "Bridal party",
-  groomsmen: "Groomsmen",
-};
+/** Roles that hold at most one person. The wedding parties hold many. */
+export const SINGLE_ROLES: ReadonlySet<CastRole> = new Set(["a", "b", "a-mother", "a-father", "b-mother", "b-father"]);
 
 /** Guest ids per role. Singular roles hold 0 or 1; party roles hold many. */
 export type Cast = Record<CastRole, string[]>;

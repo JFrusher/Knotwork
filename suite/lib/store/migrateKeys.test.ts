@@ -14,12 +14,10 @@ beforeEach(() => db.clear());
 
 test("a wedding stored under the old name is moved, not lost", async () => {
   db.set("tableaux.suite.document", { guests: { g1: {} } });
-  db.set("tableaux.suite.sync", { weddingId: "abc" });
 
   await migrateLegacyKeys();
 
   expect(db.get("trousseau.document")).toEqual({ guests: { g1: {} } });
-  expect(db.get("trousseau.sync")).toEqual({ weddingId: "abc" });
   expect(db.has("tableaux.suite.document")).toBe(false);
 });
 

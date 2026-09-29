@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent, SliceName, Trousseau } from "@jfrusher/trousseau";
 import {
   useTrousseauStore,
   type TrousseauState,
@@ -17,6 +17,7 @@ import {
   resolvedDay,
   timelineDoc,
 } from "./slices";
+import { coupleTitle } from "./partners";
 import type { Crew, Guest, Seating, Shots } from "./types";
 import type { Timeline } from "./timeline";
 
@@ -44,6 +45,23 @@ export const useStatus = (): TrousseauState["status"] => useTrousseauStore((s) =
  * consecutive edits coalesce on. An unlabelled write is still undoable — it
  * just reads as "change" and folds into nothing.
  */
+/**
+ * What changing the wedding's facts writes: the event, and the day resolved
+ * from it. For `setEvent`, and for anything that commits the facts together
+ * with other slices as one change — setup does.
+ */
+export function eventChange(doc: Trousseau, patch: Partial<WeddingEvent>): Array<[SliceName, unknown]> {
+  const event = { ...doc.event, ...patch };
+  // The title is the partners' names, written here and nowhere else, so the
+  // two can never disagree.
+  if (patch.partners) event.coupleNames = coupleTitle(patch.partners);
+  // The curfew is an input to the resolver, so moving it moves the day.
+  return [
+    ["event", event],
+    ["day", publishDay({ ...doc, event }, readTimeline(doc))],
+  ];
+}
+
 export interface SuiteWriters {
   setEvent: (patch: Partial<WeddingEvent>, options?: WriteOptions) => void;
   setGuests: (next: Record<string, Guest>, options?: WriteOptions) => void;
@@ -66,16 +84,7 @@ export function useWriters(): SuiteWriters {
 
   const setEvent = useCallback(
     (patch: Partial<WeddingEvent>, options: WriteOptions = { label: "wedding details" }) => {
-      const { doc } = useTrousseauStore.getState();
-      const event = { ...doc.event, ...patch };
-      // The curfew is an input to the resolver, so moving it moves the day.
-      setSlices(
-        [
-          ["event", event],
-          ["day", publishDay({ ...doc, event }, readTimeline(doc))],
-        ],
-        options,
-      );
+      setSlices(eventChange(useTrousseauStore.getState().doc, patch), options);
     },
     [setSlices],
   );

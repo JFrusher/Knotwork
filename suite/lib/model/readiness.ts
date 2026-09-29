@@ -1,6 +1,9 @@
 import type { Trousseau } from "@jfrusher/trousseau";
-import { guestName, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
+import { guestName, isComing, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
 import { resolveShot } from "@/lib/ensemble/resolve";
+import { DUE_SOON_DAYS, money } from "@/lib/money/money";
+import { daysUntil, longDate, todayIso } from "@/lib/dates";
+import { checklist } from "@/lib/checklist/checklist";
 
 /**
  * What is left to do, across the whole wedding.
@@ -27,7 +30,7 @@ export interface Readiness {
   severity: Severity;
   message: string;
   /** Where the fix is, so a row can take you there. */
-  href: "/seating" | "/place-cards" | "/timeline" | "/delegation" | "/group-shots";
+  href: "/guests" | "/money" | "/checklist" | "/seating" | "/place-cards" | "/timeline" | "/delegation" | "/group-shots";
   action: string;
 }
 
@@ -50,18 +53,25 @@ function placeNames(raw: unknown): Set<string> {
 }
 
 /** Plaque's saved design, which knows what the printed list was drawn from. */
-function stationery(raw: unknown): Record<string, unknown> | null {
+export function stationery(raw: unknown): Record<string, unknown> | null {
   const slice = isRecord(raw) ? raw["stationery"] : null;
   return isRecord(slice) && "version" in slice ? slice : null;
 }
 
-/** Every token the card design binds, so we can tell what it can and cannot show. */
+/**
+ * Every column the card design binds, so we can tell what it can and cannot
+ * show: the tokens in its text, and the column an icon is drawn from — the
+ * same two Plaque's own `unboundTokens` counts.
+ */
 function boundTokens(design: Record<string, unknown> | null): Set<string> {
   const tokens = new Set<string>();
   const template = design && isRecord(design["template"]) ? design["template"] : null;
   const elements = template && Array.isArray(template["elements"]) ? template["elements"] : [];
   for (const element of elements) {
     if (!isRecord(element)) continue;
+    if (element["kind"] === "icon" && typeof element["sourceField"] === "string") {
+      tokens.add(element["sourceField"].trim().toLowerCase());
+    }
     for (const value of Object.values(element)) {
       if (typeof value !== "string") continue;
       for (const match of value.matchAll(/\{\{([^}]+)\}\}/g)) {
@@ -73,10 +83,11 @@ function boundTokens(design: Record<string, unknown> | null): Set<string> {
 }
 
 /**
- * @param doc  the parsed wedding, for the typed readers
- * @param raw  the slices as stored, for the parts the readers narrow away
+ * @param doc    the parsed wedding, for the typed readers
+ * @param raw    the slices as stored, for the parts the readers narrow away
+ * @param today  ISO date, for what falls due; the user's own today unless a test says otherwise
  */
-export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
+export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso()): Readiness[] {
   const out: Readiness[] = [];
   const guests = readGuests(doc);
   const people = Object.values(guests);
@@ -91,13 +102,15 @@ export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
         id: "no-guests",
         severity: "advisory",
         message: "No guest list yet. Everything else is built on it.",
-        href: "/seating",
+        href: "/guests",
         action: "Import a guest list",
       },
     ];
   }
 
-  const unseated = people.filter((guest) => guest.assignedTableId === null);
+  // Somebody who is not coming has no seat to find, and no card to print.
+  const coming = people.filter(isComing);
+  const unseated = coming.filter((guest) => guest.assignedTableId === null);
   if (unseated.length > 0 && Object.keys(seating.tables).length > 0) {
     out.push({
       id: "unseated",
@@ -129,7 +142,7 @@ export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
     });
   }
 
-  const withDietary = people.filter((guest) => guest.dietary.trim() !== "");
+  const withDietary = coming.filter((guest) => guest.dietary.trim() !== "");
   if (design && withDietary.length > 0 && !boundTokens(design).has("dietary")) {
     out.push({
       id: "dietary-unprinted",
@@ -189,7 +202,9 @@ export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
     }
   }
 
-  const uncrewed = crew.jobs.filter((job) => job.personIds.length === 0);
+  // On the day only. A task off it with nobody named is the couple's own to
+  // do, and the Checklist is where it is kept track of.
+  const uncrewed = crew.jobs.filter((job) => job.blockId !== null && job.personIds.length === 0);
   if (uncrewed.length > 0) {
     out.push({
       id: "jobs-uncrewed",
@@ -212,7 +227,7 @@ export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
   const shots = readShots(doc);
   const dangling = shots.sections
     .flatMap((section) => section.shots)
-    .flatMap((shot) => resolveShot(shot, guests, seating, shots.cast, shots.customRoles).problems)
+    .flatMap((shot) => resolveShot(shot, guests, seating, shots.cast, shots.customRoles, doc.event).problems)
     .filter((problem) => problem.kind === "dangling").length;
 
   if (dangling > 0) {
@@ -228,14 +243,56 @@ export function readiness(doc: Trousseau, raw: unknown): Readiness[] {
     });
   }
 
-  const committed = crew.teams.reduce((total, team) => total + (team.cost ?? 0), 0);
-  if (crew.budget !== null && committed > crew.budget) {
+  const accounts = money(crew);
+  if (accounts.budget !== null && accounts.left !== null && accounts.left < 0) {
     out.push({
       id: "over-budget",
       severity: "advisory",
-      message: `Committed ${committed.toLocaleString()} against a budget of ${crew.budget.toLocaleString()}.`,
-      href: "/delegation",
+      message: `Committed ${accounts.committed.toLocaleString()} against a budget of ${accounts.budget.toLocaleString()}.`,
+      href: "/money",
       action: "Look at the costs",
+    });
+  }
+
+  const late = checklist(crew, today).overdue;
+  if (late.length > 0) {
+    out.push({
+      id: "tasks-overdue",
+      severity: "advisory",
+      message:
+        late.length === 1
+          ? `“${late[0]!.label}” was to be done by ${longDate(late[0]!.dueOn)}.`
+          : `${late.length} tasks are past the date they were to be done by.`,
+      href: "/checklist",
+      action: "See the checklist",
+    });
+  }
+
+  // Balances, which have a date; a deposit is paid when the supplier is booked.
+  const balances = accounts.toPay.filter((payment) => payment.kind === "balance" && payment.dueOn !== "");
+  const overdue = balances.filter((payment) => daysUntil(payment.dueOn, today) < 0);
+  const soon = balances.filter((payment) => {
+    const days = daysUntil(payment.dueOn, today);
+    return days >= 0 && days <= DUE_SOON_DAYS;
+  });
+  const one = (payment: (typeof balances)[number], tense: "was" | "is") =>
+    `${payment.team}’s balance of ${payment.amount.toLocaleString()} ${tense} due on ${longDate(payment.dueOn)}.`;
+  if (overdue.length > 0) {
+    out.push({
+      id: "payments-overdue",
+      severity: "blocking",
+      message: overdue.length === 1 ? one(overdue[0]!, "was") : `${overdue.length} balances are overdue.`,
+      href: "/money",
+      action: "Pay, or mark them paid",
+    });
+  }
+  if (soon.length > 0) {
+    out.push({
+      id: "payments-due",
+      severity: "advisory",
+      message: soon.length === 1 ? one(soon[0]!, "is") : `${soon.length} balances fall due in the next ${DUE_SOON_DAYS} days.`,
+      href: "/money",
+      action: "See what is due",
     });
   }
 

@@ -1,13 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useStore } from './useStore.js'
+import { useStore } from './useStore'
 import { validatePlanDoc } from './planSchema'
+import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { openPlan } from '../test/openPlan'
 
 const s = () => useStore.getState()
 
 describe('multi-room spaces', () => {
   beforeEach(() => {
     // A legacy single-rect room (no `spaces`) — exercises the migration.
-    s().hydrate({ room: { width: 1000, height: 800, backgroundColour: '#FAF8F5' } })
+    openPlan({ room: { width: 1000, height: 800, backgroundColour: '#FAF8F5' } })
   })
 
   it('migrates a legacy rectangle room into one rect space', () => {
@@ -55,7 +57,7 @@ describe('multi-room spaces', () => {
     s().resizeSpace(id, { width: 500, height: 350 })
     let sp = s().room.spaces.find((x) => x.id === id)
     expect(sp).toMatchObject({ width: 500, height: 350 })
-    s().undo()
+    useTrousseauStore.getState().undo()
     sp = s().room.spaces.find((x) => x.id === id)
     expect(sp).toMatchObject({ width: 300, height: 200 })
   })
@@ -70,7 +72,7 @@ describe('multi-room spaces', () => {
     const id = s().addSpace({ shape: 'polygon', x: 300, y: 300, vertices: verts }).meta.newSpaceId
 
     const reloaded = validatePlanDoc(s().serialize())
-    s().hydrate(reloaded)
+    openPlan(reloaded)
 
     const poly = s().room.spaces.find((sp) => sp.id === id)
     expect(poly).toBeTruthy()

@@ -14,12 +14,13 @@ vi.mock("@/lib/accounts/supabaseStore", () => ({ accountsStore: () => store }));
 
 const { POST } = await import("./route");
 
+let weddingId = "";
 const post = () =>
   POST(
     new Request("http://localhost/api/accounts/invite", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email: "partner@example.com" }),
+      body: JSON.stringify({ weddingId, email: "partner@example.com", role: "partner" }),
     }),
   );
 
@@ -27,7 +28,7 @@ const post = () =>
 // the in-memory store and the limiter's window map are shared across this file.
 beforeEach(async () => {
   currentUserResult = { id: `user-${Math.random()}`, email: "a@example.com" };
-  await store.createWedding(currentUserResult.id);
+  weddingId = (await store.createWedding(currentUserResult.id, "partner")).id;
 });
 
 test("invites past the limit are throttled, per account", async () => {
