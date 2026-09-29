@@ -52,8 +52,10 @@ export function parseDay(json: string): DayResult {
   for (const field of ["date", "coupleNames", "venueName"]) {
     if (typeof settings[field] !== "string") return { error: `The day is missing ${field}.` };
   }
-  for (const field of ["curfewMin", "utcOffsetMin"]) {
-    if (typeof settings[field] !== "number") return { error: `The day is missing ${field}.` };
+  if (typeof settings["curfewMin"] !== "number") return { error: "The day is missing curfewMin." };
+  // Null is a day whose clocks nobody has set yet, not a broken one.
+  if (typeof settings["utcOffsetMin"] !== "number" && settings["utcOffsetMin"] !== null) {
+    return { error: "The day is missing utcOffsetMin." };
   }
 
   const rawBlocks = entry["blocks"];
@@ -97,7 +99,7 @@ export function parseDay(json: string): DayResult {
       coupleNames: settings["coupleNames"] as string,
       venueName: settings["venueName"] as string,
       curfewMin: settings["curfewMin"] as number,
-      utcOffsetMin: settings["utcOffsetMin"] as number,
+      utcOffsetMin: settings["utcOffsetMin"] as number | null,
       lanes: Array.isArray(entry["lanes"]) ? entry["lanes"].filter(isString) : [],
       blocks,
     },

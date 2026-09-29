@@ -26,7 +26,8 @@ export interface ImportedDay {
   coupleNames: string;
   venueName: string;
   curfewMin: number;
-  utcOffsetMin: number;
+  /** Null until somebody sets the clocks. */
+  utcOffsetMin: number | null;
   lanes: string[];
   blocks: DayBlock[];
 }

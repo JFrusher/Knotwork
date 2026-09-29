@@ -540,8 +540,9 @@ export function readTimeline(doc: Trousseau): Timeline {
         coupleNames: doc.event.coupleNames || str(storedDay["coupleNames"]),
         venueName: doc.event.venueName || str(storedDay["venueName"]),
         curfewMin: doc.event.curfewMin ?? num(storedDay["curfewMin"], fallbackDay.curfewMin),
+        // Never a likely value: unset stays unset, and the Day panel says so.
         utcOffsetMin:
-          doc.event.utcOffsetMin ?? num(storedDay["utcOffsetMin"], fallbackDay.utcOffsetMin),
+          doc.event.utcOffsetMin ?? (typeof storedDay["utcOffsetMin"] === "number" ? storedDay["utcOffsetMin"] : null),
         // The venue's coordinates are Cadence's alone: nothing else needs them,
         // and they drive only the golden-hour advisory.
         latitude: num(storedDay["latitude"], fallbackDay.latitude),

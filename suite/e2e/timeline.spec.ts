@@ -73,3 +73,18 @@ test("the day downloads as a calendar, whole or one supplier's part of it", asyn
   expect(one.suggestedFilename()).toBe("alex-and-sam-county-registrar.ics");
   expect(summaries(readFileSync(await one.path(), "utf8"))).toEqual(["SUMMARY:Rings to the best man", "SUMMARY:Ceremony"]);
 });
+
+/*
+ * The clocks. A new wedding's used to show British Summer Time as if chosen —
+ * a fallback — and choosing it did nothing, since it was already "selected".
+ */
+test("clocks nobody has set say so, and choosing British Summer Time sets it", async ({ page }) => {
+  await page.goto("/timeline");
+  const clocks = page.getByRole("combobox", { name: "Clocks" });
+  await expect(clocks.locator("option:checked")).toHaveText("Not set");
+  await expect(page.getByText("Set the clocks to see sunset and golden hour.")).toBeVisible();
+
+  await clocks.selectOption({ label: "UTC+1 (BST, CET)" });
+  await expect.poll(async () => (await storedDocument(page)).event?.utcOffsetMin).toBe(60);
+  await expect(page.getByText(/^Sunset \d\d:\d\d/)).toBeVisible();
+});

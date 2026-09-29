@@ -76,4 +76,10 @@ describe("sunForDay", () => {
       sunTimes("2026-06-20", 51.5074, -0.1278, 60)?.sunsetMin,
     );
   });
+
+  it("gives nothing until the clocks are set, rather than a sunset an hour out", async () => {
+    const { sunForDay } = await import("./solar");
+    const { sampleDoc } = await import("../model/defaults");
+    expect(sunForDay({ ...sampleDoc().day, utcOffsetMin: null })).toBeNull();
+  });
 });
