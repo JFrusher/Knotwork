@@ -1,26 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PackagePlus, Plus, Trash2, X } from "lucide-react";
+import { FileSpreadsheet, ListChecks, PackagePlus, Plus, Tag, Trash2, X } from "lucide-react";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { Button, Empty, IconButton, NumberField, Panel, SelectField, TextArea, TextField } from "@/components/ui/controls";
 import { WholeNumberInput } from "@/components/ui/WholeNumberInput";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 import { addBox, addItem, moveItem, patchBox, patchItem, removeBox, removeItem, USUAL_BOXES, withUsualBoxes } from "@/lib/boxes/actions";
-import { dayPlaces, find, neededAt, packing, type Place } from "@/lib/boxes/view";
+import { dayPlaces, find, neededAt, packing, whereBy, type Place } from "@/lib/boxes/view";
+import { boxesCsv, boxRows } from "@/lib/boxes/rows";
+import { download } from "@/lib/data/file";
 import { personName } from "@/lib/model/slices";
-import { useBoxes, useCrew, useGuests, useStatus, useWriters } from "@/lib/model/useSuite";
+import { useBoxes, useCrew, useEvent, useGuests, useStatus, useWriters } from "@/lib/model/useSuite";
 import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 import type { Box, Boxes, Crew, Guest } from "@/lib/model/types";
 
 const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-sm text-charcoal focus:border-gold";
-
-/** "The suite, by 08:00", or why there is no saying. */
-function whereBy(place: Place | null, lost: boolean): string {
-  if (lost) return "Its part of the day is no longer on the Timeline";
-  if (!place) return "Not for the day";
-  return `${place.location || place.label}, by ${formatClock(place.startMin)}`;
-}
 
 /**
  * The boxes: what is in each, found in a moment, and where each has to be by
@@ -33,10 +28,12 @@ export function BoxesBoard() {
   const boxes = useBoxes();
   const crew = useCrew();
   const guests = useGuests();
+  const event = useEvent();
   const places = useTrousseauStore((s) => dayPlaces(s.doc));
   const { setBoxes } = useWriters();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [note, setNote] = useState<string | null>(null);
   const found = useMemo(() => find(boxes, query), [boxes, query]);
 
   if (status !== "ready") return null;
@@ -44,6 +41,28 @@ export function BoxesBoard() {
   const selected = boxes.boxes.find((box) => box.id === selectedId) ?? null;
   const have = new Set(boxes.boxes.map((box) => box.name.trim().toLowerCase()));
   const usualMissing = USUAL_BOXES.some((usual) => !have.has(usual.name.toLowerCase()));
+
+  const stem = (event.coupleNames || "wedding").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "wedding";
+  const rows = () => boxRows(boxes, places, crew, guests);
+
+  const print = async (what: "labels" | "list") => {
+    setNote(null);
+    try {
+      const { browserFontSource } = await import("@/apps/brigade/render/pdf/fontSource");
+      const fontSource = browserFontSource();
+      const bytes =
+        what === "labels"
+          ? await (await import("@/lib/boxes/render/pdf/labels")).renderBoxLabels(rows(), { fontSource })
+          : await (await import("@/lib/boxes/render/pdf/packingList")).renderPackingList(rows(), {
+              fontSource,
+              coupleNames: event.coupleNames,
+              generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+            });
+      download(`${stem}-${what === "labels" ? "box-labels" : "packing-list"}.pdf`, new Blob([bytes as BlobPart], { type: "application/pdf" }));
+    } catch (cause) {
+      setNote(cause instanceof Error ? cause.message : "The page could not be made.");
+    }
+  };
 
   const add = () => {
     const next = addBox(boxes);
@@ -65,6 +84,24 @@ export function BoxesBoard() {
             </Button>
           )}
         </div>
+        {boxes.boxes.length > 0 && (
+          <div className="flex flex-wrap gap-2 border-b border-charcoal/10 p-3">
+            <Button icon={Tag} onClick={() => void print("labels")}>
+              Labels
+            </Button>
+            <Button icon={ListChecks} onClick={() => void print("list")}>
+              Packing list
+            </Button>
+            <Button icon={FileSpreadsheet} onClick={() => download(`${stem}-boxes.csv`, boxesCsv(rows()), "text/csv")}>
+              CSV
+            </Button>
+          </div>
+        )}
+        {note && (
+          <p role="status" className="border-b border-charcoal/10 px-3 py-2 text-xs text-danger">
+            {note}
+          </p>
+        )}
         <div className="border-b border-charcoal/10 p-3">
           <TextField label="Find something" value={query} onChange={setQuery} placeholder="Shoes, the rings…" />
         </div>

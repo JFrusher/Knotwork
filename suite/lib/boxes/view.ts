@@ -1,4 +1,5 @@
 import type { Trousseau } from "@jfrusher/trousseau";
+import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { cached, readTimeline, resolvedDay } from "@/lib/model/slices";
 import type { Box, BoxItem, Boxes } from "@/lib/model/types";
 
@@ -29,6 +30,13 @@ export function neededAt(box: Box, known: ReadonlyMap<string, Place>): { place: 
   if (box.blockId === null) return { place: null, lost: false };
   const place = known.get(box.blockId) ?? null;
   return { place, lost: place === null };
+}
+
+/** "The suite, by 08:00", or why there is no saying: the page, the labels and the list all say it so. */
+export function whereBy(place: Place | null, lost: boolean): string {
+  if (lost) return "Its part of the day is no longer on the Timeline";
+  if (!place) return "Not for the day";
+  return `${place.location || place.label}, by ${formatClock(place.startMin)}`;
 }
 
 /** Things packed and things in the box, counted by line, not by how many of each. */

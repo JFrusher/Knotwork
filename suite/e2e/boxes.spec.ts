@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { seedExampleWedding, storedDocument } from "./wedding";
 
@@ -62,4 +63,21 @@ test("a new wedding adds Boxes from Tools and starts from the usual ones", async
     /4\. Overnight and the day after/,
   ]);
   await expect(page.getByRole("button", { name: "Add the usual boxes" })).toHaveCount(0);
+});
+
+test("the boxes print as labels and a packing list, and download as CSV", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/boxes");
+  const save = async (button: string) => {
+    const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: button, exact: true }).click()]);
+    return download;
+  };
+
+  expect((await save("Labels")).suggestedFilename()).toBe("alex-and-sam-box-labels.pdf");
+  expect((await save("Packing list")).suggestedFilename()).toBe("alex-and-sam-packing-list.pdf");
+  const csv = await save("CSV");
+  expect(csv.suggestedFilename()).toBe("alex-and-sam-boxes.csv");
+  const text = readFileSync(await csv.path(), "utf8");
+  expect(text.split(/\r?\n/)[0]).toBe("Box,Name,Needed,Taken by,Item,How many,Packed");
+  expect(text).toContain("Getting ready");
 });
