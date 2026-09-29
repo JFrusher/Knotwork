@@ -39,7 +39,7 @@ export const RETENTION_MONTHS = 24;
 export const PRIVACY: Policy = {
   title: "Privacy",
   updated: "2026-09-29",
-  digest: "5fd010222f8ba13a",
+  digest: "bc0c57413d0ed37b",
   intro:
     "Trousseau is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
   sections: [
@@ -124,6 +124,12 @@ export const PRIVACY: Policy = {
       paragraphs: [
         "Signing in keeps a session in this browser until you sign out, so you are not asked for a link on every visit.",
         "The practical consequence is worth stating: on a shared or borrowed computer, signing out matters. Anyone using that browser afterwards can reach the wedding.",
+      ],
+    },
+    {
+      heading: "Stories for the blog",
+      paragraphs: [
+        "If you email your wedding story for the blog, it is read by me and kept in my email while we agree what is published. Nothing goes up until you have seen the page and said yes, it carries only the names you choose, and it is changed or taken down whenever you ask. A story that is not published is deleted.",
       ],
     },
     {

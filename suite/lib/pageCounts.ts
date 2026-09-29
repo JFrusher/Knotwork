@@ -15,6 +15,13 @@ const PRIVATE_SEGMENTS: ReadonlyArray<[prefix: string, name: string]> = [
   ["/open/", "[wedding]"],
 ];
 
+/**
+ * Pages with a segment in their address that is public and worth counting
+ * as it is: which post was read. Named here so the test can tell a page
+ * meant to be counted whole from one that was forgotten.
+ */
+export const PUBLIC_ROUTES: readonly string[] = ["blog/[slug]"];
+
 export function countedUrl(url: string): string {
   const parsed = new URL(url);
   const path = parsed.pathname;

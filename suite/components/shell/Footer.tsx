@@ -18,6 +18,12 @@ export function Footer() {
             besides the search box, and a guest is on a phone at a venue. */}
         <nav className="flex gap-2">
           <Link
+            href="/blog"
+            className="inline-flex min-h-11 items-center px-2 underline underline-offset-2 hover:text-charcoal"
+          >
+            Guides and stories
+          </Link>
+          <Link
             href="/privacy"
             className="inline-flex min-h-11 items-center px-2 underline underline-offset-2 hover:text-charcoal"
           >

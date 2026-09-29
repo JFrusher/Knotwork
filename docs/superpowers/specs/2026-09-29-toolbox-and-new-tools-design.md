@@ -57,6 +57,7 @@ The maintainer's second answers, the same day, after Phase 0 was built:
 | 17 | Guests | **A tab of its own at the top**, first. Delegated: **never removable**, because every tool is built on the guest list, so it is not in the toolbox. |
 | 18 | Money, Checklist, Binder | **In the toolbox**, as tools. Delegated: **off until added** — the words were "in the tool box" against "a tab on the top", and a header of Guests and the five is the clean start the PRD asked for. This replaces the master plan's rule that the wedding's own pages sit under its name; only Overview is left there. |
 | 19 | Room in the header | Delegated: **the tool on screen keeps its controls; the tabs give way and scroll.** Measured at 1024px with every tool added: the tabs took 392px and left Timeline's controls 244 of the 323 they need. Denser tabs would have bought about 90px, enough today and not once Phase 1–4 add tools. |
+| 20 | A blog | **Wanted** (the maintainer, 2026-09-29), to draw couples in from search and give them a way to share their experiences. Decision 5 stands for calculator pages; the blog's guides link into the tools instead. Delegated: **posts as data in the repository**, as the policies are, and **stories by email**, published only once the couple has seen the page and said yes. A form that stores strangers' stories, with moderation, is left for the maintainer to decide. |
 
 ## Phase 0 — the toolbox
 
