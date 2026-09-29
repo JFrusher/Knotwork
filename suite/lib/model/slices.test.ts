@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
-import { coerceGuests, readCast, readCeremony, readCrew, readShots, readTimeline } from "./slices";
+import { coerceGuests, personName, readBoxes, readCast, readCeremony, readCrew, readShots, readTimeline } from "./slices";
 
 describe("coerceGuests keeps what it has no opinion about", () => {
   it("preserves fields owned by a tool rather than by the suite", () => {
@@ -163,5 +163,25 @@ describe("readCeremony", () => {
       { id: "w1", label: "", members: [{ kind: "role", ref: "a" }], formation: "threes", side: "b", music: "Canon in D", cue: "" },
       { id: "w2", label: "", members: [], formation: "single", side: "", music: "", cue: "" },
     ]);
+  });
+});
+
+describe("readBoxes", () => {
+  it("reads boxes, filling in what a box does not say, and never a quantity below one", () => {
+    const doc = migrate({
+      boxes: { boxes: [{ id: "b1", name: "Getting ready", items: [{ id: "i1", label: "Shoes", quantity: 0 }, { label: "No id" }], blockId: 7 }, { name: "No id" }] },
+    });
+    expect(readBoxes(doc).boxes).toEqual([
+      { id: "b1", number: 1, name: "Getting ready", items: [{ id: "i1", label: "Shoes", quantity: 1, packed: false }], blockId: null, personIds: [], notes: "" },
+    ]);
+  });
+});
+
+describe("personName", () => {
+  const guests = { g1: { ...coerceGuests({ g1: { id: "g1", firstName: "Ines", lastName: "Ashdown" } })["g1"]! } };
+  it("names somebody who is a guest as the guest list does, and anyone else as the crew does", () => {
+    expect(personName({ name: "Old spelling", guestId: "g1" }, guests)).toBe("Ines Ashdown");
+    expect(personName({ name: "Rosa Wilde", guestId: null }, guests)).toBe("Rosa Wilde");
+    expect(personName({ name: "Kept", guestId: "g-deleted" }, guests)).toBe("Kept");
   });
 });

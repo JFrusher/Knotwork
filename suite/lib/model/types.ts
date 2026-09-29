@@ -400,3 +400,36 @@ export interface WalkGroup {
 export interface Ceremony {
   processional: WalkGroup[];
 }
+
+// boxes -----------------------------------------------------------------------
+
+/** One thing packed, or to be. */
+export interface BoxItem {
+  id: string;
+  label: string;
+  quantity: number;
+  packed: boolean;
+}
+
+/**
+ * A box for the day: what is in it, and the part of the day it is needed for.
+ * Where and when are that block's — its location and its start — never typed
+ * onto the box, so moving the block moves the box.
+ */
+export interface Box {
+  id: string;
+  /** Printed large on its label. */
+  number: number;
+  name: string;
+  items: BoxItem[];
+  /** The block it is needed for, or null: not for the day — the honeymoon bag. */
+  blockId: string | null;
+  /** Who gets it there: people from the crew. */
+  personIds: string[];
+  notes: string;
+}
+
+/** The `boxes` slice. Boxes' own. */
+export interface Boxes {
+  boxes: Box[];
+}

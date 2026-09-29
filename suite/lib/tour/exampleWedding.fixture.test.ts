@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { migrate } from "@jfrusher/trousseau";
-import { readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
+import { readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
+import { dayPlaces, neededAt, packingOf } from "@/lib/boxes/view";
 import { readiness } from "@/lib/model/readiness";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { computeWarnings } from "@/apps/tableaux/utils/warnings";
@@ -106,4 +107,18 @@ test("the processional names real people, from the same cast as the group shots"
     const resolved = resolveMembers(group, readGuests(doc), seating, cast.roles, cast.customRoles, doc.event);
     expect(resolved.problems.filter((p) => p.kind !== "declined"), resolved.label).toEqual([]);
   }
+});
+
+test("the boxes are each needed somewhere on the day, taken by somebody in the crew, and partly packed", () => {
+  const { boxes } = readBoxes(doc);
+  expect(boxes.length).toBeGreaterThanOrEqual(4);
+  const known = dayPlaces(doc);
+  const crew = new Set(readCrew(doc).people.map((person) => person.id));
+  for (const box of boxes) {
+    expect(neededAt(box, known).lost, box.name).toBe(false);
+    for (const id of box.personIds) expect(crew.has(id), `${box.name}: ${id}`).toBe(true);
+  }
+  const { packed, total } = packingOf({ boxes });
+  expect(packed).toBeGreaterThan(0);
+  expect(packed).toBeLessThan(total);
 });

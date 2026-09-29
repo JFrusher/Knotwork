@@ -1,4 +1,4 @@
-import { Armchair, Banknote, Camera, ClipboardList, Clock, Contact, Footprints, LayoutDashboard, ListChecks, Smartphone, Users, type LucideIcon } from "lucide-react";
+import { Armchair, Banknote, Camera, ClipboardList, Clock, Contact, Footprints, LayoutDashboard, ListChecks, Package, Smartphone, Users, type LucideIcon } from "lucide-react";
 
 /** What a wedding stores to say it shows a tool. Never renamed: it is data. */
 export type ToolId =
@@ -8,6 +8,7 @@ export type ToolId =
   | "delegation"
   | "group-shots"
   | "ceremony"
+  | "boxes"
   | "money"
   | "checklist"
   | "binder";
@@ -101,6 +102,15 @@ export const TOOLS: readonly Tool[] = [
     name: "Ceremony",
     tagline: "Who walks down the aisle, in what order, and to what.",
     icon: Footprints,
+    defaultOn: false,
+  },
+  {
+    id: "boxes",
+    href: "/boxes",
+    tokens: "brigade-tokens",
+    name: "Boxes",
+    tagline: "What is packed in which box, and where each has to be, by when.",
+    icon: Package,
     defaultOn: false,
   },
   {

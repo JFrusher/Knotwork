@@ -19,6 +19,7 @@ describe("finding anything by name", () => {
       "Delegation",
       "Group shots",
       "Ceremony",
+      "Boxes",
       "Money",
       "Checklist",
       "Binder",
