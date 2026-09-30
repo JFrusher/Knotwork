@@ -48,6 +48,8 @@ is retyped and nothing disagrees.
 - ✅ **Guided tour** with an example wedding, and the ⌘/Ctrl-K palette.
 - ✅ **Download my wedding** as a single `.trousseau.json` file, and account
   deletion that really deletes.
+- ✅ **Retention.** An account wedding nobody writes to for 24 months is
+  deleted by a daily sweep, as the Privacy Policy states.
 
 ---
 
@@ -69,12 +71,6 @@ for a first substantial contribution.
 | **Bar → Checklist** | "Buy the drinks" and "Collect the ice", dated back from the day. |
 | **Bar → Boxes** | Crates as boxes, attached to the bar's block. |
 | **Timeline → Supplier links** | Each supplier's calendar file on their own call sheet. |
-
-Also in this milestone:
-
-- 🔜 **Retention for account weddings.** The 24-month sweep currently covers
-  synced weddings only. Accounts need their own policy, and the Privacy Policy
-  deliberately does not claim one yet.
 
 Source: [toolbox and new tools design](docs/superpowers/specs/2026-09-29-toolbox-and-new-tools-design.md),
 "Tools feeding each other".
