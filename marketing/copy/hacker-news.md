@@ -21,7 +21,7 @@ Pick one. Each is under 80 characters.
 1. `Show HN: Trousseau – open-source wedding planner where the tools share one document`
 2. `Show HN: I built an open-source, self-hostable wedding planner`
 3. `Show HN: A local-first wedding planner – seating, place cards, run sheet, one file`
-4. `Show HN: Trousseau – free wedding planning tools that don't disagree with each other`
+4. `Show HN: Trousseau – free wedding planning tools that share one guest list`
 
 **Recommended: 1.** It names the idea that is actually new, and "one document"
 is what an HN reader will want to argue about.
@@ -47,8 +47,8 @@ is what an HN reader will want to argue about.
 > seating (a room drawn to scale), place cards, a timeline, job delegation,
 > group photos, ceremony, packing boxes, a bar calculator, money, a checklist
 > and a phone "binder" for the day. Each tool owns one slice of the document
-> and reads everyone else's. Seat someone and their place card already knows
-> the table. Pin the ceremony, let the rest of the day follow it, and moving
+> and reads everyone else's. Seat your guests and one click puts every table
+> number on the place cards. Pin the ceremony, let the rest of the day follow it, and moving
 > the ceremony ten minutes moves every job hanging off it.
 >
 > Some technical bits people here might find interesting:

@@ -19,7 +19,7 @@
 [Roadmap](ROADMAP.md) &nbsp;·&nbsp;
 [Contribute](CONTRIBUTING.md)
 
-![The Trousseau front page: one wedding, the tools around it, and what is left to do](docs/images/home.png)
+![Trousseau: the whole wedding in one place, with the front page showing where things stand](marketing/assets/images/hero-overview.png)
 
 </div>
 
@@ -52,9 +52,9 @@ Trousseau is the opposite of that:
 
 ## ✨ What it does
 
-Seat someone in the room and their place card already knows the table. Move
-the ceremony by ten minutes and every job hanging off it moves too. Nothing is
-retyped, and nothing quietly disagrees.
+Seat your guests, and one click puts every table number on the place cards.
+Move the ceremony by ten minutes and every job hanging off it moves too.
+Nothing is retyped.
 
 ### The tools
 
@@ -96,15 +96,26 @@ you add the tool again.
 - 🧭 **A guided tour** with a complete example wedding, and a ⌘/Ctrl-K command
   palette.
 
-<!-- SCREENSHOT: seating-to-cards.gif — drag a guest to a seat, open Place cards, press "Use the room", table number appears. Use the tour's example wedding, never a real one. -->
+![Every tool, one wedding: the front page, the guest list and every desktop tool](marketing/assets/images/tools-grid.png)
 
-![Building the room in Seating: the guest list, the floor plan, and the dietary breakdown](docs/images/seating.png)
+**Seat a guest, and her place card has her table.** Drag Zainab onto Table 13,
+press *Use the room* in Place cards, and her card reads "Table 13".
 
-<!-- SCREENSHOT: ceremony-moves-day.gif — drag the ceremony ten minutes later; the following blocks and the Delegation jobs move with it. -->
+![Seating a guest, then opening her place card with the table filled in](marketing/assets/motion/seat-to-card.gif)
 
-![The running order in Timeline: lanes, gaps, and what collides](docs/images/timeline.png)
+**Move the ceremony, and the day follows.** Pinned at 13:30, moved to 14:00:
+drinks, photos and dinner all move with it. Later still, and it tells you what
+no longer fits.
 
-<!-- SCREENSHOT: binder-phone.png — the Binder on a phone, showing now and next. -->
+![Moving the ceremony in Timeline: every block after it moves, then a collision is flagged](marketing/assets/motion/ceremony-moves.gif)
+
+**The Binder, on the day.** What is on now, who to ring, where a guest sits,
+and the shot list to tick off, on a phone, with or without signal.
+
+<p align="center"><img src="marketing/assets/motion/binder.gif" width="420" alt="The Binder on a phone: now, the running order, who to ring, find a guest, the shot list"></p>
+
+More screenshots, framed images and clips for sharing are in
+[`marketing/assets/`](marketing/assets/).
 
 ---
 
