@@ -120,6 +120,19 @@ and supplier links, the planners' library, and the live channel. **The RLS
 policies are what make one couple unable to read another's wedding**, so
 applying them is not optional.
 
+Supabase's Security Advisor will then warn that signed-in people can execute
+sixteen `security definer` functions, and anyone three. That is the design:
+
+- every write goes through one of the sixteen, and each checks who is calling;
+- the three are the guest-link and supplier-link readers and the supplier's
+  Confirm, for whoever holds a link.
+
+**Do not apply the advisor's remedies to them** — revoking `EXECUTE`, or
+switching to `SECURITY INVOKER`. Done to `is_wedding_member`, either one stops
+every signed-in person reading their own wedding. The hosted project met
+exactly that; see D8 in the
+[database review](superpowers/specs/2026-09-29-database-review.md).
+
 ## 5. Build and start
 
 ```sh
