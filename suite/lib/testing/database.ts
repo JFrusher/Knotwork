@@ -17,6 +17,7 @@ export async function everyMigration(): Promise<PGlite> {
     create or replace function auth.uid() returns uuid
       language sql stable
       as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
+    grant usage on schema auth to anon, authenticated;
     create schema if not exists storage;
     create table if not exists storage.buckets (id text primary key, name text not null, public boolean not null default false);
     create table if not exists storage.objects (

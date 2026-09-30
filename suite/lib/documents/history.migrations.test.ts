@@ -7,6 +7,9 @@ import { actAs, everyMigration, userExists } from "@/lib/testing/database";
 
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
+const MEMBER_GRANTS = join(process.cwd(), "..", "supabase", "migrations", "20260930155142_member_grants.sql");
+const MEMBER_DEFINER = join(process.cwd(), "..", "supabase", "migrations", "20260930155610_member_definer.sql");
+
 let db: PGlite;
 beforeEach(async () => {
   db = await everyMigration();
@@ -119,6 +122,7 @@ test("with Supabase's default grants, nobody signed out may call a function mean
   await db.exec("grant execute on all functions in schema public to anon, authenticated;");
   await db.exec(readFileSync(join(process.cwd(), "..", "supabase", "migrations", "20260929000008_signed_in_callers.sql"), "utf8"));
   await db.exec(readFileSync(join(process.cwd(), "..", "supabase", "migrations", "20260929000007_bounded_history.sql"), "utf8"));
+  await db.exec(readFileSync(MEMBER_GRANTS, "utf8"));
 
   const can = async (role: string, fn: string) =>
     (await db.query<{ ok: boolean }>("select has_function_privilege($1, $2, 'execute') as ok", [role, fn])).rows[0]!.ok;
@@ -140,7 +144,37 @@ test("with Supabase's default grants, nobody signed out may call a function mean
   }
   expect(await can("authenticated", "public.wedding_role_count(uuid,text)")).toBe(false);
   expect(await can("authenticated", "public.remove_member(uuid,uuid)")).toBe(true);
+  // A trigger function is nobody's to call.
+  expect(await can("anon", "public.announce_wedding_document()")).toBe(false);
+  expect(await can("authenticated", "public.announce_wedding_document()")).toBe(false);
   // A link is for anyone who has it.
   expect(await can("anon", "public.read_share(text)")).toBe(true);
   expect(await can("anon", "public.confirm_supplier_link(text)")).toBe(true);
+});
+
+test("on a project that had lost them, a member may again read their wedding and delete their account", async () => {
+  const alex = await userExists(db, "alex@example.com");
+  const wedding = await weddingOf(alex);
+  await save(wedding, "Alex & Sam", 0);
+  // The hosted project as found on 2026-09-30: both grants to signed-in people
+  // gone, and the membership check running as its caller.
+  await db.exec("reset role;");
+  await db.exec("revoke all on function public.is_wedding_member(uuid), public.delete_my_account() from authenticated;");
+  await db.exec("alter function public.is_wedding_member(uuid) security invoker;");
+  await actAs(db, alex);
+  await expect(db.query("select wedding_id from public.wedding_documents")).rejects.toThrow("permission denied for function is_wedding_member");
+  await expect(db.query("select public.delete_my_account()")).rejects.toThrow("permission denied for function delete_my_account");
+
+  // Granted again but still run as its caller, the check asks the policy that
+  // asks the check, without end — the hosted project then refused with "stack
+  // depth limit exceeded". It must run as its owner, which RLS does not bind.
+  await db.exec("reset role;");
+  await db.exec(readFileSync(MEMBER_GRANTS, "utf8"));
+  await db.exec(readFileSync(MEMBER_DEFINER, "utf8"));
+  expect((await db.query("select prosecdef from pg_proc where oid = 'public.is_wedding_member(uuid)'::regprocedure")).rows).toEqual([{ prosecdef: true }]);
+  await actAs(db, alex);
+  expect((await db.query("select wedding_id from public.wedding_documents")).rows).toEqual([{ wedding_id: wedding }]);
+  await db.query("select public.delete_my_account()");
+  await db.exec("reset role;");
+  expect((await db.query("select 1 from public.account_weddings where id = $1", [wedding])).rows).toHaveLength(0);
 });
