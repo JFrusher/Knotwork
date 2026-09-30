@@ -6,8 +6,8 @@
   <title>Trousseau: the free, open-source wedding planner</title>
   <meta name="description" content="Plan a whole wedding in one place: seating, place cards, timeline, jobs and more, sharing one document. Free forever, no sign-up, no ads, self-hostable.">
   <meta property="og:title" content="Trousseau: the free, open-source wedding planner">
-  <meta property="og:description" content="Seat a guest and their place card knows the table. Move the ceremony and the day moves with it. Free, private, open source.">
-  <meta property="og:image" content="../../docs/images/home.png">
+  <meta property="og:description" content="Seat your guests and one click puts every table number on the place cards. Move the ceremony and the day moves with it. Free, private, open source.">
+  <meta property="og:image" content="../assets/images/og-card.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -66,7 +66,7 @@
           Plan the whole wedding.<br><em class="font-medium text-sage dark:text-emerald-300">Without the tools disagreeing.</em>
         </h1>
         <p class="mx-auto mt-6 max-w-2xl text-lg text-ink/75 dark:text-stone-300">
-          Seat a guest and their place card already knows the table. Move the ceremony and the whole day moves with it.
+          Seat your guests and one click puts every table number on the place cards. Move the ceremony and the whole day moves with it.
           Eleven planning tools, one wedding, and your guest list never has to leave your laptop.
         </p>
         <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -77,7 +77,7 @@
         <p class="mt-4 text-sm text-ink/60 dark:text-stone-400">No account, no password, no card. Open it and start.</p>
       </div>
       <div class="mx-auto mt-14 max-w-5xl overflow-hidden rounded-2xl border border-stone-200 shadow-2xl shadow-ink/10 dark:border-stone-700">
-        <img src="../../docs/images/home.png" alt="The Trousseau front page, showing one wedding, its tools, and what is left to do" class="w-full" loading="eager">
+        <img src="../assets/screenshots/overview.png" alt="The Trousseau front page, showing one wedding, its tools, and what is left to do" class="w-full" loading="eager">
       </div>
     </section>
 
@@ -117,7 +117,7 @@
 
       <!-- Seating demo -->
       <div id="demo-seating" role="tabpanel" aria-labelledby="tab-seating" class="mt-8 rounded-3xl border border-stone-200 bg-white p-5 shadow-sm sm:p-8 dark:border-stone-700 dark:bg-stone-900">
-        <p class="mb-6 text-sm text-ink/70 dark:text-stone-300"><strong>Pick a guest, then pick a table.</strong> Watch their place card fill itself in, and the dietary count keep up.</p>
+        <p class="mb-6 text-sm text-ink/70 dark:text-stone-300"><strong>Pick a guest, then pick a table.</strong> Their place card takes the table from the room, and the dietary count keeps up.</p>
         <div class="grid gap-6 lg:grid-cols-[1fr_1.4fr_1fr]">
           <div>
             <h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-ink/50 dark:text-stone-400">Guests</h4>
@@ -187,6 +187,28 @@
       <p class="mt-6 text-center text-sm text-ink/60 dark:text-stone-400">Plus 📦 Boxes, 🍷 Bar, 💷 Money, ✅ Checklist, and a one-click PDF pack of the whole day.</p>
     </section>
 
+    <!-- The real thing -->
+    <section class="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+      <div class="mx-auto max-w-2xl text-center">
+        <h2 class="font-serif text-4xl font-semibold sm:text-5xl">And here's the real thing</h2>
+        <p class="mt-3 text-ink/70 dark:text-stone-300">Recorded in the app, with the example wedding from the guided tour.</p>
+      </div>
+      <div class="mt-10 grid gap-8 lg:grid-cols-2">
+        <figure>
+          <video class="w-full rounded-2xl border border-stone-200 shadow-lg dark:border-stone-700" src="../assets/motion/seat-to-card.mp4" autoplay muted loop playsinline aria-label="Seating a guest, then opening her place card with the table filled in"></video>
+          <figcaption class="mt-3 text-sm text-ink/70 dark:text-stone-300"><strong>Seat a guest.</strong> One click in Place cards, and her card has her table.</figcaption>
+        </figure>
+        <figure>
+          <video class="w-full rounded-2xl border border-stone-200 shadow-lg dark:border-stone-700" src="../assets/motion/ceremony-moves.mp4" autoplay muted loop playsinline aria-label="Moving the ceremony: every block after it moves, then a collision is flagged"></video>
+          <figcaption class="mt-3 text-sm text-ink/70 dark:text-stone-300"><strong>Move the ceremony.</strong> The day follows, and it tells you what no longer fits.</figcaption>
+        </figure>
+      </div>
+      <figure class="mx-auto mt-10 max-w-sm">
+        <video class="w-full rounded-2xl shadow-lg" src="../assets/motion/binder.mp4" autoplay muted loop playsinline aria-label="The Binder on a phone: now, the running order, who to ring, find a guest, the shot list"></video>
+        <figcaption class="mt-3 text-center text-sm text-ink/70 dark:text-stone-300"><strong>The Binder.</strong> The day on your phone, with or without signal.</figcaption>
+      </figure>
+    </section>
+
     <!-- Comparison -->
     <section id="compare" class="bg-ink py-20 text-paper">
       <div class="mx-auto max-w-5xl px-4 sm:px-6">
@@ -205,7 +227,7 @@
               <tr><td class="p-4 text-paper/60">Paid for by</td><td class="p-4">Adverts, vendor leads, registry commissions, upsells</td><td class="p-4">Nothing. There is no paid tier, and never will be</td></tr>
               <tr><td class="p-4 text-paper/60">To get started</td><td class="p-4">Create an account</td><td class="p-4">Open it. No account needed</td></tr>
               <tr><td class="p-4 text-paper/60">Your guest list lives</td><td class="p-4">On their servers</td><td class="p-4">In your browser, unless you choose to sync</td></tr>
-              <tr><td class="p-4 text-paper/60">Seating ↔ cards ↔ run sheet</td><td class="p-4">Separate features, separate copies</td><td class="p-4">One document, so they always agree</td></tr>
+              <tr><td class="p-4 text-paper/60">Seating ↔ cards ↔ run sheet</td><td class="p-4">Separate features, separate copies</td><td class="p-4">One document, so nothing is typed twice</td></tr>
               <tr><td class="p-4 text-paper/60">Place cards</td><td class="p-4">Often sold as printed stationery</td><td class="p-4">Print your own, table numbers included</td></tr>
               <tr><td class="p-4 text-paper/60">Take your data with you</td><td class="p-4">Varies</td><td class="p-4">The whole wedding, as one file</td></tr>
               <tr><td class="p-4 text-paper/60">Run your own copy</td><td class="p-4">No</td><td class="p-4">Yes. Open source (AGPL)</td></tr>

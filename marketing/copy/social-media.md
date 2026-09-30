@@ -6,8 +6,8 @@ Seven parts. On X, post it as a thread. On LinkedIn, join the parts into one
 post with a blank line between them, drop the numbering, and put the links in
 the first comment (LinkedIn shows posts with outbound links to fewer people).
 
-Attach media to posts 1, 3 and 5 (see "Assets to capture" in
-`../STRATEGY.md`). Use the example wedding, never real names.
+Attach media to posts 1, 3 and 5. Everything is in `../assets/` (see its
+README). Use the example wedding, never real names.
 
 ---
 
@@ -21,7 +21,7 @@ Attach media to posts 1, 3 and 5 (see "Assets to capture" in
 > Here's how Trousseau works, and what building it with Claude Code taught
 > me 🧵
 >
-> [GIF: seat a guest → place card shows the table number]
+> [Attach: `assets/motion/seat-to-card.mp4`]
 
 **2/7**
 > The problem with wedding apps isn't missing features. It's that every
@@ -36,10 +36,10 @@ Attach media to posts 1, 3 and 5 (see "Assets to capture" in
 > The rule: a tool rewrites only its own slice and copies everything else
 > byte for byte, even keys from tools that don't exist yet.
 >
-> Seat someone and their card knows the table. Move the ceremony and every
-> job after it moves.
+> Seat people, and one click puts every table number on the cards. Move
+> the ceremony and every job after it moves.
 >
-> [GIF: drag ceremony 10 min later → blocks and jobs shift]
+> [Attach: `assets/motion/ceremony-moves.mp4`]
 
 **4/7**
 > Built with Claude Code: about half the commits are co-authored.
@@ -162,8 +162,8 @@ no ads. #weddingplanning #seatingchart #diywedding #weddingtok
 
 **Mastodon / Fediverse (≤500 chars):**
 > I built Trousseau, a free, AGPL wedding planner where every tool shares
-> one document. Seat a guest and their place card knows the table; move the
-> ceremony and the day moves with it. Local-first (IndexedDB, no account),
+> one document. Seat your guests and one click puts the table numbers on the
+> place cards; move the ceremony and the day moves with it. Local-first (IndexedDB, no account),
 > self-hostable, and no analytics on your own instance.
 >
 > https://github.com/JFrusher/Trousseau

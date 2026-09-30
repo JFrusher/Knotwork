@@ -10,8 +10,8 @@ them. Read it before editing any of the copy.
 ## One-line positioning
 
 > **Trousseau is a free, open-source wedding planner where every tool shares
-> one wedding: seat a guest and their place card knows the table; move the
-> ceremony and the whole day moves with it.**
+> one wedding: seat your guests and one click puts every table number on the
+> place cards; move the ceremony and the whole day moves with it.**
 
 ## Unique selling proposition
 
@@ -238,10 +238,9 @@ up-for-grabs.net).
 - [ ] Add repo topics: `wedding`, `wedding-planner`, `seating-chart`,
       `self-hosted`, `local-first`, `nextjs`, `supabase`, `typescript`,
       `open-source`.
-- [ ] Set the repository social preview image (Settings → General) to a
-      1280×640 crop of `docs/images/home.png`.
-- [ ] Record the GIFs in "Assets to capture" below and replace the HTML
-      comment placeholders in `README.md`.
+- [ ] Set the repository social preview image (Settings → General) to
+      `marketing/assets/images/social-preview.png` (1280×640).
+- [x] Record the GIFs and put them in the README (see "Assets" below).
 - [ ] Open 5–10 issues labelled `good first issue`. Candidates: the tool
       proposals in `ROADMAP.md`, one per issue.
 - [ ] Enable GitHub Discussions, so questions do not become issues. The
@@ -250,23 +249,28 @@ up-for-grabs.net).
       `CONTRIBUTING.md` sends security reports there.
 - [ ] Publish `marketing/landing-page/` (GitHub Pages from the repo root, or a
       Vercel project) and put its URL in the repo's "About" box. The page
-      loads `../../docs/images/home.png`. If you host the folder on its own,
-      copy that image beside it and change the two references.
+      loads its images and clips from `../assets/`. If you host the folder on
+      its own, copy those files beside it and change the references.
 - [ ] Decide whether to archive the four standalone predecessor repos
       (roadmap subsystem C) so search traffic lands here.
 
-## Assets to capture
+## Assets
 
-Use the guided tour's example wedding, never a real one.
+All captured from the guided tour's example wedding, never a real one. The
+full index, and how to regenerate everything when the UI changes, is in
+[`assets/README.md`](assets/README.md).
 
 | Asset | Shows | Used in |
 | --- | --- | --- |
-| `seating-to-cards.gif` (≤8s) | Drag a guest to a seat, open Place cards, press *Use the room*, and the table number appears | README, HN, video 1 |
-| `ceremony-moves-day.gif` (≤8s) | Drag the ceremony 10 minutes later; blocks and Delegation jobs shift | README, thread, video 2 |
-| `checks.png` | The front page's "what is left" with a cross-tool warning | README |
-| `binder-phone.png` | The Binder on a phone, now/next | Reddit couples post, video 3 |
-| `money.png` | Money with budget vs costs and dues | Reddit couples post |
-| `social-preview.png` (1280×640) | Hero crop | GitHub, link unfurls |
+| `motion/seat-to-card.{gif,mp4}` | Zainab dragged to Table 13, *Use the room*, her card reads "Table 13" | README, HN, thread 1/7, video 1 |
+| `motion/ceremony-moves.{gif,mp4}` | Ceremony 13:30 → 14:00, the day follows; 14:30 flags a collision | README, thread 3/7, video 2 |
+| `motion/binder.{gif,mp4}` | The Binder on a phone: now, day, ring, find, shots | README, Reddit couples post, video 3 |
+| `images/social-preview.png` (1280×640) | Headline and Seating | GitHub social preview |
+| `images/og-card.png` (1200×630) | The same, at link-card size | Landing page, link unfurls |
+| `images/hero-*.png` (1600×1000) | One per tool, headline over the app | Blog, landing page, LinkedIn |
+| `images/square-*.png`, `pledge.png` (1080×1080) | Carousel cards | Instagram, LinkedIn |
+| `images/story.png` (1080×1920) | Vertical cover | Stories, Shorts and Reels covers |
+| `images/tools-grid.png`, `binder-trio.png` | All eleven tools; three phones | README, HN, Reddit |
 
 ## Metrics
 

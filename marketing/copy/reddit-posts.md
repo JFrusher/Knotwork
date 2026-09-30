@@ -33,8 +33,8 @@ Space them at least a day apart.
 > building it for other couples.
 >
 > **What it is:** a planning suite where every tool shares one JSON document.
-> Seat someone in the floor plan and their place card already has the table
-> number. Move the ceremony and every job and block after it moves too. There
+> Seat people in the floor plan and one click puts every table number on the
+> place cards. Move the ceremony and every job and block after it moves too. There
 > are eleven tools: seating to scale, place cards, timeline, delegation,
 > group photos, ceremony, boxes, bar, money, checklist, and a phone binder
 > that works offline.
