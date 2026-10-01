@@ -140,9 +140,9 @@ and a full day.
 ## 🏠 Run your own copy
 
 Self-hosting is a supported path, not a theoretical one. The hosted instance
-is the easy option; your own copy gives you your own domain, your own
-database, and **no analytics at all**. The page counter only runs on Vercel,
-and error reporting only runs if you set a Sentry DSN.
+is the easy option; your own copy gives you your own domain and, with sync,
+your own database. Deployments hosted off Vercel have no page analytics;
+error reporting only runs if you set a Sentry DSN.
 
 ### Local only: no backend, no account
 
