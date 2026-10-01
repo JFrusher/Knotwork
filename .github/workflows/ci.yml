@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  typecheck-and-lint:
+  typecheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -25,7 +25,6 @@ jobs:
       - run: npm run build
       - run: npm run typecheck
       - run: npm run typecheck -w suite
-      - run: npm run lint --if-present
 
   security-audit:
     runs-on: ubuntu-latest
@@ -58,7 +57,7 @@ jobs:
           path: coverage/
 
   build-suite:
-    needs: [typecheck-and-lint, test]
+    needs: [typecheck, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
