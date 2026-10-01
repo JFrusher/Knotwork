@@ -39,13 +39,11 @@ jobs:
           node-version: 22
           cache: npm
 
-      # 1. Audit lockfile before installing untrusted package scripts
-      - name: Security audit (lockfile only)
-        run: npm audit --audit-level=medium --package-lock-only
+      - name: Install dependencies securely
+        run: npm ci --ignore-scripts
 
-      # 2. Install dependencies securely
-      - name: Install dependencies
-        run: npm ci
+      - name: Security audit
+        run: npm audit --audit-level=moderate
 
   test:
     runs-on: ubuntu-latest
