@@ -136,7 +136,7 @@ change, however good the rest is.
 
 ## Checks to run before a pull request
 
-These are exactly what CI runs (`.github/workflows/ci.yml`). Build the contract
+These checks cover the validations CI runs (`.github/workflows/ci.yml`). Build the contract
 package first; everything else needs it.
 
 | Check | Command |
