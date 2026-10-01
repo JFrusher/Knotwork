@@ -46,12 +46,12 @@ instead (see subsystem F).
 | H | Guided tour & example wedding | — | ✅ **built** — [spec](superpowers/specs/2026-09-07-guided-tour-design.md), [plan](superpowers/plans/2026-09-07-guided-tour.md) complete 2026-09-07 |
 | I | Retention sweep for account weddings | B | ✅ **built** — `app/api/cron/sweep` deletes account weddings unwritten for 24 months (`lib/documents/retention.ts`), and the Privacy Policy states it |
 | G | Multi-tenant suite mechanics | A, B | ✅ **built** — [spec](superpowers/specs/2026-09-02-multitenant-mechanics-design.md), [plan](superpowers/plans/2026-09-07-multitenant-mechanics.md) complete 2026-09-07 |
-| J | Planner role and many weddings per account | A, G | ⬜ planned — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phases 1 and 3 |
-| K | Setup flow and signing in safely | A, B | ⬜ planned — master plan, phase 1 |
-| L | Design language and shared kit | — | ⬜ planned — master plan, phase 0 |
-| M | Windows around the tools: Overview, Guests, Money, Checklist, Sync & history, palette | E, L | ⬜ planned — master plan, phase 2 |
-| N | Day-of binder and vendor links | E, J | ⬜ planned — master plan, phase 3 |
-| O | One live document: tools stop keeping copies; real-time sync | — | ⬜ planned — master plan, phase 4 |
+| J | Planner role and many weddings per account | A, G | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 1: Weddings and library (2026-09-28) |
+| K | Setup flow and signing in safely | A, B | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 1: setup flow (2026-09-28) |
+| L | Design language and shared kit | — | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 0: shared kit and design language (2026-09-28) |
+| M | Windows around the tools: Overview, Guests, Money, Checklist, Sync & history, palette | E, L | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 2: guests, money, checklist and palette (2026-09-28) |
+| N | Day-of binder and vendor links | E, J | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 3: binder and supplier links (2026-09-29) |
+| O | One live document: tools stop keeping copies; real-time sync | — | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 4: real-time sync and presence (2026-09-29) |
 | P | The toolbox, and travel, ceremony, boxes and bar | L, O | ✅ **built** — [spec](superpowers/specs/2026-09-29-toolbox-and-new-tools-design.md), plans for [the toolbox](superpowers/plans/2026-09-29-toolbox.md), [travel and calendars](superpowers/plans/2026-09-29-timeline-travel-and-calendars.md), [the cast and Ceremony](superpowers/plans/2026-09-29-cast-and-ceremony.md), [Boxes](superpowers/plans/2026-09-29-boxes.md) and [the Bar](superpowers/plans/2026-09-29-bar.md), 2026-09-29; the proposals joining tools to each other wait on the maintainer |
 
 ## Decisions log
@@ -303,10 +303,10 @@ subsystems do:
 
 | # | Feature | Depends on | Status |
 |---|---|---|---|
-| E1 | Vendor/contract management (deposits, payment dates, contact history) | — | ⬜ not started |
-| E2 | Budget tracking (per-vendor cost vs. overall budget) | E1 | ⬜ not started |
-| E3 | General task/checklist management (not tied to a Cadence block) | — | ⬜ not started |
-| E4 | Vendor-facing communication/portal (send job sheets, track confirmation) | E1, likely reuses the `/seat/[token]` share-link pattern rather than real vendor logins | ⬜ not started |
+| E1 | Vendor/contract management (deposits, payment dates, contact history) | — | ✅ **built** — [plan](superpowers/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08 |
+| E2 | Budget tracking (per-vendor cost vs. overall budget) | E1 | ✅ **built** — [plan](superpowers/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08 |
+| E3 | General task/checklist management (not tied to a Cadence block) | — | ✅ **built** — [plan](superpowers/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08 |
+| E4 | Vendor-facing communication/portal (send job sheets, track confirmation) | E1, likely reuses the `/seat/[token]` share-link pattern rather than real vendor logins | ✅ **built** — [plan](superpowers/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08; shipped as supplier links with confirmation |
 
 **Sequencing rationale:** E1 is foundational — both E2 (budget lines attach
 to vendors) and E4 (you need a real vendor contact to send something to)

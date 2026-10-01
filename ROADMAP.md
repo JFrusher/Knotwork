@@ -42,6 +42,7 @@ is retyped and nothing disagrees.
 - ✅ **Planner mode.** A planner role, many weddings per account, and a
   library of reusable processionals, box sets and bar settings.
 - ✅ **The toolbox.** Add or remove tools per wedding without losing work.
+- ✅ **Ceremony cues.** The processional's music and order of service shown inside the ceremony block, read-only.
 - ✅ **Ceremony, Boxes, Bar, Money, Checklist** and the **Binder**, which
   works offline on a phone.
 - ✅ **Guest seat links** and **supplier links** with confirmation.
@@ -64,7 +65,6 @@ for a first substantial contribution.
 | --- | --- |
 | **Boxes → Delegation** | Whoever is taking a box sees "Box 3 to the house by 09:00" on their job sheet. This is derived from the box, never stored as a job, so it follows the block if the day moves. |
 | **Boxes → Binder** | Find a box or an item on the day: "where are the rings?" |
-| **Ceremony → Timeline** | The processional's cues shown inside the ceremony block, read-only. |
 | **Ceremony → Binder** | The order of walking, on a phone, on the day. |
 | **Bar → Timeline** | Reception, meal and evening hours read from the blocks the couple picks, rather than typed twice. |
 | **Bar → Money** | The estimated drinks spend shown against the budget, as planned rather than paid. |
