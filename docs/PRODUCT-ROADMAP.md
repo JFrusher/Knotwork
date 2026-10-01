@@ -46,7 +46,7 @@ instead (see subsystem F).
 | H | Guided tour & example wedding | — | ✅ **built** — [spec](superpowers/specs/2026-09-07-guided-tour-design.md), [plan](superpowers/plans/2026-09-07-guided-tour.md) complete 2026-09-07 |
 | I | Retention sweep for account weddings | B | ✅ **built** — `app/api/cron/sweep` deletes account weddings unwritten for 24 months (`lib/documents/retention.ts`), and the Privacy Policy states it |
 | G | Multi-tenant suite mechanics | A, B | ✅ **built** — [spec](superpowers/specs/2026-09-02-multitenant-mechanics-design.md), [plan](superpowers/plans/2026-09-07-multitenant-mechanics.md) complete 2026-09-07 |
-| J | Planner role and many weddings per account | A, G | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 1: Weddings and library (2026-09-28) |
+| J | Planner role and many weddings per account | A, G | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 3: Weddings and library (2026-09-28) |
 | K | Setup flow and signing in safely | A, B | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 1: setup flow (2026-09-28) |
 | L | Design language and shared kit | — | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 0: shared kit and design language (2026-09-28) |
 | M | Windows around the tools: Overview, Guests, Money, Checklist, Sync & history, palette | E, L | ✅ **built** — [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 2: guests, money, checklist and palette (2026-09-28) |
