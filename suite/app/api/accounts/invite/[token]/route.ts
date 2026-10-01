@@ -5,11 +5,12 @@ import { accountsStore } from "@/lib/accounts/supabaseStore";
 import { currentUser, serverClient } from "@/lib/accounts/serverClient";
 import { check, tokenSchema } from "@/lib/accounts/schemas";
 import { allow, AUTH_LIMIT } from "@/lib/server/rateLimit";
+import { requestLog } from "@/lib/server/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(_request: Request, context: { params: Promise<{ token: string }> }) {
+export async function POST(request: Request, context: { params: Promise<{ token: string }> }) {
   try {
     if (!accountsConfigured()) {
       return NextResponse.json({ error: "Accounts are not set up on this deployment." }, { status: 501 });
@@ -32,7 +33,7 @@ export async function POST(_request: Request, context: { params: Promise<{ token
     return NextResponse.json(reply.body, { status: reply.status });
   } catch (error) {
     // See the note in `../../wedding/route.ts`.
-    console.error("[accounts] POST /api/accounts/invite/[token]", error);
+    requestLog(request).error({ err: error }, "[accounts] POST /api/accounts/invite/[token]");
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

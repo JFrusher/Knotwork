@@ -5,6 +5,7 @@ import { requestedWedding } from "@/lib/accounts/requestedWedding";
 import { documentStore } from "@/lib/documents/supabaseStore";
 import { exportDocumentHandler } from "@/lib/documents/handlers";
 import { allow, EXPORT_LIMIT } from "@/lib/server/rateLimit";
+import { requestLog } from "@/lib/server/log";
 
 /**
  * "Download my wedding" — the honest answer to "can I get my data out".
@@ -60,7 +61,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("[documents] GET /api/documents/export", error);
+    requestLog(request).error({ err: error }, "[documents] GET /api/documents/export");
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

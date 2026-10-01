@@ -6,6 +6,7 @@ import { check } from "@/lib/server/check";
 import { allow, SHARE_LIMIT } from "@/lib/server/rateLimit";
 import { publishSchema, takeDownSchema } from "@/lib/suppliers/schemas";
 import { supplierStore } from "@/lib/suppliers/supabaseStore";
+import { requestLog } from "@/lib/server/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,8 +14,8 @@ export const dynamic = "force-dynamic";
 const unconfigured = () => NextResponse.json({ error: "Accounts are not set up on this deployment." }, { status: 501 });
 const unauthenticated = () => NextResponse.json({ error: "Sign in first." }, { status: 401 });
 const notYours = () => NextResponse.json({ error: "That is not a wedding you are on." }, { status: 404 });
-const failed = (where: string, error: unknown) => {
-  console.error(`[suppliers] ${where}`, error);
+const failed = (request: Request, where: string, error: unknown) => {
+  requestLog(request).error({ err: error }, `[suppliers] ${where}`);
   return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
 };
 
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
     if (!weddingId) return notYours();
     return NextResponse.json({ links: await supplierStore(client).linksOf(weddingId) });
   } catch (error) {
-    return failed("GET /api/suppliers", error);
+    return failed(request, "GET /api/suppliers", error);
   }
 }
 
@@ -53,7 +54,7 @@ export async function PUT(request: Request) {
     if (!published) return NextResponse.json({ error: "The link was published from elsewhere." }, { status: 409 });
     return NextResponse.json(published);
   } catch (error) {
-    return failed("PUT /api/suppliers", error);
+    return failed(request, "PUT /api/suppliers", error);
   }
 }
 
@@ -71,6 +72,6 @@ export async function DELETE(request: Request) {
     await supplierStore(client).takeDown(input.value.weddingId, input.value.teamId);
     return NextResponse.json({});
   } catch (error) {
-    return failed("DELETE /api/suppliers", error);
+    return failed(request, "DELETE /api/suppliers", error);
   }
 }

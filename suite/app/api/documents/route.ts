@@ -5,6 +5,7 @@ import { requestedWedding } from "@/lib/accounts/requestedWedding";
 import { documentStore } from "@/lib/documents/supabaseStore";
 import { getDocumentHandler, saveDocumentHandler } from "@/lib/documents/handlers";
 import { allow, WRITE_LIMIT } from "@/lib/server/rateLimit";
+import { requestLog } from "@/lib/server/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,8 +21,8 @@ const noWedding = () =>
 const throttled = () =>
   NextResponse.json({ error: "Too many requests. Wait a minute and try again." }, { status: 429 });
 
-const failed = (where: string, error: unknown) => {
-  console.error(`[documents] ${where}`, error);
+const failed = (request: Request, where: string, error: unknown) => {
+  requestLog(request).error({ err: error }, `[documents] ${where}`);
   return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
 };
 
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
     const reply = await getDocumentHandler(documentStore(client), weddingId);
     return NextResponse.json(reply.body, { status: reply.status });
   } catch (error) {
-    return failed("GET /api/documents", error);
+    return failed(request, "GET /api/documents", error);
   }
 }
 
@@ -82,6 +83,6 @@ export async function PUT(request: Request) {
     const reply = await saveDocumentHandler(documentStore(client), weddingId, body.document, body.expectedVersion);
     return NextResponse.json(reply.body, { status: reply.status });
   } catch (error) {
-    return failed("PUT /api/documents", error);
+    return failed(request, "PUT /api/documents", error);
   }
 }

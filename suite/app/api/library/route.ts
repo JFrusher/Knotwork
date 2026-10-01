@@ -4,19 +4,20 @@ import { currentUser, serverClient } from "@/lib/accounts/serverClient";
 import { libraryStore } from "@/lib/library/supabaseStore";
 import { listHandler, saveHandler } from "@/lib/library/handlers";
 import { allow, LIBRARY_LIMIT } from "@/lib/server/rateLimit";
+import { requestLog } from "@/lib/server/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const unconfigured = () => NextResponse.json({ error: "Accounts are not set up on this deployment." }, { status: 501 });
 const unauthenticated = () => NextResponse.json({ error: "Sign in first." }, { status: 401 });
-const failed = (where: string, error: unknown) => {
-  console.error(`[library] ${where}`, error);
+const failed = (request: Request, where: string, error: unknown) => {
+  requestLog(request).error({ err: error }, `[library] ${where}`);
   return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
 };
 
 /** What this account has kept, newest first. */
-export async function GET() {
+export async function GET(request: Request) {
   try {
     if (!accountsConfigured()) return unconfigured();
     const user = await currentUser();
@@ -26,7 +27,7 @@ export async function GET() {
     const reply = await listHandler(libraryStore(client), user.id);
     return NextResponse.json(reply.body, { status: reply.status });
   } catch (error) {
-    return failed("GET /api/library", error);
+    return failed(request, "GET /api/library", error);
   }
 }
 
@@ -44,6 +45,6 @@ export async function POST(request: Request) {
     const reply = await saveHandler(libraryStore(client), user.id, await request.json().catch(() => null));
     return NextResponse.json(reply.body, { status: reply.status });
   } catch (error) {
-    return failed("POST /api/library", error);
+    return failed(request, "POST /api/library", error);
   }
 }

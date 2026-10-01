@@ -5,6 +5,7 @@ import { accountsStore } from "@/lib/accounts/supabaseStore";
 import { currentUser, serverClient } from "@/lib/accounts/serverClient";
 import { check, inviteSchema } from "@/lib/accounts/schemas";
 import { allow, INVITE_LIMIT } from "@/lib/server/rateLimit";
+import { requestLog } from "@/lib/server/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,8 +17,8 @@ const throttled = () =>
   NextResponse.json({ error: "Too many requests. Wait a while and try again." }, { status: 429 });
 
 /** See the note in `../wedding/route.ts`: an uncaught throw here becomes an HTML 500 the UI can't parse. */
-const failed = (error: unknown) => {
-  console.error("[accounts] POST /api/accounts/invite", error);
+const failed = (request: Request, error: unknown) => {
+  requestLog(request).error({ err: error }, "[accounts] POST /api/accounts/invite");
   return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
 };
 
@@ -66,6 +67,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(reply.body, { status: 200 });
   } catch (error) {
-    return failed(error);
+    return failed(request, error);
   }
 }

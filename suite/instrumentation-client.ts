@@ -1,4 +1,10 @@
+import { build } from "@/lib/build";
+import { sentryBuild } from "@/lib/sentry/build";
 import { scrubEvent } from "@/lib/sentry/scrub";
+
+// Which build this tab is running, for anyone with the console open — a
+// support conversation's first question, answerable without a deploy log.
+window.appVersion = build;
 
 /**
  * Error reporting in the browser, off unless a DSN is configured.
@@ -21,6 +27,7 @@ if (dsn) {
   void import("@sentry/nextjs").then((Sentry) =>
     Sentry.init({
       dsn,
+      ...sentryBuild,
       sendDefaultPii: false,
       // A report is sent only when something breaks.
       tracesSampleRate: 0,

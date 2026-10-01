@@ -1,13 +1,41 @@
+import { execSync } from "node:child_process";
 import type { NextConfig } from "next";
 import bundleAnalyzer from "@next/bundle-analyzer";
 import { env } from "./lib/env";
+import { version } from "./package.json";
 
 // Checked here so a misconfigured deploy fails the build rather than answering
 // 501 at runtime and looking like a deliberate local-only one. Called for the
-// throw, not the value.
+// throw, not the value. `next start` evaluates this file too, so a self-hosted
+// server started in a different environment from its build refuses to boot.
 env();
 
 const development = process.env.NODE_ENV === "development";
+
+/**
+ * Which build this is, inlined into every bundle as `process.env.*` and read
+ * through `lib/build.ts`.
+ */
+export function buildInfo() {
+  return {
+    APP_VERSION: version,
+    // Vercel hands the build its commit as `VERCEL_GIT_COMMIT_SHA`. Everywhere
+    // else — CI, a laptop, a self-hosted box, `vercel build` — git is asked,
+    // and a build that cannot say which commit it is fails here.
+    GIT_COMMIT_SHA: (
+      process.env.VERCEL_GIT_COMMIT_SHA ?? execSync("git rev-parse HEAD", { encoding: "utf8" })
+    )
+      .trim()
+      .slice(0, 7),
+    // Next evaluates this file in more than one process during a build. The
+    // first evaluation fixes the time in the environment and the later ones
+    // inherit it, so the server and the browser cannot disagree about it.
+    BUILD_TIMESTAMP: (process.env.BUILD_TIMESTAMP ??= new Date().toISOString()),
+    APP_ENV: process.env.VERCEL_ENV ?? process.env.NODE_ENV,
+  };
+}
+
+const info = buildInfo();
 
 /**
  * Sentry's ingest origin, when there is one.
@@ -127,13 +155,24 @@ const securityHeaders = [
   },
 ];
 
+/** Which build answered, on every response — the first question about any bug. */
+const buildHeaders = [
+  { key: "X-App-Version", value: info.APP_VERSION },
+  { key: "X-Commit-SHA", value: info.GIT_COMMIT_SHA },
+];
+
 const nextConfig: NextConfig = {
+  env: info,
+  // Browser source maps, served alongside the bundles. This is AGPL software
+  // whose source is already public, so they reveal nothing new, and Sentry
+  // fetches them from the deployment to turn minified frames back into lines.
+  productionBrowserSourceMaps: true,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [{ source: "/:path*", headers: [...securityHeaders, ...buildHeaders] }];
   },
 };
 
 const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true" });
 
 export default withBundleAnalyzer(nextConfig);
-export { contentSecurityPolicy, securityHeaders };
+export { buildHeaders, contentSecurityPolicy, securityHeaders };

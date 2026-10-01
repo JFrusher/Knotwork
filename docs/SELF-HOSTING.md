@@ -89,6 +89,7 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | accounts | The anon/publishable key. Safe in the browser — row-level security is what protects the data. |
 | `CRON_SECRET` | the retention sweep | At least 16 characters. Unset means the sweep endpoint refuses everything, including your scheduler. |
 | `NEXT_PUBLIC_SENTRY_DSN` | error reporting | Optional. Unset means no Sentry, browser or server. |
+| `LOG_LEVEL` | server logs | Optional. `fatal`, `error`, `warn`, `info`, `debug`, `trace` or `silent`. Unset means `info` in production and `debug` elsewhere. |
 
 Two things that will catch you out:
 
@@ -174,6 +175,25 @@ Then, in the browser:
 
 If step 2 says accounts are not set up, go back to section 3 — it is almost
 always `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` missing.
+
+### Health, versions and logs
+
+`GET /api/health` answers 200 when everything the instance is configured to
+use responds, and 503 when the database does not. Point an uptime monitor at
+it. It also names the build:
+
+```sh
+curl -s https://your-host/api/health
+# {"status":"ok","version":"0.1.0","commit":"ce429f1","builtAt":"…","environment":"production",
+#  "checks":{"database":"ok","accounts":"configured","errorReporting":"configured"}}
+```
+
+Every response carries `X-App-Version`, `X-Commit-SHA` and `X-Request-ID`. In
+a browser console, `window.appVersion` says the same. The server logs one JSON
+object per line, and every line written while handling a request carries
+that request's `requestId`. To find what the server did for a request, search
+the logs for the `X-Request-ID` it returned. A caller's own `X-Request-ID` or
+`X-Correlation-ID` is kept when it is a plain token of up to 128 characters.
 
 ## 7. Deploy it somewhere
 
