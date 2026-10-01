@@ -5,19 +5,20 @@ import { check } from "@/lib/server/check";
 import { allow, CONFIRM_LIMIT } from "@/lib/server/rateLimit";
 import { tokenSchema } from "@/lib/suppliers/schemas";
 import { supplierStore } from "@/lib/suppliers/supabaseStore";
+import { requestLog } from "@/lib/server/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const unconfigured = () => NextResponse.json({ error: "Supplier links are not set up on this deployment." }, { status: 501 });
 const gone = () => NextResponse.json({ error: "This link is not live." }, { status: 404 });
-const failed = (where: string, error: unknown) => {
-  console.error(`[suppliers] ${where}`, error);
+const failed = (request: Request, where: string, error: unknown) => {
+  requestLog(request).error({ err: error }, `[suppliers] ${where}`);
   return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
 };
 
 /** What a supplier's link fetches: their sheet, sealed, and when they confirmed it. */
-export async function GET(_request: Request, { params }: { params: Promise<{ token: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   try {
     if (!accountsConfigured()) return unconfigured();
     const token = check(tokenSchema, (await params).token);
@@ -28,12 +29,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
     if (!sealed) return gone();
     return NextResponse.json(sealed, { headers: { "cache-control": "no-store" } });
   } catch (error) {
-    return failed("GET /api/suppliers/[token]", error);
+    return failed(request, "GET /api/suppliers/[token]", error);
   }
 }
 
 /** The supplier says they have it: when, recorded against their link and nothing else. */
-export async function POST(_request: Request, { params }: { params: Promise<{ token: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ token: string }> }) {
   try {
     if (!accountsConfigured()) return unconfigured();
     const token = check(tokenSchema, (await params).token);
@@ -47,6 +48,6 @@ export async function POST(_request: Request, { params }: { params: Promise<{ to
     if (!confirmedAt) return gone();
     return NextResponse.json({ confirmedAt });
   } catch (error) {
-    return failed("POST /api/suppliers/[token]", error);
+    return failed(request, "POST /api/suppliers/[token]", error);
   }
 }

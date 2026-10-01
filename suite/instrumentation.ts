@@ -1,4 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
+import type { Instrumentation } from "next";
+import { log, REQUEST_ID_HEADER } from "@/lib/server/log";
+import { sentryBuild } from "@/lib/sentry/build";
 import { scrubEvent } from "@/lib/sentry/scrub";
 
 /**
@@ -27,10 +30,26 @@ export async function register() {
 
   Sentry.init({
     dsn,
+    ...sentryBuild,
     sendDefaultPii: false,
     tracesSampleRate: 0,
     beforeSend: (event) => scrubEvent(event),
   });
 }
 
-export const onRequestError = Sentry.captureRequestError;
+/**
+ * A throw nothing caught. Logged with its request id and reported with it as a
+ * tag, so the log line, the Sentry event and the `X-Request-ID` a person saw
+ * are one search apart.
+ *
+ * The route template (`/api/share/[token]`) rather than the path, which can
+ * carry a token.
+ */
+export const onRequestError: Instrumentation.onRequestError = (error, request, context) => {
+  const requestId = request.headers[REQUEST_ID_HEADER];
+  log.error({ err: error, requestId, route: context.routePath }, "unhandled request error");
+  Sentry.withScope((scope) => {
+    scope.setTag("request_id", String(requestId));
+    Sentry.captureRequestError(error, request, context);
+  });
+};

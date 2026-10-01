@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { sweepAbandonedDocuments } from "@/lib/documents/handlers";
 import { adminDocumentsClient, documentStore } from "@/lib/documents/supabaseStore";
+import { requestLog } from "@/lib/server/log";
 
 /**
  * Retention, once a day: account weddings nobody has written to inside the
@@ -33,12 +34,12 @@ export async function GET(request: Request) {
   try {
     const { deleted } = await sweepAbandonedDocuments(documentStore(adminClient));
     // A count only: ids identify rows, and a log is no place for them.
-    console.info(`[Trousseau] retention sweep removed ${deleted.length} wedding(s)`);
+    requestLog(request).info({ deleted: deleted.length }, "[Trousseau] retention sweep");
     return NextResponse.json({ deleted: deleted.length });
   } catch (cause) {
     // A failed sweep must be loud: it deletes, it runs unattended, and silence
     // here means data kept past the period the Privacy Policy states.
-    console.error("[Trousseau] retention sweep failed:", cause);
+    requestLog(request).error({ err: cause }, "[Trousseau] retention sweep failed");
     return NextResponse.json({ error: "The sweep failed." }, { status: 503 });
   }
 }

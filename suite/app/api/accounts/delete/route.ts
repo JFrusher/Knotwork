@@ -5,16 +5,17 @@ import { deleteAccountHandler } from "@/lib/accounts/handlers";
 import { accountsStore } from "@/lib/accounts/supabaseStore";
 import { currentUser, serverClient } from "@/lib/accounts/serverClient";
 import { allow, CREATE_LIMIT } from "@/lib/server/rateLimit";
+import { requestLog } from "@/lib/server/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     return await deleteAccount();
   } catch (error) {
     // See the note in `../wedding/route.ts`.
-    console.error("[accounts] POST /api/accounts/delete", error);
+    requestLog(request).error({ err: error }, "[accounts] POST /api/accounts/delete");
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

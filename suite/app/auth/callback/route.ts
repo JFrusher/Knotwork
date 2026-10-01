@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { serverClient } from "@/lib/accounts/serverClient";
 import { accountsStore } from "@/lib/accounts/supabaseStore";
 import { firstSignInHandler } from "@/lib/accounts/handlers";
+import { requestLog } from "@/lib/server/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -82,7 +83,7 @@ export async function GET(request: Request) {
     }
 
   } catch (error) {
-    console.error("[accounts] GET /auth/callback", error);
+    requestLog(request).error({ err: error }, "[accounts] GET /auth/callback");
     failed = true;
   }
 
@@ -93,7 +94,7 @@ export async function GET(request: Request) {
     try {
       await firstSignInHandler(accountsStore(client), userId);
     } catch (error) {
-      console.error("[accounts] GET /auth/callback: starting a wedding", error);
+      requestLog(request).error({ err: error }, "[accounts] GET /auth/callback: starting a wedding");
     }
   }
 
