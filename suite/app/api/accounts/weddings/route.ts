@@ -6,6 +6,7 @@ import { documentStore } from "@/lib/documents/supabaseStore";
 import { currentUser, serverClient } from "@/lib/accounts/serverClient";
 import { check, newWeddingSchema } from "@/lib/accounts/schemas";
 import { allow, CREATE_LIMIT } from "@/lib/server/rateLimit";
+import { requestLog } from "@/lib/server/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,8 +23,8 @@ const throttled = () =>
  * into Next's default 500, whose body is HTML: the browser's `response.json()`
  * then rejects and the calling page hangs on its loading state forever.
  */
-const failed = (where: string, error: unknown) => {
-  console.error(`[accounts] ${where}`, error);
+const failed = (request: Request, where: string, error: unknown) => {
+  requestLog(request).error({ err: error }, `[accounts] ${where}`);
   return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
 };
 
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
     const reply = await listWeddingsHandler(accountsStore(client), documentStore(client), user.id, today);
     return NextResponse.json(reply.body, { status: reply.status });
   } catch (error) {
-    return failed("GET /api/accounts/weddings", error);
+    return failed(request, "GET /api/accounts/weddings", error);
   }
 }
 
@@ -66,6 +67,6 @@ export async function POST(request: Request) {
     const reply = await createWeddingHandler(accountsStore(client), user.id, input.value.role);
     return NextResponse.json(reply.body, { status: reply.status });
   } catch (error) {
-    return failed("POST /api/accounts/weddings", error);
+    return failed(request, "POST /api/accounts/weddings", error);
   }
 }

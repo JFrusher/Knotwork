@@ -5,6 +5,7 @@ import { requestedWedding } from "@/lib/accounts/requestedWedding";
 import { accountsStore } from "@/lib/accounts/supabaseStore";
 import { documentStore } from "@/lib/documents/supabaseStore";
 import { historyHandler } from "@/lib/documents/handlers";
+import { requestLog } from "@/lib/server/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
     const reply = await historyHandler(documentStore(client), people, weddingId, user.id);
     return NextResponse.json(reply.body, { status: reply.status });
   } catch (error) {
-    console.error("[documents] GET /api/documents/history", error);
+    requestLog(request).error({ err: error }, "[documents] GET /api/documents/history");
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

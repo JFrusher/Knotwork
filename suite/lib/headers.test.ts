@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { contentSecurityPolicy, securityHeaders, sentryOrigin } from "../next.config";
+import { buildHeaders, buildInfo, contentSecurityPolicy, securityHeaders, sentryOrigin } from "../next.config";
 
 const value = (key: string) => securityHeaders.find((header) => header.key === key)?.value;
 
@@ -72,4 +72,16 @@ test("eval is never allowed in a production build", () => {
 test("HSTS is stated by the app rather than left to the host", () => {
   expect(value("Strict-Transport-Security")).toContain("max-age=63072000");
   expect(value("Strict-Transport-Security")).toContain("includeSubDomains");
+});
+
+test("every response names the build that served it", () => {
+  const version = buildHeaders.find((header) => header.key === "X-App-Version")?.value;
+  const commit = buildHeaders.find((header) => header.key === "X-Commit-SHA")?.value;
+  expect(version).toMatch(/^\d+\.\d+\.\d+/);
+  expect(commit).toMatch(/^[0-9a-f]{7}$/);
+});
+
+test("the build time is fixed once, so every process of one build agrees", () => {
+  expect(buildInfo().BUILD_TIMESTAMP).toBe(buildInfo().BUILD_TIMESTAMP);
+  expect(new Date(buildInfo().BUILD_TIMESTAMP).toISOString()).toBe(buildInfo().BUILD_TIMESTAMP);
 });
