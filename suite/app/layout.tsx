@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Lato, Marcellus } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PageCounts } from "@/components/shell/PageCounts";
 import { ReportUnhandled } from "@/components/shell/ReportUnhandled";
 import { onVercel, siteUrl } from "@/lib/env";
@@ -62,6 +63,7 @@ export default function RootLayout({
         {/* Cookieless page counts on the hosted instance. Vercel serves the
             endpoint, so a copy hosted anywhere else sends nothing. */}
         {onVercel() ? <PageCounts /> : null}
+        <SpeedInsights />
       </body>
     </html>
   );
