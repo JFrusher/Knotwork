@@ -128,7 +128,7 @@ change, however good the rest is.
    everything else reads it.
 3. **Fail loudly.** A missing configuration refuses to start, and a save that
    failed says so. Nothing silently falls back.
-4. **No guest data to third parties**, ever.
+4. **No guest data to advertising, analytics or error-reporting services.** Account sync may send it only to the configured storage backend described in the Privacy Policy.
 5. **Privacy text matches the code.** If you change what the app collects or
    sends, change the Privacy Policy in the same PR.
 
