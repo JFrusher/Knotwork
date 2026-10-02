@@ -63,7 +63,7 @@ export default function RootLayout({
         {/* Cookieless page counts on the hosted instance. Vercel serves the
             endpoint, so a copy hosted anywhere else sends nothing. */}
         {onVercel() ? <PageCounts /> : null}
-        <SpeedInsights />
+{onVercel() ? <SpeedInsights /> : null}
       </body>
     </html>
   );
