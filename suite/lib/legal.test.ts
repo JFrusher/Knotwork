@@ -55,7 +55,9 @@ test("the visit counting the policy describes is the one the site runs", () => {
   const layout = readFileSync(join(process.cwd(), "app", "layout.tsx"), "utf8");
   const text = policyText(PRIVACY).toLowerCase();
   const counts = layout.includes("<PageCounts");
+  const speed = layout.includes("<Speed");
   expect(text.includes("vercel web analytics")).toBe(counts);
+  expect(text.includes("vercel speed insights")).toBe(speed);
   expect(text).not.toContain("no analytics");
   expect(text).not.toContain("the only third party");
 });
