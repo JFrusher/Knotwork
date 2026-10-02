@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Lato, Marcellus } from "next/font/google";
 import { PageCounts } from "@/components/shell/PageCounts";
 import { ReportUnhandled } from "@/components/shell/ReportUnhandled";
+import { Speed } from "@/components/shell/Speed";
 import { onVercel, siteUrl } from "@/lib/env";
 import "./globals.css";
 // Before any tool's own stylesheet: each of those maps its vocabulary onto the
@@ -62,6 +63,7 @@ export default function RootLayout({
         {/* Cookieless page counts on the hosted instance. Vercel serves the
             endpoint, so a copy hosted anywhere else sends nothing. */}
         {onVercel() ? <PageCounts /> : null}
+        {onVercel() ? <Speed /> : null}
       </body>
     </html>
   );
