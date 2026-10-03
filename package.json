@@ -57,6 +57,7 @@
     "esbuild@0.28.2": true
   },
   "overrides": {
-    "playwright-core": "1.56.1"
+    "playwright-core": "1.56.1",
+    "@playwright/test": "1.56.1"
   }
 }
