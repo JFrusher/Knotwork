@@ -47,7 +47,7 @@ def window(src, x, y, w, path, crop=None):
         inner = f"<img class=shot src='file://{RAW}/{src}.png'>"
     return (f"<div class=window style='left:{x}px;top:{y}px;width:{w}px'><div class=chrome>"
             f"<span class=dot style='background:#e9695e'></span><span class=dot style='background:#e8b650'></span><span class=dot style='background:#6cbf5f'></span>"
-            f"<span class=url>trousseau-suite.vercel.app{path}</span></div>{inner}</div>")
+            f"<span class=url>knotwork-suite.vercel.app{path}</span></div>{inner}</div>")
 
 manifest = []
 os.makedirs(OUT, exist_ok=True)
@@ -135,7 +135,7 @@ body = (f"<div style='position:absolute;left:80px;right:80px;top:150px;text-alig
         f"<h1 style='font-size:104px;margin-top:40px'>Your wedding,<br>in one place.</h1>"
         f"<p class=sub style='font-size:38px;margin-top:30px'>Free. Private. Open source.<br>No sign-up to start.</p></div>"
         + phone("binder-now", 276, 560, 500)
-        + f"<div style='position:absolute;left:0;right:0;bottom:70px;text-align:center;font-size:34px'>trousseau-suite.vercel.app</div>")
+        + f"<div style='position:absolute;left:0;right:0;bottom:70px;text-align:center;font-size:34px'>knotwork-suite.vercel.app</div>")
 page("story", 1080, 1920, body, "#f3e3dc")
 
 # ---------- The pledge, 1080x1080 ----------

@@ -54,7 +54,7 @@ schema and exact bytes together.
 ## Setting up a new device
 
 ```sh
-git clone https://github.com/JFrusher/Trousseau Knotwork && cd Knotwork
+git clone https://github.com/JFrusher/Knotwork Knotwork && cd Knotwork
 npm install
 
 # The remote URL is per-device and deliberately not committed — it names a path

@@ -10,6 +10,7 @@ const SYNC_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "2026
 const ACCOUNTS_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260902000001_accounts.sql");
 const DOCUMENTS_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260903000001_wedding_documents.sql");
 const ROLES_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260928000001_roles.sql");
+const PEOPLE_EMAIL_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20261003142447_wedding_people_email.sql");
 
 /**
  * A minimal stand-in for Supabase's own `auth` schema: just enough for
@@ -19,7 +20,9 @@ const ROLES_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "202
 async function authStub(db: PGlite): Promise<void> {
   await db.exec(`
     create schema if not exists auth;
-    create table auth.users (id uuid primary key, email text not null);
+    -- varchar(255), as Supabase declares it: a stand-in that is looser than
+    -- the real table hides exactly the type errors it exists to catch.
+    create table auth.users (id uuid primary key, email varchar(255) not null);
     create or replace function auth.uid() returns uuid
       language sql stable
       as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
@@ -39,6 +42,7 @@ async function databaseWith(): Promise<PGlite> {
   // Every test here runs on the schema as it is now: the partner rules the
   // tests above were written for must still hold with roles added.
   await db.exec(readFileSync(ROLES_MIGRATION, "utf8"));
+  await db.exec(readFileSync(PEOPLE_EMAIL_MIGRATION, "utf8"));
   return db;
 }
 

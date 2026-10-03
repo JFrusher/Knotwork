@@ -2,7 +2,7 @@
 
 **Post from:** the maintainer's own account.
 **When:** Tuesday to Thursday, 8–10am US Eastern.
-**Link to:** `https://github.com/JFrusher/Trousseau`. The hosted app needs no
+**Link to:** `https://github.com/JFrusher/Knotwork`. The hosted app needs no
 sign-up, so it satisfies Show HN's "something people can try" rule. Put the
 app link in the first line of the text.
 **Stay:** in the thread for at least three hours, and answer every technical
@@ -30,8 +30,8 @@ is what an HN reader will want to argue about.
 
 ## Body
 
-> Try it (no sign-up, nothing leaves your browser): https://trousseau-suite.vercel.app
-> Code: https://github.com/JFrusher/Trousseau
+> Try it (no sign-up, nothing leaves your browser): https://knotwork-suite.vercel.app
+> Code: https://github.com/JFrusher/Knotwork
 >
 > I built Knotwork for my own wedding, after two of the apps we were using
 > disagreed about what day it was.

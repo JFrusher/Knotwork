@@ -6,7 +6,7 @@ before moving on.
 Roughly 40 minutes, most of it waiting for Vercel.
 
 **Where things stand right now:** the suite is written, tested and building, on
-branch `suite` in `JFrusher/Trousseau`, uncommitted. No Supabase project exists.
+branch `suite` in `JFrusher/Knotwork`, uncommitted. No Supabase project exists.
 Nothing is deployed.
 
 ---
@@ -17,7 +17,7 @@ Nothing is deployed.
 |---|---|
 | Node | **20 or newer** (`node -v`) — the sync handlers use `crypto.subtle`, which is stable from 19 |
 | Python + DVC | Only on machines that **commit** to this repo — see §2 |
-| A GitHub account | The repo is already at `JFrusher/Trousseau` |
+| A GitHub account | The repo is already at `JFrusher/Knotwork` |
 | A Vercel account | Free tier is enough |
 | A Supabase account | Free tier is enough. **Only needed for sharing** — see §3 |
 
@@ -162,7 +162,7 @@ role. If any of them says RLS is disabled, the first migration did not finish.
 
 ### 4.1 Import
 
-1. vercel.com → **Add New** → **Project** → import `JFrusher/Trousseau`
+1. vercel.com → **Add New** → **Project** → import `JFrusher/Knotwork`
 2. **Root Directory: `suite`** ← the one setting that matters most
 
    Click **Edit** beside Root Directory and choose `suite`. Vercel cannot be

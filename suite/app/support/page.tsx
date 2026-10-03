@@ -52,7 +52,7 @@ export default function Support() {
         <p className="mt-3 text-slate">
           Tell another couple about it. Report a bug on{" "}
           <a
-            href="https://github.com/JFrusher/Trousseau/issues"
+            href="https://github.com/JFrusher/Knotwork/issues"
             className="underline underline-offset-2 hover:text-charcoal"
           >
             GitHub

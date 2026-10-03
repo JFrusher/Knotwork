@@ -58,7 +58,7 @@ Space them at least a day apart.
 > **Setup, local-only:**
 >
 > ```
-> git clone https://github.com/JFrusher/Trousseau.git Knotwork
+> git clone https://github.com/JFrusher/Knotwork.git Knotwork
 > cd Knotwork
 > npm ci
 > npm run build
@@ -76,10 +76,10 @@ Space them at least a day apart.
 > clone. It lists every env var, the migration order, and the two mistakes
 > that catch everyone out. It also ends with a section on checking that the
 > instance actually works, not just that it starts:
-> https://github.com/JFrusher/Trousseau/blob/main/docs/SELF-HOSTING.md
+> https://github.com/JFrusher/Knotwork/blob/main/docs/SELF-HOSTING.md
 >
-> Repo: https://github.com/JFrusher/Trousseau
-> Hosted, if you just want to click around (no sign-up): https://trousseau-suite.vercel.app
+> Repo: https://github.com/JFrusher/Knotwork
+> Hosted, if you just want to click around (no sign-up): https://knotwork-suite.vercel.app
 >
 > Happy to answer anything about the architecture or the RLS setup.
 
@@ -145,7 +145,7 @@ Space them at least a day apart.
 > column is which and shows you a preview first.
 >
 > There's a guided tour with a pretend wedding if you just want to poke
-> around: https://trousseau-suite.vercel.app
+> around: https://knotwork-suite.vercel.app
 >
 > It doesn't do RSVPs or a wedding website. Joy is great for that and free,
 > and Knotwork imports the RSVPs from it.
@@ -230,8 +230,8 @@ discourage recruiting):**
 > budget. There's also a guide to building an entirely new tool, from "is
 > this a tool?" to merged PR.
 >
-> - Repo: https://github.com/JFrusher/Trousseau
-> - Roadmap: https://github.com/JFrusher/Trousseau/blob/main/ROADMAP.md
-> - Try it (no sign-up): https://trousseau-suite.vercel.app
+> - Repo: https://github.com/JFrusher/Knotwork
+> - Roadmap: https://github.com/JFrusher/Knotwork/blob/main/ROADMAP.md
+> - Try it (no sign-up): https://knotwork-suite.vercel.app
 >
 > Critique of the design is as welcome as PRs.
