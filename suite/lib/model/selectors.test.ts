@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
+import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
 import { readBar, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline, resolvedDay, timelineDoc } from "./slices";
 import { hiddenToolIds, shownTools } from "./toolbox";
 import { barSum } from "@/lib/bar/sum";
@@ -15,7 +15,7 @@ import { barSum } from "@/lib/bar/sum";
  */
 
 const doc = migrate({
-  ...emptyTrousseau(),
+  ...emptyKnotwork(),
   guests: { g1: { id: "g1", firstName: "Charis" } },
   seating: { tables: { t1: { id: "t1", label: "Table 1" } } },
   timeline: { lanes: ["Couple"], blocks: [], tagDetails: [] },
@@ -45,7 +45,7 @@ test.each([
 });
 
 test("a different document gets its own reading", () => {
-  const other = migrate({ ...emptyTrousseau(), guests: { g2: { id: "g2" } } });
+  const other = migrate({ ...emptyKnotwork(), guests: { g2: { id: "g2" } } });
   expect(readGuests(other)).not.toBe(readGuests(doc));
   expect(Object.keys(readGuests(other))).toEqual(["g2"]);
 });

@@ -1,10 +1,12 @@
 <div align="center">
 
-# 💍 Trousseau
+# 💍 Knotwork
 
 ### Plan a whole wedding in one place, without five tools disagreeing about it.
 
 **Free, open source and private. No paid tier, no ads, no upsell, no sign-up to start.**
+
+<sub>Formerly Trousseau.</sub>
 
 [![Licence: AGPL-3.0 app, MIT contract](https://img.shields.io/badge/licence-AGPL--3.0%20app%20%C2%B7%20MIT%20contract-5b4bd5)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/JFrusher/Trousseau?style=flat&logo=github&label=stars)](https://github.com/JFrusher/Trousseau/stargazers)
@@ -13,13 +15,13 @@
 [![No account needed](https://img.shields.io/badge/account-not%20needed-2f855a)](https://trousseau-suite.vercel.app)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-e05d44)](CONTRIBUTING.md)
 
-[**Open Trousseau →**](https://trousseau-suite.vercel.app) &nbsp;·&nbsp;
+[**Open Knotwork →**](https://trousseau-suite.vercel.app) &nbsp;·&nbsp;
 [Run your own copy](#-run-your-own-copy) &nbsp;·&nbsp;
 [How it works](#-how-it-works) &nbsp;·&nbsp;
 [Roadmap](ROADMAP.md) &nbsp;·&nbsp;
 [Contribute](CONTRIBUTING.md)
 
-![Trousseau: the whole wedding in one place, with the front page showing where things stand](marketing/assets/images/hero-overview.png)
+![Knotwork: the whole wedding in one place, with the front page showing where things stand](marketing/assets/images/hero-overview.png)
 
 </div>
 
@@ -38,7 +40,7 @@ and the run sheet end up as three copies of one guest list, drifting apart.
 When this project began, two apps disagreed about **what day the wedding
 was**.
 
-Trousseau is the opposite of that:
+Knotwork is the opposite of that:
 
 - **Free forever.** Not a trial, not freemium. There is no paid version to be
   upsold to, and the AGPL stops anyone building a closed, paid fork of the
@@ -148,7 +150,7 @@ error reporting only runs if you set a Sentry DSN.
 
 ```sh
 git clone https://github.com/JFrusher/Trousseau.git
-cd Trousseau
+cd Knotwork
 npm ci             # installs the contract package and the suite together
 npm run build      # builds the shared contract package; do not skip this
 npm run dev -w suite
@@ -201,8 +203,8 @@ how to check your instance actually works rather than merely starting.
   the `#` in the link, which browsers never send to a server. Members of the
   wedding hold the key so they can republish as seats change.
 - **You can always take it out.** *Download my wedding* gives you the whole
-  thing as one `.trousseau.json` file. That is the same format the app uses,
-  so it opens straight back into Trousseau, hosted or on your own copy.
+  thing as one `.knotwork.json` file. That is the same format the app uses,
+  so it opens straight back into Knotwork, hosted or on your own copy.
 - **Deleting your account deletes your data.** If your partner is still on the
   wedding, it stays with them. If you were the last one, it goes.
 
@@ -302,7 +304,7 @@ suite/           the web application (AGPL-3.0-or-later)
   lib/           the shared document, sync, accounts, and the newer tools
   components/    the shell around the tools, and the newer tools' panels
   app/           routes, API, account, guest and supplier pages
-src/             the data contract, published as @jfrusher/trousseau (MIT)
+src/             the data contract, published as @jfrusher/knotwork (MIT)
 supabase/        database migrations
 docs/            self-hosting, building a tool, and dated specs and plans
 ```
@@ -320,7 +322,7 @@ anyone's personal details.
 - **Want to change something?** Design decisions are written down in
   `docs/superpowers/specs/`, so you can tell whether an idea fits before
   writing code.
-- **Want to build a tool?** A job nothing in Trousseau does for you yet is the
+- **Want to build a tool?** A job nothing in Knotwork does for you yet is the
   best reason to. **[docs/BUILDING-A-TOOL.md](docs/BUILDING-A-TOOL.md)** walks
   through the whole journey.
 
@@ -336,12 +338,12 @@ milestones and the issues to pick up.
 
 ## 🌱 Where this came from
 
-Trousseau was built for one specific wedding. That is the only reason its
+Knotwork was built for one specific wedding. That is the only reason its
 constraints were ever honest: real guest names and dietary requirements,
 tools that genuinely must not overwrite each other, and a date that does not
 move.
 
-That wedding has happened. Trousseau is now being built for other couples,
+That wedding has happened. Knotwork is now being built for other couples,
 which is why it grew accounts, real cloud storage and a self-hosting story.
 The design did not change, because the design was the part that was working.
 
@@ -355,7 +357,7 @@ Two licences, because this repository holds two different things.
   **[AGPL-3.0-or-later](LICENSE-AGPL)**. Run it, change it, host it for
   friends. If you host a modified version for other people, they are entitled
   to your source too.
-- The **contract package**, `@jfrusher/trousseau`, is **[MIT](LICENSE-MIT)**.
+- The **contract package**, `@jfrusher/knotwork`, is **[MIT](LICENSE-MIT)**.
   It holds the schemas and the file format, kept permissive on purpose so that
   a tool nobody has written yet can depend on it.
 
@@ -366,6 +368,6 @@ There is no paid tier and there never will be. That is the reason this exists.
 
 <div align="center">
 
-**If Trousseau saves you an evening with a spreadsheet, a ⭐ helps other couples find it.**
+**If Knotwork saves you an evening with a spreadsheet, a ⭐ helps other couples find it.**
 
 </div>

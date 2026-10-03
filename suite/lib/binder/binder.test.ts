@@ -2,10 +2,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { migrate } from "@jfrusher/trousseau";
+import { migrate } from "@jfrusher/knotwork";
 import { contacts, dayClock, findGuests, nowAndNext, runningOrder } from "./binder";
 
-const doc = migrate(JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8")));
+const doc = migrate(JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8")));
 const blocks = runningOrder(doc);
 
 describe("the day, in a pocket", () => {

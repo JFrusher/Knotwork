@@ -16,14 +16,14 @@ export async function weddingPage(browser, { width = 1440, height = 900, scale =
   if (time) await page.clock.setFixedTime(new Date(time));
   await page.goto(BASE + '/');
   await page.evaluate(async () => {
-    const wedding = await (await fetch('/fixtures/example-wedding.trousseau.json')).json();
+    const wedding = await (await fetch('/fixtures/example-wedding.knotwork.json')).json();
     await new Promise((resolve, reject) => {
       const open = indexedDB.open('keyval-store');
       open.onupgradeneeded = () => open.result.createObjectStore('keyval');
       open.onerror = () => reject(open.error);
       open.onsuccess = () => {
         const tx = open.result.transaction('keyval', 'readwrite');
-        tx.objectStore('keyval').put(wedding, 'trousseau.document');
+        tx.objectStore('keyval').put(wedding, 'knotwork.document');
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       };

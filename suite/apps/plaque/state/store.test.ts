@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { usePlaque } from "./store";
 
 const HEADERS = ["First Name", "Last Name", "Table", "Dietary"];
@@ -12,13 +12,13 @@ const ROWS = [
 const csv = () => ({ headers: HEADERS, rows: ROWS, issues: [], fileName: "guests.csv" });
 const state = () => usePlaque.getState();
 // Place cards' undo is the wedding's.
-const undo = () => useTrousseauStore.getState().undo();
-const redo = () => useTrousseauStore.getState().redo();
-const past = () => useTrousseauStore.getState().past;
+const undo = () => useKnotworkStore.getState().undo();
+const redo = () => useKnotworkStore.getState().redo();
+const past = () => useKnotworkStore.getState().past;
 
 beforeEach(() => {
-  const raw = emptyTrousseau() as unknown as Record<string, unknown>;
-  useTrousseauStore.setState({ status: "ready", raw, doc: migrate(raw), past: [], future: [] });
+  const raw = emptyKnotwork() as unknown as Record<string, unknown>;
+  useKnotworkStore.setState({ status: "ready", raw, doc: migrate(raw), past: [], future: [] });
   state().clearAll();
 });
 afterEach(() => {

@@ -1,4 +1,4 @@
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { guestName, isComing, readCrew, readGuests, readSeating, readTimeline, resolvedDay } from "@/lib/model/slices";
 
 /**
@@ -18,7 +18,7 @@ export interface BinderBlock {
 }
 
 /** The day's blocks, soonest first, with the times Timeline works out. */
-export function runningOrder(doc: Trousseau): BinderBlock[] {
+export function runningOrder(doc: Knotwork): BinderBlock[] {
   const blocks = new Map(readTimeline(doc).blocks.map((block) => [block.id, block]));
   return resolvedDay(doc)
     .map((resolved) => {
@@ -50,7 +50,7 @@ export interface DayClock {
  * says what time it is there — a planner may be in another time zone — and
  * the device's is used only when the wedding has none.
  */
-export function dayClock(doc: Trousseau, blocks: readonly BinderBlock[], nowMs: number): DayClock {
+export function dayClock(doc: Knotwork, blocks: readonly BinderBlock[], nowMs: number): DayClock {
   const date = doc.event.date;
   if (!date) return { phase: "before", minute: 0, daysAway: 0 };
   const offset = doc.event.utcOffsetMin ?? -new Date(nowMs).getTimezoneOffset();
@@ -82,7 +82,7 @@ export interface Contact {
  * name them, and the people in the crew. One entry per number, the first name
  * it is known by kept.
  */
-export function contacts(doc: Trousseau): Contact[] {
+export function contacts(doc: Knotwork): Contact[] {
   const crew = readCrew(doc);
   const teamName = new Map(crew.teams.map((team) => [team.id, team.name]));
   const all: Contact[] = [
@@ -110,7 +110,7 @@ export interface FoundGuest {
 }
 
 /** Guests who are coming whose name has every word asked for, with where they sit. */
-export function findGuests(doc: Trousseau, query: string, limit = 20): FoundGuest[] {
+export function findGuests(doc: Knotwork, query: string, limit = 20): FoundGuest[] {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   if (words.length === 0) return [];
   const tables = readSeating(doc).tables;
@@ -127,7 +127,7 @@ export function findGuests(doc: Trousseau, query: string, limit = 20): FoundGues
 }
 
 /** Where a phone keeps which shots it has ticked off, one wedding per key. */
-export const TAKEN_PREFIX = "trousseau.binder.taken.";
+export const TAKEN_PREFIX = "knotwork.binder.taken.";
 
 /** Shots taken, on this phone only, per wedding. */
 export function takenKey(weddingId: string | null): string {

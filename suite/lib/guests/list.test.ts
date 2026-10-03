@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { migrate } from "@jfrusher/trousseau";
+import { migrate } from "@jfrusher/knotwork";
 import { guestRows, NO_FILTER, shownRows } from "./list";
 
 const doc = migrate({

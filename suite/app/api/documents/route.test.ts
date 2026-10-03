@@ -52,27 +52,27 @@ beforeEach(() => {
 });
 
 test("a signed-in member can save, and the version advances", async () => {
-  const first = await put({ kind: "trousseau", version: 1 }, 0);
+  const first = await put({ kind: "knotwork", version: 1 }, 0);
   expect(first.status).toBe(200);
   expect(await first.json()).toMatchObject({ version: 1 });
 });
 
 test("a stale expected version comes back as a conflict, with the true state", async () => {
-  await put({ kind: "trousseau", version: 1 }, 0);
-  const second = await put({ kind: "trousseau", version: 1 }, 0);
+  await put({ kind: "knotwork", version: 1 }, 0);
+  const second = await put({ kind: "knotwork", version: 1 }, 0);
   expect(second.status).toBe(409);
   expect(await second.json()).toMatchObject({ version: 1 });
 });
 
 test("a signed-out caller is refused before any document work", async () => {
   currentUserResult = null;
-  const response = await put({ kind: "trousseau", version: 1 }, 0);
+  const response = await put({ kind: "knotwork", version: 1 }, 0);
   expect(response.status).toBe(401);
 });
 
 test("a wedding the caller is not on gets 404, not a crash", async () => {
   membership = null;
-  const response = await put({ kind: "trousseau", version: 1 }, 0);
+  const response = await put({ kind: "knotwork", version: 1 }, 0);
   expect(response.status).toBe(404);
 });
 
@@ -80,16 +80,16 @@ test("writes past the limit are throttled, and the budget is per account", async
   // WRITE_LIMIT is 600 a minute. Spend it, then confirm the next is refused.
   let version = 0;
   for (let i = 0; i < 600; i += 1) {
-    const response = await put({ kind: "trousseau", version: 1 }, version);
+    const response = await put({ kind: "knotwork", version: 1 }, version);
     if (response.status === 200) version += 1;
   }
-  const refused = await put({ kind: "trousseau", version: 1 }, version);
+  const refused = await put({ kind: "knotwork", version: 1 }, version);
   expect(refused.status).toBe(429);
 
   // A different account is unaffected — this is the point of keying by user.
   currentUserResult = { id: "someone-else", email: "b@example.com" };
   membership = { weddingId: "someone-elses-wedding" };
-  const other = await put({ kind: "trousseau", version: 1 }, 0);
+  const other = await put({ kind: "knotwork", version: 1 }, 0);
   expect(other.status).toBe(200);
 });
 
@@ -99,7 +99,7 @@ test("a request that names no wedding gets 404 — an account may be on several"
 });
 
 test("the wedding travels with its document", async () => {
-  await put({ kind: "trousseau", version: 1 }, 0);
+  await put({ kind: "knotwork", version: 1 }, 0);
   const response = await route.GET(new Request(`http://localhost/api/documents?wedding=${membership!.weddingId}`));
   expect(await response.json()).toMatchObject({ weddingId: membership!.weddingId, version: 1 });
 });

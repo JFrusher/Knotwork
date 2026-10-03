@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { emptyDoc, sampleDoc } from "../core/model/defaults";
 import { currentDoc, scheduleComputeCount, scheduleFor, useStore, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "./store";
 import { openDay } from "./testing";
@@ -10,7 +10,7 @@ function state() {
 const doc = currentDoc;
 const schedule = () => scheduleFor(currentDoc());
 // Timeline's undo is the wedding's.
-const history = () => useTrousseauStore.getState();
+const history = () => useKnotworkStore.getState();
 
 beforeEach(() => {
   openDay(sampleDoc());

@@ -7,14 +7,14 @@ import { expect, type Page } from "@playwright/test";
 export async function seedExampleWedding(page: Page): Promise<void> {
   await page.goto("/");
   await page.evaluate(async () => {
-    const wedding = await (await fetch("/fixtures/example-wedding.trousseau.json")).json();
+    const wedding = await (await fetch("/fixtures/example-wedding.knotwork.json")).json();
     await new Promise<void>((resolve, reject) => {
       const open = indexedDB.open("keyval-store");
       open.onupgradeneeded = () => open.result.createObjectStore("keyval");
       open.onerror = () => reject(open.error);
       open.onsuccess = () => {
         const tx = open.result.transaction("keyval", "readwrite");
-        tx.objectStore("keyval").put(wedding, "trousseau.document");
+        tx.objectStore("keyval").put(wedding, "knotwork.document");
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       };
@@ -56,7 +56,7 @@ export async function storedWedding(page: Page): Promise<StoredWedding> {
           const read = open.result
             .transaction("keyval")
             .objectStore("keyval")
-            .get("trousseau.document");
+            .get("knotwork.document");
           read.onerror = () => reject(read.error);
           read.onsuccess = () => {
             const wedding = read.result ?? {};
@@ -81,7 +81,7 @@ export async function storedDocument(page: Page): Promise<Record<string, any>> {
         const open = indexedDB.open("keyval-store");
         open.onerror = () => reject(open.error);
         open.onsuccess = () => {
-          const read = open.result.transaction("keyval").objectStore("keyval").get("trousseau.document");
+          const read = open.result.transaction("keyval").objectStore("keyval").get("knotwork.document");
           read.onerror = () => reject(read.error);
           read.onsuccess = () => resolve(read.result ?? {});
         };

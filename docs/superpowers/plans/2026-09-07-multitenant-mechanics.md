@@ -17,7 +17,7 @@ the limit, and the `Content-Disposition` header. No new tables, no new
 migration, no new dependency.
 
 **Tech Stack:** Next.js App Router (`suite/`), TypeScript, Vitest,
-`@jfrusher/trousseau` (for `migrate`, `suggestedFilename`, `TROUSSEAU_EXTENSION`).
+`@jfrusher/knotwork` (for `migrate`, `suggestedFilename`, `KNOTWORK_EXTENSION`).
 
 **Spec:** [docs/superpowers/specs/2026-09-02-multitenant-mechanics-design.md](../specs/2026-09-02-multitenant-mechanics-design.md)
 
@@ -40,7 +40,7 @@ Verified on the finished branch, not from memory:
 The account-page check drove the real page with a seeded `@supabase/ssr`
 session cookie (`sb-localhost-auth-token`, `base64-` + base64url JSON): the
 section appears only when the account has a wedding, and the button fires a
-real download named `charis-and-jacob.trousseau.json`.
+real download named `charis-and-jacob.knotwork.json`.
 
 No corrections to this plan were needed during execution. The two corrections
 it makes to the *spec* are recorded above under "Two corrections to the spec".
@@ -341,27 +341,27 @@ beforeEach(() => {
 });
 
 test("a signed-in member can save, and the version advances", async () => {
-  const first = await put({ kind: "trousseau", version: 1 }, 0);
+  const first = await put({ kind: "knotwork", version: 1 }, 0);
   expect(first.status).toBe(200);
   expect(await first.json()).toMatchObject({ version: 1 });
 });
 
 test("a stale expected version comes back as a conflict, with the true state", async () => {
-  await put({ kind: "trousseau", version: 1 }, 0);
-  const second = await put({ kind: "trousseau", version: 1 }, 0);
+  await put({ kind: "knotwork", version: 1 }, 0);
+  const second = await put({ kind: "knotwork", version: 1 }, 0);
   expect(second.status).toBe(409);
   expect(await second.json()).toMatchObject({ version: 1 });
 });
 
 test("a signed-out caller is refused before any document work", async () => {
   currentUserResult = null;
-  const response = await put({ kind: "trousseau", version: 1 }, 0);
+  const response = await put({ kind: "knotwork", version: 1 }, 0);
   expect(response.status).toBe(401);
 });
 
 test("an account with no wedding gets 404, not a crash", async () => {
   membership = null;
-  const response = await put({ kind: "trousseau", version: 1 }, 0);
+  const response = await put({ kind: "knotwork", version: 1 }, 0);
   expect(response.status).toBe(404);
 });
 
@@ -369,16 +369,16 @@ test("writes past the limit are throttled, and the budget is per account", async
   // WRITE_LIMIT is 600 a minute. Spend it, then confirm the next is refused.
   let version = 0;
   for (let i = 0; i < 600; i += 1) {
-    const response = await put({ kind: "trousseau", version: 1 }, version);
+    const response = await put({ kind: "knotwork", version: 1 }, version);
     if (response.status === 200) version += 1;
   }
-  const refused = await put({ kind: "trousseau", version: 1 }, version);
+  const refused = await put({ kind: "knotwork", version: 1 }, version);
   expect(refused.status).toBe(429);
 
   // A different account is unaffected — this is the point of keying by user.
   currentUserResult = { id: "someone-else", email: "b@example.com" };
   membership = { weddingId: "someone-elses-wedding" };
-  const other = await put({ kind: "trousseau", version: 1 }, 0);
+  const other = await put({ kind: "knotwork", version: 1 }, 0);
   expect(other.status).toBe(200);
 });
 ```
@@ -411,7 +411,7 @@ git commit -m "Rate limit the authenticated document write path, keyed by accoun
 
 **Interfaces:**
 - Consumes: `DocumentStore`, `memoryStore` from `suite/lib/documents/store.ts`;
-  `migrate`, `suggestedFilename`, `TROUSSEAU_EXTENSION` from `@jfrusher/trousseau`.
+  `migrate`, `suggestedFilename`, `KNOTWORK_EXTENSION` from `@jfrusher/knotwork`.
 - Produces: `exportDocumentHandler(store: DocumentStore, weddingId: string): Promise<ExportReply>`,
   `interface ExportFile { filename: string; text: string }`, and
   `type ExportReply = { status: 200; file: ExportFile } | { status: 404; body: unknown }`.
@@ -436,7 +436,7 @@ describe("exportDocumentHandler", () => {
     const reply = await exportDocumentHandler(store, "w1");
     expect(reply.status).toBe(200);
     if (reply.status !== 200) return;
-    expect(reply.file.filename).toBe("charis-and-jacob.trousseau.json");
+    expect(reply.file.filename).toBe("charis-and-jacob.knotwork.json");
     expect(JSON.parse(reply.file.text)).toEqual(document);
     // Pretty-printed, so a person opening the file can read it.
     expect(reply.file.text).toContain("
@@ -462,7 +462,7 @@ describe("exportDocumentHandler", () => {
     if (reply.status !== 200) return;
     expect(JSON.parse(reply.file.text)).toEqual(broken);
     // migrate() threw, so the name falls back instead of the export failing.
-    expect(reply.file.filename).toBe("wedding.trousseau.json");
+    expect(reply.file.filename).toBe("wedding.knotwork.json");
   });
 });
 ```
@@ -477,7 +477,7 @@ Expected: FAIL — `exportDocumentHandler` is not exported from `./handlers`.
 Add to the imports at the top of `suite/lib/documents/handlers.ts`:
 
 ```ts
-import { migrate, suggestedFilename, TROUSSEAU_EXTENSION } from "@jfrusher/trousseau";
+import { migrate, suggestedFilename, KNOTWORK_EXTENSION } from "@jfrusher/knotwork";
 ```
 
 Add at the end of `suite/lib/documents/handlers.ts`:
@@ -526,7 +526,7 @@ function exportFilename(document: unknown): string {
   try {
     return suggestedFilename(migrate(document));
   } catch {
-    return `wedding${TROUSSEAU_EXTENSION}`;
+    return `wedding${KNOTWORK_EXTENSION}`;
   }
 }
 ```
@@ -575,7 +575,7 @@ import { allow, EXPORT_LIMIT } from "@/lib/sync/rateLimit";
  * "Download my wedding" — the honest answer to "can I get my data out".
  *
  * Also the migration path off the hosted instance: the file this returns is
- * the same `.trousseau.json` a self-hosted instance, or the local-only mode,
+ * the same `.knotwork.json` a self-hosted instance, or the local-only mode,
  * will open. There is no export format to keep in step, because there is no
  * separate export format.
  */
@@ -669,7 +669,7 @@ vi.mock("@/lib/documents/supabaseStore", () => ({
 const route = await import("./route");
 
 const wedding = (coupleNames: string) => ({
-  kind: "trousseau",
+  kind: "knotwork",
   version: 1,
   event: {
     date: "2026-08-20",
@@ -698,7 +698,7 @@ test("a member downloads their own wedding as an attachment", async () => {
   const response = await route.GET();
   expect(response.status).toBe(200);
   expect(response.headers.get("content-disposition")).toBe(
-    'attachment; filename="charis-and-jacob.trousseau.json"',
+    'attachment; filename="charis-and-jacob.knotwork.json"',
   );
   // Personal data must never sit in a shared cache.
   expect(response.headers.get("cache-control")).toContain("no-store");
@@ -794,7 +794,7 @@ section, whose opening tag is
               <h2 className="text-xs tracking-widest text-slate uppercase">Your data</h2>
               <p className="text-sm text-slate">
                 Download everything saved to your account as one file — guests, seating, the day,
-                the crew and the stationery. It opens in Trousseau anywhere, including your own
+                the crew and the stationery. It opens in Knotwork anywhere, including your own
                 copy if you ever run one.
               </p>
               <Button

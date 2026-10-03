@@ -56,15 +56,15 @@ vi.mock("@/lib/documents/cloudSync", async (importOriginal) => ({
 }));
 vi.mock("@/lib/documents/assets", () => ({ syncAssets: async () => ({ uploaded: 0, downloaded: 0 }) }));
 
-const { useTrousseauStore, flushPersist, STORAGE_KEY } = await import("./useTrousseauStore");
+const { useKnotworkStore, flushPersist, STORAGE_KEY } = await import("./useKnotworkStore");
 const { COPIES_KEY } = await import("./copies");
 const { openWedding } = await import("./openWedding");
-const { weddingToOpen } = await import("./useTrousseauStore");
-const { emptyTrousseau } = await import("@jfrusher/trousseau");
+const { weddingToOpen } = await import("./useKnotworkStore");
+const { emptyKnotwork } = await import("@jfrusher/knotwork");
 
 type Raw = Record<string, unknown>;
 const wedding = (couple: string, guests: Record<string, { id: string; firstName: string }>): Raw => {
-  const doc = emptyTrousseau();
+  const doc = emptyKnotwork();
   return { ...doc, event: { ...doc.event, coupleNames: couple }, guests } as unknown as Raw;
 };
 
@@ -76,8 +76,8 @@ const wedding = (couple: string, guests: Record<string, { id: string; firstName:
  * edits before it ends.
  */
 async function reload() {
-  const doc = emptyTrousseau();
-  useTrousseauStore.setState({
+  const doc = emptyKnotwork();
+  useKnotworkStore.setState({
     status: "idle",
     error: null,
     raw: doc as unknown as Raw,
@@ -92,12 +92,12 @@ async function reload() {
     weddingId: null,
     cloudChoice: null,
   });
-  await useTrousseauStore.getState().hydrate();
-  await useTrousseauStore.getState().startCloudSync();
+  await useKnotworkStore.getState().hydrate();
+  await useKnotworkStore.getState().startCloudSync();
   await flushPersist();
 }
 
-const guestsOnDevice = () => Object.keys((useTrousseauStore.getState().raw["guests"] ?? {}) as object);
+const guestsOnDevice = () => Object.keys((useKnotworkStore.getState().raw["guests"] ?? {}) as object);
 
 beforeEach(() => {
   idb.clear();
@@ -127,7 +127,7 @@ test("signing in on a device with its own wedding does not replace it without as
   expect(guestsOnDevice()).toEqual(["r1"]);
   expect((idb.get(STORAGE_KEY) as Raw)["guests"]).toHaveProperty("r1");
   expect(pushDocumentMock).not.toHaveBeenCalled();
-  expect(useTrousseauStore.getState().cloudStatus).toBe("choosing");
+  expect(useKnotworkStore.getState().cloudStatus).toBe("choosing");
 });
 
 async function twoWeddings() {
@@ -141,23 +141,23 @@ const kept = () => (idb.get(COPIES_KEY) as Array<{ document: Raw }> | undefined)
 
 test("choosing the account's wedding keeps this device's as a copy", async () => {
   await twoWeddings();
-  await useTrousseauStore.getState().chooseWedding("account");
+  await useKnotworkStore.getState().chooseWedding("account");
   await flushPersist();
 
   expect(guestsOnDevice()).toEqual(["a1"]);
   expect(kept().map((copy) => Object.keys(copy.document["guests"] as object))).toEqual([["r1"]]);
   expect(pushDocumentMock).not.toHaveBeenCalled();
-  expect(useTrousseauStore.getState().cloudStatus).toBe("idle");
+  expect(useKnotworkStore.getState().cloudStatus).toBe("idle");
 
   // And the device now knows it belongs to this wedding: no question next time.
   await reload();
-  expect(useTrousseauStore.getState().cloudStatus).toBe("idle");
+  expect(useKnotworkStore.getState().cloudStatus).toBe("idle");
   expect(guestsOnDevice()).toEqual(["a1"]);
 });
 
 test("choosing this device's wedding keeps the account's as a copy, and sends this one up", async () => {
   await twoWeddings();
-  await useTrousseauStore.getState().chooseWedding("device");
+  await useKnotworkStore.getState().chooseWedding("device");
   await flushPersist();
 
   expect(kept().map((copy) => Object.keys(copy.document["guests"] as object))).toEqual([["a1"]]);
@@ -165,7 +165,7 @@ test("choosing this device's wedding keeps the account's as a copy, and sends th
   expect(server.version).toBe(8);
 
   await reload();
-  expect(useTrousseauStore.getState().cloudStatus).toBe("idle");
+  expect(useKnotworkStore.getState().cloudStatus).toBe("idle");
   expect(guestsOnDevice()).toEqual(["r1"]);
 });
 
@@ -175,9 +175,9 @@ test("if the account's wedding moved while the question was open, it is asked ag
   server.document = wedding("Alex & Sam", { a1: { id: "a1", firstName: "Alex" }, a3: { id: "a3", firstName: "Jo" } });
   server.version = 8;
 
-  await useTrousseauStore.getState().chooseWedding("device");
+  await useKnotworkStore.getState().chooseWedding("device");
 
-  const state = useTrousseauStore.getState();
+  const state = useKnotworkStore.getState();
   expect(state.cloudStatus).toBe("choosing");
   expect(Object.keys(state.cloudChoice!.document["guests"] as object)).toEqual(["a1", "a3"]);
   expect(state.cloudConflicts).toEqual([]);
@@ -188,9 +188,9 @@ test("keeping this device's wedding while the account is out of reach changes no
   await twoWeddings();
   server.offline = true;
 
-  await useTrousseauStore.getState().chooseWedding("device");
+  await useKnotworkStore.getState().chooseWedding("device");
 
-  const state = useTrousseauStore.getState();
+  const state = useKnotworkStore.getState();
   expect(state.cloudStatus).toBe("choosing");
   expect(state.cloudError).toMatch(/nothing has changed/);
   expect(kept()).toEqual([]);
@@ -201,14 +201,14 @@ test("nothing is asked when this device has nothing to lose", async () => {
   server.document = wedding("Alex & Sam", { a1: { id: "a1", firstName: "Alex" } });
   server.version = 2;
   await reload();
-  expect(useTrousseauStore.getState().cloudStatus).toBe("idle");
+  expect(useKnotworkStore.getState().cloudStatus).toBe("idle");
   expect(guestsOnDevice()).toEqual(["a1"]);
 });
 
 test("nothing is asked when the account has nothing to lose", async () => {
   idb.set(STORAGE_KEY, wedding("Robin & Kit", { r1: { id: "r1", firstName: "Robin" } }));
   await reload();
-  expect(useTrousseauStore.getState().cloudStatus).toBe("idle");
+  expect(useKnotworkStore.getState().cloudStatus).toBe("idle");
   expect(Object.keys(server.document!["guests"] as object)).toEqual(["r1"]);
 });
 
@@ -220,15 +220,15 @@ test("an edit made offline goes up on reconnect as a merge, not a conflict over 
   server.offline = true;
   server.reachable = false;
   await reload();
-  const guests = useTrousseauStore.getState().raw["guests"] as Raw;
-  useTrousseauStore.getState().setSlice("guests", { ...guests, a2: { id: "a2", firstName: "Sam" } });
+  const guests = useKnotworkStore.getState().raw["guests"] as Raw;
+  useKnotworkStore.getState().setSlice("guests", { ...guests, a2: { id: "a2", firstName: "Sam" } });
   await flushPersist();
 
   server.offline = false;
   server.reachable = true;
-  await useTrousseauStore.getState().syncToCloud();
+  await useKnotworkStore.getState().syncToCloud();
 
-  expect(useTrousseauStore.getState().cloudStatus).toBe("idle");
+  expect(useKnotworkStore.getState().cloudStatus).toBe("idle");
   expect(Object.keys(server.document!["guests"] as object).sort()).toEqual(["a1", "a2"]);
 });
 
@@ -240,8 +240,8 @@ test("an edit made while the account could not be reached survives the next sign
 
   server.reachable = false;
   await reload();
-  const guests = useTrousseauStore.getState().raw["guests"] as Raw;
-  useTrousseauStore.getState().setSlice("guests", { ...guests, a2: { id: "a2", firstName: "Sam" } });
+  const guests = useKnotworkStore.getState().raw["guests"] as Raw;
+  useKnotworkStore.getState().setSlice("guests", { ...guests, a2: { id: "a2", firstName: "Sam" } });
   await flushPersist();
 
   server.reachable = true;
@@ -252,7 +252,7 @@ test("an edit made while the account could not be reached survives the next sign
 
 // Many weddings --------------------------------------------------------------
 
-const names = () => (useTrousseauStore.getState().raw["event"] as { coupleNames: string }).coupleNames;
+const names = () => (useKnotworkStore.getState().raw["event"] as { coupleNames: string }).coupleNames;
 
 function plannerWithClients() {
   server.weddings = [
@@ -279,7 +279,7 @@ test("which wedding opens: the one opened here, then the one last synced, then t
 test("a planner with several clients and none opened here is not handed one", async () => {
   plannerWithClients();
   await reload();
-  expect(useTrousseauStore.getState().cloudStatus).toBe("disabled");
+  expect(useKnotworkStore.getState().cloudStatus).toBe("disabled");
   expect(names()).toBe("");
 });
 
@@ -288,7 +288,7 @@ test("opening a client's wedding brings it to this device", async () => {
   await reload();
   await openWedding("c2");
   await reload();
-  expect(useTrousseauStore.getState().cloudStatus).toBe("idle");
+  expect(useKnotworkStore.getState().cloudStatus).toBe("idle");
   expect(names()).toBe("Robin & Kit");
 });
 
@@ -299,8 +299,8 @@ test("switching between clients is a swap: each comes back exactly as it was, ed
 
   // An edit that never reached the account before the switch.
   server.offline = true;
-  const guests = useTrousseauStore.getState().raw["guests"] as Raw;
-  useTrousseauStore.getState().setSlice("guests", { ...guests, a2: { id: "a2", firstName: "Sam" } });
+  const guests = useKnotworkStore.getState().raw["guests"] as Raw;
+  useKnotworkStore.getState().setSlice("guests", { ...guests, a2: { id: "a2", firstName: "Sam" } });
   await flushPersist();
   server.offline = false;
 
@@ -323,6 +323,6 @@ test("a wedding on this device that no account holds is asked about, not put asi
   idb.set(STORAGE_KEY, wedding("Jo & Lee", { j1: { id: "j1", firstName: "Jo" } }));
   await openWedding("c1");
   await reload();
-  expect(useTrousseauStore.getState().cloudStatus).toBe("choosing");
+  expect(useKnotworkStore.getState().cloudStatus).toBe("choosing");
   expect(names()).toBe("Jo & Lee");
 });

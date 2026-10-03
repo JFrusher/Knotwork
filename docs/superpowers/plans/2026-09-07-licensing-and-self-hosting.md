@@ -2,8 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Put the AGPL over the Trousseau application while leaving the
-published `@jfrusher/trousseau` contract package permissive, and write a
+**Goal:** Put the AGPL over the Knotwork application while leaving the
+published `@jfrusher/knotwork` contract package permissive, and write a
 self-hosting runbook that actually works on a fresh clone.
 
 **Architecture:** No code changes. The repo root is simultaneously "the whole
@@ -38,7 +38,7 @@ cloned to a scratch directory with no `node_modules`, then every command in the
 document was run. That is what turned up the failure it now documents — `npm
 install` at the root does not create `dist/`, and `suite`'s own install
 *succeeds* without it, so nothing goes wrong until `next build` emits four
-copies of `Module not found: Can't resolve '@jfrusher/trousseau'` with no
+copies of `Module not found: Can't resolve '@jfrusher/knotwork'` with no
 mention of build order. The runbook quotes that error verbatim.
 
 One small thing this plan did not anticipate: inserting the two account
@@ -69,7 +69,7 @@ spec literally says.
 
 1. **The contract package stays MIT; only the application goes AGPL.** The spec
    says to update the `license` field in *every* `package.json`, root included.
-   But the root package is `@jfrusher/trousseau`, published to npm, and the
+   But the root package is `@jfrusher/knotwork`, published to npm, and the
    founding design says a fifth app "joins by depending on the package". AGPL is
    viral for anyone importing it, so AGPL there would mean nobody outside this
    repo can adopt the contract — fighting the ecosystem goal for no gain. The
@@ -172,25 +172,25 @@ guessing.
 Create `LICENSE`:
 
 ```
-Trousseau is released under two licences, because this repository holds two
+Knotwork is released under two licences, because this repository holds two
 different things.
 
-  The contract package — @jfrusher/trousseau
+  The contract package — @jfrusher/knotwork
   ------------------------------------------
   MIT. See LICENSE-MIT.
 
   This is the published npm package: the schemas and the file format that
   describe a wedding. It is deliberately permissive so that a tool nobody has
   written yet can depend on it, which is the entire point of the format
-  existing. If you installed @jfrusher/trousseau from npm, this is the licence
+  existing. If you installed @jfrusher/knotwork from npm, this is the licence
   that applies to you, and you can stop reading here.
 
   The application — everything in suite/
   --------------------------------------
   GNU Affero General Public License v3.0 or later. See LICENSE-AGPL.
 
-  This is Trousseau itself: the five tools, the shell, the sync and account
-  layers. The AGPL is chosen deliberately. Trousseau is free and always will
+  This is Knotwork itself: the five tools, the shell, the sync and account
+  layers. The AGPL is chosen deliberately. Knotwork is free and always will
   be, and the AGPL is what stops someone running a paid, closed fork of the
   hosted service against the intent of everyone who worked on the free one.
   Run it yourself, change it, host it for your friends — but if you host a
@@ -333,7 +333,7 @@ npx next build
 ```
 
 Confirm that skipping the root `npm run build` fails, and note the error. This
-is the trap: `suite/package.json` depends on `"@jfrusher/trousseau": "file:.."`,
+is the trap: `suite/package.json` depends on `"@jfrusher/knotwork": "file:.."`,
 which resolves to the root's `dist/`, and `suite`'s own `dev` script does not
 build it.
 
@@ -342,9 +342,9 @@ build it.
 Create `docs/SELF-HOSTING.md`:
 
 ````markdown
-# Running your own Trousseau
+# Running your own Knotwork
 
-Trousseau is free software and this is a genuinely supported way to use it, not
+Knotwork is free software and this is a genuinely supported way to use it, not
 a theoretical one. Everything below was run on a fresh clone before it was
 written down.
 
@@ -360,7 +360,7 @@ Two pieces, licensed differently (see `LICENSE`):
 - The **application** in `suite/` — a Next.js app. AGPL-3.0-or-later. If you
   host a modified version for other people, they are entitled to your source.
 - The **contract package** at the repo root, published as
-  `@jfrusher/trousseau`. MIT. It is the schemas and the file format.
+  `@jfrusher/knotwork`. MIT. It is the schemas and the file format.
 
 ## Requirements
 
@@ -377,7 +377,7 @@ The order matters, and getting it wrong is the most common way to fail:
 
 ```sh
 git clone <your fork or this repo>
-cd Trousseau
+cd Knotwork
 
 npm install          # the contract package's dependencies
 npm run build        # builds dist/ — do not skip this
@@ -387,7 +387,7 @@ npm install
 ```
 
 **Why `npm run build` first.** `suite/package.json` depends on
-`"@jfrusher/trousseau": "file:.."`, which resolves to the root's `dist/`
+`"@jfrusher/knotwork": "file:.."`, which resolves to the root's `dist/`
 directory. That directory does not exist in a fresh clone, and `suite`'s `dev`
 script does not create it — only `suite`'s `build` script does. Skip the root
 build and `npm run dev` fails to resolve the contract package with an error
@@ -490,7 +490,7 @@ Then, in the browser:
 2. Go to `/account` and sign in with a magic link. *(Accounts and email work.)*
 3. Add a guest, reload. It is still there. *(Cloud sync works.)*
 4. From `/account`, click **Download my wedding**. You get a
-   `.trousseau.json` file. *(The document store and export work.)*
+   `.knotwork.json` file. *(The document store and export work.)*
 
 If step 2 says accounts are not set up, revisit section 3 — it is almost always
 `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` missing.
@@ -550,12 +550,12 @@ Replace the existing section at the end of `README.md`:
 Two licences, because this repository holds two things.
 
 The **application** — everything in `suite/` — is
-[AGPL-3.0-or-later](LICENSE-AGPL). Trousseau is free and always will be. The
+[AGPL-3.0-or-later](LICENSE-AGPL). Knotwork is free and always will be. The
 AGPL is what keeps it that way: run it yourself, change it, host it for
 friends, but host a modified version for other people and they get the source
 too.
 
-The **contract package**, `@jfrusher/trousseau`, is [MIT](LICENSE-MIT). It is
+The **contract package**, `@jfrusher/knotwork`, is [MIT](LICENSE-MIT). It is
 the schemas and the file format, kept permissive on purpose so a tool nobody
 has written yet can depend on it.
 

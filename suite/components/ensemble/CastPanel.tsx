@@ -5,7 +5,7 @@ import { Trash2 } from "lucide-react";
 import { Button, IconButton, Panel, TextField } from "@/components/ui/controls";
 import { GuestChip, GuestPicker } from "@/components/cast/GuestPicker";
 import { guestName } from "@/lib/model/slices";
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { roleLabel } from "@/lib/model/partners";
 import { CAST_ROLES, SINGLE_ROLES, type CastSlice, type Guest } from "@/lib/model/types";
 import { addCustomRole, removeCustomRole, renameCustomRole, setCastRole, setCustomRoleMembers } from "@/lib/cast/actions";

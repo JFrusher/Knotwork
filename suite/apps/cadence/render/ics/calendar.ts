@@ -78,7 +78,7 @@ export function calendar(doc: TimelineDoc, options: CalendarOptions): string {
   // Stable, so importing the file again updates the events rather than doubling
   // them; and particular to this wedding, because two weddings' days can share
   // block ids when one was started from the other's running order.
-  const uidSuffix = `${options.date}.${slug(couple) || "wedding"}@trousseau`;
+  const uidSuffix = `${options.date}.${slug(couple) || "wedding"}@knotwork`;
 
   const events = doc.blocks
     .filter((block) => options.tag === undefined || block.tags.includes(options.tag))
@@ -104,7 +104,7 @@ export function calendar(doc: TimelineDoc, options: CalendarOptions): string {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Trousseau//Timeline//EN",
+    "PRODID:-//Knotwork//Timeline//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     `X-WR-CALNAME:${escapeText(title)}`,

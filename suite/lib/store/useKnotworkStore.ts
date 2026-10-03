@@ -3,12 +3,12 @@ import { promoteSources } from "@/lib/model/promote";
 import { migrateLegacyKeys } from "./migrateKeys";
 import { create } from "zustand";
 import {
-  emptyTrousseau,
+  emptyKnotwork,
   mergeSlice,
   migrate,
   type SliceName,
-  type Trousseau,
-} from "@jfrusher/trousseau";
+  type Knotwork,
+} from "@jfrusher/knotwork";
 import {
   fetchCloudDocument,
   fetchWeddings,
@@ -32,7 +32,7 @@ import { readOpenChoice } from "./openWedding";
 /**
  * The one store the whole suite reads.
  *
- * Its shape is the Trousseau envelope — `event`, `guests`, `seating`, `day`,
+ * Its shape is the Knotwork envelope — `event`, `guests`, `seating`, `day`,
  * `crew`, `stationery` — rather than a flat bag of guests and tables, because
  * that envelope already exists, is validated by zod, and encodes the rule the
  * four apps were built around: one owner per slice, and every other key copied
@@ -49,7 +49,7 @@ import { readOpenChoice } from "./openWedding";
  */
 
 /** IndexedDB, via idb-keyval — the same engine the four tools already use. */
-export const STORAGE_KEY = "trousseau.document";
+export const STORAGE_KEY = "knotwork.document";
 
 /**
  * Trailing delay before a local write is pushed to the cloud. Bursts of edits
@@ -87,7 +87,7 @@ export interface WriteOptions {
   silent?: boolean;
 }
 
-export interface TrousseauState {
+export interface KnotworkState {
   status: StoreStatus;
   /** Set when the stored bytes could not be read. Writes are refused while it is. */
   error: string | null;
@@ -103,7 +103,7 @@ export interface TrousseauState {
   /** The stored document, exactly as stored. Never the parsed one. */
   raw: Record<string, unknown>;
   /** The stored document, parsed. Read from this. */
-  doc: Trousseau;
+  doc: Knotwork;
 
   /** Whole documents, oldest first. Undo pops the last. */
   past: HistoryEntry[];
@@ -167,12 +167,12 @@ function dayOf(raw: Record<string, unknown>): Record<string, unknown> {
   return publishDay(doc, readTimeline(doc));
 }
 
-function freshDoc(): { raw: Record<string, unknown>; doc: Trousseau } {
-  const doc = emptyTrousseau();
+function freshDoc(): { raw: Record<string, unknown>; doc: Knotwork } {
+  const doc = emptyKnotwork();
   return { raw: doc as unknown as Record<string, unknown>, doc };
 }
 
-export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
+export const useKnotworkStore = create<KnotworkState>()((set, get) => ({
   status: "idle",
   error: null,
   saveError: null,
@@ -257,7 +257,7 @@ export const useTrousseauStore = create<TrousseauState>()((set, get) => ({
     const state = get();
     // A collected document keeps each tool's export under `sources` and leaves
     // the slices empty. Both shapes are valid and both are called
-    // `.trousseau.json`, so accepting either here is the difference between a
+    // `.knotwork.json`, so accepting either here is the difference between a
     // restore that works and one that reports success over an empty app.
     const raw = promoteSources(asRecord(next)).raw;
     set({
@@ -586,9 +586,9 @@ function pushHistory(
 }
 
 /** Guests are a record keyed by id, so the badge is a key count. */
-export const selectGuestCount = (s: TrousseauState): number => Object.keys(s.doc.guests).length;
-export const selectTableCount = (s: TrousseauState): number => Object.keys(s.doc.seating).length;
-export const selectBlockCount = (s: TrousseauState): number => s.doc.day?.blocks.length ?? 0;
+export const selectGuestCount = (s: KnotworkState): number => Object.keys(s.doc.guests).length;
+export const selectTableCount = (s: KnotworkState): number => Object.keys(s.doc.seating).length;
+export const selectBlockCount = (s: KnotworkState): number => s.doc.day?.blocks.length ?? 0;
 
 /**
  * Write the document to IndexedDB now, then push it to the cloud shortly after.
@@ -605,12 +605,12 @@ function persist(raw: Record<string, unknown>): void {
   const noted = (cause: unknown) =>
     // A save the user believes happened and did not is the worst outcome
     // here, so it goes on screen rather than into the console.
-    useTrousseauStore.setState({ saveError: `The wedding could not be saved: ${message(cause)}` });
+    useKnotworkStore.setState({ saveError: `The wedding could not be saved: ${message(cause)}` });
   try {
     // `idbSet` opens the database synchronously, so a browser that refuses
     // one throws here rather than rejecting.
     void idbSet(STORAGE_KEY, raw).then(() => {
-      useTrousseauStore.setState({ savedAt: new Date().toISOString(), saveError: null });
+      useKnotworkStore.setState({ savedAt: new Date().toISOString(), saveError: null });
       // Only after the local write has landed. Local storage is the record
       // of what the user has if the cloud is unreachable, so it goes first.
       scheduleCloudPush();
@@ -624,7 +624,7 @@ let cloudPushTimer: ReturnType<typeof setTimeout> | undefined;
 
 function scheduleCloudPush(): void {
   clearTimeout(cloudPushTimer);
-  cloudPushTimer = setTimeout(() => void useTrousseauStore.getState().syncToCloud(), CLOUD_PUSH_DELAY_MS);
+  cloudPushTimer = setTimeout(() => void useKnotworkStore.getState().syncToCloud(), CLOUD_PUSH_DELAY_MS);
 }
 
 /**
@@ -648,7 +648,7 @@ export function weddingToOpen(
 
 /** Record that this device and the account hold the same document. */
 function agreeOn(raw: Record<string, unknown>, version: number): void {
-  useTrousseauStore.setState({
+  useKnotworkStore.setState({
     cloudStatus: "idle",
     cloudVersion: version,
     cloudAgreed: fingerprintParts(raw),
@@ -660,7 +660,7 @@ function agreeOn(raw: Record<string, unknown>, version: number): void {
 // Whatever changes the agreement is stored with it — see `CloudLink`. One
 // subscription rather than a write beside every `setState` that touches these,
 // so no path can move the baseline without storing it.
-useTrousseauStore.subscribe((state, prev) => {
+useKnotworkStore.subscribe((state, prev) => {
   if (typeof window === "undefined") return;
   if (state.weddingId === null || state.cloudVersion === null) return;
   if (
@@ -692,11 +692,11 @@ useTrousseauStore.subscribe((state, prev) => {
  */
 function applyCloudResult(result: PushResult, pushed?: Record<string, unknown>): void {
   if (result.ok) {
-    useTrousseauStore.setState({
+    useKnotworkStore.setState({
       cloudStatus: "idle",
       cloudVersion: result.version,
       cloudConflicts: [],
-      cloudAgreed: fingerprintParts(pushed ?? useTrousseauStore.getState().raw),
+      cloudAgreed: fingerprintParts(pushed ?? useKnotworkStore.getState().raw),
       cloudError: null,
     });
     // No asset sync here. This runs after every debounced edit burst, and
@@ -707,12 +707,12 @@ function applyCloudResult(result: PushResult, pushed?: Record<string, unknown>):
     return;
   }
   if (result.reason === "conflict") {
-    const state = useTrousseauStore.getState();
+    const state = useKnotworkStore.getState();
     const merged = mergeCloudDocument(state.raw, result.document as Record<string, unknown>, state.cloudAgreed, dayOf);
     state.replaceDocument(merged.raw, { silent: true });
 
     if (merged.conflicts.length > 0) {
-      useTrousseauStore.setState({
+      useKnotworkStore.setState({
         cloudStatus: "conflict",
         cloudConflicts: merged.conflicts,
         cloudVersion: result.version,
@@ -721,23 +721,23 @@ function applyCloudResult(result: PushResult, pushed?: Record<string, unknown>):
     } else {
       // Every differing slice resolved cleanly - finalize by pushing the
       // merged document at the version the server just reported.
-      useTrousseauStore.setState({ cloudVersion: result.version, cloudAgreed: merged.agreed });
-      void useTrousseauStore.getState().syncToCloud();
+      useKnotworkStore.setState({ cloudVersion: result.version, cloudAgreed: merged.agreed });
+      void useKnotworkStore.getState().syncToCloud();
     }
     return;
   }
   if (result.reason === "queued") {
-    useTrousseauStore.setState({ cloudStatus: "queued" });
+    useKnotworkStore.setState({ cloudStatus: "queued" });
     return;
   }
   if (result.reason === "invalid") {
-    useTrousseauStore.setState({
+    useKnotworkStore.setState({
       cloudStatus: "error",
       cloudError: `This wedding could not be saved to the cloud: ${result.errors.join("; ")}`,
     });
     return;
   }
-  useTrousseauStore.setState({ cloudStatus: "error", cloudError: "The cloud could not be reached." });
+  useKnotworkStore.setState({ cloudStatus: "error", cloudError: "The cloud could not be reached." });
 }
 
 /**
@@ -747,8 +747,8 @@ function applyCloudResult(result: PushResult, pushed?: Record<string, unknown>):
 export async function flushPersist(): Promise<void> {
   clearTimeout(cloudPushTimer);
   if (typeof window === "undefined") return;
-  await idbSet(STORAGE_KEY, useTrousseauStore.getState().raw);
-  useTrousseauStore.setState({ savedAt: new Date().toISOString() });
+  await idbSet(STORAGE_KEY, useKnotworkStore.getState().raw);
+  useKnotworkStore.setState({ savedAt: new Date().toISOString() });
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

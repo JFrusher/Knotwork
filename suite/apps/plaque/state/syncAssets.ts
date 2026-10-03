@@ -1,6 +1,6 @@
 import { loadFonts, saveFont } from "./blobStore";
 import { loadImages, saveImage } from "./imageStore";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { readDesign } from "./sliceBridge";
 
 /**
@@ -76,7 +76,7 @@ export async function acceptAsset(id: string, bytes: Uint8Array): Promise<void> 
 
 /** The filename the user uploaded it under, if the design still remembers. */
 function nameOf(assetId: string): string | undefined {
-  return readDesign(useTrousseauStore.getState().raw).design.assetNames[assetId];
+  return readDesign(useKnotworkStore.getState().raw).design.assetNames[assetId];
 }
 
 /** PNG and JPEG are the two a PDF can carry, so they are the two Plaque takes. */

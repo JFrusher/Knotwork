@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { History, X } from "lucide-react";
 import { useShallow } from "zustand/shallow";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { useCopies } from "@/lib/store/copies";
 import { saveState } from "@/lib/store/saveState";
 import { fetchHistory, fetchHistoryDocument, type HistoryListing } from "@/lib/documents/cloudSync";
@@ -46,7 +46,7 @@ export function SyncHistory({ open, onClose }: { open: boolean; onClose: () => v
 }
 
 function Now() {
-  const state = useTrousseauStore(
+  const state = useKnotworkStore(
     useShallow((s) =>
       saveState({ status: s.status, error: s.error, saveError: s.saveError, savedAt: s.savedAt, cloudStatus: s.cloudStatus, cloudError: s.cloudError }),
     ),
@@ -59,8 +59,8 @@ function Now() {
 }
 
 function Conflicts() {
-  const conflicts = useTrousseauStore((s) => s.cloudConflicts);
-  const resolve = useTrousseauStore((s) => s.resolveConflict);
+  const conflicts = useKnotworkStore((s) => s.cloudConflicts);
+  const resolve = useKnotworkStore((s) => s.resolveConflict);
   if (conflicts.length === 0) return null;
   return (
     <section aria-labelledby="conflicts-title">
@@ -125,8 +125,8 @@ function ConflictRow({ conflict, onChoose }: { conflict: PartConflict; onChoose:
 type Changes = { status: "loading" } | { status: "ready"; lines: string[] } | { status: "failed"; message: string };
 
 function Versions({ onRestored }: { onRestored: () => void }) {
-  const weddingId = useTrousseauStore((s) => s.weddingId);
-  const cloudStatus = useTrousseauStore((s) => s.cloudStatus);
+  const weddingId = useKnotworkStore((s) => s.weddingId);
+  const cloudStatus = useKnotworkStore((s) => s.cloudStatus);
   const confirm = useConfirm();
   const [entries, setEntries] = useState<HistoryListing[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -193,7 +193,7 @@ function Versions({ onRestored }: { onRestored: () => void }) {
     });
     if (!ok) return;
     const document = await version(entry.id);
-    const { raw, replaceDocument } = useTrousseauStore.getState();
+    const { raw, replaceDocument } = useKnotworkStore.getState();
     await useCopies.getState().keep(raw, `Before putting back the version from ${when(entry.savedAt)}`);
     replaceDocument(document, { label: "putting back a saved version" });
     onRestored();

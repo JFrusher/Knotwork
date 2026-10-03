@@ -8,7 +8,7 @@ vi.mock("@/lib/accounts/browserClient", () => ({ browserClient: () => client.cur
 
 const { fakeClient } = await import("@/lib/testing/realtime");
 const { usePresence } = await import("@/lib/documents/live");
-const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { LiveWedding } = await import("./LiveWedding");
 const { WhoIsHere } = await import("./WhoIsHere");
 
@@ -18,7 +18,7 @@ const pull = vi.fn(async () => {});
 beforeEach(() => {
   pull.mockClear();
   usePresence.setState({ others: [] });
-  useTrousseauStore.setState({ weddingId: "w1", cloudVersion: 3, pullFromCloud: pull });
+  useKnotworkStore.setState({ weddingId: "w1", cloudVersion: 3, pullFromCloud: pull });
 });
 afterEach(cleanup);
 

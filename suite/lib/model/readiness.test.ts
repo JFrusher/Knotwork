@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
+import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
 import { readiness } from "./readiness";
 import { TOOLS } from "@/lib/tools";
 
@@ -13,7 +13,7 @@ import { TOOLS } from "@/lib/tools";
 const EVERY_TOOL = { tools: { shown: TOOLS.map((tool) => tool.id) } };
 
 const wedding = (raw: Record<string, unknown>) => {
-  const full = { ...emptyTrousseau(), ...EVERY_TOOL, ...raw };
+  const full = { ...emptyKnotwork(), ...EVERY_TOOL, ...raw };
   return readiness(migrate(full), full);
 };
 
@@ -201,7 +201,7 @@ describe("jobs with nobody on them", () => {
 
 describe("the checklist", () => {
   const on = (today: string, jobs: unknown[]) => {
-    const full = { ...emptyTrousseau(), ...EVERY_TOOL, guests: GUESTS, crew: { jobs } };
+    const full = { ...emptyKnotwork(), ...EVERY_TOOL, guests: GUESTS, crew: { jobs } };
     return readiness(migrate(full), full, today).find((entry) => entry.id === "tasks-overdue");
   };
 
@@ -222,7 +222,7 @@ describe("the checklist", () => {
 describe("payments", () => {
   const on = (today: string, balanceDueOn: string, balancePaidOn = "") => {
     const full = {
-      ...emptyTrousseau(),
+      ...emptyKnotwork(),
       ...EVERY_TOOL,
       guests: GUESTS,
       crew: { teams: [{ id: "t1", name: "Granary Kitchen", cost: 9400, deposit: 2000, balanceDueOn, balancePaidOn }] },
@@ -348,7 +348,7 @@ describe("the boxes", () => {
     boxes: { boxes: [{ id: "b1", number: 1, name: "Getting ready", blockId, personIds: [], items: [{ id: "i1", label: "Shoes", quantity: 1, packed }] }] },
   });
   const onDay = (today: string, raw: Record<string, unknown>) => {
-    const full = { ...emptyTrousseau(), ...EVERY_TOOL, guests: GUESTS, event: { ...emptyTrousseau().event, date: "2028-06-01" }, ...raw };
+    const full = { ...emptyKnotwork(), ...EVERY_TOOL, guests: GUESTS, event: { ...emptyKnotwork().event, date: "2028-06-01" }, ...raw };
     return readiness(migrate(full), full, today).map((item) => item.id);
   };
 

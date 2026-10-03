@@ -1,7 +1,7 @@
 import { get, set } from "idb-keyval";
 import { referencedKeys } from "./projectIO";
 import { readTimeline } from "@/lib/model/slices";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 
 /**
  * Cadence's uploaded bytes, for the sync layer.
@@ -41,7 +41,7 @@ export function owns(id: string): boolean {
 /** Everything this day depends on, ready to encrypt and send. */
 export async function collectAssets(): Promise<PortableAsset[]> {
   const out: PortableAsset[] = [];
-  for (const key of referencedKeys(readTimeline(useTrousseauStore.getState().doc))) {
+  for (const key of referencedKeys(readTimeline(useKnotworkStore.getState().doc))) {
     const blob = await get<Blob>(key);
     if (!blob) continue;
     out.push({ id: PREFIX + key, bytes: new Uint8Array(await blob.arrayBuffer()) });
@@ -52,7 +52,7 @@ export async function collectAssets(): Promise<PortableAsset[]> {
 /** The ids this machine already holds, so nothing is fetched twice. */
 export async function heldAssetIds(): Promise<string[]> {
   const held: string[] = [];
-  for (const key of referencedKeys(readTimeline(useTrousseauStore.getState().doc))) {
+  for (const key of referencedKeys(readTimeline(useKnotworkStore.getState().doc))) {
     if (await get<Blob>(key)) held.push(PREFIX + key);
   }
   return held;

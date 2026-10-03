@@ -25,13 +25,13 @@ ported `validate-wedding.mjs` cross-slice check — mirroring
 `suite/lib/sync/`'s and `suite/lib/accounts/`'s existing
 store/handlers/supabaseStore split exactly. An offline write queue
 (`suite/lib/documents/cloudSync.ts`) sits between the existing
-`useTrousseauStore` local-first store and the new API routes, replaying
+`useKnotworkStore` local-first store and the new API routes, replaying
 queued writes on reconnect and surfacing any resulting conflict the same way
 an online conflict is surfaced — not auto-merged.
 
 **Tech Stack:** Next.js App Router (`suite/`), `@supabase/supabase-js`,
 `@supabase/ssr`, `@electric-sql/pglite` (real-Postgres RLS/SQL function
-tests), Vitest, Zod, `idb-keyval` (already used by `useTrousseauStore` for
+tests), Vitest, Zod, `idb-keyval` (already used by `useKnotworkStore` for
 local persistence), `zustand`.
 
 **Spec:** `docs/superpowers/specs/2026-09-02-multitenant-storage-design.md`
@@ -40,7 +40,7 @@ local persistence), `zustand`.
 
 **Complete — all 9 tasks, 2026-09-07.** Tasks 1-7 landed 2026-09-03; Tasks 8
 and 9 on 2026-09-07, after rebasing the branch onto `main` (it was 41 commits
-behind, and Ensemble had since changed `useTrousseauStore.ts`).
+behind, and Ensemble had since changed `useKnotworkStore.ts`).
 
 Verified on the finished branch, not from memory:
 
@@ -1467,9 +1467,9 @@ git commit -m "Add GET/PUT /api/documents, resolving the caller's wedding server
 
 **Interfaces:**
 - Consumes: nothing from earlier tasks directly (talks to `/api/documents` over `fetch`, and to `idb-keyval` for its own queue) — kept store-agnostic so it is testable in isolation.
-- Produces: `fetchCloudDocument()`, `pushDocument(document, expectedVersion)`, `CloudSyncResult`, `PendingWrite`, `getPendingWrite()`, `clearPendingWrite()`, `startAutoRetry(onSettled)` — consumed by Task 8's integration into `useTrousseauStore`.
+- Produces: `fetchCloudDocument()`, `pushDocument(document, expectedVersion)`, `CloudSyncResult`, `PendingWrite`, `getPendingWrite()`, `clearPendingWrite()`, `startAutoRetry(onSettled)` — consumed by Task 8's integration into `useKnotworkStore`.
 
-Because Trousseau's document model is one full JSON snapshot per wedding —
+Because Knotwork's document model is one full JSON snapshot per wedding —
 not an operation log or per-field diffs — the "queue" the spec describes is
 correctly a queue of *at most one* pending write: every local edit already
 supersedes whatever was queued before it, the same way the existing
@@ -1657,7 +1657,7 @@ import { del as idbDel, get as idbGet, set as idbSet } from "idb-keyval";
 
 /**
  * The offline write queue and cloud transport, kept entirely separate from
- * `useTrousseauStore` so it can be tested with a fake `fetch` and a mocked
+ * `useKnotworkStore` so it can be tested with a fake `fetch` and a mocked
  * `idb-keyval`, the same way `persistFailure.test.ts` tests the local store's
  * own IndexedDB failure handling.
  *
@@ -1667,7 +1667,7 @@ import { del as idbDel, get as idbGet, set as idbSet } from "idb-keyval";
  * why that is a property of the data model, not a corner cut.
  */
 
-const PENDING_WRITE_KEY = "trousseau.cloud.pendingWrite";
+const PENDING_WRITE_KEY = "knotwork.cloud.pendingWrite";
 
 export interface PendingWrite {
   document: unknown;
@@ -1780,14 +1780,14 @@ git commit -m "Add the offline write queue and cloud-sync transport"
 ## Task 8: Wire cloud sync into the local-first store and the UI
 
 **Files:**
-- Modify: `suite/lib/store/useTrousseauStore.ts`
+- Modify: `suite/lib/store/useKnotworkStore.ts`
 - Modify: `suite/lib/store/StoreHydrator.tsx`
 - Modify: `suite/components/shell/DataManager.tsx`
-- Create: `suite/lib/store/useTrousseauStore.cloudSync.test.ts`
+- Create: `suite/lib/store/useKnotworkStore.cloudSync.test.ts`
 
 **Interfaces:**
 - Consumes: `fetchCloudDocument`, `pushDocument`, `replayPendingWrite` (Task 7); `accountsConfigured()` (`@/lib/env`, already shipped).
-- Produces: new `TrousseauState` fields `cloudStatus`, `cloudConflict`, `cloudVersion`; new actions `syncToCloud`, `resolveConflictKeepMine`, `resolveConflictTakeTheirs` — consumed by `DataManager.tsx`.
+- Produces: new `KnotworkState` fields `cloudStatus`, `cloudConflict`, `cloudVersion`; new actions `syncToCloud`, `resolveConflictKeepMine`, `resolveConflictTakeTheirs` — consumed by `DataManager.tsx`.
 
 This is the only task that touches the existing local-first store, and the
 change is additive: every new field defaults to a value that makes cloud
@@ -1795,11 +1795,11 @@ sync a no-op unless a caller explicitly starts it, so the no-account
 local-only mode (Global Constraint) is unaffected by construction, not by
 a runtime check added in every code path.
 
-- [x] **Step 1: Add cloud-sync state and actions to `useTrousseauStore.ts`**
+- [x] **Step 1: Add cloud-sync state and actions to `useKnotworkStore.ts`**
 
-Add to `suite/lib/store/useTrousseauStore.ts`. Read the existing file in
+Add to `suite/lib/store/useKnotworkStore.ts`. Read the existing file in
 full first (already read as part of this plan's research — the additions
-below slot in next to `TrousseauState`, `replaceDocument`, and
+below slot in next to `KnotworkState`, `replaceDocument`, and
 `schedulePersist`).
 
 Add a static import alongside the file's existing top-of-file imports
@@ -1816,7 +1816,7 @@ import {
 } from "@/lib/documents/cloudSync";
 ```
 
-Add to the `TrousseauState` interface:
+Add to the `KnotworkState` interface:
 
 ```ts
   /**
@@ -1924,25 +1924,25 @@ plumbing shared by `startCloudSync`/`syncToCloud`/`resolveConflictKeepMine`):
 ```ts
 function applyCloudResult(result: PushResult): void {
   if (result.ok) {
-    useTrousseauStore.setState({ cloudStatus: "idle", cloudVersion: result.version, cloudConflict: null, cloudError: null });
+    useKnotworkStore.setState({ cloudStatus: "idle", cloudVersion: result.version, cloudConflict: null, cloudError: null });
     return;
   }
   if (result.reason === "conflict") {
-    useTrousseauStore.setState({ cloudStatus: "conflict", cloudConflict: { document: result.document, version: result.version } });
+    useKnotworkStore.setState({ cloudStatus: "conflict", cloudConflict: { document: result.document, version: result.version } });
     return;
   }
   if (result.reason === "queued") {
-    useTrousseauStore.setState({ cloudStatus: "queued" });
+    useKnotworkStore.setState({ cloudStatus: "queued" });
     return;
   }
   if (result.reason === "invalid") {
-    useTrousseauStore.setState({
+    useKnotworkStore.setState({
       cloudStatus: "error",
       cloudError: `This wedding could not be saved to the cloud: ${result.errors.join("; ")}`,
     });
     return;
   }
-  useTrousseauStore.setState({ cloudStatus: "error", cloudError: "The cloud could not be reached." });
+  useKnotworkStore.setState({ cloudStatus: "error", cloudError: "The cloud could not be reached." });
 }
 ```
 
@@ -1953,8 +1953,8 @@ is unreachable) has actually landed:
 
 ```ts
       void idbSet(STORAGE_KEY, raw).then(() => {
-        useTrousseauStore.setState({ savedAt: new Date().toISOString(), error: null });
-        void useTrousseauStore.getState().syncToCloud();
+        useKnotworkStore.setState({ savedAt: new Date().toISOString(), error: null });
+        void useKnotworkStore.getState().syncToCloud();
       }, noted);
 ```
 
@@ -1967,11 +1967,11 @@ Modify `suite/lib/store/StoreHydrator.tsx`:
 
 import { useEffect } from "react";
 import { reconcileLoadedDocument } from "@/lib/seating/normalise";
-import { useTrousseauStore } from "./useTrousseauStore";
+import { useKnotworkStore } from "./useKnotworkStore";
 
 export function StoreHydrator() {
-  const hydrate = useTrousseauStore((s) => s.hydrate);
-  const startCloudSync = useTrousseauStore((s) => s.startCloudSync);
+  const hydrate = useKnotworkStore((s) => s.hydrate);
+  const startCloudSync = useKnotworkStore((s) => s.startCloudSync);
   useEffect(() => {
     void hydrate()
       .then(reconcileLoadedDocument)
@@ -1991,7 +1991,7 @@ non-browser tests):
 ```ts
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const onOnline = () => void useTrousseauStore.getState().syncToCloud();
+    const onOnline = () => void useKnotworkStore.getState().syncToCloud();
     window.addEventListener("online", onOnline);
     return () => window.removeEventListener("online", onOnline);
   }, []);
@@ -1999,7 +1999,7 @@ non-browser tests):
 
 - [x] **Step 4: Write a test for the cloud-sync wiring**
 
-Create `suite/lib/store/useTrousseauStore.cloudSync.test.ts`:
+Create `suite/lib/store/useKnotworkStore.cloudSync.test.ts`:
 
 ```ts
 import { beforeEach, expect, test, vi } from "vitest";
@@ -2018,14 +2018,14 @@ vi.mock("@/lib/documents/cloudSync", () => ({
   replayPendingWrite: async () => null,
 }));
 
-const { useTrousseauStore } = await import("./useTrousseauStore");
-const { emptyTrousseau } = await import("@jfrusher/trousseau");
+const { useKnotworkStore } = await import("./useKnotworkStore");
+const { emptyKnotwork } = await import("@jfrusher/knotwork");
 
 beforeEach(() => {
   pushDocumentMock.mockReset();
   fetchCloudDocumentMock.mockReset();
-  const doc = emptyTrousseau();
-  useTrousseauStore.setState({
+  const doc = emptyKnotwork();
+  useKnotworkStore.setState({
     status: "ready",
     error: null,
     raw: doc as unknown as Record<string, unknown>,
@@ -2039,35 +2039,35 @@ beforeEach(() => {
 
 test("startCloudSync stays disabled when the cloud reports unavailable", async () => {
   fetchCloudDocumentMock.mockResolvedValue({ ok: false, reason: "unavailable" });
-  await useTrousseauStore.getState().startCloudSync();
-  expect(useTrousseauStore.getState().cloudStatus).toBe("disabled");
+  await useKnotworkStore.getState().startCloudSync();
+  expect(useKnotworkStore.getState().cloudStatus).toBe("disabled");
 });
 
 test("startCloudSync adopts the cloud document without creating an undo entry", async () => {
-  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: emptyTrousseau(), version: 4 });
-  await useTrousseauStore.getState().startCloudSync();
-  const state = useTrousseauStore.getState();
+  fetchCloudDocumentMock.mockResolvedValue({ ok: true, document: emptyKnotwork(), version: 4 });
+  await useKnotworkStore.getState().startCloudSync();
+  const state = useKnotworkStore.getState();
   expect(state.cloudStatus).toBe("idle");
   expect(state.cloudVersion).toBe(4);
   expect(state.past).toEqual([]);
 });
 
 test("a rejected write surfaces as a conflict, not an auto-merge", async () => {
-  useTrousseauStore.setState({ cloudStatus: "idle", cloudVersion: 1 });
+  useKnotworkStore.setState({ cloudStatus: "idle", cloudVersion: 1 });
   pushDocumentMock.mockResolvedValue({ ok: false, reason: "conflict", version: 2, document: { event: { coupleNames: "theirs" } } });
-  await useTrousseauStore.getState().syncToCloud();
-  const state = useTrousseauStore.getState();
+  await useKnotworkStore.getState().syncToCloud();
+  const state = useKnotworkStore.getState();
   expect(state.cloudStatus).toBe("conflict");
   expect(state.cloudConflict).toEqual({ document: { event: { coupleNames: "theirs" } }, version: 2 });
 });
 
 test("resolveConflictTakeTheirs adopts the cloud document and clears the conflict", () => {
-  useTrousseauStore.setState({
+  useKnotworkStore.setState({
     cloudStatus: "conflict",
-    cloudConflict: { document: emptyTrousseau(), version: 7 },
+    cloudConflict: { document: emptyKnotwork(), version: 7 },
   });
-  useTrousseauStore.getState().resolveConflictTakeTheirs();
-  const state = useTrousseauStore.getState();
+  useKnotworkStore.getState().resolveConflictTakeTheirs();
+  const state = useKnotworkStore.getState();
   expect(state.cloudConflict).toBeNull();
   expect(state.cloudVersion).toBe(7);
   expect(state.cloudStatus).toBe("idle");
@@ -2076,13 +2076,13 @@ test("resolveConflictTakeTheirs adopts the cloud document and clears the conflic
 
 - [x] **Step 5: Run the new test file**
 
-Run: `npx vitest run --project suite lib/store/useTrousseauStore.cloudSync.test.ts`
+Run: `npx vitest run --project suite lib/store/useKnotworkStore.cloudSync.test.ts`
 Expected: PASS (all tests)
 
 - [x] **Step 6: Run the full existing store test suite to confirm nothing regressed**
 
 Run: `npx vitest run --project suite lib/store`
-Expected: PASS (every existing file, including `persistFailure.test.ts`, `history.test.ts`, `migrateKeys.test.ts`, `useTrousseauStore.test.ts`)
+Expected: PASS (every existing file, including `persistFailure.test.ts`, `history.test.ts`, `migrateKeys.test.ts`, `useKnotworkStore.test.ts`)
 
 - [x] **Step 7: Add a minimal "Cloud" section to `DataManager.tsx`**
 
@@ -2096,14 +2096,14 @@ import { AlertTriangle, CloudOff, Download, FileUp, RefreshCw, Upload, X } from 
 (Replacing the existing `lucide-react` import line — `RefreshCw` and
 `CloudOff` are additions to it, `AlertTriangle` etc. stay.)
 
-Inside `Body`, alongside the other `useTrousseauStore` selectors:
+Inside `Body`, alongside the other `useKnotworkStore` selectors:
 
 ```ts
-  const cloudStatus = useTrousseauStore((s) => s.cloudStatus);
-  const cloudError = useTrousseauStore((s) => s.cloudError);
-  const cloudConflict = useTrousseauStore((s) => s.cloudConflict);
-  const resolveConflictTakeTheirs = useTrousseauStore((s) => s.resolveConflictTakeTheirs);
-  const resolveConflictKeepMine = useTrousseauStore((s) => s.resolveConflictKeepMine);
+  const cloudStatus = useKnotworkStore((s) => s.cloudStatus);
+  const cloudError = useKnotworkStore((s) => s.cloudError);
+  const cloudConflict = useKnotworkStore((s) => s.cloudConflict);
+  const resolveConflictTakeTheirs = useKnotworkStore((s) => s.resolveConflictTakeTheirs);
+  const resolveConflictKeepMine = useKnotworkStore((s) => s.resolveConflictKeepMine);
 ```
 
 Add a new `<Section>` after the existing `"Sharing"` section (before
@@ -2148,7 +2148,7 @@ Expected: no errors
 - [x] **Step 9: Commit**
 
 ```bash
-git add suite/lib/store/useTrousseauStore.ts suite/lib/store/StoreHydrator.tsx suite/components/shell/DataManager.tsx suite/lib/store/useTrousseauStore.cloudSync.test.ts
+git add suite/lib/store/useKnotworkStore.ts suite/lib/store/StoreHydrator.tsx suite/components/shell/DataManager.tsx suite/lib/store/useKnotworkStore.cloudSync.test.ts
 git commit -m "Wire offline-aware cloud sync into the local-first store and the Data Manager UI"
 ```
 

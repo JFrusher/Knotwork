@@ -1,4 +1,4 @@
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import type { CastRole, Side } from "./types";
 
 /**

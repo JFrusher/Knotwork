@@ -1,4 +1,4 @@
-# Trousseau — vendors, budget, tasks and confirmations
+# Knotwork — vendors, budget, tasks and confirmations
 
 Date: 2026-09-08
 Status: approved, ready for implementation planning

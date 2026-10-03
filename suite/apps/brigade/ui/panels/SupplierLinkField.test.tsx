@@ -5,7 +5,7 @@ import { afterEach, expect, test, vi } from "vitest";
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined, del: async () => undefined }));
 vi.mock("@/lib/accounts/browserClient", () => ({ browserClient: () => ({}) }));
 
-const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { useSupplierLinks } = await import("@/lib/suppliers/links");
 const { ConfirmProvider } = await import("@/components/ui/Confirm");
 const { SupplierLinkField } = await import("./SupplierLinkField");
@@ -28,20 +28,20 @@ const link = (confirmedAt: string | null, publishedAt = "2026-09-28T12:00:00Z") 
 });
 
 test("off the account, it says a link needs one", () => {
-  useTrousseauStore.setState({ weddingId: null });
+  useKnotworkStore.setState({ weddingId: null });
   field();
   expect(screen.getByText(/to send Eleanor Vane Photography a link to their own call sheet/)).toBeTruthy();
 });
 
 test("with no link yet, one press makes one", () => {
-  useTrousseauStore.setState({ weddingId: "w1" });
+  useKnotworkStore.setState({ weddingId: "w1" });
   useSupplierLinks.setState({ links: [], problem: null });
   field();
   expect(screen.getByRole("button", { name: "Make Eleanor Vane Photography a link" })).toBeTruthy();
 });
 
 test("a link shows itself, and that they have not confirmed through it yet", () => {
-  useTrousseauStore.setState({ weddingId: "w1" });
+  useKnotworkStore.setState({ weddingId: "w1" });
   useSupplierLinks.setState({ links: [link(null)], problem: null });
   field();
   expect((screen.getByLabelText("Eleanor Vane Photography's link") as HTMLInputElement).value).toBe(
@@ -52,7 +52,7 @@ test("a link shows itself, and that they have not confirmed through it yet", () 
 });
 
 test("once they confirm, it says when — and if their sheet has changed since", () => {
-  useTrousseauStore.setState({ weddingId: "w1" });
+  useKnotworkStore.setState({ weddingId: "w1" });
   useSupplierLinks.setState({ links: [link("2026-09-28T15:00:00Z")], problem: null });
   const first = field();
   expect(screen.getByRole("status").textContent).toMatch(/^Confirmed 28 September 2026\. /);

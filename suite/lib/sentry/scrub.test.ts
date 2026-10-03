@@ -10,7 +10,7 @@ import { scrubEvent, stripFragment } from "./scrub";
  */
 
 const KEY = "s3cret-decryption-key";
-const LINK = `https://trousseau.example/seat/abc123#k=${KEY}`;
+const LINK = `https://knotwork.example/seat/abc123#k=${KEY}`;
 
 test("a fragment never survives, and the rest of the URL does", () => {
   const scrubbed = stripFragment(LINK);
@@ -21,8 +21,8 @@ test("a fragment never survives, and the rest of the URL does", () => {
 });
 
 test("a URL with no fragment is left alone", () => {
-  expect(stripFragment("https://trousseau.example/seating")).toBe(
-    "https://trousseau.example/seating",
+  expect(stripFragment("https://knotwork.example/seating")).toBe(
+    "https://knotwork.example/seating",
   );
 });
 

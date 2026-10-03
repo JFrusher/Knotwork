@@ -1,4 +1,4 @@
-import { migrate, suggestedFilename, TROUSSEAU_EXTENSION } from "@jfrusher/trousseau";
+import { migrate, suggestedFilename, KNOTWORK_EXTENSION } from "@jfrusher/knotwork";
 import { checkCrossSlice } from "./crossSliceValidation";
 import { retentionCutoff } from "./retention";
 import type { DocumentStore } from "./store";
@@ -127,7 +127,7 @@ function exportFilename(document: unknown): string {
   try {
     return suggestedFilename(migrate(document));
   } catch {
-    return `wedding${TROUSSEAU_EXTENSION}`;
+    return `wedding${KNOTWORK_EXTENSION}`;
   }
 }
 

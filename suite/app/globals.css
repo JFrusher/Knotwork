@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /**
- * The Trousseau palette, as Tailwind v4 theme tokens.
+ * The Knotwork palette, as Tailwind v4 theme tokens.
  *
  * Named by role as well as by colour, because the roles are what the UI reads:
  * a panel is `bg-stone`, not `bg-[#F4F1EA]`. The hexes are the same ones the
@@ -108,7 +108,7 @@
  * The variables Plaque's ported renderers reference.
  *
  * Its card canvas and sheet preview came across unaltered, and they paint with
- * a handful of named colours. Mapping those onto the Trousseau palette here is
+ * a handful of named colours. Mapping those onto the Knotwork palette here is
  * one block; editing the colour out of every ported file would have been a
  * hundred small edits and a permanent merge conflict with the original.
  */

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { RotateCcw, Trash2 } from "lucide-react";
 import { describe, hasContent, summarise } from "@/lib/model/content";
 import { useCopies, type KeptCopy } from "@/lib/store/copies";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { Button, Panel } from "@/components/ui/controls";
 import { useConfirm } from "@/components/ui/Confirm";
 
@@ -19,7 +19,7 @@ export function KeptCopies({ onDone }: { onDone: (message: string) => void }) {
   if (copies.length === 0) return null;
 
   async function putBack(copy: KeptCopy) {
-    const { raw, cloudStatus, replaceDocument } = useTrousseauStore.getState();
+    const { raw, cloudStatus, replaceDocument } = useKnotworkStore.getState();
     const shared = cloudStatus !== "disabled";
     const yes = await confirm({
       title: "Put this wedding back?",

@@ -4,7 +4,7 @@
 
 **Goal:** Give a first-time user an in-app guided tour of the five tools and the
 shell, running against a loadable example wedding, so the thing that makes
-Trousseau worth using — that the tools share one document — is visible before
+Knotwork worth using — that the tools share one document — is visible before
 they have done enough work to discover it themselves.
 
 **Architecture:** Three separated pieces. `lib/tour/steps.ts` is pure step data
@@ -65,7 +65,7 @@ around. Scrolling now happens once when a step opens; the listeners only
 re-measure.
 
 **One thing the plan did not anticipate.** `suite/fixtures/.gitignore` denies
-`*.trousseau.json` and allows specific files by name, to stop a real export
+`*.knotwork.json` and allows specific files by name, to stop a real export
 reaching a public repo. The fixture was added to that allowlist rather than
 forced past it, so the guard still catches anything else dropped in there.
 
@@ -119,8 +119,8 @@ Checked in the repo, not assumed.
   `confirm("Start a new day? The current one will be replaced.")`.
 - `suite/fixtures/guests-150.csv` is synthetic — invented names, with `Table`,
   `Dietary` and `Entree` columns. Safe to base the example wedding on.
-- The real wedding files (`wedding.trousseau.json`,
-  `data/wedding.trousseau.json`) are gitignored and **must never be read by
+- The real wedding files (`wedding.knotwork.json`,
+  `data/wedding.knotwork.json`) are gitignored and **must never be read by
   anything in this plan**.
 
 ## File Structure
@@ -132,8 +132,8 @@ Checked in the repo, not assumed.
 | `suite/lib/tour/useTour.tsx` | **Create.** The context provider and its hook. |
 | `suite/lib/tour/exampleWedding.ts` | **Create.** Loading the fixture, and the backup prompt. |
 | `suite/lib/tour/exampleWedding.test.ts` | **Create.** The guard: never replaces work without a yes. |
-| `suite/public/fixtures/example-wedding.trousseau.json` | **Create.** The same fixture, where the browser can fetch it. |
-| `suite/fixtures/example-wedding.trousseau.json` | **Create.** The example wedding, exported from the real app. |
+| `suite/public/fixtures/example-wedding.knotwork.json` | **Create.** The same fixture, where the browser can fetch it. |
+| `suite/fixtures/example-wedding.knotwork.json` | **Create.** The example wedding, exported from the real app. |
 | `suite/components/tour/TourOverlay.tsx` | **Create.** Highlight ring and card. |
 | `suite/components/shell/TourButtons.tsx` | **Create.** The two entry points. |
 | `suite/app/(app)/layout.tsx` | **Modify.** Wrap in the provider, mount the overlay. |
@@ -147,7 +147,7 @@ Checked in the repo, not assumed.
 ## Task 1: The example wedding fixture
 
 **Files:**
-- Create: `suite/fixtures/example-wedding.trousseau.json`
+- Create: `suite/fixtures/example-wedding.knotwork.json`
 
 **Interfaces:**
 - Produces: the fixture file, read by `lib/tour/exampleWedding.ts` (Task 5).
@@ -179,7 +179,7 @@ Open <http://localhost:3300> and, in this order:
 - [x] **Step 3: Export it**
 
 Press **Data → Export backup**. Move the downloaded file to
-`suite/fixtures/example-wedding.trousseau.json`.
+`suite/fixtures/example-wedding.knotwork.json`.
 
 - [x] **Step 4: Check it contains nothing real**
 
@@ -191,7 +191,7 @@ Check the two things that actually distinguish the example from real data — th
 couple and the venue you just typed:
 
 ```bash
-node -e "const d=require('./suite/fixtures/example-wedding.trousseau.json');const e=d.event||{};if(e.coupleNames!=='Alex & Sam'||e.venueName!=='The Old Granary'){console.error('NOT the example wedding:',e);process.exit(1)}console.log('ok — example wedding')"
+node -e "const d=require('./suite/fixtures/example-wedding.knotwork.json');const e=d.event||{};if(e.coupleNames!=='Alex & Sam'||e.venueName!=='The Old Granary'){console.error('NOT the example wedding:',e);process.exit(1)}console.log('ok — example wedding')"
 ```
 Expected: `ok — example wedding`. A non-zero exit means the browser exported a
 different document than the one built in Step 2 — most likely a stale profile
@@ -200,14 +200,14 @@ holding other work. Do not commit it.
 Then confirm it is a complete document:
 
 ```bash
-node -e "const d=require('./suite/fixtures/example-wedding.trousseau.json');console.log(Object.keys(d),'guests',Object.keys(d.guests||{}).length,'blocks',(d.day&&d.day.blocks||[]).length)"
+node -e "const d=require('./suite/fixtures/example-wedding.knotwork.json');console.log(Object.keys(d),'guests',Object.keys(d.guests||{}).length,'blocks',(d.day&&d.day.blocks||[]).length)"
 ```
 Expected: a `guests` count near 100 and a non-zero block count.
 
 - [x] **Step 5: Commit**
 
 ```bash
-git add suite/fixtures/example-wedding.trousseau.json
+git add suite/fixtures/example-wedding.knotwork.json
 git commit -m "Add the example wedding, exported from the running app"
 ```
 
@@ -375,7 +375,7 @@ export const CHAPTERS: readonly TourChapter[] = [
       {
         anchor: "shell.countdown",
         title: "Your wedding",
-        body: "Who is getting married, where, and when. Everything else in Trousseau hangs off these three facts, so it is worth filling them in first.",
+        body: "Who is getting married, where, and when. Everything else in Knotwork hangs off these three facts, so it is worth filling them in first.",
         route: "/",
       },
       {
@@ -429,7 +429,7 @@ export const CHAPTERS: readonly TourChapter[] = [
       {
         anchor: "seating.import",
         title: "Bring a list you already have",
-        body: "Import a CSV from Joy, Zola, The Knot or your own spreadsheet. Trousseau guesses the columns and asks about anything it cannot. Re-importing updates people rather than duplicating them.",
+        body: "Import a CSV from Joy, Zola, The Knot or your own spreadsheet. Knotwork guesses the columns and asks about anything it cannot. Re-importing updates people rather than duplicating them.",
         route: "/seating",
       },
       {
@@ -507,7 +507,7 @@ export const CHAPTERS: readonly TourChapter[] = [
       {
         anchor: "placecards.problems",
         title: "Before you print",
-        body: "Missing fonts, images that have not loaded, guests with no table. Trousseau refuses to print a broken card, which is cheaper than finding out after the good card stock has gone through.",
+        body: "Missing fonts, images that have not loaded, guests with no table. Knotwork refuses to print a broken card, which is cheaper than finding out after the good card stock has gone through.",
         route: "/place-cards",
       },
       {
@@ -567,7 +567,7 @@ export const CHAPTERS: readonly TourChapter[] = [
       {
         anchor: "groupshots.inspector",
         title: "Who is in this one",
-        body: "Add people from your guest list or from the cast. Trousseau can also propose the usual shots from families you have already set up in Seating.",
+        body: "Add people from your guest list or from the cast. Knotwork can also propose the usual shots from families you have already set up in Seating.",
         route: "/group-shots",
       },
       {
@@ -645,7 +645,7 @@ import { CHAPTERS, type ChapterId, type TourStep } from "./steps";
  * Timeline keeps its place without any extra machinery.
  */
 
-const SEEN_KEY = "trousseau.tour.seen";
+const SEEN_KEY = "knotwork.tour.seen";
 
 /** Storage can throw outright in a private window, so every touch is wrapped. */
 function readSeen(): boolean {
@@ -867,7 +867,7 @@ git commit -m "Anchor the tour to real controls with data-tour attributes"
 - Create: `suite/lib/tour/exampleWedding.ts`
 
 **Interfaces:**
-- Consumes: `useTrousseauStore` from `@/lib/store/useTrousseauStore`;
+- Consumes: `useKnotworkStore` from `@/lib/store/useKnotworkStore`;
   the fixture from Task 1.
 - Produces: `isWeddingEmpty(): boolean` and
   `loadExampleWedding(): Promise<"loaded" | "cancelled">`. Consumed by Task 7.
@@ -879,7 +879,7 @@ Create `suite/lib/tour/exampleWedding.ts`:
 ```ts
 "use client";
 
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 
 /**
  * The example wedding, and the guard in front of it.
@@ -891,13 +891,13 @@ import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 
 /** Nothing worth losing: no guests and no blocks. */
 export function isWeddingEmpty(): boolean {
-  const { doc } = useTrousseauStore.getState();
+  const { doc } = useKnotworkStore.getState();
   return Object.keys(doc.guests).length === 0 && (doc.day?.blocks.length ?? 0) === 0;
 }
 
 export async function loadExampleWedding(): Promise<"loaded" | "cancelled"> {
   if (!isWeddingEmpty()) {
-    const { doc } = useTrousseauStore.getState();
+    const { doc } = useKnotworkStore.getState();
     const guests = Object.keys(doc.guests).length;
     const blocks = doc.day?.blocks.length ?? 0;
     const confirmed = window.confirm(
@@ -908,14 +908,14 @@ export async function loadExampleWedding(): Promise<"loaded" | "cancelled"> {
     if (!confirmed) return "cancelled";
   }
 
-  const response = await fetch("/fixtures/example-wedding.trousseau.json");
+  const response = await fetch("/fixtures/example-wedding.knotwork.json");
   if (!response.ok) throw new Error("The example wedding could not be loaded.");
   const document: unknown = await response.json();
 
   // `silent` keeps it out of the undo stack: the user did not make this change
   // by editing, and offering to undo it would offer to restore what they were
   // just warned they were replacing.
-  useTrousseauStore.getState().replaceDocument(document, { silent: true });
+  useKnotworkStore.getState().replaceDocument(document, { silent: true });
   return "loaded";
 }
 ```
@@ -927,7 +927,7 @@ Copy it:
 
 ```bash
 mkdir -p suite/public/fixtures
-cp suite/fixtures/example-wedding.trousseau.json suite/public/fixtures/
+cp suite/fixtures/example-wedding.knotwork.json suite/public/fixtures/
 ```
 
 Both copies are committed. `suite/fixtures/` is where the tests read it from,
@@ -940,9 +940,9 @@ Append to `suite/lib/tour/steps.test.ts`:
 ```ts
 describe("the example wedding", () => {
   it("is a document the app can actually read", async () => {
-    const { migrate } = await import("@jfrusher/trousseau");
+    const { migrate } = await import("@jfrusher/knotwork");
     const raw = JSON.parse(
-      readFileSync("fixtures/example-wedding.trousseau.json", "utf8"),
+      readFileSync("fixtures/example-wedding.knotwork.json", "utf8"),
     ) as unknown;
     const doc = migrate(raw);
     expect(Object.keys(doc.guests).length).toBeGreaterThan(20);
@@ -950,8 +950,8 @@ describe("the example wedding", () => {
   });
 
   it("is served to the browser as well as read by tests", () => {
-    const served = readFileSync("public/fixtures/example-wedding.trousseau.json", "utf8");
-    const source = readFileSync("fixtures/example-wedding.trousseau.json", "utf8");
+    const served = readFileSync("public/fixtures/example-wedding.knotwork.json", "utf8");
+    const source = readFileSync("fixtures/example-wedding.knotwork.json", "utf8");
     expect(served).toBe(source);
   });
 });
@@ -970,15 +970,15 @@ vi.mock("idb-keyval", () => ({
   del: async () => undefined,
 }));
 
-const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { isWeddingEmpty, loadExampleWedding } = await import("./exampleWedding");
-const { emptyTrousseau } = await import("@jfrusher/trousseau");
+const { emptyKnotwork } = await import("@jfrusher/knotwork");
 
 const example = { event: { coupleNames: "Alex & Sam" }, guests: { g1: { id: "g1" } } };
 
 beforeEach(() => {
-  const doc = emptyTrousseau();
-  useTrousseauStore.setState({
+  const doc = emptyKnotwork();
+  useKnotworkStore.setState({
     status: "ready",
     error: null,
     raw: doc as unknown as Record<string, unknown>,
@@ -1007,26 +1007,26 @@ test("an untouched wedding is empty, and loads without asking anything", async (
 });
 
 test("a wedding with guests in it is never replaced without a yes", async () => {
-  const doc = { ...emptyTrousseau(), guests: { a: { id: "a" } } };
-  useTrousseauStore.setState({ raw: doc as unknown as Record<string, unknown>, doc });
+  const doc = { ...emptyKnotwork(), guests: { a: { id: "a" } } };
+  useKnotworkStore.setState({ raw: doc as unknown as Record<string, unknown>, doc });
   vi.stubGlobal("confirm", vi.fn(() => false));
 
   expect(isWeddingEmpty()).toBe(false);
   await expect(loadExampleWedding()).resolves.toBe("cancelled");
   // The refusal has to leave the document exactly as it was.
-  expect(Object.keys(useTrousseauStore.getState().doc.guests)).toEqual(["a"]);
+  expect(Object.keys(useKnotworkStore.getState().doc.guests)).toEqual(["a"]);
 });
 
 test("saying yes replaces it, without becoming an undo step", async () => {
-  const doc = { ...emptyTrousseau(), guests: { a: { id: "a" } } };
-  useTrousseauStore.setState({ raw: doc as unknown as Record<string, unknown>, doc, past: [] });
+  const doc = { ...emptyKnotwork(), guests: { a: { id: "a" } } };
+  useKnotworkStore.setState({ raw: doc as unknown as Record<string, unknown>, doc, past: [] });
   vi.stubGlobal("confirm", vi.fn(() => true));
 
   await expect(loadExampleWedding()).resolves.toBe("loaded");
-  expect(useTrousseauStore.getState().doc.event.coupleNames).toBe("Alex & Sam");
+  expect(useKnotworkStore.getState().doc.event.coupleNames).toBe("Alex & Sam");
   // Silent: offering to undo would offer to restore what the user was just
   // warned they were replacing.
-  expect(useTrousseauStore.getState().past).toEqual([]);
+  expect(useKnotworkStore.getState().past).toEqual([]);
 });
 ```
 

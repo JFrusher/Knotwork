@@ -1,4 +1,4 @@
-import type { TrousseauState } from "./useTrousseauStore";
+import type { KnotworkState } from "./useKnotworkStore";
 
 /**
  * What the header says about where the wedding is kept, in one word.
@@ -21,7 +21,7 @@ export interface SaveState {
 }
 
 type Inputs = Pick<
-  TrousseauState,
+  KnotworkState,
   "status" | "error" | "saveError" | "savedAt" | "cloudStatus" | "cloudError"
 >;
 

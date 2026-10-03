@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Plus, Search } from "lucide-react";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { shownTools } from "@/lib/model/toolbox";
 import { GUESTS } from "@/lib/tools";
 import { AccountStatus } from "./AccountStatus";
@@ -77,7 +77,7 @@ export function Header() {
   useEffect(() => useToolsPanel.getState().fromAddress(), []);
   // The guest list, then the wedding's own choice of tools, the same for
   // everyone planning it.
-  const tools = useTrousseauStore((s) => shownTools(s.doc));
+  const tools = useKnotworkStore((s) => shownTools(s.doc));
   // The palette: its button, and Ctrl/⌘ K from anywhere.
   const paletteOpen = usePalette((s) => s.open);
   const showPalette = usePalette((s) => s.show);
@@ -94,9 +94,9 @@ export function Header() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
   // A conflict is settled there, so the button that says so opens it.
-  const conflict = useTrousseauStore((s) => s.cloudStatus === "conflict");
+  const conflict = useKnotworkStore((s) => s.cloudStatus === "conflict");
   // The one question that stops sync opens the panel that asks it.
-  const choosing = useTrousseauStore((s) => s.cloudStatus === "choosing");
+  const choosing = useKnotworkStore((s) => s.cloudStatus === "choosing");
   useEffect(() => {
     if (choosing) showData();
   }, [choosing, showData]);

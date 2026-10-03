@@ -1,4 +1,4 @@
-# Trousseau — multi-tenant suite mechanics
+# Knotwork — multi-tenant suite mechanics
 
 Date: 2026-09-02
 Status: approved, ready for implementation planning
@@ -42,7 +42,7 @@ that ceiling, not preemptively.
 **Data export: yes, from day one.** A couple can download their full
 wedding document as a real file. This reuses the existing `bundle.mjs`
 pack/unpack shape almost directly — the wedding document already *is* the
-`.trousseau.json` format those scripts work with; exposing "download my
+`.knotwork.json` format those scripts work with; exposing "download my
 wedding" as an authenticated API route that returns `wedding_documents.document`
 for the caller's own wedding (RLS already scopes this correctly) is a small
 addition, not new architecture. This doubles as: a backup path, a way to

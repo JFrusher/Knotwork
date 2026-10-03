@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { readSeating } from "@/lib/model/slices";
-import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
+import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
 import { startingRoom, tablesFor, withPasted } from "./draft";
 
 test("enough tables for everyone", () => {
@@ -11,7 +11,7 @@ test("enough tables for everyone", () => {
 
 test("a starting room is Seating's own tables, in rows that do not overlap", () => {
   const seating = startingRoom({}, "round", 13);
-  const tables = Object.values(readSeating(migrate({ ...emptyTrousseau(), seating })).tables);
+  const tables = Object.values(readSeating(migrate({ ...emptyKnotwork(), seating })).tables);
   expect(tables).toHaveLength(13);
   expect(tables.map((t) => t.label)).toContain("Table 13");
   expect(tables.every((t) => t.type === "round" && t.capacity === 8 && t.sizeUnits)).toBe(true);

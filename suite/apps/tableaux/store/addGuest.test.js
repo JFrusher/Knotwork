@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
 
 const emptyDoc = () => ({
@@ -38,7 +38,7 @@ describe('addGuest', () => {
     expect(g.assignedTableId).toBeNull()
     expect(g.dietary).toBe('') // raw is stored verbatim; normalisation happens on edit
 
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().guests[id]).toBeUndefined()
   })
 

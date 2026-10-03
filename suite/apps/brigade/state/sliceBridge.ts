@@ -1,4 +1,4 @@
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { personName, readCrew, readGuests } from "@/lib/model/slices";
 import { parseDay } from "../core/import/day";
 import { emptyDoc } from "../core/model/defaults";
@@ -25,7 +25,7 @@ import type { BrigadeDoc } from "../core/model/types";
  */
 
 /** The crew and the day as Brigade wants them, from the shared wedding. */
-export function readSlice(doc: Trousseau): BrigadeDoc {
+export function readSlice(doc: Knotwork): BrigadeDoc {
   const crew = readCrew(doc);
   const base = emptyDoc();
 

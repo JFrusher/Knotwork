@@ -1,4 +1,4 @@
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { dietaryText, type DietaryKey } from "@/lib/model/dietary";
 import { guestName, readGuests, readSeating } from "@/lib/model/slices";
 import type { Guest, RsvpStatus, Side } from "@/lib/model/types";
@@ -15,7 +15,7 @@ export interface GuestRow {
   plusOne: string;
 }
 
-export function guestRows(doc: Trousseau): GuestRow[] {
+export function guestRows(doc: Knotwork): GuestRow[] {
   const guests = readGuests(doc);
   const tables = readSeating(doc).tables;
   const brings = new Map<string, string[]>();

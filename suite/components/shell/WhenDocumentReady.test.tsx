@@ -3,7 +3,7 @@ import { afterEach, expect, test, vi } from "vitest";
 
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined }));
 
-const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { WhenDocumentReady } = await import("./WhenDocumentReady");
 
 afterEach(() => {
@@ -20,16 +20,16 @@ const gate = () =>
   );
 
 test("shows nothing until the stored wedding has been read, then the tool", () => {
-  useTrousseauStore.setState({ status: "loading", error: null });
+  useKnotworkStore.setState({ status: "loading", error: null });
   gate();
   expect(screen.queryByText("Seating")).toBeNull();
 
-  act(() => useTrousseauStore.setState({ status: "ready" }));
+  act(() => useKnotworkStore.setState({ status: "ready" }));
   expect(screen.getByText("Seating")).toBeTruthy();
 });
 
 test("says so when the stored wedding cannot be read, and shows no tool to act on it", () => {
-  useTrousseauStore.setState({ status: "error", error: "The saved wedding could not be read: bad bytes" });
+  useKnotworkStore.setState({ status: "error", error: "The saved wedding could not be read: bad bytes" });
   gate();
   expect(screen.getByRole("alert").textContent).toMatch(/bad bytes/);
   expect(screen.queryByText("Seating")).toBeNull();

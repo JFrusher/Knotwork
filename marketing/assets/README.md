@@ -1,6 +1,6 @@
 # Marketing assets
 
-Screenshots, framed images and short clips of Trousseau, all captured from
+Screenshots, framed images and short clips of Knotwork, all captured from
 the real app running the guided tour's example wedding (Alex & Sam, The Old
 Granary, 1 June 2028). No real guest appears anywhere.
 

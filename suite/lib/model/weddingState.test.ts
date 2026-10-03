@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { expect, it } from "vitest";
 import { weddingState } from "./weddingState";
 
-const example = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const example = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 
 it("says how a wedding stands in a line: what is left, what is next, what is owed", () => {
   expect(weddingState(example, "2026-09-28")).toEqual({

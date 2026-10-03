@@ -5,7 +5,7 @@
  * edited without reading any React and a couple's story can be added by
  * anyone who can open a pull request. Every fact a guide states is one it
  * can point to: its sources are listed with it, and a figure that comes from
- * one of Trousseau's tools is the tool's own default, which that tool's
+ * one of Knotwork's tools is the tool's own default, which that tool's
  * tests pin.
  */
 
@@ -22,7 +22,7 @@ export interface Post {
   description: string;
   /** ISO date. */
   published: string;
-  /** "Trousseau", or the couple who wrote it, as they chose to be named. */
+  /** "Knotwork", or the couple who wrote it, as they chose to be named. */
   author: string;
   kind: "guide" | "story";
   /** The tool that does what the post describes, if there is one. */
@@ -38,7 +38,7 @@ export const POSTS: readonly Post[] = [
     description:
       "Rules of thumb for the drinks reception, the toast, the meal and the evening bar, turned into bottles and cases for 100 guests.",
     published: "2026-09-29",
-    author: "Trousseau",
+    author: "Knotwork",
     kind: "guide",
     tool: { href: "/bar", name: "Bar", invitation: "Work it out for your own guest list" },
     sections: [
@@ -89,7 +89,7 @@ export const POSTS: readonly Post[] = [
     title: "Giving notice of marriage in England and Wales",
     description: "What giving notice is, when to do it — at least 29 days before, and no more than a year — and what to take with you.",
     published: "2026-09-29",
-    author: "Trousseau",
+    author: "Knotwork",
     kind: "guide",
     tool: { href: "/checklist", name: "Checklist", invitation: "Put it on your checklist, dated from your day" },
     sections: [
@@ -137,7 +137,7 @@ export const POSTS: readonly Post[] = [
     description:
       "A civil ceremony in England and Wales has no religious content, and your registrar approves your music and readings in advance. How to plan for it.",
     published: "2026-09-29",
-    author: "Trousseau",
+    author: "Knotwork",
     kind: "guide",
     tool: { href: "/ceremony", name: "Ceremony", invitation: "Plan the order of service, its music and its readings" },
     sections: [
@@ -184,7 +184,7 @@ export const POSTS: readonly Post[] = [
     title: "Packing for the wedding day: four boxes that cover it",
     description: "The rings and the paperwork, getting ready, the day's odds and ends, and overnight — and why each box needs a time, a place and a person.",
     published: "2026-09-29",
-    author: "Trousseau",
+    author: "Knotwork",
     kind: "guide",
     tool: { href: "/boxes", name: "Boxes", invitation: "Pack your own boxes, each tied to its part of the day" },
     sections: [

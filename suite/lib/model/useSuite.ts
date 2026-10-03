@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback } from "react";
-import type { Event as WeddingEvent, SliceName, Trousseau } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent, SliceName, Knotwork } from "@jfrusher/knotwork";
 import {
-  useTrousseauStore,
-  type TrousseauState,
+  useKnotworkStore,
+  type KnotworkState,
   type WriteOptions,
-} from "@/lib/store/useTrousseauStore";
+} from "@/lib/store/useKnotworkStore";
 import {
   publishDay,
   readBar,
@@ -33,20 +33,20 @@ import type { Timeline } from "./timeline";
  * keeps these safe to call from a render.
  */
 
-export const useEvent = (): WeddingEvent => useTrousseauStore((s) => s.doc.event);
+export const useEvent = (): WeddingEvent => useKnotworkStore((s) => s.doc.event);
 export const useGuests = (): Record<string, Guest> =>
-  useTrousseauStore((s) => readGuests(s.doc));
-export const useSeating = (): Seating => useTrousseauStore((s) => readSeating(s.doc));
-export const useTimeline = (): Timeline => useTrousseauStore((s) => readTimeline(s.doc));
-export const useCrew = (): Crew => useTrousseauStore((s) => readCrew(s.doc));
-export const useShots = (): Shots => useTrousseauStore((s) => readShots(s.doc));
-export const useCast = (): CastSlice => useTrousseauStore((s) => readCast(s.doc));
-export const useCeremony = (): Ceremony => useTrousseauStore((s) => readCeremony(s.doc));
-export const useBoxes = (): Boxes => useTrousseauStore((s) => readBoxes(s.doc));
-export const useBar = (): Bar => useTrousseauStore((s) => readBar(s.doc));
-export const useResolvedDay = () => useTrousseauStore((s) => resolvedDay(s.doc));
-export const useTimelineDoc = () => useTrousseauStore((s) => timelineDoc(s.doc));
-export const useStatus = (): TrousseauState["status"] => useTrousseauStore((s) => s.status);
+  useKnotworkStore((s) => readGuests(s.doc));
+export const useSeating = (): Seating => useKnotworkStore((s) => readSeating(s.doc));
+export const useTimeline = (): Timeline => useKnotworkStore((s) => readTimeline(s.doc));
+export const useCrew = (): Crew => useKnotworkStore((s) => readCrew(s.doc));
+export const useShots = (): Shots => useKnotworkStore((s) => readShots(s.doc));
+export const useCast = (): CastSlice => useKnotworkStore((s) => readCast(s.doc));
+export const useCeremony = (): Ceremony => useKnotworkStore((s) => readCeremony(s.doc));
+export const useBoxes = (): Boxes => useKnotworkStore((s) => readBoxes(s.doc));
+export const useBar = (): Bar => useKnotworkStore((s) => readBar(s.doc));
+export const useResolvedDay = () => useKnotworkStore((s) => resolvedDay(s.doc));
+export const useTimelineDoc = () => useKnotworkStore((s) => timelineDoc(s.doc));
+export const useStatus = (): KnotworkState["status"] => useKnotworkStore((s) => s.status);
 
 /**
  * Every writer takes a `label`, which is what the undo tooltip says and what
@@ -58,7 +58,7 @@ export const useStatus = (): TrousseauState["status"] => useTrousseauStore((s) =
  * from it. For `setEvent`, and for anything that commits the facts together
  * with other slices as one change — setup does.
  */
-export function eventChange(doc: Trousseau, patch: Partial<WeddingEvent>): Array<[SliceName, unknown]> {
+export function eventChange(doc: Knotwork, patch: Partial<WeddingEvent>): Array<[SliceName, unknown]> {
   const event = { ...doc.event, ...patch };
   // The title is the partners' names, written here and nowhere else, so the
   // two can never disagree.
@@ -92,19 +92,19 @@ export interface SuiteWriters {
 }
 
 export function useWriters(): SuiteWriters {
-  const setSlice = useTrousseauStore((s) => s.setSlice);
-  const setSlices = useTrousseauStore((s) => s.setSlices);
+  const setSlice = useKnotworkStore((s) => s.setSlice);
+  const setSlices = useKnotworkStore((s) => s.setSlices);
 
   const setEvent = useCallback(
     (patch: Partial<WeddingEvent>, options: WriteOptions = { label: "wedding details" }) => {
-      setSlices(eventChange(useTrousseauStore.getState().doc, patch), options);
+      setSlices(eventChange(useKnotworkStore.getState().doc, patch), options);
     },
     [setSlices],
   );
 
   const setTimeline = useCallback(
     (next: Timeline, options: WriteOptions = { label: "the day" }) => {
-      const { doc } = useTrousseauStore.getState();
+      const { doc } = useKnotworkStore.getState();
       setSlices(
         [
           ["timeline", next],

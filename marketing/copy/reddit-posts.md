@@ -20,7 +20,7 @@ Space them at least a day apart.
 ## 1. r/selfhosted
 
 **Title:**
-`Trousseau: a local-first, self-hostable wedding planner (seating, place cards, run sheet), AGPL, no analytics when self-hosted`
+`Knotwork: a local-first, self-hostable wedding planner (seating, place cards, run sheet), AGPL, no analytics when self-hosted`
 
 **Flair:** use whatever the sub currently requires for a project you made.
 
@@ -51,7 +51,7 @@ Space them at least a day apart.
 >   partner and planner access need a Supabase project, either their cloud
 >   free tier or self-hosted Supabase. Apply the migrations in order and the
 >   row-level security does the tenant isolation.
-> - **Export everything** as one `.trousseau.json` file. The schema is a
+> - **Export everything** as one `.knotwork.json` file. The schema is a
 >   published MIT npm package, so you can script against it.
 > - **AGPL-3.0**, so nobody can take the hosted version closed.
 >
@@ -59,7 +59,7 @@ Space them at least a day apart.
 >
 > ```
 > git clone https://github.com/JFrusher/Trousseau.git
-> cd Trousseau
+> cd Knotwork
 > npm ci
 > npm run build
 > npm run dev -w suite
@@ -108,7 +108,7 @@ Space them at least a day apart.
 > towards paid stationery, and asked for everyone's email addresses. So I
 > built my own set of tools, and now I've made it free for anyone.
 >
-> It's called **Trousseau**. It's genuinely free: no premium version, no
+> It's called **Knotwork**. It's genuinely free: no premium version, no
 > trial, no ads, and nothing to upgrade to later. It's open source, so that
 > can't quietly change.
 >
@@ -148,7 +148,7 @@ Space them at least a day apart.
 > around: https://trousseau-suite.vercel.app
 >
 > It doesn't do RSVPs or a wedding website. Joy is great for that and free,
-> and Trousseau imports the RSVPs from it.
+> and Knotwork imports the RSVPs from it.
 >
 > I'd love to know what's missing, what's confusing, or what job you're still
 > doing in a spreadsheet. That's how every tool in it so far got built.
@@ -168,7 +168,7 @@ Space them at least a day apart.
 ## 3. r/opensource (or r/webdev)
 
 **Title (r/opensource):**
-`Trousseau: an AGPL wedding planner built around one shared document. Looking for contributors, and there's a guide to adding a whole tool`
+`Knotwork: an AGPL wedding planner built around one shared document. Looking for contributors, and there's a guide to adding a whole tool`
 
 **Title (r/webdev):**
 `I built a wedding planner as 11 tools sharing one JSON document: architecture notes and lessons (Next.js 16, Supabase, zod)`
@@ -176,7 +176,7 @@ Space them at least a day apart.
 **Body (works for both; trim the last section for r/webdev if its rules
 discourage recruiting):**
 
-> Trousseau started as four separate apps I wrote for my own wedding: seating,
+> Knotwork started as four separate apps I wrote for my own wedding: seating,
 > place cards, a run-of-day timeline, and a jobs list. They each kept their own
 > copy of the guest list, and one day two of them disagreed about the wedding
 > date. The fix became the architecture.
@@ -200,7 +200,7 @@ discourage recruiting):**
 > - Next.js 16 (App Router), React 19, TypeScript, Zustand, zod 4,
 >   Tailwind 4
 > - Supabase: Postgres JSONB, RLS, magic-link auth, realtime, bounded history
-> - An MIT npm package (`@jfrusher/trousseau`) holding the schemas and file
+> - An MIT npm package (`@jfrusher/knotwork`) holding the schemas and file
 >   format, separate from the AGPL app, so third-party tools can read the
 >   file
 > - 1,800+ Vitest cases, RLS tested against PGlite, and Playwright with axe

@@ -1,4 +1,4 @@
-# Trousseau — ecosystem design
+# Knotwork — ecosystem design
 
 Date: 2026-08-20
 Status: approved, ready for implementation planning
@@ -31,7 +31,7 @@ outrank every other goal here, including elegance and including the schedule.
 2. **Existing file formats do not change.** `.cadence.json`, `.plaque.json`,
    `.brigade` and `.day.json` keep their current shapes and their current
    readers. A file saved before any of this work must still open after all of
-   it. `.trousseau.json` is a new, additional format.
+   it. `.knotwork.json` is a new, additional format.
 3. **Existing private storage is never migrated, moved or renamed.** Each app's
    autosave stays exactly where it is, in the key it already uses. The shared
    store is a separate database and a separate key.
@@ -120,7 +120,7 @@ today.
 
 ```jsonc
 {
-  "kind": "trousseau",
+  "kind": "knotwork",
   "version": 1,
   "event":   { "date": "2026-08-20", "coupleNames": "…", "venueName": "…",
                "curfewMin": 1410, "utcOffsetMin": 60 },
@@ -133,7 +133,7 @@ today.
 }
 ```
 
-Serialised as `.trousseau.json`.
+Serialised as `.knotwork.json`.
 
 ### Two rules, and they are the whole open-endedness mechanism
 
@@ -151,7 +151,7 @@ It must be enforced in the store client, not left to each app's discipline.
 ### `sources`
 
 Optional. Holds each app's native document verbatim, keyed by app name, so a
-single `.trousseau.json` is the whole wedding and can move between machines —
+single `.knotwork.json` is the whole wedding and can move between machines —
 something no current file can do.
 
 `sources` holds JSON documents only, never binary. Uploaded fonts, images and
@@ -162,7 +162,7 @@ never carries it: a running ecosystem already has each source document in its
 own app's storage, and copying them into the shared store would make every
 publish expensive for no benefit.
 
-It is filled only when the launcher exports a `.trousseau.json`. Because the
+It is filled only when the launcher exports a `.knotwork.json`. Because the
 apps share an origin, the launcher can read each one's own autosave directly —
 but it must not hardcode where those live. Each app therefore declares its own
 location in its manifest:
@@ -184,7 +184,7 @@ native save-file, which is the status quo.
      asset sidecar if moving a job between machines with its uploads intact
      turns out to matter -->
 
-## `@jfrusher/trousseau` — the contract package
+## `@jfrusher/knotwork` — the contract package
 
 A new repo, published to npm. Consumed by all five front-ends as a normal
 dependency, so each repo stays independently cloneable and independently
@@ -203,22 +203,22 @@ that silently drops a field.
 ### Public surface
 
 ```ts
-export const trousseauSchema: ZodType<Trousseau>   // passthrough on every slice
-export type { Trousseau, Event, Guests, Seating, Day, Crew, Stationery }
+export const knotworkSchema: ZodType<Knotwork>   // passthrough on every slice
+export type { Knotwork, Event, Guests, Seating, Day, Crew, Stationery }
 export type SliceName = "event" | "guests" | "seating" | "day" | "crew" | "stationery"
 
 /** Validate and bring an unknown document up to the current version. */
-export function migrate(doc: unknown): Trousseau
+export function migrate(doc: unknown): Knotwork
 
 /** Read the whole envelope. Returns an empty valid envelope if nothing is stored. */
-export function read(): Promise<Trousseau>
+export function read(): Promise<Knotwork>
 
 /** Read-modify-write one slice, atomically, preserving every other key. */
-export function publish<K extends SliceName>(slice: K, value: Trousseau[K]): Promise<void>
+export function publish<K extends SliceName>(slice: K, value: Knotwork[K]): Promise<void>
 
 /** Serialise and parse the portable file. */
-export function serialise(doc: Trousseau): string
-export function parse(text: string): Trousseau
+export function serialise(doc: Knotwork): string
+export function parse(text: string): Knotwork
 ```
 
 There is no `subscribe`. Cross-tab live sync was considered and rejected: a
@@ -234,8 +234,8 @@ breaking-change event across four repos.
 A **dedicated** IndexedDB store, not the idb-keyval default:
 
 ```ts
-const store = createStore("trousseau", "project");   // idb-keyval >= 6
-const KEY = "trousseau.project.v1";
+const store = createStore("knotwork", "project");   // idb-keyval >= 6
+const KEY = "knotwork.project.v1";
 ```
 
 This is load-bearing, not tidiness. `Plaque/src/state/blobStore.ts:43`
@@ -294,7 +294,7 @@ meta-repo build, each repo independently deployable.
 ## The launcher
 
 A small static app. It owns `event`, shows the current project, offers
-`.trousseau.json` import and export, and links to the four.
+`.knotwork.json` import and export, and links to the four.
 
 Each app serves a manifest at `<base>/ecosystem.json`:
 
@@ -322,12 +322,12 @@ from the running system and therefore cannot go stale.
 Tableaux keeps its Supabase SaaS build, its auth, its row-level security and its
 share links, deployed as it is today on its own domain.
 
-It gains a second build, `VITE_TROUSSEAU=1`, which is static and local-first:
+It gains a second build, `VITE_KNOTWORK=1`, which is static and local-first:
 the same client, with a persistence adapter that writes the shared store instead
 of calling the API. This is viable precisely because `planSchema.js` already
 treats the server as dumb storage — the rich shape lives client-side already.
 
-The SaaS build gains `.trousseau.json` import and export so the two worlds can
+The SaaS build gains `.knotwork.json` import and export so the two worlds can
 exchange a wedding.
 
 Explicitly not doing: porting Tableaux to TypeScript, upgrading it to React 19,
@@ -412,7 +412,7 @@ planned and built first, on its own.
 
 ## Open risks
 
-- **npm name.** `@jfrusher/trousseau` assumes that npm scope is available and
+- **npm name.** `@jfrusher/knotwork` assumes that npm scope is available and
   claimed. Nothing before the end of Phase 0 depends on it.
 - **Cloudflare path routing** across five separate Pages projects is the one
   piece not yet proven. Phase 2's local proxy de-risks everything above it, so a

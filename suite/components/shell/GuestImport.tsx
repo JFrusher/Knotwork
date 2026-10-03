@@ -21,7 +21,7 @@ import {
 import { partnerNames } from "@/lib/model/partners";
 import { guestName } from "@/lib/model/slices";
 import type { Guest, RsvpStatus, Side } from "@/lib/model/types";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { useGuestImport } from "./guestImportPanel";
 
 /**
@@ -62,7 +62,7 @@ function Steps({ onClose }: { onClose: () => void }) {
   const target = useGuestImport((s) => s.target);
   // Re-read on every render the store causes, so a name typed in the Data
   // panel meanwhile names the sides here too.
-  useTrousseauStore((s) => s.doc.event);
+  useKnotworkStore((s) => s.doc.event);
   const { event } = target.read();
   const [nameA, nameB] = partnerNames(event);
   const [step, setStep] = useState<"file" | "columns" | "check" | "done">("file");

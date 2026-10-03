@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 /*
- * The blog is for people who have not opened Trousseau yet: found from a
+ * The blog is for people who have not opened Knotwork yet: found from a
  * search, read without a wedding in the browser, and one link from the tool
  * that does what the post describes.
  */
@@ -12,7 +12,7 @@ test("the blog lists its guides, and each is a page a search engine can read, wi
 
   await expect(page).toHaveURL(/\/blog\/how-much-drink-for-a-uk-wedding$/);
   await expect(page.getByRole("heading", { level: 1, name: "How much drink to buy for a UK wedding" })).toBeVisible();
-  await expect(page).toHaveTitle("How much drink to buy for a UK wedding · Trousseau");
+  await expect(page).toHaveTitle("How much drink to buy for a UK wedding · Knotwork");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/blog\/how-much-drink-for-a-uk-wedding$/);
   const article = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent()) ?? "{}");
   expect(article).toMatchObject({ "@type": "BlogPosting", headline: "How much drink to buy for a UK wedding", datePublished: "2026-09-29" });

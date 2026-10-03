@@ -1,6 +1,6 @@
 "use client";
 
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { KO_FI_URL } from "@/lib/support";
 import { useDataPanel } from "./dataPanel";
 
@@ -16,10 +16,10 @@ import { useDataPanel } from "./dataPanel";
  * ticking number would only be something to watch.
  */
 export function Countdown() {
-  const couple = useTrousseauStore((s) => s.doc.event.coupleNames);
-  const venue = useTrousseauStore((s) => s.doc.event.venueName);
-  const date = useTrousseauStore((s) => s.doc.event.date);
-  const status = useTrousseauStore((s) => s.status);
+  const couple = useKnotworkStore((s) => s.doc.event.coupleNames);
+  const venue = useKnotworkStore((s) => s.doc.event.venueName);
+  const date = useKnotworkStore((s) => s.doc.event.date);
+  const status = useKnotworkStore((s) => s.status);
   const showData = useDataPanel((s) => s.show);
 
   if (status !== "ready") {
@@ -48,7 +48,7 @@ export function Countdown() {
       {date && <p className="mt-1 text-sm text-slate">{howLong(date)}</p>}
       {date && isPast(date) && (
         <p className="mt-3 text-sm text-slate">
-          Congratulations. If Trousseau helped along the way,{" "}
+          Congratulations. If Knotwork helped along the way,{" "}
           <a href={KO_FI_URL} className="text-charcoal underline underline-offset-2">
             a coffee on Ko-fi
           </a>{" "}

@@ -18,8 +18,8 @@ const dry = process.argv.includes("--dry-run");
 // Passed through to pack. Needed when a slice is genuinely going away — an app
 // whose file has not been exported yet, say — rather than missing by accident.
 const allowShrink = process.argv.includes("--allow-shrink");
-const POINTER = "data/wedding.trousseau.json.dvc";
-const BUNDLE = "data/wedding.trousseau.json";
+const POINTER = "data/wedding.knotwork.json.dvc";
+const BUNDLE = "data/wedding.knotwork.json";
 
 /**
  * Run a command, streaming its output. Returns true on exit 0.

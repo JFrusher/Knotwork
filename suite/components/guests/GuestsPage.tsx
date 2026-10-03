@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { ArrowDown, ArrowUp, FileUp, Trash2 } from "lucide-react";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { DIETARY_KEYS, dietaryLabel, type DietaryKey } from "@/lib/model/dietary";
 import { sideLabel } from "@/lib/model/partners";
 import { guestName, readGuests, readSeating } from "@/lib/model/slices";
@@ -28,7 +28,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 /** The slices as stored now: each change starts from the latest, not from the last render. */
 function stored(): GuestSlices {
-  const { raw } = useTrousseauStore.getState();
+  const { raw } = useKnotworkStore.getState();
   return { guests: isRecord(raw["guests"]) ? raw["guests"] : {}, seating: isRecord(raw["seating"]) ? raw["seating"] : {} };
 }
 
@@ -42,8 +42,8 @@ function stored(): GuestSlices {
  * `lib/guests/edit`.
  */
 export function GuestsPage() {
-  const status = useTrousseauStore((s) => s.status);
-  const doc = useTrousseauStore((s) => s.doc);
+  const status = useKnotworkStore((s) => s.status);
+  const doc = useKnotworkStore((s) => s.doc);
   const showImport = useGuestImport((s) => s.show);
   const confirm = useConfirm();
 
@@ -51,7 +51,7 @@ export function GuestsPage() {
   // A link to one guest — the command palette's — opens the list found to
   // them. By id: their name is looked up here, never carried in the address.
   const findGuest = useCallback((id: string) => {
-    const guest = readGuests(useTrousseauStore.getState().doc)[id];
+    const guest = readGuests(useKnotworkStore.getState().doc)[id];
     if (guest) setFilter({ ...NO_FILTER, text: guestName(guest) });
   }, []);
   useSelectFromAddress(findGuest);
@@ -76,10 +76,10 @@ export function GuestsPage() {
   const chosenTags = [...new Set(chosenRows.flatMap((row) => row.guest.tags))].sort();
 
   const change = (ids: readonly string[], what: GuestChange, label: string) =>
-    useTrousseauStore.getState().setSlice("guests", changeGuests(stored(), ids, what).guests, { label });
+    useKnotworkStore.getState().setSlice("guests", changeGuests(stored(), ids, what).guests, { label });
   const seat = (ids: readonly string[], tableId: string | null) => {
     const next = seatGuests(stored(), ids, tableId);
-    useTrousseauStore.getState().setSlices([["guests", next.guests], ["seating", next.seating]], { label: "seating" });
+    useKnotworkStore.getState().setSlices([["guests", next.guests], ["seating", next.seating]], { label: "seating" });
   };
   const remove = async (ids: readonly string[]) => {
     const ok = await confirm({
@@ -90,7 +90,7 @@ export function GuestsPage() {
     });
     if (!ok) return;
     const next = dropGuests(stored(), ids);
-    useTrousseauStore.getState().setSlices([["guests", next.guests], ["seating", next.seating]], { label: "removing guests" });
+    useKnotworkStore.getState().setSlices([["guests", next.guests], ["seating", next.seating]], { label: "removing guests" });
     setSelected(new Set());
   };
 

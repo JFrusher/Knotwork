@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { AlertTriangle, ArrowRight, Check } from "lucide-react";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { readiness, type Readiness } from "@/lib/model/readiness";
 import { overview, type Area, type AreaId } from "@/lib/model/overview";
 import { GUESTS, TOOLS, type Tab } from "@/lib/tools";
@@ -24,10 +24,10 @@ const PLACES = { guests: GUESTS, ...Object.fromEntries(TOOLS.map((tool) => [tool
  * one.
  */
 export function Overview() {
-  const doc = useTrousseauStore((s) => s.doc);
-  const raw = useTrousseauStore((s) => s.raw);
-  const status = useTrousseauStore((s) => s.status);
-  const savedAt = useTrousseauStore((s) => s.savedAt);
+  const doc = useKnotworkStore((s) => s.doc);
+  const raw = useKnotworkStore((s) => s.raw);
+  const status = useKnotworkStore((s) => s.status);
+  const savedAt = useKnotworkStore((s) => s.savedAt);
 
   // Blocking first; `sort` is stable, so each keeps What is left's order.
   const items = useMemo(

@@ -21,10 +21,10 @@ import { useEffect } from "react";
 export function ReportUnhandled() {
   useEffect(() => {
     const onRejection = (event: PromiseRejectionEvent) => {
-      console.error("[Trousseau] unhandled rejection:", event.reason);
+      console.error("[Knotwork] unhandled rejection:", event.reason);
     };
     const onError = (event: ErrorEvent) => {
-      console.error("[Trousseau] uncaught error:", event.error ?? event.message);
+      console.error("[Knotwork] uncaught error:", event.error ?? event.message);
     };
 
     window.addEventListener("unhandledrejection", onRejection);

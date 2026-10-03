@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { migrate } from "@jfrusher/trousseau";
+import { migrate } from "@jfrusher/knotwork";
 import { nodeFontSource } from "@/apps/brigade/render/pdf/nodeFontSource";
 import { textOf } from "@/apps/brigade/render/pdf/readPdf";
 import { dayPlaces, readCast, readCeremony, readGuests, readSeating } from "@/lib/model/slices";
@@ -13,7 +13,7 @@ import { renderProcessionalSheet } from "./render/pdf/processionalSheet";
 import { renderRunningOrder } from "./render/pdf/runningOrder";
 import { orderRows, orderText, processionalRows, processionalText } from "./rows";
 
-const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 const doc = migrate(raw);
 const rows = processionalRows(readCeremony(doc).processional, readGuests(doc), readSeating(doc), readCast(doc), doc.event);
 

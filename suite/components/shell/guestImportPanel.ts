@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { readGuests } from "@/lib/model/slices";
 import type { Guest } from "@/lib/model/types";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 
 /**
  * Where an import reads the wedding from and writes it back to.
@@ -18,11 +18,11 @@ export interface ImportTarget {
 /** The wedding itself, as one undo step. */
 export const liveWedding: ImportTarget = {
   read: () => {
-    const { doc, raw } = useTrousseauStore.getState();
+    const { doc, raw } = useKnotworkStore.getState();
     return { event: doc.event, guests: readGuests(doc), seating: raw["seating"] };
   },
   commit: ({ guests, seating }) =>
-    useTrousseauStore
+    useKnotworkStore
       .getState()
       .setSlices(seating ? [["guests", guests], ["seating", seating]] : [["guests", guests]], {
         label: "the guest import",

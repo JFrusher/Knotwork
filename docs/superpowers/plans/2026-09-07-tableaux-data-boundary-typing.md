@@ -16,7 +16,7 @@ contract package's own `Event` type. Nothing else in Tableaux is touched, and
 no runtime validation is added to the load path.
 
 **Tech Stack:** TypeScript (already configured in `suite/tsconfig.json` with
-`allowJs` and `strict`), zod 4, Vitest, `@jfrusher/trousseau`.
+`allowJs` and `strict`), zod 4, Vitest, `@jfrusher/knotwork`.
 
 **Spec:** [docs/superpowers/specs/2026-09-02-tableaux-migration-design.md](../specs/2026-09-02-tableaux-migration-design.md)
 
@@ -587,8 +587,8 @@ git commit -m "Give Tableaux's plan schema real field shapes"
 
 **Interfaces:**
 - Consumes: `Guest`, `TableEntity` from `./planSchema.js` (Task 2); `mayWrite`,
-  `noteRead` from `@/lib/store/toolGeneration`; `useTrousseauStore` from
-  `@/lib/store/useTrousseauStore`.
+  `noteRead` from `@/lib/store/toolGeneration`; `useKnotworkStore` from
+  `@/lib/store/useKnotworkStore`.
 - Produces: the same three exports it has today — `readDoc`, `isEmpty`,
   `writeDoc` — now typed.
 
@@ -632,7 +632,7 @@ block at the top stays exactly as it is, and so does `SEATING_KEYS` and
 
 ```ts
 import { mayWrite, noteRead } from '@/lib/store/toolGeneration'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import type { Guest, TableEntity } from './planSchema.js'
 ```
 
@@ -668,7 +668,7 @@ Replace `readDoc`:
 /** The plan as Tableaux's store wants it, assembled from the shared wedding. */
 export function readDoc(): TableauxDoc {
   noteRead('tableaux')
-  const { raw, doc } = useTrousseauStore.getState()
+  const { raw, doc } = useKnotworkStore.getState()
   const seating = isRecord(raw.seating) ? raw.seating : {}
   const guests = isRecord(raw.guests) ? (raw.guests as Record<string, Guest>) : {}
   const meta = isRecord(seating.meta) ? seating.meta : {}
@@ -738,7 +738,7 @@ Expected: PASS, 174 tests. No behaviour changed, so nothing should move.
 - [x] **Step 6: Run the suite project too**
 
 Run from `suite/`: `npx vitest run --project suite`
-Expected: PASS. `sliceBridge` touches `useTrousseauStore` and `toolGeneration`,
+Expected: PASS. `sliceBridge` touches `useKnotworkStore` and `toolGeneration`,
 both of which the suite project covers, so a mistake in the shared-store types
 shows up here rather than in Tableaux's own tests.
 

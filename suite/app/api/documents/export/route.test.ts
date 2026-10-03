@@ -58,7 +58,7 @@ test("a member downloads their own wedding as an attachment", async () => {
   const response = await exported();
   expect(response.status).toBe(200);
   expect(response.headers.get("content-disposition")).toBe(
-    'attachment; filename="charis-and-jacob.trousseau.json"',
+    'attachment; filename="charis-and-jacob.knotwork.json"',
   );
   // Personal data must never sit in a shared cache.
   expect(response.headers.get("cache-control")).toContain("no-store");

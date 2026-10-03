@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { rowsFromRoom } from "./fromRoom";
 
 /**
@@ -11,11 +11,11 @@ import { rowsFromRoom } from "./fromRoom";
  */
 
 const seat = (guests: Record<string, unknown>, tables: Record<string, unknown>) => {
-  useTrousseauStore.getState().replaceDocument({ guests, seating: { tables } });
+  useKnotworkStore.getState().replaceDocument({ guests, seating: { tables } });
 };
 
 beforeEach(() => {
-  useTrousseauStore.getState().replaceDocument({});
+  useKnotworkStore.getState().replaceDocument({});
 });
 
 describe("printing from the room", () => {
@@ -34,7 +34,7 @@ describe("printing from the room", () => {
   });
 
   it("prints a side as the partners call it, not the id it is stored under", () => {
-    useTrousseauStore.getState().replaceDocument({
+    useKnotworkStore.getState().replaceDocument({
       event: { partners: ["Alex", "Sam"] },
       guests: {
         g1: { id: "g1", firstName: "Charis", side: "a" },

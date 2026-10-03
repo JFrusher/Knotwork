@@ -3,7 +3,7 @@
 import type { Confirm } from "@/components/ui/Confirm";
 import { describe, hasContent, summarise } from "@/lib/model/content";
 import { useCopies } from "@/lib/store/copies";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 
 /**
  * The example wedding, and the guard in front of it.
@@ -16,11 +16,11 @@ import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
 
 /** Nothing worth losing — by the same measure signing in uses. */
 export function isWeddingEmpty(): boolean {
-  return !hasContent(summarise(useTrousseauStore.getState().raw));
+  return !hasContent(summarise(useKnotworkStore.getState().raw));
 }
 
 export async function loadExampleWedding(confirm: Confirm): Promise<"loaded" | "cancelled"> {
-  const { raw, cloudStatus } = useTrousseauStore.getState();
+  const { raw, cloudStatus } = useKnotworkStore.getState();
   if (!isWeddingEmpty()) {
     // Synced, the example goes to the account too — and to whoever else is on
     // the wedding. The question has to say so.
@@ -36,13 +36,13 @@ export async function loadExampleWedding(confirm: Confirm): Promise<"loaded" | "
     if (!confirmed) return "cancelled";
     await useCopies.getState().keep(raw, "Replaced by the example wedding.");
   }
-  const response = await fetch("/fixtures/example-wedding.trousseau.json");
+  const response = await fetch("/fixtures/example-wedding.knotwork.json");
   if (!response.ok) throw new Error("The example wedding could not be loaded.");
   const document: unknown = await response.json();
 
   // `silent` keeps it out of the undo stack: the user did not make this change
   // by editing, and offering to undo it would offer to restore what they were
   // just warned they were replacing.
-  useTrousseauStore.getState().replaceDocument(document, { silent: true });
+  useKnotworkStore.getState().replaceDocument(document, { silent: true });
   return "loaded";
 }

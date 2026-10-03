@@ -1,6 +1,6 @@
 # Roadmap
 
-Where Trousseau is, and where it could go next. This page is the short
+Where Knotwork is, and where it could go next. This page is the short
 version for contributors. The full record of every decision, and why it was
 made, is in **[docs/PRODUCT-ROADMAP.md](docs/PRODUCT-ROADMAP.md)** and the
 dated specs in `docs/superpowers/specs/`.
@@ -18,7 +18,7 @@ The core promise: a set of planning tools that share one document, so nothing
 is retyped and nothing disagrees.
 
 - ✅ **The shared document.** One owner per slice, unknown keys preserved, and
-  a published MIT data contract (`@jfrusher/trousseau`).
+  a published MIT data contract (`@jfrusher/knotwork`).
 - ✅ **Guests.** One guest list, one importer (Joy, Zola, The Knot, any CSV),
   with a preview before anything is written.
 - ✅ **Seating.** A room drawn to scale, groups, families, keep-together and
@@ -47,7 +47,7 @@ is retyped and nothing disagrees.
   works offline on a phone.
 - ✅ **Guest seat links** and **supplier links** with confirmation.
 - ✅ **Guided tour** with an example wedding, and the ⌘/Ctrl-K palette.
-- ✅ **Download my wedding** as a single `.trousseau.json` file, and account
+- ✅ **Download my wedding** as a single `.knotwork.json` file, and account
   deletion that really deletes.
 - ✅ **Retention.** An account wedding nobody writes to for 24 months is
   deleted by a daily sweep, as the Privacy Policy states.
@@ -102,7 +102,7 @@ So nobody spends a weekend on something that will be declined:
 
 - **A paid tier, premium features or upsells.** This is the reason the
   project exists.
-- **RSVP collection.** Joy and similar services do this well. Trousseau
+- **RSVP collection.** Joy and similar services do this well. Knotwork
   imports the result and never unseats or silently deletes a guest.
 - **An admin panel or support login** that can browse weddings.
 - **An official Docker image**, for now. The app is one Node process and an

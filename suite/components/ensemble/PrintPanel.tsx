@@ -6,7 +6,7 @@ import { Button, Empty, Panel, Segmented } from "@/components/ui/controls";
 import { download } from "@/lib/data/file";
 import { shotListCsv } from "@/lib/ensemble/exports";
 import { resolveMembers } from "@/lib/cast/resolve";
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import type { CastSlice, Guest, Seating, Shots } from "@/lib/model/types";
 
 export function PrintPanel({
@@ -59,7 +59,7 @@ export function PrintPanel({
           pageSize,
           coupleNames: event.coupleNames,
           partners: event.partners,
-          generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+          generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
         },
         cast.customRoles,
       );

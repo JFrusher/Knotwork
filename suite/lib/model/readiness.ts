@@ -1,4 +1,4 @@
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { dayPlaces, guestName, isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
 import { neededAt, packingOf } from "@/lib/boxes/view";
 import { hiddenToolIds } from "./toolbox";
@@ -103,7 +103,7 @@ function boundTokens(design: Record<string, unknown> | null): Set<string> {
  * @param raw    the slices as stored, for the parts the readers narrow away
  * @param today  ISO date, for what falls due; the user's own today unless a test says otherwise
  */
-export function readiness(doc: Trousseau, raw: unknown, today: string = todayIso()): Readiness[] {
+export function readiness(doc: Knotwork, raw: unknown, today: string = todayIso()): Readiness[] {
   const out: Readiness[] = [];
   const guests = readGuests(doc);
   const people = Object.values(guests);

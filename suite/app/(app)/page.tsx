@@ -7,7 +7,7 @@ import { SetupPrompt } from "@/components/shell/SetupPrompt";
 export const metadata: Metadata = {
   // `absolute` so the root template does not append the suffix to the name it
   // is a suffix of.
-  title: { absolute: "Trousseau" },
+  title: { absolute: "Knotwork" },
   description: "Seating, stationery, timeline and crew for one wedding.",
 };
 

@@ -1,5 +1,5 @@
 import { beforeEach, expect, test, vi } from "vitest";
-import { emptyTrousseau } from "@jfrusher/trousseau";
+import { emptyKnotwork } from "@jfrusher/knotwork";
 
 const db = new Map<string, unknown>();
 vi.mock("idb-keyval", () => ({
@@ -9,9 +9,9 @@ vi.mock("idb-keyval", () => ({
   keys: async () => [...db.keys()],
 }));
 
-const { useTrousseauStore } = await import("./useTrousseauStore");
+const { useKnotworkStore } = await import("./useKnotworkStore");
 
-const store = () => useTrousseauStore.getState();
+const store = () => useKnotworkStore.getState();
 const names = () => Object.keys(store().doc.guests);
 
 function guest(id: string) {
@@ -20,8 +20,8 @@ function guest(id: string) {
 
 beforeEach(async () => {
   db.clear();
-  const doc = emptyTrousseau();
-  useTrousseauStore.setState({
+  const doc = emptyKnotwork();
+  useKnotworkStore.setState({
     status: "idle",
     error: null,
     savedAt: null,

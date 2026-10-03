@@ -12,7 +12,7 @@ const V3 = "33333333-3333-4333-8333-333333333333";
  * and the two are linked; then a history of three saved versions.
  */
 async function anAccount(page: Page) {
-  const example = await page.evaluate(async () => (await fetch("/fixtures/example-wedding.trousseau.json")).json());
+  const example = await page.evaluate(async () => (await fetch("/fixtures/example-wedding.knotwork.json")).json());
   const guests = example.guests as Record<string, unknown>;
   // Two guests fewer, and saved by a partner.
   const earlier = { ...example, guests: Object.fromEntries(Object.entries(guests).slice(2)) };
@@ -94,7 +94,7 @@ test("a link to Sync & history opens it", async ({ page }) => {
 
 test("a partner's change to one guest merges in; the same guest changed on both sides is laid side by side", async ({ page }) => {
   await seedExampleWedding(page);
-  const example = await page.evaluate(async () => (await fetch("/fixtures/example-wedding.trousseau.json")).json());
+  const example = await page.evaluate(async () => (await fetch("/fixtures/example-wedding.knotwork.json")).json());
   const id = (first: string, last: string) =>
     Object.values(example.guests as Record<string, { id: string; firstName: string; lastName: string }>).find(
       (guest) => guest.firstName === first && guest.lastName === last,

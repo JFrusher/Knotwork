@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import {
   DndContext,
   KeyboardSensor,

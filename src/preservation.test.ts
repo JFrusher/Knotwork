@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { SLICE_NAMES, mergeSlice, migrate, trousseauSchema } from "./envelope.js";
+import { SLICE_NAMES, mergeSlice, migrate, knotworkSchema } from "./envelope.js";
 
 /** A document carrying data from an app that does not exist yet. */
 const fromTheFuture = () => ({
-  kind: "trousseau",
+  kind: "knotwork",
   version: 1,
   event: { coupleNames: "Charis & Jacob", hashtag: "#cj2026" },
   guests: { "g-1": { name: "Priya" } },
@@ -52,7 +52,7 @@ describe("rule 2: unknown keys inside a known slice survive", () => {
 describe("no schema in this package strips unknown keys", () => {
   it("round-trips a document with an unknown slice byte-for-byte", () => {
     const before = fromTheFuture();
-    const after = trousseauSchema.parse(structuredClone(before)) as Record<string, unknown>;
+    const after = knotworkSchema.parse(structuredClone(before)) as Record<string, unknown>;
     for (const [key, value] of Object.entries(before)) {
       // Primitives compare whole; objects only need to be a superset, because
       // parsing fills defaults the input did not carry.
@@ -83,13 +83,13 @@ describe("mergeSlice writes the slice it is given", () => {
   }
 
   it("keeps an existing version rather than resetting it", () => {
-    const merged = mergeSlice({ kind: "trousseau", version: 7 }, "crew", {});
+    const merged = mergeSlice({ kind: "knotwork", version: 7 }, "crew", {});
     expect(merged["version"]).toBe(7);
   });
 
   it("stamps kind and version onto a document that has neither", () => {
     const merged = mergeSlice({}, "crew", {});
-    expect(merged["kind"]).toBe("trousseau");
+    expect(merged["kind"]).toBe("knotwork");
     expect(merged["version"]).toBe(1);
   });
 });

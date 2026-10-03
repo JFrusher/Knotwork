@@ -4,18 +4,18 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined }));
 vi.mock("@/lib/seating/normalise", () => ({ reconcileLoadedDocument: async () => {} }));
 
-const { useTrousseauStore } = await import("./useTrousseauStore");
+const { useKnotworkStore } = await import("./useKnotworkStore");
 const { StoreHydrator } = await import("./StoreHydrator");
 
 beforeEach(() => {
   vi.useFakeTimers();
-  useTrousseauStore.setState({
+  useKnotworkStore.setState({
     status: "idle",
     hydrate: vi.fn(async () => {
-      useTrousseauStore.setState({ status: "ready" });
+      useKnotworkStore.setState({ status: "ready" });
     }),
     startCloudSync: vi.fn(async () => {
-      useTrousseauStore.setState({ cloudStatus: "idle" });
+      useKnotworkStore.setState({ cloudStatus: "idle" });
     }),
     pullFromCloud: vi.fn(async () => {}),
   });
@@ -40,7 +40,7 @@ test("does not poll the account while the tab is open", async () => {
   await Promise.resolve();
 
   await vi.advanceTimersByTimeAsync(120_000);
-  expect(useTrousseauStore.getState().pullFromCloud).not.toHaveBeenCalled();
+  expect(useKnotworkStore.getState().pullFromCloud).not.toHaveBeenCalled();
 });
 
 test("pulls when the tab becomes visible again", async () => {
@@ -53,7 +53,7 @@ test("pulls when the tab becomes visible again", async () => {
   Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
   document.dispatchEvent(new Event("visibilitychange"));
 
-  expect(useTrousseauStore.getState().pullFromCloud).toHaveBeenCalledTimes(1);
+  expect(useKnotworkStore.getState().pullFromCloud).toHaveBeenCalledTimes(1);
 });
 
 test("does not pull on visibilitychange while the tab is hidden", async () => {
@@ -66,5 +66,5 @@ test("does not pull on visibilitychange while the tab is hidden", async () => {
   Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
   document.dispatchEvent(new Event("visibilitychange"));
 
-  expect(useTrousseauStore.getState().pullFromCloud).not.toHaveBeenCalled();
+  expect(useKnotworkStore.getState().pullFromCloud).not.toHaveBeenCalled();
 });

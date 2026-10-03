@@ -31,21 +31,21 @@ export const metadata: Metadata = {
   // resolve against whatever host they happened to fetch from.
   metadataBase: new URL(siteUrl()),
   title: {
-    default: "Trousseau",
+    default: "Knotwork",
     // Pages set their own; this keeps the suffix in one place for the rest.
-    template: "%s · Trousseau",
+    template: "%s · Knotwork",
   },
   description,
-  applicationName: "Trousseau",
+  applicationName: "Knotwork",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    siteName: "Trousseau",
-    title: "Trousseau",
+    siteName: "Knotwork",
+    title: "Knotwork",
     description,
     locale: "en_GB",
   },
-  twitter: { card: "summary_large_image", title: "Trousseau", description },
+  twitter: { card: "summary_large_image", title: "Knotwork", description },
 };
 
 export default function RootLayout({

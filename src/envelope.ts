@@ -3,8 +3,14 @@ import { daySchema } from "./day.js";
 import { eventSchema } from "./event.js";
 import { barSchema, boxesSchema, castSchema, ceremonySchema, crewSchema, guestsSchema, seatingSchema, shotsSchema, stationerySchema, timelineSchema, toolsSchema } from "./slices.js";
 
-export const TROUSSEAU_KIND = "trousseau";
-export const TROUSSEAU_VERSION = 1;
+export const KNOTWORK_KIND = "knotwork";
+export const KNOTWORK_VERSION = 1;
+
+/**
+ * What `kind` said before the rename. Every file exported, every copy on a
+ * device and every synced document still says it, and is the same document.
+ */
+export const LEGACY_KINDS: readonly string[] = ["trousseau"];
 
 /**
  * The slices an app may publish. `sources` is deliberately absent: it is not
@@ -37,9 +43,12 @@ export type SliceName = (typeof SLICE_NAMES)[number];
  * means deleting a slice belonging to an app that has not been written yet.
  * That is the single worst thing this package could do.
  */
-export const trousseauSchema = z.looseObject({
-  kind: z.literal(TROUSSEAU_KIND).default(TROUSSEAU_KIND),
-  version: z.number().default(TROUSSEAU_VERSION),
+export const knotworkSchema = z.looseObject({
+  kind: z.preprocess(
+    (kind) => (typeof kind === "string" && LEGACY_KINDS.includes(kind) ? KNOTWORK_KIND : kind),
+    z.literal(KNOTWORK_KIND).default(KNOTWORK_KIND),
+  ),
+  version: z.number().default(KNOTWORK_VERSION),
   event: eventSchema.default(() => eventSchema.parse({})),
   guests: guestsSchema,
   seating: seatingSchema,
@@ -58,11 +67,11 @@ export const trousseauSchema = z.looseObject({
   sources: z.record(z.string(), z.unknown()).default(() => ({})),
 });
 
-export type Trousseau = z.infer<typeof trousseauSchema>;
+export type Knotwork = z.infer<typeof knotworkSchema>;
 
 /** A new, empty wedding. A fresh object every call. */
-export function emptyTrousseau(): Trousseau {
-  return trousseauSchema.parse({});
+export function emptyKnotwork(): Knotwork {
+  return knotworkSchema.parse({});
 }
 
 /**
@@ -74,16 +83,16 @@ export function emptyTrousseau(): Trousseau {
  *
  * Throws rather than returning a result: a caller that cannot read the document
  * must not proceed to write over it. Callers that want to tolerate failure use
- * `trousseauSchema.safeParse` and leave the stored bytes alone.
+ * `knotworkSchema.safeParse` and leave the stored bytes alone.
  */
-export function migrate(doc: unknown): Trousseau {
-  return trousseauSchema.parse(doc);
+export function migrate(doc: unknown): Knotwork {
+  return knotworkSchema.parse(doc);
 }
 
 /**
  * Set one slice on a raw stored document, copying every other key untouched.
  *
- * Takes and returns *raw* data, not a parsed `Trousseau`, and that is the whole
+ * Takes and returns *raw* data, not a parsed `Knotwork`, and that is the whole
  * point. Parsing produces only what the schemas describe; if a schema is ever
  * wrong — a plain `z.object()` slipped in, a slice not yet added here — writing
  * the parsed result back would delete real user data. Merging into the raw
@@ -104,8 +113,8 @@ export function mergeSlice(
       : {};
   return {
     ...base,
-    kind: TROUSSEAU_KIND,
-    version: typeof base["version"] === "number" ? base["version"] : TROUSSEAU_VERSION,
+    kind: KNOTWORK_KIND,
+    version: typeof base["version"] === "number" ? base["version"] : KNOTWORK_VERSION,
     [slice]: value,
   };
 }

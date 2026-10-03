@@ -2,7 +2,7 @@
 
 import { Database } from "lucide-react";
 import { useShallow } from "zustand/shallow";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { saveState, type SaveTone } from "@/lib/store/saveState";
 
 /**
@@ -35,7 +35,7 @@ const BUTTON = {
 };
 
 export function DataButton({ onOpen }: { onOpen: () => void }) {
-  const state = useTrousseauStore(
+  const state = useKnotworkStore(
     useShallow((s) =>
       saveState({
         status: s.status,

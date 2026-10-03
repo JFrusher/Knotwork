@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useGuestLink } from "@/lib/share/guestLink";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 
 /** After the last edit, so an evening of seating republishes a few times, not hundreds. */
 const REPUBLISH_DELAY_MS = 3000;
@@ -14,7 +14,7 @@ const REPUBLISH_DELAY_MS = 3000;
  * link.
  */
 export function GuestLinkKeeper() {
-  const weddingId = useTrousseauStore((s) => s.weddingId);
+  const weddingId = useKnotworkStore((s) => s.weddingId);
   const load = useGuestLink((s) => s.load);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export function GuestLinkKeeper() {
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const unsubscribe = useTrousseauStore.subscribe((state, prev) => {
+    const unsubscribe = useKnotworkStore.subscribe((state, prev) => {
       if (state.doc === prev.doc || !useGuestLink.getState().link) return;
       clearTimeout(timer);
       timer = setTimeout(() => void useGuestLink.getState().keepCurrent(), REPUBLISH_DELAY_MS);

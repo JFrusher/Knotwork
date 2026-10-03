@@ -14,7 +14,7 @@
     "esModuleInterop": true,
     "skipLibCheck": false,
     "noEmit": true,
-    "paths": { "@jfrusher/trousseau": ["../dist/index.d.ts"] }
+    "paths": { "@jfrusher/knotwork": ["../dist/index.d.ts"] }
   },
   "include": ["consumer.ts"]
 }

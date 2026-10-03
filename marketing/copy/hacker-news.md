@@ -18,10 +18,10 @@ and code review, which HN welcomes. Leave stars to the README.
 
 Pick one. Each is under 80 characters.
 
-1. `Show HN: Trousseau – open-source wedding planner where the tools share one document`
+1. `Show HN: Knotwork – open-source wedding planner where the tools share one document`
 2. `Show HN: I built an open-source, self-hostable wedding planner`
 3. `Show HN: A local-first wedding planner – seating, place cards, run sheet, one file`
-4. `Show HN: Trousseau – free wedding planning tools that share one guest list`
+4. `Show HN: Knotwork – free wedding planning tools that share one guest list`
 
 **Recommended: 1.** It names the idea that is actually new, and "one document"
 is what an HN reader will want to argue about.
@@ -33,7 +33,7 @@ is what an HN reader will want to argue about.
 > Try it (no sign-up, nothing leaves your browser): https://trousseau-suite.vercel.app
 > Code: https://github.com/JFrusher/Trousseau
 >
-> I built Trousseau for my own wedding, after two of the apps we were using
+> I built Knotwork for my own wedding, after two of the apps we were using
 > disagreed about what day it was.
 >
 > Every wedding planning tool I tried was a set of separate pages sharing a
@@ -43,7 +43,7 @@ is what an HN reader will want to argue about.
 > is a spreadsheet of your guests' names, emails, family relationships and,
 > via dietary requirements, sometimes medical details.
 >
-> So Trousseau is one JSON document per wedding, with eleven tools around it:
+> So Knotwork is one JSON document per wedding, with eleven tools around it:
 > seating (a room drawn to scale), place cards, a timeline, job delegation,
 > group photos, ceremony, packing boxes, a bar calculator, money, a checklist
 > and a phone "binder" for the day. Each tool owns one slice of the document
@@ -108,7 +108,7 @@ is what an HN reader will want to argue about.
 >
 > Licensing: the app is AGPL-3.0, so nobody can run a closed paid fork of
 > the hosted service. The data contract is an MIT npm package
-> (`@jfrusher/trousseau`), so anyone can build a tool that reads the file.
+> (`@jfrusher/knotwork`), so anyone can build a tool that reads the file.
 > There is no paid tier and there won't be one.
 >
 > What I'd really like from HN:
@@ -158,7 +158,7 @@ is what an HN reader will want to argue about.
 > all, or self-host it.
 
 **"Does it do RSVPs?"**
-> No, on purpose. Joy and others do that well. Trousseau imports your RSVPs
+> No, on purpose. Joy and others do that well. Knotwork imports your RSVPs
 > from their CSV exports and flags confirmed guests with no table.
 
 **"Did the AI write it all?"**

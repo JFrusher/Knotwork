@@ -12,7 +12,7 @@ import { boxesCsv, boxRows } from "@/lib/boxes/rows";
 import { download } from "@/lib/data/file";
 import { dayPlaces, personName, type Place } from "@/lib/model/slices";
 import { useBoxes, useCrew, useEvent, useGuests, useStatus, useWriters } from "@/lib/model/useSuite";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import type { Box, Boxes, Crew, Guest } from "@/lib/model/types";
 
 const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-sm text-charcoal focus:border-gold";
@@ -29,7 +29,7 @@ export function BoxesBoard() {
   const crew = useCrew();
   const guests = useGuests();
   const event = useEvent();
-  const places = useTrousseauStore((s) => dayPlaces(s.doc));
+  const places = useKnotworkStore((s) => dayPlaces(s.doc));
   const { setBoxes } = useWriters();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -56,7 +56,7 @@ export function BoxesBoard() {
           : await (await import("@/lib/boxes/render/pdf/packingList")).renderPackingList(rows(), {
               fontSource,
               coupleNames: event.coupleNames,
-              generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+              generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
             });
       download(`${stem}-${what === "labels" ? "box-labels" : "packing-list"}.pdf`, new Blob([bytes as BlobPart], { type: "application/pdf" }));
     } catch (cause) {

@@ -22,7 +22,7 @@ import { buyWords, forWords, shoppingCsv, shoppingList, spendWords } from "@/lib
 import { barSum, figure, mixOf, type LineSum } from "@/lib/bar/sum";
 import { download } from "@/lib/data/file";
 import { useBar, useEvent, useStatus, useWriters } from "@/lib/model/useSuite";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { BAR_KINDS, CROWDS, POURS, SHOPS, type Bar, type BarKind, type Figure, type MixedPart, type Pour } from "@/lib/model/types";
 
 const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-sm text-charcoal tabular-nums focus:border-gold";
@@ -44,7 +44,7 @@ const pourName = (kind: BarKind, pour: Pour): string =>
 export function BarBoard() {
   const status = useStatus();
   const bar = useBar();
-  const sum = useTrousseauStore((s) => barSum(s.doc));
+  const sum = useKnotworkStore((s) => barSum(s.doc));
   const event = useEvent();
   const { setBar } = useWriters();
   const [note, setNote] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export function BarBoard() {
         coupleNames: event.coupleNames,
         forWhom: forWords(sum),
         spend: spendWords(sum),
-        generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+        generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
       });
       download(`${stem}-drinks.pdf`, new Blob([bytes as BlobPart], { type: "application/pdf" }));
     } catch (cause) {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
 import { seatId } from '../utils/ids'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
 
 const mkGuest = (id, first, last) => ({
@@ -80,14 +80,14 @@ describe('swapSeatGuests', () => {
 
   it('is exactly reversible via undo / redo', () => {
     s().swapSeatGuests('t1', 0, 1)
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
 
     expect(s().tables.t1.assignedGuestIds[0]).toBe('g1')
     expect(s().tables.t1.assignedGuestIds[1]).toBe('g2')
     expect(s().guests.g1.assignedSeatId).toBe(seatId('t1', 0))
     expect(s().guests.g2.assignedSeatId).toBe(seatId('t1', 1))
 
-    useTrousseauStore.getState().redo()
+    useKnotworkStore.getState().redo()
     expect(s().tables.t1.assignedGuestIds[0]).toBe('g2')
     expect(s().guests.g1.assignedSeatId).toBe(seatId('t1', 1))
   })

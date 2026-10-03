@@ -1,6 +1,6 @@
 "use client";
 
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 
 /**
  * Holds a tool back until the stored wedding has actually been read.
@@ -19,8 +19,8 @@ import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
  * edit — is simply what it shows next, with nothing to remount.
  */
 export function WhenDocumentReady({ children }: { children: React.ReactNode }) {
-  const status = useTrousseauStore((s) => s.status);
-  const error = useTrousseauStore((s) => s.error);
+  const status = useKnotworkStore((s) => s.status);
+  const error = useKnotworkStore((s) => s.error);
 
   if (status === "error") {
     return (

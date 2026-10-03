@@ -1,10 +1,10 @@
 import { del as idbDel, get as idbGet, set as idbSet } from "idb-keyval";
 import { forgetLink, readLink, writeLink, type CloudLink } from "@/lib/documents/cloudSync";
-import { STORAGE_KEY } from "./useTrousseauStore";
+import { STORAGE_KEY } from "./useKnotworkStore";
 
 /** The wedding this device was last asked to open — read by the next start. */
-const OPEN_KEY = "trousseau.cloud.open";
-const stashKey = (weddingId: string) => `trousseau.wedding.${weddingId}`;
+const OPEN_KEY = "knotwork.cloud.open";
+const stashKey = (weddingId: string) => `knotwork.wedding.${weddingId}`;
 
 interface Stash {
   document: unknown;

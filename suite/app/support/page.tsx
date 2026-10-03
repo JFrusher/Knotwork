@@ -4,7 +4,7 @@ import { KO_FI_URL } from "@/lib/support";
 
 export const metadata: Metadata = {
   title: "Support",
-  description: "Trousseau is free and stays free. A tip helps keep the hosted copy running.",
+  description: "Knotwork is free and stays free. A tip helps keep the hosted copy running.",
   alternates: { canonical: "/support" },
 };
 
@@ -15,11 +15,11 @@ export const metadata: Metadata = {
 export default function Support() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Trousseau</p>
-      <h1 className="mt-3 text-3xl">Support Trousseau</h1>
+      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
+      <h1 className="mt-3 text-3xl">Support Knotwork</h1>
 
       <p className="mt-6 text-slate">
-        Trousseau is free, and it will stay free. Every tool works in full without an account or a
+        Knotwork is free, and it will stay free. Every tool works in full without an account or a
         payment, and nothing will ever be put behind one.
       </p>
 
@@ -67,7 +67,7 @@ export default function Support() {
           href="/"
           className="inline-flex min-h-11 items-center underline underline-offset-2 hover:text-charcoal"
         >
-          Back to Trousseau
+          Back to Knotwork
         </Link>
       </p>
     </main>

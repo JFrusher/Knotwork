@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Cloud, Laptop } from "lucide-react";
 import { describe, summarise } from "@/lib/model/content";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { Button, Panel } from "@/components/ui/controls";
 
 /**
@@ -15,10 +15,10 @@ import { Button, Panel } from "@/components/ui/controls";
  * Every other meeting of the two settles itself without losing anything.
  */
 export function WeddingChoice() {
-  const choice = useTrousseauStore((s) => s.cloudChoice);
-  const raw = useTrousseauStore((s) => s.raw);
-  const chooseWedding = useTrousseauStore((s) => s.chooseWedding);
-  const cloudError = useTrousseauStore((s) => s.cloudError);
+  const choice = useKnotworkStore((s) => s.cloudChoice);
+  const raw = useKnotworkStore((s) => s.raw);
+  const chooseWedding = useKnotworkStore((s) => s.chooseWedding);
+  const cloudError = useKnotworkStore((s) => s.cloudError);
   const [busy, setBusy] = useState(false);
   if (!choice) return null;
 

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { assemble, partInfo, partsOf, withPart } from "./parts";
 
-const example = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const example = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 
 describe("a wedding in parts", () => {
   it("puts the example wedding back together exactly as it was", () => {

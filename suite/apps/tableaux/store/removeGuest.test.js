@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
 
 const guest = (id, first, extra = {}) => ({
@@ -55,7 +55,7 @@ describe('removeGuest', () => {
 
   it('undoes a deletion exactly', () => {
     s().removeGuest('g1')
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().guests.g1).toBeDefined()
     expect(s().tables.t1.assignedGuestIds).toContain('g1')
     expect(s().groups.grp1.memberIds).toContain('g1')

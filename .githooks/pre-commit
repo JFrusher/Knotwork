@@ -8,9 +8,9 @@
 #   git config core.hooksPath .githooks
 set -e
 
-if [ -f data/wedding.trousseau.json ]; then
+if [ -f data/wedding.knotwork.json ]; then
   if [ -f dist/index.js ]; then
-    node scripts/validate-wedding.mjs data/wedding.trousseau.json
+    node scripts/validate-wedding.mjs data/wedding.knotwork.json
   else
     echo "pre-commit: skipping validation, dist/ is not built (npm run build)"
   fi

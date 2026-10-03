@@ -33,7 +33,7 @@ import type {
 } from "../core/types";
 import type { LoadedFont } from "../core/text/measure";
 import type { PrinterProfile } from "../core/print/printerProfile";
-import { useTrousseauStore, type WriteOptions } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore, type WriteOptions } from "@/lib/store/useKnotworkStore";
 import { DESIGN_KEYS, designOf, initialDesign, type Design } from "./design";
 import { readDesign, writeDesign } from "./sliceBridge";
 
@@ -180,7 +180,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     ),
   });
 
-  const opened = readDesign(useTrousseauStore.getState().raw);
+  const opened = readDesign(useKnotworkStore.getState().raw);
   return {
     ...opened.design,
     designProblem: opened.problem,
@@ -574,7 +574,7 @@ function follow(raw: Record<string, unknown>): void {
   }));
 }
 
-useTrousseauStore.subscribe((state, prev) => {
+useKnotworkStore.subscribe((state, prev) => {
   if (state.raw["stationery"] !== prev.raw["stationery"]) follow(state.raw);
 });
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { browserClient } from "@/lib/accounts/browserClient";
 import { localDay, longDate } from "@/lib/dates";
 import { changedSinceConfirmed, supplierUrl, useSupplierLinks } from "@/lib/suppliers/links";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { useConfirm } from "@/components/ui/Confirm";
 import { Button } from "@/components/ui/fields";
 import styles from "./CrewPanel.module.css";
@@ -18,7 +18,7 @@ const dayOf = (at: string) => longDate(localDay(new Date(at)));
  * you they have it. Once made it keeps itself current (`SupplierLinkKeeper`).
  */
 export function SupplierLinkField({ teamId, name }: { teamId: string; name: string }) {
-  const weddingId = useTrousseauStore((s) => s.weddingId);
+  const weddingId = useKnotworkStore((s) => s.weddingId);
   const link = useSupplierLinks((s) => s.links?.find((entry) => entry.teamId === teamId));
   const loaded = useSupplierLinks((s) => s.links !== undefined);
   const publish = useSupplierLinks((s) => s.publish);

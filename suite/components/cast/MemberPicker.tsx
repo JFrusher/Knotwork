@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Heart, Plus } from "lucide-react";
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { Button, TextField } from "@/components/ui/controls";
 import { GuestChip, GuestPicker } from "@/components/cast/GuestPicker";
 import { memberDescriptor } from "@/lib/cast/resolve";

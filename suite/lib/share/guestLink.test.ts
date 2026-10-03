@@ -2,11 +2,11 @@ import { beforeEach, expect, test, vi } from "vitest";
 
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined, del: async () => undefined }));
 
-const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { guestView, useGuestLink } = await import("./guestLink");
 const { memoryStore } = await import("./store");
 const { importShareKey, unseal } = await import("./crypto");
-const { emptyTrousseau, migrate } = await import("@jfrusher/trousseau");
+const { emptyKnotwork, migrate } = await import("@jfrusher/knotwork");
 
 /*
  * The account's side, with the database's rules (proved in migrations.test.ts):
@@ -34,7 +34,7 @@ vi.stubGlobal(
 
 type Raw = Record<string, unknown>;
 function wedding(seat: string, dietary = ""): Raw {
-  const doc = emptyTrousseau();
+  const doc = emptyKnotwork();
   return {
     ...doc,
     event: { ...doc.event, coupleNames: "Alex & Sam" },
@@ -47,7 +47,7 @@ function wedding(seat: string, dietary = ""): Raw {
     },
   } as unknown as Raw;
 }
-const open = (raw: Raw) => useTrousseauStore.setState({ status: "ready", raw, doc: migrate(raw) });
+const open = (raw: Raw) => useKnotworkStore.setState({ status: "ready", raw, doc: migrate(raw) });
 
 async function whatGuestsSee() {
   const link = (await server.linkOf(WEDDING))!;

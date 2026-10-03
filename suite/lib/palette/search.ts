@@ -1,4 +1,4 @@
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { guestName, readCrew, readGuests, readSeating, readTimeline, resolvedDay } from "@/lib/model/slices";
 import { longDate } from "@/lib/dates";
@@ -23,7 +23,7 @@ export interface Entry {
 
 const KIND_ORDER: EntryKind[] = ["Page", "Guest", "Table", "Block", "Job", "Task"];
 
-export function entries(doc: Trousseau): Entry[] {
+export function entries(doc: Knotwork): Entry[] {
   const guests = readGuests(doc);
   const tables = readSeating(doc).tables;
   const crew = readCrew(doc);

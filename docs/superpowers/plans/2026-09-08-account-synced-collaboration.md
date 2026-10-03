@@ -4,15 +4,15 @@
 
 **Goal:** Close the four remaining gaps between what's already built (automatic account-based document sync) and "two partners, signed in anywhere, always see the current wedding": periodic/focus-triggered pulling, per-slice conflict merging instead of whole-document, retiring the redundant passphrase UI, and syncing fonts/artwork through the account-based system.
 
-**Architecture:** Extend the existing `useTrousseauStore` cloud-sync machinery (`lib/documents/cloudSync.ts`, already pushing on every edit and pulling once at load) with a pure per-slice merge function and a new `pullFromCloud` action, wire it to an interval + visibility listener in `StoreHydrator`, replace the whole-document conflict UI in `DataManager.tsx` with a per-slice one, remove `SharePanel`, and add a Supabase Storage-backed asset transport parallel to the document transport.
+**Architecture:** Extend the existing `useKnotworkStore` cloud-sync machinery (`lib/documents/cloudSync.ts`, already pushing on every edit and pulling once at load) with a pure per-slice merge function and a new `pullFromCloud` action, wire it to an interval + visibility listener in `StoreHydrator`, replace the whole-document conflict UI in `DataManager.tsx` with a per-slice one, remove `SharePanel`, and add a Supabase Storage-backed asset transport parallel to the document transport.
 
-**Tech Stack:** Next.js (suite/), Zustand, Supabase (Postgres + Storage), Vitest, `@jfrusher/trousseau` contract package.
+**Tech Stack:** Next.js (suite/), Zustand, Supabase (Postgres + Storage), Vitest, `@jfrusher/knotwork` contract package.
 
 **Spec:** `docs/superpowers/specs/2026-09-08-account-synced-collaboration-design.md`
 
 ## Global Constraints
 
-- Every top-level slice iterated by name comes from `SLICE_NAMES` (imported from `@jfrusher/trousseau`), never a hand-typed list — the contract has 8 slices (`event`, `guests`, `seating`, `day`, `crew`, `stationery`, `shots`, `timeline`), not 7; a hand-typed list is exactly the kind of drift this plan must not introduce.
+- Every top-level slice iterated by name comes from `SLICE_NAMES` (imported from `@jfrusher/knotwork`), never a hand-typed list — the contract has 8 slices (`event`, `guests`, `seating`, `day`, `crew`, `stationery`, `shots`, `timeline`), not 7; a hand-typed list is exactly the kind of drift this plan must not introduce.
 - Nothing in this plan modifies `lib/sync/` (the passphrase system) beyond removing its one UI mount point — full deletion is an explicit follow-up in the spec, not this plan.
 - All new pure logic (fingerprinting, merging) gets direct unit tests before the store integration that consumes it, per this codebase's existing pattern (`lib/sync/client.test.ts` tests the equivalent per-slice logic today).
 
@@ -97,7 +97,7 @@ git commit -m "feat(documents): add content fingerprint helper"
 - Test: `suite/lib/documents/mergeCloudDocument.test.ts`
 
 **Interfaces:**
-- Consumes: `fingerprint` from Task 1. `SLICE_NAMES`, `type SliceName` from `@jfrusher/trousseau`.
+- Consumes: `fingerprint` from Task 1. `SLICE_NAMES`, `type SliceName` from `@jfrusher/knotwork`.
 - Produces:
   - `interface SliceConflict { slice: SliceName; theirs: unknown }`
   - `interface MergeResult { raw: Record<string, unknown>; conflicts: SliceConflict[]; agreed: Partial<Record<SliceName, string>> }`
@@ -110,7 +110,7 @@ git commit -m "feat(documents): add content fingerprint helper"
 ```ts
 // suite/lib/documents/mergeCloudDocument.test.ts
 import { expect, test } from "vitest";
-import { SLICE_NAMES } from "@jfrusher/trousseau";
+import { SLICE_NAMES } from "@jfrusher/knotwork";
 import { fingerprint } from "./fingerprint";
 import { fingerprintAllSlices, mergeCloudDocument } from "./mergeCloudDocument";
 
@@ -197,7 +197,7 @@ Expected: FAIL — module does not exist.
 
 ```ts
 // suite/lib/documents/mergeCloudDocument.ts
-import { SLICE_NAMES, type SliceName } from "@jfrusher/trousseau";
+import { SLICE_NAMES, type SliceName } from "@jfrusher/knotwork";
 import { fingerprint } from "./fingerprint";
 
 /**
@@ -293,12 +293,12 @@ git commit -m "feat(documents): add per-slice merge over the whole-document clou
 ## Task 3: Wire per-slice merge into the store
 
 **Files:**
-- Modify: `suite/lib/store/useTrousseauStore.ts`
-- Modify: `suite/lib/store/useTrousseauStore.cloudSync.test.ts`
+- Modify: `suite/lib/store/useKnotworkStore.ts`
+- Modify: `suite/lib/store/useKnotworkStore.cloudSync.test.ts`
 
 **Interfaces:**
-- Consumes: `mergeCloudDocument`, `fingerprintAllSlices`, `type SliceConflict` from Task 2. `fetchCloudDocument`, `pushDocument` from `lib/documents/cloudSync.ts` (unchanged). `mergeSlice`, `type SliceName` from `@jfrusher/trousseau` (already imported).
-- Produces (new/changed `TrousseauState` members, replacing the whole-document conflict fields):
+- Consumes: `mergeCloudDocument`, `fingerprintAllSlices`, `type SliceConflict` from Task 2. `fetchCloudDocument`, `pushDocument` from `lib/documents/cloudSync.ts` (unchanged). `mergeSlice`, `type SliceName` from `@jfrusher/knotwork` (already imported).
+- Produces (new/changed `KnotworkState` members, replacing the whole-document conflict fields):
   - `cloudAgreed: Partial<Record<SliceName, string>>`
   - `cloudConflicts: SliceConflict[]` (replaces `cloudConflict: { document; version } | null`)
   - `pullFromCloud: () => Promise<void>` (new)
@@ -309,7 +309,7 @@ This task changes an existing public interface (`cloudConflict` → `cloudConfli
 
 - [ ] **Step 1: Update the test file's expectations for the new shape**
 
-Replace the existing `cloudConflict`-shaped tests in `suite/lib/store/useTrousseauStore.cloudSync.test.ts` (lines 53-80) with the new shape, and add coverage for the new behavior:
+Replace the existing `cloudConflict`-shaped tests in `suite/lib/store/useKnotworkStore.cloudSync.test.ts` (lines 53-80) with the new shape, and add coverage for the new behavior:
 
 ```ts
 // Replace the beforeEach's cloudConflict field:
@@ -319,8 +319,8 @@ Replace the existing `cloudConflict`-shaped tests in `suite/lib/store/useTrousse
 
 // Replace "a rejected write surfaces as a conflict, not an auto-merge" with:
 test("a rejected write surfaces per-slice conflicts, not an auto-merge", async () => {
-  const base = emptyTrousseau() as unknown as Record<string, unknown>;
-  useTrousseauStore.setState({
+  const base = emptyKnotwork() as unknown as Record<string, unknown>;
+  useKnotworkStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
     cloudAgreed: fingerprintAllSlices(base),
@@ -332,8 +332,8 @@ test("a rejected write surfaces per-slice conflicts, not an auto-merge", async (
     version: 2,
     document: { ...base, event: { coupleNames: "theirs" } },
   });
-  await useTrousseauStore.getState().syncToCloud();
-  const state = useTrousseauStore.getState();
+  await useKnotworkStore.getState().syncToCloud();
+  const state = useKnotworkStore.getState();
   expect(state.cloudStatus).toBe("conflict");
   expect(state.cloudConflicts).toEqual([{ slice: "event", theirs: { coupleNames: "theirs" } }]);
   // The conflicting slice keeps the local value until resolved.
@@ -341,8 +341,8 @@ test("a rejected write surfaces per-slice conflicts, not an auto-merge", async (
 });
 
 test("a rejected write with no actual slice overlap resolves itself and re-pushes", async () => {
-  const base = emptyTrousseau() as unknown as Record<string, unknown>;
-  useTrousseauStore.setState({
+  const base = emptyKnotwork() as unknown as Record<string, unknown>;
+  useKnotworkStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
     cloudAgreed: fingerprintAllSlices(base),
@@ -357,9 +357,9 @@ test("a rejected write with no actual slice overlap resolves itself and re-pushe
     })
     .mockResolvedValueOnce({ ok: true, version: 3, warnings: [] });
 
-  await useTrousseauStore.getState().syncToCloud();
+  await useKnotworkStore.getState().syncToCloud();
 
-  const state = useTrousseauStore.getState();
+  const state = useKnotworkStore.getState();
   expect(state.cloudConflicts).toEqual([]);
   expect(state.cloudStatus).toBe("idle");
   expect(state.cloudVersion).toBe(3);
@@ -369,8 +369,8 @@ test("a rejected write with no actual slice overlap resolves itself and re-pushe
 });
 
 test("resolveConflict(theirs) applies the server's slice and clears that conflict", async () => {
-  const base = emptyTrousseau() as unknown as Record<string, unknown>;
-  useTrousseauStore.setState({
+  const base = emptyKnotwork() as unknown as Record<string, unknown>;
+  useKnotworkStore.setState({
     cloudStatus: "conflict",
     cloudVersion: 2,
     cloudAgreed: fingerprintAllSlices(base),
@@ -378,16 +378,16 @@ test("resolveConflict(theirs) applies the server's slice and clears that conflic
     raw: { ...base, event: { coupleNames: "mine" } },
   });
 
-  useTrousseauStore.getState().resolveConflict("event", "theirs");
+  useKnotworkStore.getState().resolveConflict("event", "theirs");
 
-  const state = useTrousseauStore.getState();
+  const state = useKnotworkStore.getState();
   expect(state.cloudConflicts).toEqual([]);
   expect((state.raw as Record<string, unknown>).event).toEqual({ coupleNames: "theirs" });
 });
 
 test("resolveConflict(mine) drops the conflict and keeps the local slice", async () => {
-  const base = emptyTrousseau() as unknown as Record<string, unknown>;
-  useTrousseauStore.setState({
+  const base = emptyKnotwork() as unknown as Record<string, unknown>;
+  useKnotworkStore.setState({
     cloudStatus: "conflict",
     cloudVersion: 2,
     cloudAgreed: fingerprintAllSlices(base),
@@ -395,16 +395,16 @@ test("resolveConflict(mine) drops the conflict and keeps the local slice", async
     raw: { ...base, event: { coupleNames: "mine" } },
   });
 
-  useTrousseauStore.getState().resolveConflict("event", "mine");
+  useKnotworkStore.getState().resolveConflict("event", "mine");
 
-  const state = useTrousseauStore.getState();
+  const state = useKnotworkStore.getState();
   expect(state.cloudConflicts).toEqual([]);
   expect((state.raw as Record<string, unknown>).event).toEqual({ coupleNames: "mine" });
 });
 
 test("pullFromCloud takes a slice that only changed on the server", async () => {
-  const base = emptyTrousseau() as unknown as Record<string, unknown>;
-  useTrousseauStore.setState({
+  const base = emptyKnotwork() as unknown as Record<string, unknown>;
+  useKnotworkStore.setState({
     cloudStatus: "idle",
     cloudVersion: 1,
     cloudAgreed: fingerprintAllSlices(base),
@@ -416,17 +416,17 @@ test("pullFromCloud takes a slice that only changed on the server", async () => 
     version: 2,
   });
 
-  await useTrousseauStore.getState().pullFromCloud();
+  await useKnotworkStore.getState().pullFromCloud();
 
-  const state = useTrousseauStore.getState();
+  const state = useKnotworkStore.getState();
   expect((state.raw as Record<string, unknown>).guests).toEqual({ g1: { id: "g1" } });
   expect(state.cloudVersion).toBe(2);
   expect(state.cloudConflicts).toEqual([]);
 });
 
 test("pullFromCloud does nothing when the server version hasn't moved", async () => {
-  useTrousseauStore.setState({ cloudStatus: "idle", cloudVersion: 5 });
-  await useTrousseauStore.getState().pullFromCloud();
+  useKnotworkStore.setState({ cloudStatus: "idle", cloudVersion: 5 });
+  await useKnotworkStore.getState().pullFromCloud();
   expect(fetchCloudDocumentMock).not.toHaveBeenCalled();
 });
 ```
@@ -439,19 +439,19 @@ Also delete the old whole-document conflict test ("a rejected write surfaces as 
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `npx vitest run lib/store/useTrousseauStore.cloudSync.test.ts`
+Run: `npx vitest run lib/store/useKnotworkStore.cloudSync.test.ts`
 Expected: FAIL — `pullFromCloud`/`resolveConflict`/`cloudAgreed`/`cloudConflicts` don't exist yet; old fields still do, causing type/runtime mismatches.
 
-- [ ] **Step 3: Implement in `useTrousseauStore.ts`**
+- [ ] **Step 3: Implement in `useKnotworkStore.ts`**
 
-Add the import (near the existing `@jfrusher/trousseau` import block, line 5-11):
+Add the import (near the existing `@jfrusher/knotwork` import block, line 5-11):
 
 ```ts
 import { fingerprintAllSlices, mergeCloudDocument, type SliceConflict } from "@/lib/documents/mergeCloudDocument";
 import { fingerprint } from "@/lib/documents/fingerprint";
 ```
 
-Replace the `TrousseauState` interface's cloud section (lines 117-135):
+Replace the `KnotworkState` interface's cloud section (lines 117-135):
 
 ```ts
   /**
@@ -606,8 +606,8 @@ Replace `applyCloudResult`'s conflict branch (the `if (result.reason === "confli
 ```ts
 function applyCloudResult(result: PushResult): void {
   if (result.ok) {
-    const raw = useTrousseauStore.getState().raw;
-    useTrousseauStore.setState({
+    const raw = useKnotworkStore.getState().raw;
+    useKnotworkStore.setState({
       cloudStatus: "idle",
       cloudVersion: result.version,
       cloudConflicts: [],
@@ -617,7 +617,7 @@ function applyCloudResult(result: PushResult): void {
     return;
   }
   if (result.reason === "conflict") {
-    const state = useTrousseauStore.getState();
+    const state = useKnotworkStore.getState();
     const merged = mergeCloudDocument(
       state.raw,
       result.document as Record<string, unknown>,
@@ -626,7 +626,7 @@ function applyCloudResult(result: PushResult): void {
     state.replaceDocument(merged.raw, { silent: true });
 
     if (merged.conflicts.length > 0) {
-      useTrousseauStore.setState({
+      useKnotworkStore.setState({
         cloudStatus: "conflict",
         cloudConflicts: merged.conflicts,
         cloudVersion: result.version,
@@ -635,8 +635,8 @@ function applyCloudResult(result: PushResult): void {
     } else {
       // Every differing slice resolved cleanly - finalize by pushing the
       // merged document at the version the server just reported.
-      useTrousseauStore.setState({ cloudVersion: result.version, cloudAgreed: merged.agreed });
-      void useTrousseauStore.getState().syncToCloud();
+      useKnotworkStore.setState({ cloudVersion: result.version, cloudAgreed: merged.agreed });
+      void useKnotworkStore.getState().syncToCloud();
     }
     return;
   }
@@ -647,7 +647,7 @@ function applyCloudResult(result: PushResult): void {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `npx vitest run lib/store/useTrousseauStore.cloudSync.test.ts`
+Run: `npx vitest run lib/store/useKnotworkStore.cloudSync.test.ts`
 Expected: PASS, all tests (existing + new).
 
 Then run the full suite test suite to confirm nothing else referenced the removed fields:
@@ -658,7 +658,7 @@ Expected: fails only in `DataManager.tsx`-related code if any test imports it be
 - [ ] **Step 5: Commit**
 
 ```bash
-git add suite/lib/store/useTrousseauStore.ts suite/lib/store/useTrousseauStore.cloudSync.test.ts
+git add suite/lib/store/useKnotworkStore.ts suite/lib/store/useKnotworkStore.cloudSync.test.ts
 git commit -m "feat(store): merge cloud conflicts per slice instead of whole-document"
 ```
 
@@ -671,7 +671,7 @@ git commit -m "feat(store): merge cloud conflicts per slice instead of whole-doc
 - Test: `suite/lib/store/StoreHydrator.test.tsx` (create — none exists today)
 
 **Interfaces:**
-- Consumes: `pullFromCloud` from Task 3 (`useTrousseauStore.getState().pullFromCloud`).
+- Consumes: `pullFromCloud` from Task 3 (`useKnotworkStore.getState().pullFromCloud`).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -683,18 +683,18 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined }));
 vi.mock("@/lib/seating/normalise", () => ({ reconcileLoadedDocument: async () => {} }));
 
-const { useTrousseauStore } = await import("./useTrousseauStore");
+const { useKnotworkStore } = await import("./useKnotworkStore");
 const { StoreHydrator } = await import("./StoreHydrator");
 
 beforeEach(() => {
   vi.useFakeTimers();
-  useTrousseauStore.setState({
+  useKnotworkStore.setState({
     status: "idle",
     hydrate: vi.fn(async () => {
-      useTrousseauStore.setState({ status: "ready" });
-    }) as unknown as typeof useTrousseauStore.getState().hydrate,
+      useKnotworkStore.setState({ status: "ready" });
+    }) as unknown as typeof useKnotworkStore.getState().hydrate,
     startCloudSync: vi.fn(async () => {
-      useTrousseauStore.setState({ cloudStatus: "idle" });
+      useKnotworkStore.setState({ cloudStatus: "idle" });
     }),
     pullFromCloud: vi.fn(async () => {}),
   });
@@ -710,10 +710,10 @@ test("polls pullFromCloud on an interval after mounting", async () => {
   await vi.runOnlyPendingTimersAsync(); // flush the hydrate().then(...).then(startCloudSync) chain
 
   await vi.advanceTimersByTimeAsync(20_000);
-  expect(useTrousseauStore.getState().pullFromCloud).toHaveBeenCalledTimes(1);
+  expect(useKnotworkStore.getState().pullFromCloud).toHaveBeenCalledTimes(1);
 
   await vi.advanceTimersByTimeAsync(20_000);
-  expect(useTrousseauStore.getState().pullFromCloud).toHaveBeenCalledTimes(2);
+  expect(useKnotworkStore.getState().pullFromCloud).toHaveBeenCalledTimes(2);
 });
 
 test("pulls when the tab becomes visible again", async () => {
@@ -723,7 +723,7 @@ test("pulls when the tab becomes visible again", async () => {
   Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
   document.dispatchEvent(new Event("visibilitychange"));
 
-  expect(useTrousseauStore.getState().pullFromCloud).toHaveBeenCalledTimes(1);
+  expect(useKnotworkStore.getState().pullFromCloud).toHaveBeenCalledTimes(1);
 });
 
 test("does not pull on visibilitychange while the tab is hidden", async () => {
@@ -733,7 +733,7 @@ test("does not pull on visibilitychange while the tab is hidden", async () => {
   Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
   document.dispatchEvent(new Event("visibilitychange"));
 
-  expect(useTrousseauStore.getState().pullFromCloud).not.toHaveBeenCalled();
+  expect(useKnotworkStore.getState().pullFromCloud).not.toHaveBeenCalled();
 });
 ```
 
@@ -750,7 +750,7 @@ Expected: FAIL — no interval or visibilitychange listener exists yet, so `pull
 
 import { useEffect } from "react";
 import { reconcileLoadedDocument } from "@/lib/seating/normalise";
-import { useTrousseauStore } from "./useTrousseauStore";
+import { useKnotworkStore } from "./useKnotworkStore";
 
 /** How often to check for the other partner's changes while the tab is open. */
 const PULL_INTERVAL_MS = 20_000;
@@ -763,8 +763,8 @@ const PULL_INTERVAL_MS = 20_000;
  * for it at import time.
  */
 export function StoreHydrator() {
-  const hydrate = useTrousseauStore((s) => s.hydrate);
-  const startCloudSync = useTrousseauStore((s) => s.startCloudSync);
+  const hydrate = useKnotworkStore((s) => s.hydrate);
+  const startCloudSync = useKnotworkStore((s) => s.startCloudSync);
   useEffect(() => {
     // Cloud sync starts only after the local read has finished. Starting them
     // together would race the two documents, and the local one is what the
@@ -778,7 +778,7 @@ export function StoreHydrator() {
     // Guarded the same way `schedulePersist` is: this file is imported by
     // tests that run without a `window`.
     if (typeof window === "undefined") return;
-    const onOnline = () => void useTrousseauStore.getState().syncToCloud();
+    const onOnline = () => void useKnotworkStore.getState().syncToCloud();
     window.addEventListener("online", onOnline);
     return () => window.removeEventListener("online", onOnline);
   }, []);
@@ -786,7 +786,7 @@ export function StoreHydrator() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const pull = () => void useTrousseauStore.getState().pullFromCloud();
+    const pull = () => void useKnotworkStore.getState().pullFromCloud();
     const interval = setInterval(pull, PULL_INTERVAL_MS);
 
     const onVisible = () => {
@@ -824,7 +824,7 @@ git commit -m "feat(store): poll and pull-on-focus so the other partner's edits 
 - Modify: `suite/components/shell/DataManager.tsx`
 
 **Interfaces:**
-- Consumes: `cloudConflicts: SliceConflict[]`, `resolveConflict` from Task 3's `useTrousseauStore`.
+- Consumes: `cloudConflicts: SliceConflict[]`, `resolveConflict` from Task 3's `useKnotworkStore`.
 
 - [ ] **Step 1: Remove the `SharePanel` import and mount point**
 
@@ -843,8 +843,8 @@ Delete line 11 (`import { SharePanel } from "./SharePanel";`) and the whole `Sha
 Replace lines 68-70:
 
 ```tsx
-  const cloudConflicts = useTrousseauStore((s) => s.cloudConflicts);
-  const resolveConflict = useTrousseauStore((s) => s.resolveConflict);
+  const cloudConflicts = useKnotworkStore((s) => s.cloudConflicts);
+  const resolveConflict = useKnotworkStore((s) => s.resolveConflict);
 ```
 
 (removing `cloudConflict`, `resolveConflictTakeTheirs`, `resolveConflictKeepMine`).
@@ -1034,7 +1034,7 @@ git commit -m "feat(storage): add a private, membership-scoped bucket for weddin
 **Files:**
 - Create: `suite/lib/documents/assets.ts`
 - Test: `suite/lib/documents/assets.test.ts`
-- Modify: `suite/lib/store/useTrousseauStore.ts` (wire asset sync alongside document sync)
+- Modify: `suite/lib/store/useKnotworkStore.ts` (wire asset sync alongside document sync)
 
 **Interfaces:**
 - Consumes: `collectAssets`, `heldAssetIds`, `acceptAsset`, `type PortableAsset` — the exact same per-tool asset registry `lib/sync/assets.ts` already uses (`suite/apps/plaque/state/syncAssets`, `suite/apps/cadence/state/syncAssets`). `browserClient` from `lib/accounts/browserClient.ts`. The `wedding-assets` bucket from Task 6.
@@ -1183,7 +1183,7 @@ Expected: PASS, all 3 tests.
 
 - [ ] **Step 5: Wire into the store**
 
-In `useTrousseauStore.ts`, add the import:
+In `useKnotworkStore.ts`, add the import:
 
 ```ts
 import { syncAssets } from "@/lib/documents/assets";
@@ -1217,7 +1217,7 @@ returns exactly `{ weddingId: membership?.weddingId ?? null }` (reading
 `accountsStore(client).memberOf(user.id)`) — no route change needed, `fetchWeddingId()`
 above calls it as-is.
 
-In `useTrousseauStore.ts`, add to `TrousseauState`:
+In `useKnotworkStore.ts`, add to `KnotworkState`:
 
 ```ts
   /** This device's wedding id, once known. Needed for asset sync's Storage paths. */
@@ -1248,7 +1248,7 @@ Expected: PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add suite/lib/documents/assets.ts suite/lib/documents/assets.test.ts suite/lib/documents/cloudSync.ts suite/lib/store/useTrousseauStore.ts
+git add suite/lib/documents/assets.ts suite/lib/documents/assets.test.ts suite/lib/documents/cloudSync.ts suite/lib/store/useKnotworkStore.ts
 git commit -m "feat(documents): sync fonts and artwork through Supabase Storage"
 ```
 

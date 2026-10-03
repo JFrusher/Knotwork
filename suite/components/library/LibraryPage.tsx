@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { migrate } from "@jfrusher/trousseau";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { migrate } from "@jfrusher/knotwork";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { publishDay, readTimeline } from "@/lib/model/slices";
 import { adds, applyTo, extract, KIND_NAMES, KINDS, type Adding, type Kind } from "@/lib/library/items";
 import type { LibraryListing } from "@/lib/library/store";
@@ -42,9 +42,9 @@ type Listing = { status: "loading" } | { status: "ready"; items: LibraryListing[
  * there for every client; nothing personal goes in — see `lib/library/items`.
  */
 export function LibraryPage() {
-  const status = useTrousseauStore((s) => s.status);
-  const raw = useTrousseauStore((s) => s.raw);
-  const couple = useTrousseauStore((s) => s.doc.event.coupleNames);
+  const status = useKnotworkStore((s) => s.status);
+  const raw = useKnotworkStore((s) => s.raw);
+  const couple = useKnotworkStore((s) => s.doc.event.coupleNames);
   const confirm = useConfirm();
   const [listing, setListing] = useState<Listing>({ status: "loading" });
   const [notice, setNotice] = useState<string | null>(null);
@@ -60,7 +60,7 @@ export function LibraryPage() {
   }, [load]);
 
   const keep = async (kind: Kind, name: string) => {
-    const content = extract(kind, useTrousseauStore.getState().raw);
+    const content = extract(kind, useKnotworkStore.getState().raw);
     if (!content) return;
     const response = await fetch("/api/library", {
       method: "POST",
@@ -80,7 +80,7 @@ export function LibraryPage() {
     const response = await fetch(`/api/library/${item.id}`);
     const body = (await response.json().catch(() => null)) as { content?: Record<string, unknown>; error?: string } | null;
     if (!response.ok || !body?.content) return setNotice(body?.error ?? "It could not be loaded.");
-    const state = useTrousseauStore.getState();
+    const state = useKnotworkStore.getState();
     const entries = applyTo(item.kind, body.content, state.raw);
     // A new timeline is published again as the day, as every change to it is.
     if (entries.some(([slice]) => slice === "timeline")) {

@@ -1,6 +1,6 @@
-# Contributing to Trousseau
+# Contributing to Knotwork
 
-Thank you for thinking about it. Trousseau is used by real couples planning
+Thank you for thinking about it. Knotwork is used by real couples planning
 real weddings, so a fix here can save someone a bad evening with a
 spreadsheet. Bug reports, fixes, documentation and whole new tools are all
 welcome.
@@ -55,7 +55,7 @@ who was bringing the cake stand" beats "add a cake stand field". Then:
 
 Some things are ruled out on purpose and will be closed with a pointer to the
 reason. These include RSVP collection (Joy and similar do it well, and
-Trousseau imports the result), a paid tier of any kind, and an admin panel
+Knotwork imports the result), a paid tier of any kind, and an admin panel
 that can browse weddings.
 
 ---
@@ -72,7 +72,7 @@ that can browse weddings.
 
 ```sh
 git clone https://github.com/JFrusher/Trousseau.git
-cd Trousseau
+cd Knotwork
 
 npm ci                 # installs the root package and the suite workspace
 npm run build          # builds the contract package into dist/
@@ -80,12 +80,12 @@ npm run dev -w suite   # http://localhost:3000
 ```
 
 **Do not skip `npm run build`.** The suite depends on the contract package via
-`"@jfrusher/trousseau": "file:.."`, which resolves to the root `dist/`. A
+`"@jfrusher/knotwork": "file:.."`, which resolves to the root `dist/`. A
 fresh clone has no `dist/`, and the install succeeds anyway. The failure
 turns up later as:
 
 ```
-Module not found: Can't resolve '@jfrusher/trousseau'
+Module not found: Can't resolve '@jfrusher/knotwork'
 ```
 
 If you see that, run `npm run build` at the root and try again.
@@ -184,7 +184,7 @@ of their own wedding.
 
 ### Changing the contract package
 
-`src/` is published to npm as `@jfrusher/trousseau` and other tools may
+`src/` is published to npm as `@jfrusher/knotwork` and other tools may
 depend on it. Changes must be additive: a new optional field, never a renamed
 or removed one. `npm run verify` checks that the published build still
 imports cleanly.

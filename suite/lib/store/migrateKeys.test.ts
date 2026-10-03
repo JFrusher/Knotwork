@@ -10,14 +10,45 @@ vi.mock("idb-keyval", () => ({
 
 const { migrateLegacyKeys } = await import("./migrateKeys");
 
-beforeEach(() => db.clear());
+beforeEach(() => {
+  db.clear();
+  localStorage.clear();
+});
+
+test("everything stored while it was called Trousseau comes across", async () => {
+  db.set("trousseau.document", { guests: { g1: {} } });
+  db.set("trousseau.blob.abc123", new Uint8Array([1]));
+  db.set("trousseau.copies", [{ id: "c1" }]);
+  db.set("trousseau.cloud.link", { weddingId: "w1" });
+  db.set("trousseau.wedding.w1", { kept: true });
+
+  await migrateLegacyKeys();
+
+  expect(db.get("knotwork.document")).toEqual({ guests: { g1: {} } });
+  expect(db.get("knotwork.blob.abc123")).toEqual(new Uint8Array([1]));
+  expect(db.get("knotwork.copies")).toEqual([{ id: "c1" }]);
+  expect(db.get("knotwork.cloud.link")).toEqual({ weddingId: "w1" });
+  expect(db.get("knotwork.wedding.w1")).toEqual({ kept: true });
+  expect([...db.keys()].some((k) => k.startsWith("trousseau."))).toBe(false);
+});
+
+test("the tour and binder flags in localStorage come across", async () => {
+  localStorage.setItem("trousseau.tour.seen", "1");
+  localStorage.setItem("trousseau.binder.taken.w1", "[\"a\"]");
+
+  await migrateLegacyKeys();
+
+  expect(localStorage.getItem("knotwork.tour.seen")).toBe("1");
+  expect(localStorage.getItem("knotwork.binder.taken.w1")).toBe("[\"a\"]");
+  expect(localStorage.getItem("trousseau.tour.seen")).toBeNull();
+});
 
 test("a wedding stored under the old name is moved, not lost", async () => {
   db.set("tableaux.suite.document", { guests: { g1: {} } });
 
   await migrateLegacyKeys();
 
-  expect(db.get("trousseau.document")).toEqual({ guests: { g1: {} } });
+  expect(db.get("knotwork.document")).toEqual({ guests: { g1: {} } });
   expect(db.has("tableaux.suite.document")).toBe(false);
 });
 
@@ -27,19 +58,19 @@ test("uploaded fonts and artwork come across too", async () => {
 
   await migrateLegacyKeys();
 
-  expect(db.get("trousseau.blob.abc123")).toEqual(new Uint8Array([1, 2, 3]));
-  expect(db.get("trousseau.blob.def456")).toEqual(new Uint8Array([4]));
+  expect(db.get("knotwork.blob.abc123")).toEqual(new Uint8Array([1, 2, 3]));
+  expect(db.get("knotwork.blob.def456")).toEqual(new Uint8Array([4]));
   expect([...db.keys()].some((k) => k.startsWith("tableaux."))).toBe(false);
 });
 
 test("a device that has already migrated is left alone", async () => {
-  db.set("trousseau.document", { current: true });
+  db.set("knotwork.document", { current: true });
   db.set("tableaux.suite.document", { stale: true });
 
   await migrateLegacyKeys();
 
   // The new key is the truth; the stale copy must not overwrite it.
-  expect(db.get("trousseau.document")).toEqual({ current: true });
+  expect(db.get("knotwork.document")).toEqual({ current: true });
 });
 
 test("nothing to move is not an error", async () => {
@@ -58,7 +89,7 @@ test("a migration that fails does not stop the document loading", async () => {
   // current key.
   vi.resetModules();
   vi.doMock("idb-keyval", () => ({
-    get: async (key: string) => (key === "trousseau.document" ? { guests: {} } : undefined),
+    get: async (key: string) => (key === "knotwork.document" ? { guests: {} } : undefined),
     set: async () => undefined,
     del: async () => undefined,
     keys: async () => {
@@ -66,10 +97,10 @@ test("a migration that fails does not stop the document loading", async () => {
     },
   }));
 
-  const { useTrousseauStore } = await import("./useTrousseauStore");
-  await useTrousseauStore.getState().hydrate();
+  const { useKnotworkStore } = await import("./useKnotworkStore");
+  await useKnotworkStore.getState().hydrate();
 
-  expect(useTrousseauStore.getState().status).toBe("ready");
-  expect(useTrousseauStore.getState().error).toBeNull();
+  expect(useKnotworkStore.getState().status).toBe("ready");
+  expect(useKnotworkStore.getState().error).toBeNull();
   vi.doUnmock("idb-keyval");
 });

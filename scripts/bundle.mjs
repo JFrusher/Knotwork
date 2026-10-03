@@ -1,18 +1,18 @@
 #!/usr/bin/env node
-// Bundle a handful of native app files into one .trousseau.json, and take it
+// Bundle a handful of native app files into one .knotwork.json, and take it
 // apart again at the other end.
 //
-// Nothing reads a .trousseau.json yet — the apps gain that in Phase 1a. Until
+// Nothing reads a .knotwork.json yet — the apps gain that in Phase 1a. Until
 // they do, this is only useful because it goes both ways: pack on one machine,
 // unpack on the other, open the native files as normal.
 //
-//   node scripts/bundle.mjs pack <files-or-dirs...> [-o wedding.trousseau.json]
+//   node scripts/bundle.mjs pack <files-or-dirs...> [-o wedding.knotwork.json]
 //   node scripts/bundle.mjs pack --working [-o …]      (the configured working folder)
-//   node scripts/bundle.mjs unpack <file.trousseau.json> [-d outdir]
+//   node scripts/bundle.mjs unpack <file.knotwork.json> [-d outdir]
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, existsSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
-import { emptyTrousseau, mergeSlice, migrate, parse, serialise } from "../dist/index.js";
+import { emptyKnotwork, mergeSlice, migrate, parse, serialise } from "../dist/index.js";
 
 // Each app's native file, and how to recognise it. Order matters: the day
 // export and the Plaque project carry explicit markers, so they are checked
@@ -46,7 +46,7 @@ function workingDir() {
   }
   console.error("No working folder configured. Either:");
   console.error("  set WEDDING_WORKING=<path>, or");
-  console.error("  write the path into Trousseau/.working-path (one line, git-ignored)");
+  console.error("  write the path into Knotwork/.working-path (one line, git-ignored)");
   process.exit(1);
 }
 
@@ -120,7 +120,8 @@ refusing to write ${out}: it would lose ${lost.join(", ")}.`);
 }
 
 function classify(doc) {
-  if (doc.kind === "trousseau") return { kind: "bundle" };
+  // "trousseau" is the name a bundle carried before the rename.
+  if (doc.kind === "knotwork" || doc.kind === "trousseau") return { kind: "bundle" };
   if (doc.kind === "cadence.day") return { kind: "day" };
   const hit = APPS.find((a) => a.is(doc));
   return hit ? { kind: "source", app: hit.app } : { kind: "unknown" };
@@ -155,7 +156,7 @@ function eventFrom(doc, what) {
 }
 
 function pack(files, out, { allowShrink = false } = {}) {
-  let raw = emptyTrousseau();
+  let raw = emptyKnotwork();
   const sources = {};
   const sourceFiles = {};
   const claims = [];
@@ -184,7 +185,7 @@ function pack(files, out, { allowShrink = false } = {}) {
       continue;
     }
     if (seen.kind === "bundle") {
-      notes.push(`skipped ${basename(file)} — already a .trousseau.json`);
+      notes.push(`skipped ${basename(file)} — already a .knotwork.json`);
       continue;
     }
 
@@ -278,12 +279,12 @@ const allowShrink = rest.includes("--allow-shrink");
 const packArgs = rest.includes("--working") ? ["--working"] : positional;
 
 if (mode === "pack" && packArgs.length > 0) {
-  pack(expand(packArgs), flag("-o", "wedding.trousseau.json"), { allowShrink });
+  pack(expand(packArgs), flag("-o", "wedding.knotwork.json"), { allowShrink });
 } else if (mode === "unpack" && positional.length === 1) {
   unpack(positional[0], flag("-d", "unpacked"));
 } else {
-  console.error("usage: node scripts/bundle.mjs pack <files-or-dirs...> [-o out.trousseau.json]");
-  console.error("       node scripts/bundle.mjs pack --working [-o out.trousseau.json]");
-  console.error("       node scripts/bundle.mjs unpack <file.trousseau.json> [-d outdir]");
+  console.error("usage: node scripts/bundle.mjs pack <files-or-dirs...> [-o out.knotwork.json]");
+  console.error("       node scripts/bundle.mjs pack --working [-o out.knotwork.json]");
+  console.error("       node scripts/bundle.mjs unpack <file.knotwork.json> [-d outdir]");
   process.exit(1);
 }

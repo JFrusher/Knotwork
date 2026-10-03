@@ -17,7 +17,7 @@ export interface KeptCopy {
   document: Record<string, unknown>;
 }
 
-export const COPIES_KEY = "trousseau.copies";
+export const COPIES_KEY = "knotwork.copies";
 
 async function read(): Promise<KeptCopy[]> {
   return ((await idbGet(COPIES_KEY)) as KeptCopy[] | undefined) ?? [];

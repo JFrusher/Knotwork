@@ -2,11 +2,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { migrate } from "@jfrusher/trousseau";
+import { migrate } from "@jfrusher/knotwork";
 import { readCeremony } from "@/lib/model/slices";
 import { adds, applyTo, extract } from "./items";
 
-const example = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const example = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 const names = Object.values(example.guests as Record<string, { firstName: string; lastName: string }>).flatMap((guest) => [
   guest.firstName,
   guest.lastName,

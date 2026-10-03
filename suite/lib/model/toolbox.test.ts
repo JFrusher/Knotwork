@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
+import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
 import { TOOLS } from "@/lib/tools";
 import { hiddenToolIds, shownTools, withTool } from "./toolbox";
 
@@ -7,10 +7,10 @@ const ids = (doc: Parameters<typeof shownTools>[0]) => shownTools(doc).map((tool
 
 describe("shownTools", () => {
   it("shows the five when the wedding has never chosen, and leaves the rest in the toolbox", () => {
-    const doc = emptyTrousseau();
+    const doc = emptyKnotwork();
     expect(ids(doc)).toEqual(["seating", "place-cards", "timeline", "delegation", "group-shots"]);
     expect([...hiddenToolIds(doc)]).toEqual(["ceremony", "boxes", "bar", "money", "checklist", "binder"]);
-    expect(shownTools(doc)).toBe(shownTools(emptyTrousseau()));
+    expect(shownTools(doc)).toBe(shownTools(emptyKnotwork()));
   });
 
   it("shows what is stored, in the registry's order rather than the stored one", () => {

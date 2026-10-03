@@ -51,7 +51,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
 
   return (
     <div className="mx-auto max-w-md px-6 py-12 text-center sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Trousseau</p>
+      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
       <h1 className="mt-3 font-display text-3xl text-charcoal">You&rsquo;re invited</h1>
 
       <div className="mt-6">

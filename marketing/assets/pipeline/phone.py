@@ -20,7 +20,7 @@ sh_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
 ImageDraw.Draw(sh_layer).rounded_rectangle((px - bez, py - bez + 24, px + sw + bez, py + sh + bez + 24), 70, fill=(31, 27, 46, 90))
 base = Image.alpha_composite(base.convert("RGBA"), sh_layer.filter(ImageFilter.GaussianBlur(28))).convert("RGB"); d = ImageDraw.Draw(base)
 d.rounded_rectangle((px - bez, py - bez, px + sw + bez, py + sh + bez), 64, fill=INK)
-d.text((W / 2, H - 46), "Trousseau · the Binder, on the day", font=small, fill=(31, 27, 46), anchor="mm")
+d.text((W / 2, H - 46), "Knotwork · the Binder, on the day", font=small, fill=(31, 27, 46), anchor="mm")
 mask = Image.new("L", (sw, sh), 0); ImageDraw.Draw(mask).rounded_rectangle((0, 0, sw, sh), 48, fill=255)
 times, t = [], 0.0
 for f in meta["frames"]: times.append(t); t += f["seconds"]

@@ -4,7 +4,7 @@ import { buildArtefacts } from "../../core/data/artefacts";
 import type { RowScope } from "../../core/types";
 import { usePlaque } from "../../state/store";
 import { Hint, SelectField, SubGroup } from "../controls";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { guestName, isComing, readGuests } from "@/lib/model/slices";
 import type { Guest } from "@/lib/model/types";
 import { rowsFromRoom } from "../../state/fromRoom";
@@ -55,7 +55,7 @@ export function DataPanel() {
   // in the room next door and this list has to move. Read through the
   // per-document cache, so the selector returns the same record until the
   // document changes and never allocates.
-  const everyone = useTrousseauStore((s) => readGuests(s.doc));
+  const everyone = useKnotworkStore((s) => readGuests(s.doc));
   // Cards for the guests who are coming, which is who `rowsFromRoom` prints:
   // a count that included the ones who said no would promise cards it then
   // leaves out.

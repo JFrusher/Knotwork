@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { check } from "./validate-wedding.mjs";
 
-/** A trousseau carrying one Tableaux table and the guests sitting at it. */
+/** A Knotwork document carrying one Tableaux table and the guests sitting at it. */
 const withTable = (table, guests) => ({
   event: { date: "2026-06-20" },
   day: null,

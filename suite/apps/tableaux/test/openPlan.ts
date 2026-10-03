@@ -1,5 +1,5 @@
-import { emptyTrousseau, migrate } from '@jfrusher/trousseau'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { emptyKnotwork, migrate } from '@jfrusher/knotwork'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { SEATING_KEYS } from '../store/plan'
 import type { Plan } from '../store/types'
 import { useStore } from '../store/useStore'
@@ -10,7 +10,7 @@ import { useStore } from '../store/useStore'
  * seating, and the plan's name, venue and date are the wedding's own.
  */
 export function openPlan(plan: Partial<Plan>): void {
-  const base = emptyTrousseau()
+  const base = emptyKnotwork()
   const seating: Record<string, unknown> = {}
   for (const key of SEATING_KEYS) if (plan[key] !== undefined) seating[key] = plan[key]
   const meta = plan.meta
@@ -20,6 +20,6 @@ export function openPlan(plan: Partial<Plan>): void {
     guests: plan.guests || {},
     seating,
   }
-  useTrousseauStore.setState({ status: 'ready', raw, doc: migrate(raw), past: [], future: [] })
+  useKnotworkStore.setState({ status: 'ready', raw, doc: migrate(raw), past: [], future: [] })
   useStore.setState({ selection: { type: null, id: null }, selectedGuestIds: [], modal: null, toasts: [] })
 }

@@ -1,4 +1,4 @@
-# Trousseau — Tableaux incremental TypeScript migration
+# Knotwork — Tableaux incremental TypeScript migration
 
 Date: 2026-09-02
 Status: approved, ready for implementation planning
@@ -39,7 +39,7 @@ Concretely:
 4. No behavior changes bundled into this work. This is a typing/validation
    hardening pass, not a feature or UX change — matching the "one thing per
    step" discipline already established for this ecosystem (see
-   `docs/superpowers/specs/2026-08-20-trousseau-design.md`'s safety
+   `docs/superpowers/specs/2026-08-20-knotwork-design.md`'s safety
    constraints).
 
 ## Sequencing against subsystem B

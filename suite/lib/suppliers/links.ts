@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { localDay } from "@/lib/dates";
 import { fingerprint } from "@/lib/documents/fingerprint";
 import { importShareKey, newShareKey, seal } from "@/lib/share/crypto";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { callSheet } from "./callSheet";
 import type { SupplierLink } from "./store";
 
@@ -50,7 +50,7 @@ async function fetchLinks(weddingId: string): Promise<SupplierLink[]> {
 }
 
 /** Seal this supplier's sheet as it is now and publish it — under their link's own key, once it has one. */
-async function publishNow(weddingId: string, doc: Trousseau, teamId: string, held: SupplierLink | null): Promise<SupplierLink> {
+async function publishNow(weddingId: string, doc: Knotwork, teamId: string, held: SupplierLink | null): Promise<SupplierLink> {
   const sheet = callSheet(doc, teamId);
   if (!sheet) throw new Error("That supplier is no longer on the wedding.");
   const key = held?.key ?? (await newShareKey()).encoded;
@@ -83,7 +83,7 @@ async function takeDownNow(weddingId: string, teamId: string): Promise<void> {
 
 /** Suppliers' confirmations into the wedding — written as nobody's edit, since nobody here made it. */
 function applyConfirmations(links: SupplierLink[]): void {
-  const store = useTrousseauStore.getState();
+  const store = useKnotworkStore.getState();
   const crew = store.raw["crew"];
   if (!crew || typeof crew !== "object") return;
   const next = withConfirmations(crew as Raw, links);
@@ -138,7 +138,7 @@ export const useSupplierLinks = create<SupplierLinksState>()((set, get) => {
     publish: (teamId) =>
       attempt(async () => {
         const held = get().links?.find((link) => link.teamId === teamId) ?? null;
-        const published = await publishNow(wedding(), useTrousseauStore.getState().doc, teamId, held);
+        const published = await publishNow(wedding(), useKnotworkStore.getState().doc, teamId, held);
         return { links: [...others(teamId), published] };
       }),
     takeDown: (teamId) =>
@@ -153,7 +153,7 @@ export const useSupplierLinks = create<SupplierLinksState>()((set, get) => {
         const weddingId = wedding();
         const current = await fetchLinks(weddingId);
         applyConfirmations(current);
-        const { doc } = useTrousseauStore.getState();
+        const { doc } = useKnotworkStore.getState();
         const links: SupplierLink[] = [];
         for (const link of current) {
           const sheet = callSheet(doc, link.teamId);

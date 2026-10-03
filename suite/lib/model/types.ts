@@ -3,7 +3,7 @@
  *
  * These are the shapes the four standalone apps already use, transcribed to
  * TypeScript — Tableaux's guest and table, Cadence's block, Brigade's job.
- * They live here rather than in `@jfrusher/trousseau` on purpose: that package
+ * They live here rather than in `@jfrusher/knotwork` on purpose: that package
  * validates the envelope and stops at the slice boundary, so that a change to
  * what a guest is does not need a release of the contract. See its
  * `src/slices.ts` for the reasoning.

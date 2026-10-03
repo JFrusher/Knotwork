@@ -1,5 +1,5 @@
 {
-  "name": "@jfrusher/trousseau",
+  "name": "@jfrusher/knotwork",
   "version": "0.1.0",
   "description": "The shared data contract behind Tableaux, Plaque, Cadence and Brigade.",
   "license": "MIT",
@@ -32,12 +32,12 @@
     "test:watch": "vitest",
     "verify": "npm run build && tsc -p verify/tsconfig.json && node -e \"import('./dist/index.js')\"",
     "prepublishOnly": "npm run test && npm run verify",
-    "data:pack": "node scripts/bundle.mjs pack --working -o data/wedding.trousseau.json",
-    "data:unpack": "node scripts/bundle.mjs unpack data/wedding.trousseau.json -d unpacked",
-    "data:validate": "npm run build && node scripts/validate-wedding.mjs data/wedding.trousseau.json",
+    "data:pack": "node scripts/bundle.mjs pack --working -o data/wedding.knotwork.json",
+    "data:unpack": "node scripts/bundle.mjs unpack data/wedding.knotwork.json -d unpacked",
+    "data:validate": "npm run build && node scripts/validate-wedding.mjs data/wedding.knotwork.json",
     "data:status": "python -m dvc status && python -m dvc data status",
     "data:pull": "python -m dvc pull",
-    "data:push": "npm run data:validate && python -m dvc add data/wedding.trousseau.json data/exports && python -m dvc push",
+    "data:push": "npm run data:validate && python -m dvc add data/wedding.knotwork.json data/exports && python -m dvc push",
     "clean": "git clean -Xdf node_modules dist .next coverage",
     "sync": "node scripts/sync.mjs"
   },

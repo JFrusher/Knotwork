@@ -1,5 +1,5 @@
 import { toCsv } from "@/lib/data/csv";
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import type { Cast, CustomRole, Guest, Seating, ShotSection } from "@/lib/model/types";
 import { resolveMembers } from "@/lib/cast/resolve";
 

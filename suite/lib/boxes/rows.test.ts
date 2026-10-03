@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { migrate } from "@jfrusher/trousseau";
+import { migrate } from "@jfrusher/knotwork";
 import { nodeFontSource } from "@/apps/brigade/render/pdf/nodeFontSource";
 import { textOf } from "@/apps/brigade/render/pdf/readPdf";
 import { parseCsv } from "@/lib/data/csv";
@@ -10,7 +10,7 @@ import { renderBoxLabels } from "./render/pdf/labels";
 import { renderPackingList } from "./render/pdf/packingList";
 import { boxesCsv, boxRows, itemText } from "./rows";
 
-const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 const doc = migrate(raw);
 const rows = boxRows(readBoxes(doc), dayPlaces(doc), readCrew(doc), readGuests(doc));
 

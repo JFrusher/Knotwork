@@ -2,10 +2,10 @@
 
 > **Correction (same day):** the first version of this spec was written after
 > an incomplete search — it checked whether `lib/documents` was wired up by
-> grepping `components/` only, and missed that `useTrousseauStore.ts` itself
+> grepping `components/` only, and missed that `useKnotworkStore.ts` itself
 > already consumes it. Most of what that version proposed building already
 > exists. This version reflects the real state, found by reading
-> `lib/store/useTrousseauStore.ts`, `lib/store/StoreHydrator.tsx`,
+> `lib/store/useKnotworkStore.ts`, `lib/store/StoreHydrator.tsx`,
 > `lib/documents/cloudSync.ts`, and `components/shell/DataManager.tsx`
 > directly.
 
@@ -27,9 +27,9 @@ other.
 - **The client sync loop.** `lib/documents/cloudSync.ts` (`fetchCloudDocument`,
   `pushDocument`, `queueWrite`/`replayPendingWrite` — an offline queue of at
   most one pending write) is consumed directly by
-  `lib/store/useTrousseauStore.ts`:
+  `lib/store/useKnotworkStore.ts`:
   - Every local edit debounce-persists to IndexedDB (250ms), then
-    automatically calls `syncToCloud()` (`useTrousseauStore.ts:404`).
+    automatically calls `syncToCloud()` (`useKnotworkStore.ts:404`).
   - `StoreHydrator.tsx` calls `startCloudSync()` once, right after local
     hydration, and pushes again on the browser's `online` event.
   - A rejected push (`409`) is surfaced as `cloudStatus: "conflict"` +
@@ -37,7 +37,7 @@ other.
   - `resolveConflictTakeTheirs` / `resolveConflictKeepMine` are implemented
     and already wired to buttons in `components/shell/DataManager.tsx:240-245`
     ("Use their version" / "Keep mine and overwrite theirs").
-  - `useTrousseauStore.cloudSync.test.ts` covers this.
+  - `useKnotworkStore.cloudSync.test.ts` covers this.
 
 So "sign in and your data is there, automatically, no passphrase" is **already
 true today** for a single sync exchange (on load, on reconnect, on your own
@@ -92,7 +92,7 @@ edits). The gaps are narrower than the first version of this spec thought.
 
 Add to `StoreHydrator.tsx` (alongside the existing `online` listener):
 
-- `setInterval(() => useTrousseauStore.getState().pullFromCloud(), 20_000)`
+- `setInterval(() => useKnotworkStore.getState().pullFromCloud(), 20_000)`
   while `cloudStatus !== "disabled"`.
 - A `visibilitychange` listener that calls the same pull when the tab becomes
   visible again (covers "switched away and came back," which a fixed
@@ -147,7 +147,7 @@ Follow the existing pattern already used throughout: pure logic
 (`mergeCloudDocument`) gets direct unit tests the way `lib/sync/client.test.ts`
 tests the equivalent per-slice logic today. The interval/focus wiring is
 integration-level, alongside the existing
-`lib/store/useTrousseauStore.cloudSync.test.ts`.
+`lib/store/useKnotworkStore.cloudSync.test.ts`.
 
 ## Open follow-ups (not in this pass)
 

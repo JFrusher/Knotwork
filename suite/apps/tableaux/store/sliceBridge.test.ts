@@ -6,9 +6,9 @@ vi.mock("idb-keyval", () => ({
   del: async () => undefined,
 }));
 
-const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { readDoc, writeDoc } = await import("./sliceBridge");
-const { emptyTrousseau } = await import("@jfrusher/trousseau");
+const { emptyKnotwork } = await import("@jfrusher/knotwork");
 
 /**
  * Guests arriving from the shared wedding must be displayable in Seating.
@@ -21,8 +21,8 @@ const { emptyTrousseau } = await import("@jfrusher/trousseau");
  */
 
 function withGuests(guests: Record<string, unknown>) {
-  const doc = { ...emptyTrousseau(), guests };
-  useTrousseauStore.setState({
+  const doc = { ...emptyKnotwork(), guests };
+  useKnotworkStore.setState({
     status: "ready",
     error: null,
     raw: doc as unknown as Record<string, unknown>,
@@ -108,16 +108,16 @@ test("a guest import and a rename made in the Data panel show in Seating, and su
   const { useStore } = await import("./useStore");
 
   withGuests({ g1: { id: "g1", firstName: "Ada", lastName: "Test" } });
-  useTrousseauStore.getState().setSlice("event", { ...emptyTrousseau().event, coupleNames: "Old Names" });
+  useKnotworkStore.getState().setSlice("event", { ...emptyKnotwork().event, coupleNames: "Old Names" });
 
   // The Data panel, over the top of it.
-  const shared = useTrousseauStore.getState();
+  const shared = useKnotworkStore.getState();
   shared.setSlice("guests", {
     ...(shared.raw["guests"] as Record<string, unknown>),
     g2: { id: "g2", firstName: "Bea", lastName: "Test" },
     g3: { id: "g3", firstName: "Cy", lastName: "Test" },
   });
-  const named = useTrousseauStore.getState();
+  const named = useKnotworkStore.getState();
   named.setSlice("event", { ...named.doc.event, coupleNames: "New Names" });
   expect(Object.keys(useStore.getState().guests).sort()).toEqual(["g1", "g2", "g3"]);
   expect(useStore.getState().meta.weddingName).toBe("New Names");
@@ -125,7 +125,7 @@ test("a guest import and a rename made in the Data panel show in Seating, and su
   // Back in Seating, one ordinary edit.
   useStore.getState().addTable({ type: "round", x: 100, y: 100 });
 
-  const after = useTrousseauStore.getState().doc;
+  const after = useKnotworkStore.getState().doc;
   expect(Object.keys(after.guests).sort()).toEqual(["g1", "g2", "g3"]);
   expect(after.event.coupleNames).toBe("New Names");
 });
@@ -136,16 +136,16 @@ test("a guest import and a rename made in the Data panel show in Seating, and su
  */
 test("Seating never writes the wedding's names, venue or date", () => {
   withGuests({});
-  useTrousseauStore
+  useKnotworkStore
     .getState()
-    .setSlice("event", { ...emptyTrousseau().event, coupleNames: "Robin & Kit", venueName: "The Barn", date: "2029-01-01" });
+    .setSlice("event", { ...emptyKnotwork().event, coupleNames: "Robin & Kit", venueName: "The Barn", date: "2029-01-01" });
 
   const doc = readDoc();
   expect(doc.meta).toMatchObject({ weddingName: "Robin & Kit", venue: "The Barn", date: "2029-01-01" });
 
   writeDoc({ ...doc, meta: { ...doc.meta, weddingName: "Old Names", venue: "Elsewhere", date: "2000-01-01" } }, { label: "the room" });
 
-  expect(useTrousseauStore.getState().doc.event).toMatchObject({
+  expect(useKnotworkStore.getState().doc.event).toMatchObject({
     coupleNames: "Robin & Kit",
     venueName: "The Barn",
     date: "2029-01-01",

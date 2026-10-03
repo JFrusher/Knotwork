@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { browserClient } from "@/lib/accounts/browserClient";
 import { followWedding, pageName, type Following } from "@/lib/documents/live";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 
 /**
  * Follows the account's copy of the wedding live, in place of polling it: a
@@ -16,7 +16,7 @@ import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
  * other copy to follow otherwise.
  */
 export function LiveWedding() {
-  const weddingId = useTrousseauStore((s) => s.weddingId);
+  const weddingId = useKnotworkStore((s) => s.weddingId);
   const pathname = usePathname();
   const following = useRef<Following | null>(null);
   const where = useRef(pageName(pathname));
@@ -27,7 +27,7 @@ export function LiveWedding() {
     if (!client || !weddingId) return;
     let live: Following | null = null;
     let cancelled = false;
-    const pull = () => void useTrousseauStore.getState().pullFromCloud();
+    const pull = () => void useKnotworkStore.getState().pullFromCloud();
 
     void client.auth.getUser().then(({ data }) => {
       const email = data.user?.email;
@@ -35,7 +35,7 @@ export function LiveWedding() {
       live = followWedding(client, weddingId, { email, where: where.current }, {
         // Its own saves come back too, already agreed on.
         onMoved: (version) => {
-          if (version !== useTrousseauStore.getState().cloudVersion) pull();
+          if (version !== useKnotworkStore.getState().cloudVersion) pull();
         },
         onJoined: pull,
       });

@@ -1,4 +1,4 @@
-import { eventSchema, type Trousseau } from "@jfrusher/trousseau";
+import { eventSchema, type Knotwork } from "@jfrusher/knotwork";
 import { isDietaryKey, normaliseDietary } from "./dietary";
 
 /**
@@ -106,7 +106,7 @@ const cache = new WeakMap<object, Map<string, unknown>>();
  * stability for every derived view; add new ones to it.
  */
 
-export function cached<T>(doc: Trousseau, key: string, build: () => T): T {
+export function cached<T>(doc: Knotwork, key: string, build: () => T): T {
   let slot = cache.get(doc);
   if (!slot) {
     slot = new Map();
@@ -138,7 +138,7 @@ function list<T>(v: unknown, of: (item: unknown) => T | null): T[] {
 
 // guests ---------------------------------------------------------------------
 
-export function readGuests(doc: Trousseau): Record<string, Guest> {
+export function readGuests(doc: Knotwork): Record<string, Guest> {
   return cached(doc, "guests", () => coerceGuests(doc.guests));
 }
 
@@ -315,7 +315,7 @@ export function emptySeating(): Seating {
   };
 }
 
-export function readSeating(doc: Trousseau): Seating {
+export function readSeating(doc: Knotwork): Seating {
   return cached(doc, "seating", () => {
     const raw: Record<string, unknown> = isRecord(doc.seating) ? doc.seating : {};
     const settings = isRecord(raw["settings"]) ? raw["settings"] : {};
@@ -549,7 +549,7 @@ export { DEFAULT_LANES };
  * authoritative, so this is the one place the echo is made, rather than two
  * places that can disagree about the date of the wedding.
  */
-export function readTimeline(doc: Trousseau): Timeline {
+export function readTimeline(doc: Knotwork): Timeline {
   return cached(doc, "timeline", () => {
     const base = emptyDoc();
     const raw: Record<string, unknown> = isRecord((doc as Record<string, unknown>)["timeline"])
@@ -658,12 +658,12 @@ function readOutputs(raw: unknown): OutputSpec[] {
 }
 
 /** The document the resolver and the clash checks read. Now the same object. */
-export function timelineDoc(doc: Trousseau): TimelineDoc {
+export function timelineDoc(doc: Knotwork): TimelineDoc {
   return readTimeline(doc);
 }
 
 /** The resolved day, memoised per document, so a render never re-runs it. */
-export function resolvedDay(doc: Trousseau) {
+export function resolvedDay(doc: Knotwork) {
   return cached(doc, "resolved", () => resolve(readTimeline(doc)));
 }
 
@@ -677,7 +677,7 @@ export interface Place {
 }
 
 /** Every block of the day by id, with where it is and when it starts and ends. */
-export function dayPlaces(doc: Trousseau): ReadonlyMap<string, Place> {
+export function dayPlaces(doc: Knotwork): ReadonlyMap<string, Place> {
   return cached(doc, "dayPlaces", () => {
     const times = new Map(resolvedDay(doc).map((block) => [block.id, block]));
     return new Map(
@@ -700,7 +700,7 @@ export function dayPlaces(doc: Trousseau): ReadonlyMap<string, Place> {
  * Cadence's own publisher, so what the suite writes is byte-for-byte what
  * Cadence would have written.
  */
-export function publishDay(doc: Trousseau, timeline: Timeline): Record<string, unknown> {
+export function publishDay(doc: Knotwork, timeline: Timeline): Record<string, unknown> {
   return resolveDaySlice({
     ...timeline,
     day: {
@@ -716,7 +716,7 @@ export function publishDay(doc: Trousseau, timeline: Timeline): Record<string, u
 
 // crew -----------------------------------------------------------------------
 
-export function readCrew(doc: Trousseau): Crew {
+export function readCrew(doc: Knotwork): Crew {
   return cached(doc, "crew", () => {
     const raw: Record<string, unknown> = isRecord(doc.crew) ? doc.crew : {};
     return {
@@ -889,7 +889,7 @@ export function emptyShots(): Shots {
   return { sections: [] };
 }
 
-export function readShots(doc: Trousseau): Shots {
+export function readShots(doc: Knotwork): Shots {
   return cached(doc, "shots", () => {
     const raw: Record<string, unknown> = isRecord((doc as Record<string, unknown>)["shots"])
       ? ((doc as Record<string, unknown>)["shots"] as Record<string, unknown>)
@@ -926,7 +926,7 @@ export function emptyCastSlice(): CastSlice {
  * on the server, and a wedding nobody has opened since must not read as having
  * no cast.
  */
-export function readCast(doc: Trousseau): CastSlice {
+export function readCast(doc: Knotwork): CastSlice {
   return cached(doc, "cast", () => {
     const record = doc as Record<string, unknown>;
     const own = record["cast"];
@@ -1006,7 +1006,7 @@ export function emptyCeremony(): Ceremony {
  * is read with one holding its processional, so nothing already planned
  * disappears from the order or the prints; the first change stores it so.
  */
-export function readCeremony(doc: Trousseau): Ceremony {
+export function readCeremony(doc: Knotwork): Ceremony {
   return cached(doc, "ceremony", () => {
     const raw = (doc as Record<string, unknown>)["ceremony"];
     if (!isRecord(raw)) return emptyCeremony();
@@ -1058,7 +1058,7 @@ export function emptyBoxes(): Boxes {
   return { boxes: [] };
 }
 
-export function readBoxes(doc: Trousseau): Boxes {
+export function readBoxes(doc: Knotwork): Boxes {
   return cached(doc, "boxes", () => {
     const raw = (doc as Record<string, unknown>)["boxes"];
     const stored = isRecord(raw) && Array.isArray(raw["boxes"]) ? raw["boxes"] : [];
@@ -1093,7 +1093,7 @@ export function emptyBar(): Bar {
 }
 
 /** The bar as the couple left it: only their choices, each checked; the rest is the defaults'. */
-export function readBar(doc: Trousseau): Bar {
+export function readBar(doc: Knotwork): Bar {
   return cached(doc, "bar", () => {
     const raw = (doc as Record<string, unknown>)["bar"];
     if (!isRecord(raw)) return emptyBar();

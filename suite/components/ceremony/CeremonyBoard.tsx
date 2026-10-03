@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ArrowDown, ArrowUp, BookOpen, Copy, ListOrdered, Music, Plus, Printer, Trash2, Wand2 } from "lucide-react";
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { Button, Check, Empty, IconButton, Panel, Segmented, SelectField, TextArea, TextField } from "@/components/ui/controls";
 import { NumberInput } from "@/components/ui/NumberInput";
@@ -38,7 +38,7 @@ import { download } from "@/lib/data/file";
 import { sideLabel } from "@/lib/model/partners";
 import { dayPlaces, type Place } from "@/lib/model/slices";
 import { useCast, useCeremony, useEvent, useGuests, useSeating, useStatus, useWriters } from "@/lib/model/useSuite";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import {
   CEREMONY_KINDS,
   MOMENT_KINDS,
@@ -98,7 +98,7 @@ export function CeremonyBoard() {
   const seating = useSeating();
   const cast = useCast();
   const ceremony = useCeremony();
-  const places = useTrousseauStore((s) => dayPlaces(s.doc));
+  const places = useKnotworkStore((s) => dayPlaces(s.doc));
   const { setCeremony } = useWriters();
   const [picked, setPicked] = useState<Picked>({ kind: "ceremony" });
   const [adding, setAdding] = useState<MomentKind>("reading");
@@ -123,7 +123,7 @@ export function CeremonyBoard() {
     try {
       const { browserFontSource } = await import("@/apps/brigade/render/pdf/fontSource");
       const fontSource = browserFontSource();
-      const generatedOn = `Made with Trousseau, ${new Date().toLocaleDateString()}`;
+      const generatedOn = `Made with Knotwork, ${new Date().toLocaleDateString()}`;
       let bytes: Uint8Array;
       if (what === "running-order") {
         const { renderRunningOrder } = await import("@/lib/ceremony/render/pdf/runningOrder");

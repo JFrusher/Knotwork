@@ -8,7 +8,7 @@ import { build } from "@/lib/build";
  * make the version and commit filterable on every event.
  */
 export const sentryBuild = {
-  release: `trousseau-suite@${build.version}+${build.commit}`,
+  release: `knotwork-suite@${build.version}+${build.commit}`,
   environment: build.environment,
   initialScope: { tags: { app_version: build.version, commit: build.commit } },
 };

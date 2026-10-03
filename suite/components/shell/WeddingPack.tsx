@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FileDown } from "lucide-react";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { KO_FI_URL } from "@/lib/support";
 import type { PackSection } from "@/lib/export/weddingPack";
 import { hiddenToolIds } from "@/lib/model/toolbox";
@@ -26,8 +26,8 @@ export function WeddingPack() {
   const [note, setNote] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
 
-  const hasDay = useTrousseauStore((s) => readTimeline(s.doc).blocks.length > 0);
-  const couple = useTrousseauStore((s) => s.doc.event.coupleNames);
+  const hasDay = useKnotworkStore((s) => readTimeline(s.doc).blocks.length > 0);
+  const couple = useKnotworkStore((s) => s.doc.event.coupleNames);
 
   async function build() {
     setBusy(true);
@@ -112,7 +112,7 @@ export function WeddingPack() {
       {/* Said only once something has been made, and never in the way of it. */}
       {note && (
         <p className="mt-2 text-xs text-slate">
-          If Trousseau saved you some work,{" "}
+          If Knotwork saved you some work,{" "}
           <a href={KO_FI_URL} className="underline underline-offset-2 hover:text-charcoal">
             a coffee on Ko-fi
           </a>{" "}
@@ -146,7 +146,7 @@ async function runSheet(): Promise<Uint8Array | null> {
     import("@/apps/cadence/render/pdf/fontSource"),
     import("@/apps/cadence/state/blobStore"),
   ]);
-  const doc = readTimeline(useTrousseauStore.getState().doc);
+  const doc = readTimeline(useKnotworkStore.getState().doc);
   if (doc.blocks.length === 0) return null;
 
   // Any typeface uploaded for the printed pieces, by family name. Without this
@@ -160,7 +160,7 @@ async function runSheet(): Promise<Uint8Array | null> {
 
   return renderRunSheet(doc, {
     fontSource: browserFontSource(uploaded),
-    generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+    generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
   });
 }
 
@@ -170,18 +170,18 @@ async function jobList(): Promise<Uint8Array | null> {
     import("@/apps/brigade/render/pdf/fontSource"),
     import("@/apps/brigade/state/sliceBridge"),
   ]);
-  const doc = readSlice(useTrousseauStore.getState().doc);
+  const doc = readSlice(useKnotworkStore.getState().doc);
   if (doc.jobs.length === 0) return null;
 
   return renderJobList(doc, {
     fontSource: browserFontSource(),
-    generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+    generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
   });
 }
 
 /** The running order: the order of service, with the processional where they walk. */
 async function runningOrder(): Promise<Uint8Array | null> {
-  const { doc } = useTrousseauStore.getState();
+  const { doc } = useKnotworkStore.getState();
   const ceremony = readCeremony(doc);
   if (ceremony.order.length === 0) return null;
 
@@ -198,12 +198,12 @@ async function runningOrder(): Promise<Uint8Array | null> {
     coupleNames: doc.event.coupleNames,
     officiant: ceremony.officiant,
     where: place,
-    generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+    generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
   });
 }
 
 async function drinksList(): Promise<Uint8Array | null> {
-  const { doc } = useTrousseauStore.getState();
+  const { doc } = useKnotworkStore.getState();
   // Worked out for any wedding with guests, so printed only for one using the Bar.
   if (hiddenToolIds(doc).has("bar")) return null;
 
@@ -222,12 +222,12 @@ async function drinksList(): Promise<Uint8Array | null> {
     coupleNames: doc.event.coupleNames,
     forWhom: forWords(sum),
     spend: spendWords(sum),
-    generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+    generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
   });
 }
 
 async function packingList(): Promise<Uint8Array | null> {
-  const { doc } = useTrousseauStore.getState();
+  const { doc } = useKnotworkStore.getState();
   const boxes = readBoxes(doc);
   if (boxes.boxes.length === 0) return null;
 
@@ -240,12 +240,12 @@ async function packingList(): Promise<Uint8Array | null> {
   return renderPackingList(boxRows(boxes, dayPlaces(doc), readCrew(doc), readGuests(doc)), {
     fontSource: browserFontSource(),
     coupleNames: doc.event.coupleNames,
-    generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+    generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
   });
 }
 
 async function shotSheet(): Promise<Uint8Array | null> {
-  const { doc } = useTrousseauStore.getState();
+  const { doc } = useKnotworkStore.getState();
   const shots = readShots(doc);
   const cast = readCast(doc);
   const total = shots.sections.reduce((sum, section) => sum + section.shots.length, 0);
@@ -265,7 +265,7 @@ async function shotSheet(): Promise<Uint8Array | null> {
       fontSource: browserFontSource(),
       coupleNames: doc.event.coupleNames,
       partners: doc.event.partners,
-      generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+      generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
     },
     cast.customRoles,
   );

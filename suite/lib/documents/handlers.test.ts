@@ -89,7 +89,7 @@ describe("exportDocumentHandler", () => {
     const reply = await exportDocumentHandler(store, "w1");
     expect(reply.status).toBe(200);
     if (reply.status !== 200) return;
-    expect(reply.file.filename).toBe("charis-and-jacob.trousseau.json");
+    expect(reply.file.filename).toBe("charis-and-jacob.knotwork.json");
     expect(JSON.parse(reply.file.text)).toEqual(document);
     // Pretty-printed, so a person opening the file can read it.
     expect(reply.file.text).toContain("\n  ");
@@ -114,7 +114,7 @@ describe("exportDocumentHandler", () => {
     if (reply.status !== 200) return;
     expect(JSON.parse(reply.file.text)).toEqual(broken);
     // migrate() threw, so the name falls back instead of the export failing.
-    expect(reply.file.filename).toBe("wedding.trousseau.json");
+    expect(reply.file.filename).toBe("wedding.knotwork.json");
   });
 });
 

@@ -1,26 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { emptyTrousseau } from "./envelope.js";
-import { TROUSSEAU_EXTENSION, parse, serialise, suggestedFilename } from "./file.js";
+import { emptyKnotwork } from "./envelope.js";
+import { KNOTWORK_EXTENSION, parse, serialise, suggestedFilename } from "./file.js";
 
 describe("serialise", () => {
   it("ends with a newline, so the file is well-formed on disk", () => {
-    expect(serialise(emptyTrousseau()).endsWith("\n")).toBe(true);
+    expect(serialise(emptyKnotwork()).endsWith("\n")).toBe(true);
   });
 
   it("is indented, so a diff of two weddings is readable", () => {
-    expect(serialise(emptyTrousseau())).toContain('\n  "kind"');
+    expect(serialise(emptyKnotwork())).toContain('\n  "kind"');
   });
 });
 
 describe("parse", () => {
   it("round-trips a document", () => {
-    const doc = emptyTrousseau();
+    const doc = emptyKnotwork();
     doc.event.coupleNames = "Charis & Jacob";
     expect(parse(serialise(doc)).event.coupleNames).toBe("Charis & Jacob");
   });
 
   it("keeps a slice it does not know about", () => {
-    const text = JSON.stringify({ kind: "trousseau", version: 1, florals: { arch: "peonies" } });
+    const text = JSON.stringify({ kind: "knotwork", version: 1, florals: { arch: "peonies" } });
     expect(parse(text)).toMatchObject({ florals: { arch: "peonies" } });
   });
 
@@ -30,41 +30,47 @@ describe("parse", () => {
 
   it("explains itself when handed a Cadence day", () => {
     const day = JSON.stringify({ kind: "cadence.day", version: 1 });
-    expect(() => parse(day)).toThrow(/not a Trousseau file/);
+    expect(() => parse(day)).toThrow(/not a Knotwork file/);
   });
 
   it("carries an unknown slice through serialise and back", () => {
-    const doc = { ...emptyTrousseau(), florals: { arch: "peonies", budget: 1200 } };
+    const doc = { ...emptyKnotwork(), florals: { arch: "peonies", budget: 1200 } };
     const back = parse(serialise(doc as Parameters<typeof serialise>[0]));
     expect(back).toMatchObject({ florals: { arch: "peonies", budget: 1200 } });
   });
 
   it("parses a document with no kind at all, since kind has a default", () => {
-    expect(parse(JSON.stringify({ version: 1 })).kind).toBe("trousseau");
+    expect(parse(JSON.stringify({ version: 1 })).kind).toBe("knotwork");
   });
 
   it("refuses a JSON array", () => {
-    expect(() => parse("[]")).toThrow(/not a Trousseau file/);
+    expect(() => parse("[]")).toThrow(/not a Knotwork file/);
   });
 
   it("refuses JSON null", () => {
-    expect(() => parse("null")).toThrow(/not a Trousseau file/);
+    expect(() => parse("null")).toThrow(/not a Knotwork file/);
   });
 
   it("explains a malformed slice rather than dumping a validation error", () => {
-    const bad = JSON.stringify({ kind: "trousseau", version: 1, guests: "oops" });
+    const bad = JSON.stringify({ kind: "knotwork", version: 1, guests: "oops" });
     expect(() => parse(bad)).toThrow(/could not be read/);
   });
 });
 
 describe("suggestedFilename", () => {
   it("uses the couple's names", () => {
-    const doc = emptyTrousseau();
+    const doc = emptyKnotwork();
     doc.event.coupleNames = "Charis & Jacob";
-    expect(suggestedFilename(doc)).toBe(`charis-and-jacob${TROUSSEAU_EXTENSION}`);
+    expect(suggestedFilename(doc)).toBe(`charis-and-jacob${KNOTWORK_EXTENSION}`);
   });
 
   it("falls back when there are no names yet", () => {
-    expect(suggestedFilename(emptyTrousseau())).toBe(`wedding${TROUSSEAU_EXTENSION}`);
+    expect(suggestedFilename(emptyKnotwork())).toBe(`wedding${KNOTWORK_EXTENSION}`);
+  });
+});
+
+describe("a file exported before the rename", () => {
+  it("opens", () => {
+    expect(parse(JSON.stringify({ kind: "trousseau", version: 1 })).kind).toBe("knotwork");
   });
 });

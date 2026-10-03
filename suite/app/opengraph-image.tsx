@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Trousseau — seating, stationery, timeline and crew for one wedding";
+export const alt = "Knotwork — seating, stationery, timeline and crew for one wedding";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -28,7 +28,7 @@ export default function OpengraphImage() {
           fontFamily: "Georgia, serif",
         }}
       >
-        <div style={{ fontSize: 96, letterSpacing: "-0.02em" }}>Trousseau</div>
+        <div style={{ fontSize: 96, letterSpacing: "-0.02em" }}>Knotwork</div>
         <div style={{ marginTop: 24, fontSize: 34, color: "#44403c" }}>
           One wedding. Four tools. One document.
         </div>

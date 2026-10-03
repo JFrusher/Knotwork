@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { currentDoc, useStore } from "./store";
 
 /** True while the user is typing into a field, where our shortcuts must not fire. */
@@ -20,7 +20,7 @@ export function handleKey(event: KeyboardEvent): void {
     // progress is dropped first, since it was a change to the day being undone.
     event.preventDefault();
     state.cancelPreview();
-    const history = useTrousseauStore.getState();
+    const history = useKnotworkStore.getState();
     if (event.shiftKey) history.redo();
     else history.undo();
     return;

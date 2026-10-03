@@ -18,7 +18,7 @@ const PROMPTS = [
   "How you would like to be named: first names, initials, or not at all",
 ];
 
-const mailto = `mailto:${CONTROLLER.email}?subject=${encodeURIComponent("Our wedding story, for the Trousseau blog")}&body=${encodeURIComponent(
+const mailto = `mailto:${CONTROLLER.email}?subject=${encodeURIComponent("Our wedding story, for the Knotwork blog")}&body=${encodeURIComponent(
   PROMPTS.map((prompt) => `${prompt}:\n\n`).join(""),
 )}`;
 

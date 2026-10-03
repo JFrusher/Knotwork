@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
 import { openPlan } from '../test/openPlan'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 
 const mkGuest = (id, first, last) => ({
   id,
@@ -67,9 +67,9 @@ describe('tables', () => {
     expect(cmd.meta.newTableId).toBeTruthy()
     expect(countTables()).toBe(2)
 
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(countTables()).toBe(1)
-    useTrousseauStore.getState().redo()
+    useKnotworkStore.getState().redo()
     expect(countTables()).toBe(2)
   })
 
@@ -81,7 +81,7 @@ describe('tables', () => {
     expect(s().tables.t1).toBeUndefined()
     expect(s().guests.g1.assignedTableId).toBeNull()
 
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().tables.t1).toBeDefined()
     expect(s().guests.g1.assignedTableId).toBe('t1')
   })
@@ -92,7 +92,7 @@ describe('assignment', () => {
     s().assignGuest('g1', 't1')
     expect(s().tables.t1.assignedGuestIds).toContain('g1')
 
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().guests.g1.assignedTableId).toBeNull()
     expect(s().tables.t1.assignedGuestIds).not.toContain('g1')
   })
@@ -110,16 +110,16 @@ describe('guest field edits', () => {
   it('are undoable', () => {
     s().updateGuest('g1', { rsvpStatus: 'declined' })
     expect(s().guests.g1.rsvpStatus).toBe('declined')
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().guests.g1.rsvpStatus).toBe('confirmed')
-    useTrousseauStore.getState().redo()
+    useKnotworkStore.getState().redo()
     expect(s().guests.g1.rsvpStatus).toBe('declined')
   })
 
   it('keep fullName in sync, and undo restores the old one', () => {
     s().updateGuest('g1', { lastName: 'Z' })
     expect(s().guests.g1.fullName).toBe('A Z')
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().guests.g1.fullName).toBe('A X')
   })
 })
@@ -128,41 +128,41 @@ describe('plan details, settings and seating rules', () => {
   it('undoes a settings change without clobbering untouched keys', () => {
     s().updateSettings({ gridSize: 40 })
     expect(s().settings.gridSize).toBe(40)
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().settings.gridSize).toBe(20)
     expect(s().settings.gridSnap).toBe(true)
   })
 
   it('ignores a no-op settings patch', () => {
-    const before = useTrousseauStore.getState().past.length
+    const before = useKnotworkStore.getState().past.length
     s().updateSettings({ gridSize: s().settings.gridSize })
-    expect(useTrousseauStore.getState().past).toHaveLength(before)
+    expect(useKnotworkStore.getState().past).toHaveLength(before)
   })
 
   it('adds and removes a seating rule undoably', () => {
     const id = s().addConstraint({ kind: 'apart', guestIds: ['g1', 'g2'] }).meta.newConstraintId
     expect(s().constraints).toHaveLength(1)
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().constraints).toHaveLength(0)
-    useTrousseauStore.getState().redo()
+    useKnotworkStore.getState().redo()
     expect(s().constraints).toHaveLength(1)
 
     s().removeConstraint(id)
     expect(s().constraints).toHaveLength(0)
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().constraints).toHaveLength(1)
   })
 })
 
 describe('history stack', () => {
   it('tracks past / future across undo and redo', () => {
-    expect(useTrousseauStore.getState().past).toHaveLength(0)
+    expect(useKnotworkStore.getState().past).toHaveLength(0)
     s().addTable({ type: 'round', x: 0, y: 0 })
-    expect(useTrousseauStore.getState().past).toHaveLength(1)
-    expect(useTrousseauStore.getState().future).toHaveLength(0)
-    useTrousseauStore.getState().undo()
-    expect(useTrousseauStore.getState().past).toHaveLength(0)
-    expect(useTrousseauStore.getState().future).toHaveLength(1)
+    expect(useKnotworkStore.getState().past).toHaveLength(1)
+    expect(useKnotworkStore.getState().future).toHaveLength(0)
+    useKnotworkStore.getState().undo()
+    expect(useKnotworkStore.getState().past).toHaveLength(0)
+    expect(useKnotworkStore.getState().future).toHaveLength(1)
   })
 })
 
@@ -173,7 +173,7 @@ describe('groups', () => {
     expect(s().guests.g1.groupId).toBe(gid)
     expect(s().guests.g2.groupId).toBe(gid)
 
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(Object.keys(s().groups)).toHaveLength(0)
     expect(s().guests.g1.groupId).toBeNull()
   })

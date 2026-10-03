@@ -2,8 +2,8 @@
 
 import { useCallback, useRef, useState } from "react";
 import { CloudOff, Download, FileUp, History, Upload, X } from "lucide-react";
-import { migrate, serialise, suggestedFilename } from "@jfrusher/trousseau";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { migrate, serialise, suggestedFilename } from "@jfrusher/knotwork";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { Button, Notice, Panel, TextField } from "@/components/ui/controls";
 import { Dialog } from "@/components/ui/Dialog";
 import { useWriters } from "@/lib/model/useSuite";
@@ -31,16 +31,16 @@ export function DataManager({ open, onClose }: { open: boolean; onClose: () => v
 }
 
 function Body({ onClose }: { onClose: () => void }) {
-  const status = useTrousseauStore((s) => s.status);
-  const error = useTrousseauStore((s) => s.error);
-  const saveError = useTrousseauStore((s) => s.saveError);
-  const savedAt = useTrousseauStore((s) => s.savedAt);
-  const replaceDocument = useTrousseauStore((s) => s.replaceDocument);
-  const guestCount = useTrousseauStore((s) => Object.keys(s.doc.guests).length);
-  const event = useTrousseauStore((s) => s.doc.event);
-  const cloudStatus = useTrousseauStore((s) => s.cloudStatus);
-  const cloudError = useTrousseauStore((s) => s.cloudError);
-  const cloudConflicts = useTrousseauStore((s) => s.cloudConflicts);
+  const status = useKnotworkStore((s) => s.status);
+  const error = useKnotworkStore((s) => s.error);
+  const saveError = useKnotworkStore((s) => s.saveError);
+  const savedAt = useKnotworkStore((s) => s.savedAt);
+  const replaceDocument = useKnotworkStore((s) => s.replaceDocument);
+  const guestCount = useKnotworkStore((s) => Object.keys(s.doc.guests).length);
+  const event = useKnotworkStore((s) => s.doc.event);
+  const cloudStatus = useKnotworkStore((s) => s.cloudStatus);
+  const cloudError = useKnotworkStore((s) => s.cloudError);
+  const cloudConflicts = useKnotworkStore((s) => s.cloudConflicts);
   const showSync = useSyncPanel((s) => s.show);
   const { setEvent } = useWriters();
 
@@ -52,7 +52,7 @@ function Body({ onClose }: { onClose: () => void }) {
   const exportJson = useCallback(() => {
     setProblem(null);
     try {
-      const raw = useTrousseauStore.getState().raw;
+      const raw = useKnotworkStore.getState().raw;
       const doc = migrate(raw);
       download(suggestedFilename(doc), serialise(doc));
       setNotice("Backup written to your downloads.");

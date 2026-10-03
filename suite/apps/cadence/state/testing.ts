@@ -1,5 +1,5 @@
-import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import type { TimelineDoc } from "../core/model/types";
 import { useStore } from "./store";
 
@@ -9,10 +9,10 @@ import { useStore } from "./store";
  * envelope's copy is the one Timeline reads.
  */
 export function openDay(timeline: TimelineDoc): void {
-  const base = emptyTrousseau();
+  const base = emptyKnotwork();
   const { date, coupleNames, venueName, curfewMin, utcOffsetMin } = timeline.day;
   const raw = { ...base, event: { ...base.event, date, coupleNames, venueName, curfewMin, utcOffsetMin }, timeline };
-  useTrousseauStore.setState({
+  useKnotworkStore.setState({
     status: "ready",
     raw: raw as unknown as Record<string, unknown>,
     doc: migrate(raw),

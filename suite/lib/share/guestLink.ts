@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { fingerprint } from "@/lib/documents/fingerprint";
 import { readGuests, readSeating } from "@/lib/model/slices";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { importShareKey, newShareKey, seal } from "./crypto";
 import { shareSnapshot, type ShareSnapshot } from "./snapshot";
 import type { GuestLinkRecord } from "./store";
@@ -13,7 +13,7 @@ export type GuestLink = GuestLinkRecord;
  * What guests would see, fingerprinted — without `publishedAt`, which is
  * different every time and would make every check a change.
  */
-export function guestView(doc: Trousseau, showPlan: boolean): { snapshot: ShareSnapshot; fingerprint: string } {
+export function guestView(doc: Knotwork, showPlan: boolean): { snapshot: ShareSnapshot; fingerprint: string } {
   const snapshot = shareSnapshot(readGuests(doc), readSeating(doc), doc.event, { showPlan });
   const { publishedAt: _, ...seen } = snapshot;
   return { snapshot, fingerprint: fingerprint(seen) };
@@ -34,7 +34,7 @@ async function fetchLink(weddingId: string): Promise<GuestLink | null> {
 }
 
 /** Seal what guests see now and publish it — under the link's own key, once it has one. */
-async function publishNow(weddingId: string, doc: Trousseau, key: string | null, showPlan: boolean): Promise<GuestLink> {
+async function publishNow(weddingId: string, doc: Knotwork, key: string | null, showPlan: boolean): Promise<GuestLink> {
   const encoded = key ?? (await newShareKey()).encoded;
   const { snapshot, fingerprint } = guestView(doc, showPlan);
   const sealed = await seal(await importShareKey(encoded), snapshot);
@@ -93,7 +93,7 @@ export const useGuestLink = create<GuestLinkState>()((set, get) => {
     load: (weddingId) => attempt(async () => ({ weddingId, link: await fetchLink(weddingId) })),
     publish: (showPlan) =>
       attempt(async () => ({
-        link: await publishNow(wedding(), useTrousseauStore.getState().doc, get().link?.key ?? null, showPlan),
+        link: await publishNow(wedding(), useKnotworkStore.getState().doc, get().link?.key ?? null, showPlan),
       })),
     takeDown: () =>
       attempt(async () => {
@@ -112,7 +112,7 @@ export const useGuestLink = create<GuestLinkState>()((set, get) => {
         // this very change.
         const current = await fetchLink(wedding());
         if (!current) return { link: null };
-        const { doc } = useTrousseauStore.getState();
+        const { doc } = useKnotworkStore.getState();
         if (guestView(doc, current.showPlan).fingerprint === current.fingerprint) return { link: current };
         return { link: await publishNow(wedding(), doc, current.key, current.showPlan) };
       }),

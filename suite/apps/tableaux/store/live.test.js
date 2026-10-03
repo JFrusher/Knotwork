@@ -4,8 +4,8 @@ import { beforeEach, expect, it, vi } from 'vitest'
 
 vi.mock('idb-keyval', () => ({ get: async () => undefined, set: async () => undefined, del: async () => undefined }))
 
-const { migrate } = await import('@jfrusher/trousseau')
-const { useTrousseauStore } = await import('@/lib/store/useTrousseauStore')
+const { migrate } = await import('@jfrusher/knotwork')
+const { useKnotworkStore } = await import('@/lib/store/useKnotworkStore')
 const { useStore } = await import('./useStore')
 
 /*
@@ -13,15 +13,15 @@ const { useStore } = await import('./useStore')
  * seating, every edit lands there at once on the one history, and a change to
  * either from anywhere is what the room shows.
  */
-const example = JSON.parse(readFileSync(join(process.cwd(), 'public', 'fixtures', 'example-wedding.trousseau.json'), 'utf8'))
-const shared = () => useTrousseauStore.getState()
+const example = JSON.parse(readFileSync(join(process.cwd(), 'public', 'fixtures', 'example-wedding.knotwork.json'), 'utf8'))
+const shared = () => useKnotworkStore.getState()
 const seating = () => useStore.getState()
 const stored = () => shared().raw
 const tableIds = Object.keys(example.seating.tables)
 const [t1, t2] = tableIds
 
 beforeEach(() => {
-  useTrousseauStore.setState({ status: 'ready', raw: example, doc: migrate(example), past: [], future: [] })
+  useKnotworkStore.setState({ status: 'ready', raw: example, doc: migrate(example), past: [], future: [] })
   useStore.setState({ selection: { type: null, id: null }, selectedGuestIds: [] })
 })
 

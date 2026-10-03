@@ -1,7 +1,7 @@
 import { guestName, isComing, readGuests, readSeating } from "@/lib/model/slices";
 import { dietaryText } from "@/lib/model/dietary";
 import { sideLabel } from "@/lib/model/partners";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import type { RowIssue, GuestRow } from "../core/data/rows";
 
 /**
@@ -38,7 +38,7 @@ export interface RoomRows {
  * cards — a misspelt name, a late change of table — without the whole run.
  */
 export function rowsFromRoom(only?: ReadonlySet<string>): RoomRows {
-  const { doc } = useTrousseauStore.getState();
+  const { doc } = useKnotworkStore.getState();
   const everyone = readGuests(doc);
   const guests = only
     ? Object.fromEntries(Object.entries(everyone).filter(([id]) => only.has(id)))

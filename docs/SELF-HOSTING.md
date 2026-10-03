@@ -1,6 +1,6 @@
-# Running your own Trousseau
+# Running your own Knotwork
 
-Trousseau is free software and this is a genuinely supported way to use it, not
+Knotwork is free software and this is a genuinely supported way to use it, not
 a theoretical one. Every command below was run on a fresh clone before it was
 written down.
 
@@ -16,7 +16,7 @@ Two pieces, licensed differently (see [`LICENSE`](../LICENSE)):
 - The **application** in `suite/` — a Next.js app. AGPL-3.0-or-later. If you
   host a modified version for other people, they are entitled to your source.
 - The **contract package** at the repo root, published as
-  `@jfrusher/trousseau`. MIT. It is the schemas and the file format.
+  `@jfrusher/knotwork`. MIT. It is the schemas and the file format.
 
 ## Requirements
 
@@ -33,7 +33,7 @@ Two pieces, licensed differently (see [`LICENSE`](../LICENSE)):
 
 ```sh
 git clone <your fork, or this repo>
-cd Trousseau
+cd Knotwork
 
 npm install          # the contract package's dependencies
 npm run build        # builds dist/ — do not skip this
@@ -44,7 +44,7 @@ npm install
 
 ### Why `npm run build` comes first
 
-`suite/package.json` depends on `"@jfrusher/trousseau": "file:.."`, which
+`suite/package.json` depends on `"@jfrusher/knotwork": "file:.."`, which
 resolves to the root's `dist/` directory. A fresh clone has no `dist/`, and
 `npm install` does not create one — only `npm run build` does.
 
@@ -53,7 +53,7 @@ arrives later, and does not mention any of the above:
 
 ```
 Error: Turbopack build failed with 4 errors:
-Error: Module not found: Can't resolve '@jfrusher/trousseau'
+Error: Module not found: Can't resolve '@jfrusher/knotwork'
 ```
 
 If you see that, you are in the right place: run `npm run build` in the repo
@@ -204,7 +204,7 @@ Then, in the browser:
 3. Add a guest, then reload. It is still there.
    *(Cloud sync works.)*
 4. From `/account`, choose **Download my wedding**. You get a
-   `.trousseau.json` file.
+   `.knotwork.json` file.
    *(The document store and the export path work.)*
 
 If step 2 says accounts are not set up, go back to section 3 — it is almost

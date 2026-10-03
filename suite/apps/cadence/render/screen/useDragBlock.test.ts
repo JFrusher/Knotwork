@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { sampleDoc } from "../../core/model/defaults";
 import { currentDoc, useStore } from "../../state/store";
 import { openDay } from "../../state/testing";
@@ -39,15 +39,15 @@ describe("drag through the store", () => {
 
     useStore.getState().cancelPreview();
     expect(currentDoc()).toBe(before);
-    expect(useTrousseauStore.getState().past).toEqual([]);
+    expect(useKnotworkStore.getState().past).toEqual([]);
   });
 
   it("commits one undoable edit when the drag ends", () => {
     useStore.getState().previewChange({ type: "shift", blockId: "blk-ceremony", deltaMin: 20 });
     useStore.getState().commitPreview();
     expect(currentDoc().blocks.find((b) => b.id === "blk-ceremony")?.anchorMin).toBe(830);
-    expect(useTrousseauStore.getState().past.at(-1)?.label).toBe("moving a block");
-    useTrousseauStore.getState().undo();
+    expect(useKnotworkStore.getState().past.at(-1)?.label).toBe("moving a block");
+    useKnotworkStore.getState().undo();
     expect(currentDoc().blocks.find((b) => b.id === "blk-ceremony")?.anchorMin).toBe(810);
   });
 
