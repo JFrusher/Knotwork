@@ -41,6 +41,13 @@ function loginDescription(next: string | null) {
   return "We’ll email you a six-digit code — no password to remember.";
 }
 
+/** `/auth/callback`, carrying where the person was going. */
+function callbackUrl(next: string | null): URL {
+  const callback = new URL("/auth/callback", window.location.origin);
+  if (next) callback.searchParams.set("next", next);
+  return callback;
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -103,8 +110,7 @@ export default function LoginPage() {
     // and carries `next` on. Built from the current origin, so the same code
     // serves localhost and production — each must be on Supabase's
     // redirect allowlist.
-    const callback = new URL("/auth/callback", window.location.origin);
-    if (next) callback.searchParams.set("next", next);
+    const callback = callbackUrl(next);
     setLeavingFor(provider);
     const { error: oauthError } = await client.auth.signInWithOAuth({
       provider,
@@ -137,7 +143,9 @@ export default function LoginPage() {
       setError(verifyError.message);
       return;
     }
-    window.location.assign(next ?? "/weddings");
+    // Through the callback, like every other sign-in: it starts a first-time
+    // couple's wedding, and knows where `next` may and may not lead.
+    window.location.assign(callbackUrl(next).toString());
   }
 
   function useDifferentEmail() {
@@ -205,6 +213,14 @@ export default function LoginPage() {
   } else {
     content = (
       <div className="mt-6">
+        {next?.startsWith("/invite/") && (
+          // An invite opens only for the address it was sent to, and Apple's
+          // Hide My Email signs in with a relay address that never matches.
+          <p className="mb-4 text-sm text-slate">
+            Sign in with the address your invite was sent to. With Apple, choose{" "}
+            <span className="font-medium text-charcoal">Share My Email</span>.
+          </p>
+        )}
         <div className="space-y-3">
           {PROVIDERS.map(({ id, label, mark: Mark }) => (
             <button

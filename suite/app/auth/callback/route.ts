@@ -8,8 +8,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Where every sign-in lands — email links, Google and Apple, and partner
- * invites alike.
+ * Where every sign-in lands — an emailed code or link, Google and Apple, and
+ * partner invites alike.
  *
  * Supabase's redirect carries a PKCE `code`, not a session: it has to be exchanged
  * here, server-side, so the session cookies are set on the response before any
@@ -83,6 +83,12 @@ export async function GET(request: Request) {
       // so this only succeeds in the browser that asked for it.
       const { data, error } = await client.auth.exchangeCodeForSession(code);
       failed = Boolean(error);
+      userId = data.user?.id ?? null;
+    } else if (!providerError) {
+      // Already signed in, in the browser: the emailed six-digit code is
+      // checked there, and the login page comes here afterwards so a first
+      // sign-in starts its wedding the same way every other one does.
+      const { data } = await client.auth.getUser();
       userId = data.user?.id ?? null;
     }
 
