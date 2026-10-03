@@ -32,7 +32,7 @@ Two pieces, licensed differently (see [`LICENSE`](../LICENSE)):
 **The order matters, and getting it wrong is the most common way to fail:**
 
 ```sh
-git clone <your fork, or this repo>
+git clone <your fork, or this repo> Knotwork
 cd Knotwork
 
 npm install          # the contract package's dependencies

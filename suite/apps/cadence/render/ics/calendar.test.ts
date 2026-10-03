@@ -53,7 +53,7 @@ describe("the day as a calendar", () => {
 
   it("gives each event a stamp and an id that is stable, and particular to this wedding", () => {
     const ics = make();
-    expect(ics).toContain("UID:blk-ceremony.2028-06-01.alex-and-sam@knotwork\r\n");
+    expect(ics).toContain("UID:blk-ceremony.2028-06-01.alex-and-sam@trousseau\r\n");
     expect(ics).toContain("DTSTAMP:20280501T090807Z\r\n");
     expect(make()).toBe(ics);
   });

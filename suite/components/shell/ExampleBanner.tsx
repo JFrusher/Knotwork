@@ -15,12 +15,18 @@ import { isExampleWedding, startYourOwnWedding } from "@/lib/tour/exampleWedding
 export function ExampleBanner() {
   const raw = useKnotworkStore((s) => s.raw);
   const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
   if (!isExampleWedding(raw)) return null;
 
   async function start() {
     setBusy(true);
+    setProblem(null);
     try {
       await startYourOwnWedding();
+    } catch (cause) {
+      // The copy is kept before anything is replaced, so a failure here has
+      // left the example exactly as it was — say why, rather than nothing.
+      setProblem(`The example could not be kept, so it is still here. ${cause instanceof Error ? cause.message : ""}`.trim());
     } finally {
       setBusy(false);
     }
@@ -29,7 +35,7 @@ export function ExampleBanner() {
   return (
     <section
       aria-label="Example wedding"
-      className="mb-8 flex flex-col gap-3 rounded-lg border border-gold/50 bg-gold/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+      className="mb-8 flex flex-col flex-wrap gap-3 rounded-lg border border-gold/50 bg-gold/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <p className="flex items-start gap-2.5 text-sm text-charcoal">
         <Compass size={17} className="mt-0.5 shrink-0 text-gold" aria-hidden />
@@ -46,6 +52,11 @@ export function ExampleBanner() {
       >
         Start your own wedding <ArrowRight size={15} aria-hidden />
       </button>
+      {problem && (
+        <p role="alert" className="rounded border border-danger/40 bg-danger-soft px-3 py-2 text-sm text-charcoal sm:basis-full">
+          {problem}
+        </p>
+      )}
     </section>
   );
 }

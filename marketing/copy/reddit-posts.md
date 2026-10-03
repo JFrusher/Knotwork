@@ -58,7 +58,7 @@ Space them at least a day apart.
 > **Setup, local-only:**
 >
 > ```
-> git clone https://github.com/JFrusher/Trousseau.git
+> git clone https://github.com/JFrusher/Trousseau.git Knotwork
 > cd Knotwork
 > npm ci
 > npm run build

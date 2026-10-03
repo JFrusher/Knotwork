@@ -149,7 +149,7 @@ error reporting only runs if you set a Sentry DSN.
 ### Local only: no backend, no account
 
 ```sh
-git clone https://github.com/JFrusher/Trousseau.git
+git clone https://github.com/JFrusher/Trousseau.git Knotwork
 cd Knotwork
 npm ci             # installs the contract package and the suite together
 npm run build      # builds the shared contract package; do not skip this

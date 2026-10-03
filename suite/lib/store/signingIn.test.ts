@@ -12,6 +12,7 @@ vi.mock("idb-keyval", () => ({
   get: async (key: string) => structuredClone(idb.get(key)),
   set: async (key: string, value: unknown) => void idb.set(key, structuredClone(value)),
   del: async (key: string) => void idb.delete(key),
+  keys: async () => [...idb.keys()],
 }));
 
 const server = {

@@ -1,4 +1,6 @@
 /wedding.knotwork.json
+# The same file under its name before the rename, still on existing checkouts.
+/wedding.trousseau.json
 /exports
 
 # Anything promoted out of the working copy holds the same real names it does.

@@ -10,7 +10,7 @@ const { FrontPage } = await import("./FrontPage");
 
 afterEach(cleanup);
 
-function show(status: "loading" | "ready", raw: Record<string, unknown>) {
+function show(status: "loading" | "ready" | "error", raw: Record<string, unknown>) {
   useKnotworkStore.setState({ status, raw });
   render(<FrontPage dashboard={<p>dashboard</p>} />);
 }
@@ -32,4 +32,9 @@ test("nothing is decided before the stored wedding has been read", () => {
   show("loading", empty());
   expect(screen.queryByText("welcome")).toBeNull();
   expect(screen.queryByText("dashboard")).toBeNull();
+});
+
+test("a saved wedding that cannot be read goes to the dashboard, which says so — not a crash", () => {
+  show("error", { event: { date: 42 } });
+  expect(screen.getByText("dashboard")).toBeTruthy();
 });

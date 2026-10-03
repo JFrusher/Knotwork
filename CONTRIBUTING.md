@@ -71,7 +71,7 @@ that can browse weddings.
 ### Install and run
 
 ```sh
-git clone https://github.com/JFrusher/Trousseau.git
+git clone https://github.com/JFrusher/Trousseau.git Knotwork
 cd Knotwork
 
 npm ci                 # installs the root package and the suite workspace

@@ -13,7 +13,9 @@ import { Welcome } from "./Welcome";
 export function FrontPage({ dashboard }: { dashboard: ReactNode }) {
   const status = useKnotworkStore((s) => s.status);
   const raw = useKnotworkStore((s) => s.raw);
-  const empty = useMemo(() => !hasContent(summarise(raw)), [raw]);
+  // Only once ready: an unreadable wedding is kept as it was found, and
+  // summarising it would throw — the dashboard is where that is reported.
+  const empty = useMemo(() => status === "ready" && !hasContent(summarise(raw)), [status, raw]);
 
   if (status === "idle" || status === "loading") {
     return (
@@ -23,6 +25,6 @@ export function FrontPage({ dashboard }: { dashboard: ReactNode }) {
       </div>
     );
   }
-  if (status === "ready" && empty) return <Welcome />;
+  if (empty) return <Welcome />;
   return dashboard;
 }

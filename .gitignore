@@ -7,6 +7,8 @@ dist/
 # which writes its own data/.gitignore. An unanchored *.knotwork.json here
 # would match that file too, and `dvc add` refuses a git-ignored path.
 /*.knotwork.json
+# Exported before the rename. Still real weddings, still never committed.
+/*.trousseau.json
 unpacked/
 
 # Per-device path to the OneDrive folder the apps write into.
