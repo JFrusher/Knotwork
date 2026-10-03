@@ -1,4 +1,4 @@
-import { useTrousseauStore, type WriteOptions } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore, type WriteOptions } from "@/lib/store/useKnotworkStore";
 import { initialDesign, type Design } from "./design";
 import { load, VERSION } from "./persist";
 
@@ -21,7 +21,7 @@ export function readDesign(raw: Record<string, unknown>): { design: Design; prob
 }
 
 export function writeDesign(design: Design, options: WriteOptions): void {
-  useTrousseauStore
+  useKnotworkStore
     .getState()
     .setSlice("stationery", { version: VERSION, savedAt: new Date().toISOString(), ...design }, options);
 }

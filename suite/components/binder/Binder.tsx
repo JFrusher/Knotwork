@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Phone } from "lucide-react";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { contacts, dayClock, findGuests, nowAndNext, runningOrder, takenKey, type BinderBlock } from "@/lib/binder/binder";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { readCast, readGuests, readSeating, readShots } from "@/lib/model/slices";
@@ -32,9 +32,9 @@ const at = (minute: number) => formatClock(minute);
  * saved to this phone: see `binder-sw.js`.
  */
 export function Binder() {
-  const status = useTrousseauStore((s) => s.status);
-  const doc = useTrousseauStore((s) => s.doc);
-  const savedAt = useTrousseauStore((s) => s.savedAt);
+  const status = useKnotworkStore((s) => s.status);
+  const doc = useKnotworkStore((s) => s.doc);
+  const savedAt = useKnotworkStore((s) => s.savedAt);
   const [part, setPart] = useState<Part>("now");
   const [now, setNow] = useState(() => Date.now());
   const [online, setOnline] = useState(true);
@@ -184,7 +184,7 @@ function Day({ blocks, minute }: { blocks: BinderBlock[]; minute: number | null 
 }
 
 function Ring() {
-  const doc = useTrousseauStore((s) => s.doc);
+  const doc = useKnotworkStore((s) => s.doc);
   const people = useMemo(() => contacts(doc), [doc]);
   if (people.length === 0) return <p className="text-slate">No numbers yet. Suppliers’ numbers are kept in Timeline and Delegation.</p>;
   return (
@@ -212,7 +212,7 @@ function Ring() {
 }
 
 function Find() {
-  const doc = useTrousseauStore((s) => s.doc);
+  const doc = useKnotworkStore((s) => s.doc);
   const [query, setQuery] = useState("");
   const found = useMemo(() => findGuests(doc, query), [doc, query]);
   return (
@@ -239,8 +239,8 @@ function Find() {
 }
 
 function Shots() {
-  const doc = useTrousseauStore((s) => s.doc);
-  const weddingId = useTrousseauStore((s) => s.weddingId);
+  const doc = useKnotworkStore((s) => s.doc);
+  const weddingId = useKnotworkStore((s) => s.weddingId);
   const [taken, setTaken] = useState<ReadonlySet<string>>(new Set());
 
   useEffect(() => {

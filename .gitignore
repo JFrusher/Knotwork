@@ -4,8 +4,10 @@ dist/
 
 # Personal wedding data — never commit.
 # Anchored to the root: data/ is the canonical home and is handled by DVC,
-# which writes its own data/.gitignore. An unanchored *.trousseau.json here
+# which writes its own data/.gitignore. An unanchored *.knotwork.json here
 # would match that file too, and `dvc add` refuses a git-ignored path.
+/*.knotwork.json
+# Exported before the rename. Still real weddings, still never committed.
 /*.trousseau.json
 unpacked/
 

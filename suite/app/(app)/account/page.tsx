@@ -9,7 +9,7 @@ import { useConfirm } from "@/components/ui/Confirm";
 import { removeWeddingFromDevice } from "@/lib/store/removeFromDevice";
 import { SignInFailed } from "@/components/shell/SignInFailed";
 import { WeddingPeople } from "@/components/shell/WeddingPeople";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import type { WeddingListing } from "@/lib/accounts/handlers";
 
 type AccountState = { signedIn: false } | { signedIn: true; me: string; weddings: WeddingListing[] };
@@ -35,7 +35,7 @@ export default function AccountPage() {
   const client = browserClient();
   const confirm = useConfirm();
   // The wedding open on this device — the one "who has access" is about.
-  const open = useTrousseauStore((s) => s.weddingId);
+  const open = useKnotworkStore((s) => s.weddingId);
   const say = useCallback((text: string, tone: "ok" | "error") => setNotice({ text, tone }), []);
 
   useEffect(() => {
@@ -108,7 +108,7 @@ export default function AccountPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Trousseau</p>
+      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
       <h1 className="mt-3 font-display text-3xl text-charcoal">Your account</h1>
 
       {!client ? (
@@ -165,7 +165,7 @@ export default function AccountPage() {
                     <h2 className="text-xs tracking-widest text-slate uppercase">Your data</h2>
                     <p className="text-sm text-slate">
                       Download the wedding open here as one file — guests, seating, the day, the
-                      crew and the stationery. It opens in Trousseau anywhere, including your own
+                      crew and the stationery. It opens in Knotwork anywhere, including your own
                       copy if you ever run one.
                     </p>
                     <Button

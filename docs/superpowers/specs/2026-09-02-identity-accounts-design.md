@@ -1,4 +1,4 @@
-# Trousseau — identity & accounts design
+# Knotwork — identity & accounts design
 
 Date: 2026-09-02
 Status: approved, ready for implementation planning
@@ -8,14 +8,14 @@ storage) and subsystem G (multi-tenant suite mechanics).
 
 ## Why
 
-Trousseau is becoming a real product for other couples, not a tool for one
+Knotwork is becoming a real product for other couples, not a tool for one
 wedding on one laptop. Every other subsystem in the pivot — where a
 wedding's data lives, how the suite tells one tenant from another, even
 whether Brigade can ever have a vendor-facing portal — assumes "a wedding
 belongs to an authenticated account" already exists. This is that
 foundation.
 
-See `docs/superpowers/specs/2026-09-02-trousseau-architecture-audit.md` for
+See `docs/superpowers/specs/2026-09-02-knotwork-architecture-audit.md` for
 the state of the repo this builds on, and `docs/PRODUCT-ROADMAP.md` for the
 decisions this design was built from (Supabase Auth, two accounts per
 wedding via invite, couple-only roles, email + magic link, no billing).

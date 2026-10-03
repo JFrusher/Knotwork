@@ -1,7 +1,7 @@
 "use client";
 
 import { Redo2, Undo2 } from "lucide-react";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { ChromeFill } from "./chrome";
 
 /**
@@ -16,8 +16,8 @@ import { ChromeFill } from "./chrome";
  * which is the difference between a safe button and a surprise.
  */
 export function ToolUndo() {
-  const past = useTrousseauStore((s) => s.past);
-  const future = useTrousseauStore((s) => s.future);
+  const past = useKnotworkStore((s) => s.past);
+  const future = useKnotworkStore((s) => s.future);
   const canUndo = past.length > 0;
   const canRedo = future.length > 0;
   const undoLabel = past[past.length - 1]?.label;
@@ -29,7 +29,7 @@ export function ToolUndo() {
     <ChromeFill name="tool-undo">
       <button
         type="button"
-        onClick={() => useTrousseauStore.getState().undo()}
+        onClick={() => useKnotworkStore.getState().undo()}
         disabled={!canUndo}
         title={undoText}
         aria-label={undoText}
@@ -39,7 +39,7 @@ export function ToolUndo() {
       </button>
       <button
         type="button"
-        onClick={() => useTrousseauStore.getState().redo()}
+        onClick={() => useKnotworkStore.getState().redo()}
         disabled={!canRedo}
         title={redoText}
         aria-label={redoText}

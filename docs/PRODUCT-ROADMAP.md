@@ -1,21 +1,21 @@
-# Trousseau — product roadmap
+# Knotwork — product roadmap
 
 Status: **living document** — updated as decisions land, not a one-shot spec.
 Started: 2026-09-02.
 
-This is the record of turning Trousseau from a tool built for one wedding into
+This is the record of turning Knotwork from a tool built for one wedding into
 a real product other couples can use. It captures the vision, the
 decomposition into independent subsystems, decisions already made, and open
 questions per subsystem. Each subsystem gets its own dated design spec in
 `docs/superpowers/specs/` once it's actually designed — this document links
 out to those rather than duplicating them.
 
-Baseline: `docs/superpowers/specs/2026-09-02-trousseau-architecture-audit.md`
+Baseline: `docs/superpowers/specs/2026-09-02-knotwork-architecture-audit.md`
 — the architecture audit that preceded this pivot decision.
 
 ## Vision
 
-Trousseau was built for one wedding, with the constraints that came from that
+Knotwork was built for one wedding, with the constraints that came from that
 being honest: real guest names, four tools that must not overwrite each
 other, a date that doesn't move. The wedding has now happened. The decision
 is to keep building this — as a real product for other couples, not a
@@ -59,7 +59,7 @@ instead (see subsystem F).
 Settled answers, in the order they were made. Each entry is a fact to build
 against, not a discussion to reopen without a reason.
 
-- **2026-09-02** — Scope: Trousseau becomes a real multi-tenant product for
+- **2026-09-02** — Scope: Knotwork becomes a real multi-tenant product for
   couples generally, not a single-wedding tool being wound down.
 - **2026-09-02** — Tableaux: its "former standalone SaaS product" scar tissue
   (dead `planId`, references to a server that no longer exists, JS/no-schema
@@ -75,7 +75,7 @@ against, not a discussion to reopen without a reason.
   not extended or productionized.
 - **2026-09-08** — Clarifying the above: "dropped" means it is not the
   product's sync story, **not** that the tooling is gone. `.githooks/pre-commit`
-  still runs the cross-slice validator over `data/wedding.trousseau.json` on
+  still runs the cross-slice validator over `data/wedding.knotwork.json` on
   every commit and still catches real problems, and `scripts/sync.mjs` is still
   the maintainer's own two-machine workflow. Both stay. Deleting working
   tooling because a decision log calls it superseded is how you lose something
@@ -134,7 +134,7 @@ against, not a discussion to reopen without a reason.
   "groom".
 - **2026-09-28** — Phones get a read-only day-of binder; the editing tools
   stay desktop.
-- **2026-09-28** — RSVPs stay with Joy and similar services; Trousseau imports
+- **2026-09-28** — RSVPs stay with Joy and similar services; Knotwork imports
   the result through one importer that never unseats or silently deletes.
 - **2026-09-28** — The guest link moves onto the account with no passphrase,
   and stays current by itself once published. `lib/sync` goes when it does.
@@ -162,7 +162,7 @@ against, not a discussion to reopen without a reason.
 
 ## Subsystem H — Guided tour & example wedding
 
-**Why:** Trousseau opens on an empty document with five unfamiliar tools and
+**Why:** Knotwork opens on an empty document with five unfamiliar tools and
 nothing explaining that they share one wedding — which is the entire point of
 the product and is invisible until you have done enough work to notice it. The
 README explains it; almost nobody reads a README before using a web app.
@@ -337,7 +337,7 @@ executed in full on 2026-09-07 (branch `licensing-selfhosting`).
 
 **Licence decision refined during implementation.** The spec said to relicense
 every `package.json` including the root. The root package *is*
-`@jfrusher/trousseau`, published to npm, and the founding design expects a
+`@jfrusher/knotwork`, published to npm, and the founding design expects a
 fifth app to depend on it — AGPL there would make it unadoptable while adding
 nothing, since the stated aim (stopping a paid fork of the hosted service) is
 served by AGPL on the application alone. **So: the application in `suite/` is

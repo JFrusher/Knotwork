@@ -78,6 +78,8 @@ test("the tour, open, has no accessibility violations", async ({ page }) => {
 });
 
 test("the tour takes focus, keeps it, and gives it back", async ({ page }) => {
+  // On a wedding, where "Take a tour" lives: an empty one gets the welcome.
+  await seedExampleWedding(page);
   await page.goto("/");
   const start = page.getByRole("button", { name: /Take (a|the) tour/ });
   await start.click();

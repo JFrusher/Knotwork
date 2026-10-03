@@ -1,10 +1,11 @@
 import { del as idbDel, get as idbGet, set as idbSet } from "idb-keyval";
 import { forgetLink, readLink, writeLink, type CloudLink } from "@/lib/documents/cloudSync";
-import { STORAGE_KEY } from "./useTrousseauStore";
+import { migrateLegacyKeys } from "./migrateKeys";
+import { STORAGE_KEY } from "./useKnotworkStore";
 
 /** The wedding this device was last asked to open — read by the next start. */
-const OPEN_KEY = "trousseau.cloud.open";
-const stashKey = (weddingId: string) => `trousseau.wedding.${weddingId}`;
+const OPEN_KEY = "knotwork.cloud.open";
+const stashKey = (weddingId: string) => `knotwork.wedding.${weddingId}`;
 
 interface Stash {
   document: unknown;
@@ -28,6 +29,11 @@ export async function readOpenChoice(): Promise<string | null> {
  * question as any first sign-in, since both may have work in them.
  */
 export async function openWedding(weddingId: string): Promise<void> {
+  // `/open` runs before the store has started, so before the store's own
+  // migration: without this, a device still holding the old keys reads no
+  // link, skips the swap, and the next start brings the wedding being left
+  // back as the one just opened.
+  await migrateLegacyKeys();
   const link = await readLink();
   if (link && link.weddingId !== weddingId) {
     const current: unknown = await idbGet(STORAGE_KEY);

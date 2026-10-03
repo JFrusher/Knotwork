@@ -4,8 +4,8 @@ import { beforeEach, expect, test, vi } from "vitest";
 
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined, del: async () => undefined }));
 
-const { migrate } = await import("@jfrusher/trousseau");
-const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { migrate } = await import("@jfrusher/knotwork");
+const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { changeTeam } = await import("@/lib/money/edit");
 const { brigadeDoc, useStore } = await import("./store");
 
@@ -14,14 +14,14 @@ const { brigadeDoc, useStore } = await import("./store");
  * the one document, and every edit lands there at once, on the one history.
  */
 type Raw = Record<string, any>;
-const example: Raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const example: Raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 const photographer = (example.crew.teams as Raw[]).find((team) => team.tag === "photographer")!.id as string;
 
-const shared = () => useTrousseauStore.getState();
+const shared = () => useKnotworkStore.getState();
 const storedTeams = () => (shared().raw as Raw).crew.teams as Raw[];
 
 beforeEach(() => {
-  useTrousseauStore.setState({ status: "ready", raw: example, doc: migrate(example), past: [], future: [] });
+  useKnotworkStore.setState({ status: "ready", raw: example, doc: migrate(example), past: [], future: [] });
   useStore.setState({ selectedJobId: null });
 });
 

@@ -55,7 +55,7 @@ export async function assemblePack(sections: PackSection[]): Promise<Pack> {
   }
 
   pack.setTitle("Wedding pack");
-  pack.setProducer("Trousseau");
+  pack.setProducer("Knotwork");
 
   return { bytes: await pack.save(), contents };
 }

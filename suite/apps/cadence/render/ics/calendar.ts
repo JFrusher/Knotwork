@@ -78,6 +78,9 @@ export function calendar(doc: TimelineDoc, options: CalendarOptions): string {
   // Stable, so importing the file again updates the events rather than doubling
   // them; and particular to this wedding, because two weddings' days can share
   // block ids when one was started from the other's running order.
+  // `@trousseau` from before the rename, kept on purpose: a UID is what lets a
+  // calendar update an event it already has rather than add a second copy,
+  // so it must never change. The name shown is PRODID's job, below.
   const uidSuffix = `${options.date}.${slug(couple) || "wedding"}@trousseau`;
 
   const events = doc.blocks
@@ -104,7 +107,7 @@ export function calendar(doc: TimelineDoc, options: CalendarOptions): string {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Trousseau//Timeline//EN",
+    "PRODID:-//Knotwork//Timeline//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     `X-WR-CALNAME:${escapeText(title)}`,

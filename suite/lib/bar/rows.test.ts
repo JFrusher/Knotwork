@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { migrate } from "@jfrusher/trousseau";
+import { migrate } from "@jfrusher/knotwork";
 import { nodeFontSource } from "@/apps/brigade/render/pdf/nodeFontSource";
 import { textOf } from "@/apps/brigade/render/pdf/readPdf";
 import { parseCsv } from "@/lib/data/csv";
@@ -10,7 +10,7 @@ import { renderShoppingList } from "./render/pdf/shoppingList";
 import { forWords, shoppingCsv, shoppingList, spendWords } from "./rows";
 import { barSum } from "./sum";
 
-const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 const doc = migrate(raw);
 const sum = barSum(doc);
 const groups = shoppingList(readBar(doc), sum);

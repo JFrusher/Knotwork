@@ -1,4 +1,4 @@
-# Trousseau — guided tour and the example wedding
+# Knotwork — guided tour and the example wedding
 
 Date: 2026-09-07
 Status: approved, ready for implementation planning
@@ -7,7 +7,7 @@ shell, plus a loadable example wedding for it to run against.
 
 ## Why
 
-Trousseau is now something other couples are meant to use, and it opens on an
+Knotwork is now something other couples are meant to use, and it opens on an
 empty document with five unfamiliar tools across the top. Nothing in the
 interface explains what any of them are for, which of them to open first, or
 that the tools are connected at all — the connection is the entire point of the
@@ -63,7 +63,7 @@ looking bolted on, in a codebase that has been deliberate about both. Because
 steps never gate on actions, the hard parts of those libraries are not needed.
 
 **The example wedding is a committed fixture, not generated at runtime.** One
-`.trousseau.json` file, produced by driving the real application once and
+`.knotwork.json` file, produced by driving the real application once and
 exporting it, so it is genuinely valid rather than hand-assembled and plausible.
 
 **Loading the example offers a backup first.** If the current wedding is not
@@ -133,7 +133,7 @@ user's choice.
 
 ## The example wedding
 
-One file: `suite/fixtures/example-wedding.trousseau.json`.
+One file: `suite/fixtures/example-wedding.knotwork.json`.
 
 It carries a full document — event, guests, seating, timeline, day, crew and
 shots — so every chapter has something real to point at. The guests are the
@@ -186,7 +186,7 @@ it would be inconsistent with the loader built here.
 
 - **Gating steps on real actions.** Revisit only if the invite-only tour
   demonstrably fails to teach.
-- **Translation.** Step text is English, inline. If Trousseau is ever
+- **Translation.** Step text is English, inline. If Knotwork is ever
   translated, the step list is the easy part.
 - **A docs page generated from the step definitions.** Attractive, but it needs
   screenshots to be worth reading, and screenshots are the thing that goes

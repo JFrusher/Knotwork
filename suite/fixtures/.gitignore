@@ -1,5 +1,6 @@
 # Test fixtures only. A real export dropped in here must not reach a public
 # repo — the same guard Plaque and Cadence keep on their own fixture folders.
+*.knotwork.json
 *.trousseau.json
 *.tableaux.json
 *.plaque.json
@@ -15,4 +16,4 @@
 
 # The example wedding the guided tour loads. Exported from the running app,
 # built from the synthetic guests-150.csv — no real guest is in it.
-!example-wedding.trousseau.json
+!example-wedding.knotwork.json

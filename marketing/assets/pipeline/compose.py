@@ -78,7 +78,7 @@ for src, path, eyebrow, head, sub, accent, tint in HEROES:
 # ---------- Social preview (GitHub, 1280x640) and link card (1200x630) ----------
 def social(name, w, h):
     body = (f"<div style='position:absolute;left:72px;top:0;bottom:0;width:470px;display:flex;flex-direction:column;justify-content:center'>"
-            f"<div class=brand>💍 Trousseau</div>"
+            f"<div class=brand>💍 Knotwork</div>"
             f"<h1 style='font-size:50px;margin-top:22px'>Plan the whole wedding in one place.</h1>"
             f"<p class=sub style='font-size:21px;margin-top:18px'>Seating, place cards, the day, the jobs and the money — sharing one wedding.</p>"
             f"<div style='margin-top:26px;display:flex;gap:10px;flex-wrap:wrap'><span class=pill>Free forever</span><span class=pill>Open source</span><span class=pill>No sign-up</span></div></div>"
@@ -100,7 +100,7 @@ for src, path, eyebrow, head, crop, accent, tint in SQUARES:
     body = (f"<div style='position:absolute;left:80px;top:78px'><div class=eyebrow>{eyebrow}</div>"
             f"<h1 style='font-size:58px;margin-top:14px'>{head}</h1></div>"
             + window(src, 80, 330, 920, path, crop)
-            + f"<div style='position:absolute;right:80px;top:84px' class=brand>💍 Trousseau</div>")
+            + f"<div style='position:absolute;right:80px;top:84px' class=brand>💍 Knotwork</div>")
     page(f"square-{src}", 1080, 1080, body, tint, accent)
 
 # ---------- The Binder, three phones ----------
@@ -124,14 +124,14 @@ tiles = "".join(
     f"<div style='background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 10px 24px -14px rgba(28,25,23,.35),0 0 0 1px rgba(28,25,23,.07)'>"
     f"<img src='file://{RAW}/{s}.png' style='display:block;width:100%'><div style='padding:10px 14px;font-size:17px;border-top:1px solid {TOKENS['canvas']}'>{n}</div></div>"
     for s, n in TILES)
-body = (f"<div style='position:absolute;left:0;right:0;top:54px;text-align:center'><div class=eyebrow>Trousseau</div>"
+body = (f"<div style='position:absolute;left:0;right:0;top:54px;text-align:center'><div class=eyebrow>Knotwork</div>"
         f"<h1 style='font-size:54px;margin-top:12px'>Every tool. One wedding.</h1>"
         f"<p class=sub style='font-size:21px;margin-top:10px'>Add the ones you need. They all read the same guest list, the same room and the same day — and the Binder takes it to your phone.</p></div>"
         f"<div style='position:absolute;left:170px;right:170px;top:212px;display:grid;grid-template-columns:repeat(4,1fr);gap:22px'>{tiles}</div>")
 page("tools-grid", 1600, 1000, body)
 
 # ---------- Vertical story / Shorts cover, 1080x1920 ----------
-body = (f"<div style='position:absolute;left:80px;right:80px;top:150px;text-align:center'><div class=brand style='justify-content:center;font-size:34px'>💍 Trousseau</div>"
+body = (f"<div style='position:absolute;left:80px;right:80px;top:150px;text-align:center'><div class=brand style='justify-content:center;font-size:34px'>💍 Knotwork</div>"
         f"<h1 style='font-size:104px;margin-top:40px'>Your wedding,<br>in one place.</h1>"
         f"<p class=sub style='font-size:38px;margin-top:30px'>Free. Private. Open source.<br>No sign-up to start.</p></div>"
         + phone("binder-now", 276, 560, 500)
@@ -144,7 +144,7 @@ items = [("Free, forever.", "No paid tier, no premium, no trial."), ("Your guest
          ("You can always leave.", "The whole wedding, as one open file.")]
 li = "".join(f"<li style='display:flex;gap:26px;margin-top:34px'><span style='font-family:Marcellus;font-size:40px;color:{TOKENS['brass']};width:46px'>{'i ii iii iv v'.split()[k]}.</span>"
              f"<div><div style='font-size:34px;font-family:Marcellus'>{a}</div><div class=sub style='font-size:24px;margin-top:6px'>{b}</div></div></li>" for k, (a, b) in enumerate(items))
-body = (f"<div style='position:absolute;left:100px;right:100px;top:96px'><div class=eyebrow>The Trousseau pledge</div>"
+body = (f"<div style='position:absolute;left:100px;right:100px;top:96px'><div class=eyebrow>The Knotwork pledge</div>"
         f"<h1 style='font-size:64px;margin-top:14px'>Planning a wedding shouldn't cost you your privacy.</h1>"
         f"<ol style='list-style:none;padding:0;margin-top:20px'>{li}</ol></div>")
 page("pledge", 1080, 1080, body, "#f1e8d7")

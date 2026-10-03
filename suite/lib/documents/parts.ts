@@ -1,4 +1,4 @@
-import { SLICE_NAMES, type SliceName } from "@jfrusher/trousseau";
+import { SLICE_NAMES, type SliceName } from "@jfrusher/knotwork";
 
 /**
  * A wedding cut into the pieces two people can change apart.

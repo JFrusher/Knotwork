@@ -1,4 +1,4 @@
-import type { SliceName } from "@jfrusher/trousseau";
+import type { SliceName } from "@jfrusher/knotwork";
 import { fingerprint } from "./fingerprint";
 import { partInfo, partsOf } from "./parts";
 

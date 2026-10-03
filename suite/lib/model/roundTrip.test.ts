@@ -1,5 +1,5 @@
 import { beforeEach, expect, test, vi } from "vitest";
-import { emptyTrousseau, migrate, parse, serialise } from "@jfrusher/trousseau";
+import { emptyKnotwork, migrate, parse, serialise } from "@jfrusher/knotwork";
 
 const db = new Map<string, unknown>();
 vi.mock("idb-keyval", () => ({
@@ -9,8 +9,8 @@ vi.mock("idb-keyval", () => ({
   keys: async () => [...db.keys()],
 }));
 
-const { STORAGE_KEY, flushPersist, useTrousseauStore } = await import(
-  "@/lib/store/useTrousseauStore"
+const { STORAGE_KEY, flushPersist, useKnotworkStore } = await import(
+  "@/lib/store/useKnotworkStore"
 );
 const { publishDay, readCrew, readGuests, readSeating, readTimeline, readShots, resolvedDay } = await import(
   "./slices"
@@ -28,12 +28,12 @@ const { addSection, addShot, patchShot } = await import("@/lib/ensemble/actions"
  * heard of.
  */
 
-const store = () => useTrousseauStore.getState();
+const store = () => useKnotworkStore.getState();
 
 beforeEach(async () => {
   db.clear();
-  const doc = emptyTrousseau();
-  useTrousseauStore.setState({
+  const doc = emptyKnotwork();
+  useKnotworkStore.setState({
     status: "idle",
     error: null,
     savedAt: null,

@@ -4,11 +4,11 @@ import { beforeEach, expect, test, vi } from "vitest";
 
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined, del: async () => undefined }));
 
-const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { useSupplierLinks, changedSinceConfirmed } = await import("./links");
 const { memoryStore } = await import("./store");
 const { importShareKey, unseal } = await import("@/lib/share/crypto");
-const { migrate } = await import("@jfrusher/trousseau");
+const { migrate } = await import("@jfrusher/knotwork");
 const { localDay } = await import("@/lib/dates");
 
 /*
@@ -36,15 +36,15 @@ vi.stubGlobal(
 );
 
 type Raw = Record<string, any>;
-const example: Raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const example: Raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 const PHOTO = (example.crew.teams as Raw[]).find((team) => team.tag === "photographer")!.id as string;
 const theirJob = (example.crew.jobs as Raw[]).find((job) => job.teamId === PHOTO)!.id as string;
 
 const withCrew = (change: (crew: Raw) => Raw): Raw => ({ ...example, crew: change(example.crew) });
 const relabelled = (label: string) =>
   withCrew((crew) => ({ ...crew, jobs: (crew.jobs as Raw[]).map((job) => (job.id === theirJob ? { ...job, label } : job)) }));
-const open = (raw: Raw) => useTrousseauStore.setState({ status: "ready", raw, doc: migrate(raw), past: [], future: [] });
-const storedTeams = () => (useTrousseauStore.getState().raw as Raw).crew.teams as Raw[];
+const open = (raw: Raw) => useKnotworkStore.setState({ status: "ready", raw, doc: migrate(raw), past: [], future: [] });
+const storedTeams = () => (useKnotworkStore.getState().raw as Raw).crew.teams as Raw[];
 
 async function whatTheySee(teamId: string) {
   const link = (await server.linksOf(WEDDING)).find((entry) => entry.teamId === teamId)!;
@@ -93,7 +93,7 @@ test("their confirmation lands on the wedding as the day they confirmed — and 
   const teams = storedTeams();
   expect(teams.find((team) => team.id === PHOTO)!.confirmedOn).toBe(localDay(new Date(confirmedAt)));
   expect(teams.filter((team) => team.id !== PHOTO).every((team) => team.confirmedOn === "")).toBe(true);
-  expect(useTrousseauStore.getState().past).toEqual([]);
+  expect(useKnotworkStore.getState().past).toEqual([]);
 });
 
 test("a later date typed in by hand stays", async () => {

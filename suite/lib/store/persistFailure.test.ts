@@ -19,13 +19,13 @@ vi.mock("idb-keyval", () => ({
   keys: async () => [],
 }));
 
-const { useTrousseauStore } = await import("./useTrousseauStore");
-const { emptyTrousseau } = await import("@jfrusher/trousseau");
+const { useKnotworkStore } = await import("./useKnotworkStore");
+const { emptyKnotwork } = await import("@jfrusher/knotwork");
 
 beforeEach(() => {
   vi.useFakeTimers();
-  const doc = emptyTrousseau();
-  useTrousseauStore.setState({
+  const doc = emptyKnotwork();
+  useKnotworkStore.setState({
     status: "ready",
     error: null,
     saveError: null,
@@ -40,13 +40,13 @@ afterEach(() => {
 });
 
 test("a browser that refuses IndexedDB is reported, not thrown past", () => {
-  useTrousseauStore.getState().setSlice("event", { coupleNames: "Charis & Jacob" });
+  useKnotworkStore.getState().setSlice("event", { coupleNames: "Charis & Jacob" });
 
   // Would be an uncaught exception rather than a returning call if the write
   // were not guarded.
   expect(() => vi.advanceTimersByTime(1000)).not.toThrow();
 
-  const { saveError, error, savedAt } = useTrousseauStore.getState();
+  const { saveError, error, savedAt } = useKnotworkStore.getState();
   expect(saveError).toContain(refused.message);
   // A failed write is not an unreadable wedding: writes are still accepted,
   // so the next one can land and clear this.

@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { hiddenToolIds } from "@/lib/model/toolbox";
 import { CHAPTERS, type ChapterId, type TourChapter, type TourStep } from "./steps";
 
@@ -14,7 +14,7 @@ import { CHAPTERS, type ChapterId, type TourChapter, type TourStep } from "./ste
  * Timeline keeps its place without any extra machinery.
  */
 
-const SEEN_KEY = "trousseau.tour.seen";
+const SEEN_KEY = "knotwork.tour.seen";
 
 /** Storage can throw outright in a private window, so every touch is wrapped. */
 function readSeen(): boolean {
@@ -90,7 +90,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     [begin],
   );
   // Every chapter but those of the tools the wedding has removed.
-  const hidden = useTrousseauStore((s) => hiddenToolIds(s.doc));
+  const hidden = useKnotworkStore((s) => hiddenToolIds(s.doc));
   const startAll = useCallback(
     () => begin(walkOf(CHAPTERS.filter((chapter) => !hidden.has(chapter.id)))),
     [begin, hidden],

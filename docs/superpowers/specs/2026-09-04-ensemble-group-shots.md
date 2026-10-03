@@ -8,7 +8,7 @@
 
 Fifth entry in `suite/lib/tools.ts`, after Delegation. Page at `suite/app/(app)/(tools)/group-shots/page.tsx` — metadata + one component, the same shape as every other tool page.
 
-Ensemble is **suite-native**: unlike the four existing tools (each a standalone app with its own Zustand store, undo history and persistence, embedded via `dynamic(..., { ssr: false })` and bridged into the shared document), Ensemble has no app of its own. It reads and writes the shared `useTrousseauStore` directly, the way the suite's own chrome (`Header`, `WhatIsLeft`, `QuickStats`) already does. It is the first tool built this way — there is no existing suite-native tool to copy the file layout from, only the pattern `useSuite.ts` was clearly built to support.
+Ensemble is **suite-native**: unlike the four existing tools (each a standalone app with its own Zustand store, undo history and persistence, embedded via `dynamic(..., { ssr: false })` and bridged into the shared document), Ensemble has no app of its own. It reads and writes the shared `useKnotworkStore` directly, the way the suite's own chrome (`Header`, `WhatIsLeft`, `QuickStats`) already does. It is the first tool built this way — there is no existing suite-native tool to copy the file layout from, only the pattern `useSuite.ts` was clearly built to support.
 
 ## 2 · The `shots` slice
 
@@ -71,11 +71,11 @@ Shots nest inside their section rather than living in a record with id arrays al
 
 ## 3 · Contract package
 
-`shots` and `timeline` both become real slice names in `@jfrusher/trousseau` — settling the note in `useTrousseauStore.ts` while touching it.
+`shots` and `timeline` both become real slice names in `@jfrusher/knotwork` — settling the note in `useKnotworkStore.ts` while touching it.
 
 - `src/slices.ts` — `shotsSchema`, `timelineSchema`: `z.looseObject({}).default(() => ({}))`, exactly like `crewSchema`. The interior stays the suite's.
-- `src/envelope.ts` — two names in `SLICE_NAMES`, two fields on `trousseauSchema`.
-- `SuiteSlice` in `useTrousseauStore.ts` collapses back to plain `SliceName`.
+- `src/envelope.ts` — two names in `SLICE_NAMES`, two fields on `knotworkSchema`.
+- `SuiteSlice` in `useKnotworkStore.ts` collapses back to plain `SliceName`.
 - **`suite/lib/sync/client.ts:39`** — `const SYNCED: SuiteSlice[] = [...SLICE_NAMES, "timeline"];` becomes `[...SLICE_NAMES]`. This is the one line that gates which local slices push/pull over sync; missing it would mean group shots silently never sync between devices.
 
 ## 4 · Reading, writing, resolving

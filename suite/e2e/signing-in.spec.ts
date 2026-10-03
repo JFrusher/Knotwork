@@ -12,7 +12,7 @@ async function accountHolding(page: Page, coupleNames: string) {
     weddingId: "w1",
     version: 4,
     document: {
-      kind: "trousseau",
+      kind: "knotwork",
       version: 1,
       event: { coupleNames, partners: coupleNames.split(" & "), date: "", venueName: "" },
       guests: { r1: { id: "r1", firstName: "Robin" }, k1: { id: "k1", firstName: "Kit" } },
@@ -73,8 +73,8 @@ test("keeping this device's wedding sends it to the account, and keeps the accou
 
 test("a planner switches between clients, and each comes back as it was", async ({ page }) => {
   const clients: Record<string, { names: string; version: number; document: Record<string, unknown> }> = {
-    c1: { names: "Alex & Sam", version: 1, document: { kind: "trousseau", version: 1, event: { coupleNames: "Alex & Sam", partners: ["Alex", "Sam"] }, guests: { a1: { id: "a1", firstName: "Alex" } } } },
-    c2: { names: "Robin & Kit", version: 1, document: { kind: "trousseau", version: 1, event: { coupleNames: "Robin & Kit", partners: ["Robin", "Kit"] }, guests: { r1: { id: "r1", firstName: "Robin" } } } },
+    c1: { names: "Alex & Sam", version: 1, document: { kind: "knotwork", version: 1, event: { coupleNames: "Alex & Sam", partners: ["Alex", "Sam"] }, guests: { a1: { id: "a1", firstName: "Alex" } } } },
+    c2: { names: "Robin & Kit", version: 1, document: { kind: "knotwork", version: 1, event: { coupleNames: "Robin & Kit", partners: ["Robin", "Kit"] }, guests: { r1: { id: "r1", firstName: "Robin" } } } },
   };
   await page.route("**/api/accounts/weddings", (route) =>
     route.fulfill({
@@ -97,7 +97,7 @@ test("a planner switches between clients, and each comes back as it was", async 
   await page.goto("/");
   const menu = (names: string) => page.getByRole("button", { name: new RegExp(`^${names}`) });
   const weddings = page.getByRole("navigation", { name: "Your weddings" });
-  await menu("Trousseau").click();
+  await menu("Knotwork").click();
   await expect(weddings.getByRole("link")).toHaveText(["Alex & Sam · client", "Robin & Kit · client", "All weddings", "Library"]);
   await expect(weddings.locator("[aria-current]")).toHaveCount(0);
   await page.keyboard.press("Escape");
@@ -112,7 +112,7 @@ test("a planner switches between clients, and each comes back as it was", async 
     await page.keyboard.press("Escape");
     expect((await storedWedding(page)).names).toBe(names);
   };
-  await open("Alex & Sam · client", "Trousseau", "Alex & Sam");
+  await open("Alex & Sam · client", "Knotwork", "Alex & Sam");
 
   // An edit that cannot reach the account before the switch.
   offline = true;

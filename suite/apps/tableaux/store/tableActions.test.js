@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
 import { getTableGeometry } from '../utils/seatPositions'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
 
 const baseDoc = () => ({
@@ -38,7 +38,7 @@ describe('table geometry actions', () => {
     s().resizeTable(id, { diameter: s().tables[id].sizeUnits.diameter * 2 })
     const after = getTableGeometry(s().tables[id], s().settings.pixelsPerUnit).radius
     expect(after).toBeGreaterThan(before)
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().tables[id].sizeUnits.diameter).toBeCloseTo(before * 2 / s().settings.pixelsPerUnit, 0)
   })
 
@@ -46,7 +46,7 @@ describe('table geometry actions', () => {
     const id = s().addTable({ type: 'rect', x: 0, y: 0 }).meta.newTableId
     s().rotateTable(id, 45)
     expect(s().tables[id].rotation).toBe(45)
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().tables[id].rotation).toBe(0)
   })
 
@@ -68,7 +68,7 @@ describe('table geometry actions', () => {
     const id = s().addTable({ type: 'rect', x: 0, y: 0 }).meta.newTableId
     s().setPerSideSeats(id, { top: 5, right: 0, bottom: 5, left: 2 })
     expect(s().tables[id].capacity).toBe(12)
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().tables[id].perSideSeats).toBeNull()
   })
 
@@ -115,7 +115,7 @@ describe('table geometry actions', () => {
     const before = s().settings.pixelsPerUnit
     s().calibrate(before * 2)
     expect(s().settings.pixelsPerUnit).toBe(before * 2)
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(s().settings.pixelsPerUnit).toBe(before)
   })
 })
@@ -163,9 +163,9 @@ describe('table presets', () => {
     const presetId = s().settings.customTablePresets[0].id
     s().deleteTablePreset(presetId)
     expect(s().settings.customTablePresets).toHaveLength(0)
-    useTrousseauStore.getState().undo() // undo delete
+    useKnotworkStore.getState().undo() // undo delete
     expect(s().settings.customTablePresets).toHaveLength(1)
-    useTrousseauStore.getState().undo() // undo save
+    useKnotworkStore.getState().undo() // undo save
     expect(s().settings.customTablePresets).toHaveLength(0)
   })
 })

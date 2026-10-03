@@ -1,4 +1,4 @@
-# Trousseau — from here to hosted
+# Knotwork — from here to hosted
 
 A runbook. Follow it top to bottom; each stage ends with something you can check
 before moving on.
@@ -30,7 +30,7 @@ onwards is what makes those two work.
 ## 1. Check it builds here first
 
 ```sh
-cd C:/Projects/Trousseau
+cd C:/Projects/Knotwork
 npm install                # installs the workspace: root package + suite
 npm test                   # 87 — the data contract
 npm test  -w suite         # 703 — the application
@@ -113,7 +113,7 @@ rather than breaking.
 ### 3.1 Create the project
 
 1. supabase.com → **New project**
-2. Name it `trousseau`. Region: whichever is nearest you.
+2. Name it `knotwork`. Region: whichever is nearest you.
 3. Set a database password and put it in your password manager. You will not
    need it for this app, but you will need it if you ever open the database
    directly.
@@ -284,7 +284,7 @@ replacing. Export a backup first if you want to keep what is there.
 
 > ⚠️ **Publish from the production domain, not a preview deployment.** The link
 > is built from whatever origin you are on, so one minted on
-> `trousseau-abc123.vercel.app` will point at that preview forever — and preview
+> `knotwork-abc123.vercel.app` will point at that preview forever — and preview
 > URLs are not permanent. If you add a custom domain later, republish.
 
 The link carries its decryption key after the `#`, which browsers never send to
@@ -299,7 +299,7 @@ so a link already given out stays correct. *Take it down* deletes it.
 ## 7. After setup
 
 **Back up.** The Data manager's **Export backup** writes the whole wedding —
-guests, seating, the day, the crew, the stationery — to one `.trousseau.json`.
+guests, seating, the day, the crew, the stationery — to one `.knotwork.json`.
 That file is the only copy that survives clearing your browser. Do it after any
 big session, and keep it somewhere that is not the laptop.
 

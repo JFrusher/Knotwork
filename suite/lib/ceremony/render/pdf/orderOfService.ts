@@ -1,4 +1,4 @@
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import type { FontSource } from "@/apps/brigade/render/pdf/fontSource";
 import { longDate } from "@/lib/dates";
 import { coupleTitle } from "@/lib/model/partners";

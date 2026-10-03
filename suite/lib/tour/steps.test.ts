@@ -94,9 +94,9 @@ describe("every anchor exists in the source", () => {
 
 describe("the example wedding", () => {
   it("is a document the app can actually read", async () => {
-    const { migrate } = await import("@jfrusher/trousseau");
+    const { migrate } = await import("@jfrusher/knotwork");
     const raw = JSON.parse(
-      readFileSync("public/fixtures/example-wedding.trousseau.json", "utf8"),
+      readFileSync("public/fixtures/example-wedding.knotwork.json", "utf8"),
     ) as unknown;
     const doc = migrate(raw);
     expect(Object.keys(doc.guests).length).toBeGreaterThan(20);

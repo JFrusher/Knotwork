@@ -1,6 +1,6 @@
-# Trousseau — growth strategy
+# Knotwork — growth strategy
 
-The plan for getting Trousseau in front of the people it is for. Every claim in
+The plan for getting Knotwork in front of the people it is for. Every claim in
 this folder was checked against the code before it was written. The last
 section lists the claims that were **left out** because the code does not back
 them. Read it before editing any of the copy.
@@ -9,7 +9,7 @@ them. Read it before editing any of the copy.
 
 ## One-line positioning
 
-> **Trousseau is a free, open-source wedding planner where every tool shares
+> **Knotwork is a free, open-source wedding planner where every tool shares
 > one wedding: seat your guests and one click puts every table number on the
 > place cards; move the ceremony and the whole day moves with it.**
 
@@ -27,12 +27,12 @@ Each part of that is backed by the repository:
 | Self-hostable | `docs/SELF-HOSTING.md` is a tested runbook. Local-only needs no backend at all. Accounts and sync need a Supabase project. |
 | Modular | `suite/lib/tools.ts`: five tools are on by default and six more can be added from the toolbox. Removing a tool hides it without deleting its work. |
 | No tracking when self-hosted | Page counting renders only when `onVercel()` (`suite/app/layout.tsx`), and Sentry only with a DSN set. A self-hosted instance off Vercel sends nothing. |
-| Your data, portable | *Download my wedding* exports the whole thing as one `.trousseau.json` file, the same format the app uses. The schema is an MIT-licensed npm package (`@jfrusher/trousseau`). |
+| Your data, portable | *Download my wedding* exports the whole thing as one `.knotwork.json` file, the same format the app uses. The schema is an MIT-licensed npm package (`@jfrusher/knotwork`). |
 
 ## The idea that makes it different
 
 Most wedding apps are a set of separate pages that happen to share a login.
-Trousseau is **one document with one owner per slice**. Each tool rewrites
+Knotwork is **one document with one owner per slice**. Each tool rewrites
 only its own part of the wedding and reads everyone else's. This is the
 mechanism behind every demo worth showing:
 
@@ -151,7 +151,7 @@ date. What we *can* say without a source: "no paid tier, no upsell, no
 per-guest pricing."
 
 **Where they are:** r/WeddingsUnder10k, r/weddingplanning, r/Weddingsunder5k,
-UK wedding forums (Trousseau is UK-built: bar units, "licence"), wedding
+UK wedding forums (Knotwork is UK-built: bar units, "licence"), wedding
 TikTok and Instagram, Pinterest.
 
 ### B) Self-hosters and tech-savvy users
@@ -295,7 +295,7 @@ them back without changing the code first.**
 | Claim | Why it is out | What to say instead |
 | --- | --- | --- |
 | "Docker Compose / Deploy on Docker" | No Dockerfile or compose file exists. `docs/SELF-HOSTING.md` says there is no Docker image, on purpose. | "Runs anywhere Next.js runs. Local-only needs no backend; sync needs Supabase." A **Deploy with Vercel** button is real (the hosted instance runs on Vercel with root `suite`). |
-| "RSVP tracking" | RSVP collection is explicitly deferred: "Joy and similar do it; Trousseau imports the result." | "Import your RSVPs from Joy, Zola or The Knot. Confirmed guests with no table are flagged." |
+| "RSVP tracking" | RSVP collection is explicitly deferred: "Joy and similar do it; Knotwork imports the result." | "Import your RSVPs from Joy, Zola or The Knot. Confirmed guests with no table are flagged." |
 | "Menu selector" | There is no menu builder. Guests carry a main-course choice from the import, and dietary requirements are broken down. | "Dietary needs and main-course choices come in with your guest list and are counted as you seat people." |
 | "Automatic seating algorithm" | Seating is manual, to scale, with rules (together/apart) and warnings. There is no solver. | "Keep-together and keep-apart rules, with warnings when you break them." The algorithmic story is the **Timeline resolver**. |
 | "Zero tracking" (for the hosted site) | The hosted site counts page visits with Vercel Web Analytics (no cookie, and addresses cut to the route). | "No ads, no cookies, no data sales. The hosted site counts page visits, not people. Self-hosted, it counts nothing." |

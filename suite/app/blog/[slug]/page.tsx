@@ -35,8 +35,8 @@ export default async function BlogPost({ params }: Props) {
     headline: post.title,
     description: post.description,
     datePublished: post.published,
-    author: { "@type": post.author === "Trousseau" ? "Organization" : "Person", name: post.author },
-    publisher: { "@type": "Organization", name: "Trousseau" },
+    author: { "@type": post.author === "Knotwork" ? "Organization" : "Person", name: post.author },
+    publisher: { "@type": "Organization", name: "Knotwork" },
     mainEntityOfPage: `${siteUrl()}/blog/${post.slug}`,
   };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, X } from "lucide-react";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { shownTools, withTool } from "@/lib/model/toolbox";
 import { TOOLS, type Tool } from "@/lib/tools";
 import { Button } from "@/components/ui/controls";
@@ -16,13 +16,13 @@ import { SlideOver } from "@/components/ui/SlideOver";
  * wedding's history.
  */
 export function ToolsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const shown = useTrousseauStore((s) => shownTools(s.doc));
+  const shown = useKnotworkStore((s) => shownTools(s.doc));
   // The store refuses a write before the wedding is read; say so by being off.
-  const ready = useTrousseauStore((s) => s.status === "ready");
-  const setSlice = useTrousseauStore((s) => s.setSlice);
+  const ready = useKnotworkStore((s) => s.status === "ready");
+  const setSlice = useKnotworkStore((s) => s.setSlice);
 
   const choose = (tool: Tool, show: boolean) =>
-    setSlice("tools", withTool(useTrousseauStore.getState().raw, tool.id, show), {
+    setSlice("tools", withTool(useKnotworkStore.getState().raw, tool.id, show), {
       label: `${show ? "adding" : "removing"} ${tool.name}`,
     });
 

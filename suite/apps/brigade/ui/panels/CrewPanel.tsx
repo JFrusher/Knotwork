@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { guestName, readGuests } from "@/lib/model/slices";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { useSupplierLinks } from "@/lib/suppliers/links";
 import { assigneeNames, type Person } from "../../core/model/types";
 import { useBrigadeDoc, useStore } from "../../state/store";
@@ -32,7 +32,7 @@ export function CrewPanel() {
    * Offering the whole list would mean the same best man could be added twice,
    * which is the duplication this is here to remove.
    */
-  const guests = useTrousseauStore((state) => readGuests(state.doc));
+  const guests = useKnotworkStore((state) => readGuests(state.doc));
   const linked = new Set(doc.people.map((person) => person.guestId).filter(Boolean));
   const addable = Object.values(guests)
     .filter((guest) => !linked.has(guest.id) && guestName(guest))

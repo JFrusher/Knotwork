@@ -5,7 +5,7 @@ import { startTimes } from "@/lib/ceremony/checks";
 import { musicCues, songName, songPlaying } from "@/lib/ceremony/music";
 import { readCast, readCeremony, readGuests, readSeating } from "@/lib/model/slices";
 import { hiddenToolIds } from "@/lib/model/toolbox";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import styles from "./InspectorPanel.module.css";
 
 /**
@@ -15,7 +15,7 @@ import styles from "./InspectorPanel.module.css";
  * shows here at once.
  */
 export function CeremonyCues({ blockId, startMin }: { blockId: string; startMin: number }) {
-  const doc = useTrousseauStore((state) => state.doc);
+  const doc = useKnotworkStore((state) => state.doc);
   const ceremony = readCeremony(doc);
   if (ceremony.blockId !== blockId || hiddenToolIds(doc).has("ceremony") || ceremony.order.length === 0) return null;
 

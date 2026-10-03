@@ -1,5 +1,5 @@
 import { guestName, isComing } from "@/lib/model/slices";
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { roleLabel } from "@/lib/model/partners";
 import type { Cast, CustomRole, Guest, RsvpStatus, Seating, ShotMember } from "@/lib/model/types";
 

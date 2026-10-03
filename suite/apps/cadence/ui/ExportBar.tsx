@@ -7,7 +7,7 @@ import { browserFontSource } from "../render/pdf/fontSource";
 import { getBlob } from "../state/blobStore";
 import { useSchedule, useStore, useTimelineDoc } from "../state/store";
 import { Button } from "@/components/ui/fields";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import styles from "./ExportBar.module.css";
 
 const FILENAMES: Record<OutputId, string> = {
@@ -28,7 +28,7 @@ export function ExportBar() {
   const [calendarTag, setCalendarTag] = useState("");
   // The wedding's own date. The timeline's has a placeholder until one is set,
   // and a calendar on the wrong day is worse than none.
-  const weddingDate = useTrousseauStore((state) => state.doc.event.date);
+  const weddingDate = useKnotworkStore((state) => state.doc.event.date);
 
   const blocking = blockingConflicts(schedule.conflicts);
   const empty = doc.blocks.length === 0;

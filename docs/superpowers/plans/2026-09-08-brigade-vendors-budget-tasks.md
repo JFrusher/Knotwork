@@ -109,11 +109,11 @@ fixed list is exactly the change that would lose them.
 
 Append to `suite/lib/model/slices.test.ts` (it already imports `describe`,
 `expect`, `it` from vitest — add `readCrew` to the import from `./slices`, and
-`import { emptyTrousseau } from "@jfrusher/trousseau";`):
+`import { emptyKnotwork } from "@jfrusher/knotwork";`):
 
 ```ts
 describe("readCrew", () => {
-  const docWith = (crew: unknown) => ({ ...emptyTrousseau(), crew } as never);
+  const docWith = (crew: unknown) => ({ ...emptyKnotwork(), crew } as never);
 
   it("reads a team's contract fields", () => {
     const crew = readCrew(
@@ -231,7 +231,7 @@ export interface Crew {
 In `suite/lib/model/slices.ts`, replace the body of `readCrew`:
 
 ```ts
-export function readCrew(doc: Trousseau): Crew {
+export function readCrew(doc: Knotwork): Crew {
   return cached(doc, "crew", () => {
     const raw: Record<string, unknown> = isRecord(doc.crew) ? doc.crew : {};
     return {

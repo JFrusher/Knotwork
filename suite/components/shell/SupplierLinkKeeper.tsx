@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useSupplierLinks } from "@/lib/suppliers/links";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 
 /** After the last edit, so an evening on the running order republishes a few times, not hundreds. */
 const REPUBLISH_DELAY_MS = 3000;
@@ -13,7 +13,7 @@ const REPUBLISH_DELAY_MS = 3000;
  * seconds after a change. Nothing at all happens while there are none.
  */
 export function SupplierLinkKeeper() {
-  const weddingId = useTrousseauStore((s) => s.weddingId);
+  const weddingId = useKnotworkStore((s) => s.weddingId);
   const load = useSupplierLinks((s) => s.load);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function SupplierLinkKeeper() {
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const unsubscribe = useTrousseauStore.subscribe((state, prev) => {
+    const unsubscribe = useKnotworkStore.subscribe((state, prev) => {
       if (state.doc === prev.doc || !useSupplierLinks.getState().links?.length) return;
       clearTimeout(timer);
       timer = setTimeout(() => void useSupplierLinks.getState().keepCurrent(), REPUBLISH_DELAY_MS);

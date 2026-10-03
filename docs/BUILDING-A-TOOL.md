@@ -1,6 +1,6 @@
 # Building a tool
 
-Trousseau grows one tool at a time, and most of the good ideas come from
+Knotwork grows one tool at a time, and most of the good ideas come from
 someone planning their own wedding and finding a job nothing did for them.
 That is how the processional planner, Boxes and the Bar arrived. This guide
 covers the whole journey, from "would this be a tool?" to a merged pull request
@@ -51,7 +51,7 @@ these instead:
 - a check (see [What is left](#what-is-left-checks-between-tools));
 - a view inside an existing tool.
 
-**4. Would many weddings use it?** Trousseau is for couples and the planners
+**4. Would many weddings use it?** Knotwork is for couples and the planners
 who help them. An idea that fits one wedding's quirk is better as a note in an
 existing tool. An idea a good share of couples would switch on is a tool.
 New tools start switched off (see [the rules](#3-the-rules-every-tool-keeps)),
@@ -206,9 +206,9 @@ Bar is the example throughout. Its id is `bar`, and its pieces are in
 
 ### The data
 
-1. **The contract** (`src/`, published as `@jfrusher/trousseau`):
+1. **The contract** (`src/`, published as `@jfrusher/knotwork`):
    - add `barSchema = z.looseObject({}).default(() => ({}))` to `src/slices.ts`;
-   - add `"bar"` to `SLICE_NAMES` and `trousseauSchema` in `src/envelope.ts`;
+   - add `"bar"` to `SLICE_NAMES` and `knotworkSchema` in `src/envelope.ts`;
    - export it from `src/index.ts`;
    - update the list in `src/envelope.test.ts`.
 
@@ -350,7 +350,7 @@ Planners reuse work across weddings. To let them keep your tool's work:
 
 ### The example wedding
 
-`suite/public/fixtures/example-wedding.trousseau.json` is what the tour and
+`suite/public/fixtures/example-wedding.knotwork.json` is what the tour and
 the tests load, and it shows every tool. A test enforces that. Add your id to
 `tools.shown` and give it believable data.
 

@@ -94,7 +94,7 @@ export default defineConfig({
         // without this the test transform falls back to the classic runtime and
         // every rendered component throws "React is not defined". It has to sit
         // in the project rather than at the root, which does not inherit.
-        esbuild: { jsx: "automatic" },
+        oxc: { jsx: { runtime: "automatic" } },
         resolve: { alias: { "@": root } },
         test: {
           name: "tableaux",
@@ -133,8 +133,8 @@ export default defineConfig({
           testTimeout: 20_000,
           sequence: { groupOrder: 1 },
           // Not `fileParallelism: false` — that is a root-only option and is
-          // silently ignored here. This is the setting that actually serialises.
-          poolOptions: { forks: { singleFork: true } },
+          // silently ignored here. One worker is what actually serialises.
+          maxWorkers: 1,
           include: ["apps/cadence/**/*.test.{ts,tsx}"],
           environment: "node",
         },

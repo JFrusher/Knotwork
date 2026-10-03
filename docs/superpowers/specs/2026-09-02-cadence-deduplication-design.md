@@ -1,4 +1,4 @@
-# Trousseau — Cadence/suite de-duplication
+# Knotwork — Cadence/suite de-duplication
 
 Date: 2026-09-02
 Status: verified, ready to execute (blocked on `gh` CLI access — see below)
@@ -11,7 +11,7 @@ there are many tenants instead of one wedding.
 `suite/apps/cadence/` was a hand-ported mirror of the standalone `cadence`
 repo, kept in sync by hand, one fix at a time. This already caused a real
 bug: the printed timeline drift fix (see
-`docs/superpowers/specs/2026-09-02-trousseau-architecture-audit.md`) had to
+`docs/superpowers/specs/2026-09-02-knotwork-architecture-audit.md`) had to
 land twice, and for a period today the two copies silently disagreed with
 no signal anything was wrong. Every future Cadence fix carries the same
 risk as long as two copies exist.
@@ -26,7 +26,7 @@ comparison, not a full file diff):
   first: `c6a2da0`, `a9a8386`, `20b5853`, `9bc9cbe` (merge), `f82c2f8`
   (lockfile-only chore), `9817150` (the vertical-timeline feature), then
   seven earlier commits predating that feature.
-- Trousseau's history touching `suite/apps/cadence`: `53e599c` ("Port: stop
+- Knotwork's history touching `suite/apps/cadence`: `53e599c` ("Port: stop
   the timeline drifting..."), `73ddfb5` ("Port: stop inflating short
   blocks'..."), `a264fa7` ("Port Cadence's printed-timeline overflow fix"),
   `25d7989` ("Bring Cadence's vertical timeline into the suite"), `eb57812`,
@@ -35,7 +35,7 @@ comparison, not a full file diff):
 
 Every content-bearing standalone commit after the vertical-timeline feature
 maps one-to-one to a port commit: `c6a2da0`→`53e599c`, `a9a8386`→`73ddfb5`,
-`20b5853`→`a264fa7`. The lockfile-only commit needs no port (Trousseau
+`20b5853`→`a264fa7`. The lockfile-only commit needs no port (Knotwork
 manages its own dependencies separately). Everything before the
 vertical-timeline feature was captured by the original import (`7d72891`),
 with `25d7989` specifically bringing the vertical-timeline feature itself
@@ -54,7 +54,7 @@ check. Safe to archive.**
    → Archive this repository) — functionally identical, no CLI required.
 2. Add a note to the standalone repo's README (before archiving, since an
    archived repo can still be edited up to the point of archiving, but not
-   after) pointing future readers to `suite/apps/cadence` in Trousseau as
+   after) pointing future readers to `suite/apps/cadence` in Knotwork as
    the live location.
 3. Update `docs/PRODUCT-ROADMAP.md`'s subsystem C entry once archived.
 

@@ -23,7 +23,7 @@ export default function AppError({
     // Sentry, when it is configured, picks this up through the same handler as
     // any other unhandled error. Kept as a console error so an unconfigured
     // deployment still leaves something to read.
-    console.error("[Trousseau]", error);
+    console.error("[Knotwork]", error);
   }, [error]);
 
   return (

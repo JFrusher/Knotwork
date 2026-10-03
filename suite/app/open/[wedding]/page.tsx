@@ -23,7 +23,7 @@ export default function OpenWeddingPage({ params }: { params: Promise<{ wedding:
 
   return (
     <main className="mx-auto max-w-md px-6 py-16 text-center">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Trousseau</p>
+      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
       {problem ? (
         <p role="alert" className="mt-6 rounded border border-danger/40 bg-danger-soft px-3 py-2 text-sm text-charcoal">
           That wedding could not be opened: {problem}

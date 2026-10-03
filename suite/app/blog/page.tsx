@@ -18,7 +18,7 @@ const dated = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: 
 export default function Blog() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Trousseau</p>
+      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
       <h1 className="mt-3 text-3xl">Guides and stories</h1>
       <p className="mt-4 text-slate">
         Plain answers to the questions planning a UK wedding throws up, each checked against its sources — and stories from couples
@@ -53,7 +53,7 @@ export default function Blog() {
 
       <p className="mt-12 border-t border-stone pt-6 text-sm">
         <Link href="/" className="inline-flex min-h-11 items-center underline underline-offset-2 hover:text-charcoal">
-          Plan your wedding in Trousseau — free, and no account needed
+          Plan your wedding in Knotwork — free, and no account needed
         </Link>
       </p>
     </main>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Not found · Trousseau",
+  title: "Not found · Knotwork",
   robots: { index: false, follow: false },
 };
 
@@ -10,7 +10,7 @@ export const metadata = {
  *
  * One mistyped a path in their own planning app, and wants the way back. The
  * other followed a guest link that has been taken down or republished, and does
- * not know what Trousseau is — so this must not read as an application error
+ * not know what Knotwork is — so this must not read as an application error
  * they caused, and must not offer them the planning tools.
  */
 export default function NotFound() {

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { Popover } from "@/components/ui/Popover";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { useWeddings } from "@/lib/store/weddings";
 import { WEDDING_PAGES } from "@/lib/tools";
 import type { WeddingListing } from "@/lib/accounts/handlers";
@@ -29,8 +29,8 @@ const item =
  * place: see that page for why. So those are plain links, not `Link`s.
  */
 export function WeddingMenu() {
-  const title = useTrousseauStore((s) => s.doc.event.coupleNames);
-  const current = useTrousseauStore((s) => s.weddingId);
+  const title = useKnotworkStore((s) => s.doc.event.coupleNames);
+  const current = useKnotworkStore((s) => s.weddingId);
   const weddings = useWeddings((s) => s.weddings);
   const pathname = usePathname();
   const planning = weddings !== null && (weddings.length > 1 || weddings.some((w) => w.role === "planner"));
@@ -39,7 +39,7 @@ export function WeddingMenu() {
     <Popover
       label={
         <>
-          <span className="truncate">{title || "Trousseau"}</span>
+          <span className="truncate">{title || "Knotwork"}</span>
           <ChevronDown size={15} className="shrink-0 text-slate" aria-hidden />
         </>
       }

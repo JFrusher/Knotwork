@@ -9,12 +9,12 @@ const { TourProvider, useTour } = await import("./useTour");
 const { CHAPTERS } = await import("./steps");
 const { ConfirmProvider } = await import("@/components/ui/Confirm");
 const { TakeTheTour, HowThisWorks } = await import("@/components/shell/TourButtons");
-const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
-const { migrate } = await import("@jfrusher/trousseau");
+const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
+const { migrate } = await import("@jfrusher/knotwork");
 
 afterEach(() => {
   cleanup();
-  useTrousseauStore.setState({ doc: migrate({}) });
+  useKnotworkStore.setState({ doc: migrate({}) });
 });
 
 /** What the tour card would show, without the card's modal dialog. */
@@ -58,7 +58,7 @@ test("Take a tour runs every chapter, one after another", async () => {
 });
 
 test("Take a tour leaves out the chapters of tools the wedding has removed", async () => {
-  useTrousseauStore.setState({ doc: migrate({ tools: { shown: ["timeline"] } }) });
+  useKnotworkStore.setState({ doc: migrate({ tools: { shown: ["timeline"] } }) });
   const kept = CHAPTERS.filter((chapter) => ["shell", "guests", "timeline"].includes(chapter.id));
   const total = kept.reduce((sum, chapter) => sum + chapter.steps.length, 0);
   renderTour(<TakeTheTour />);

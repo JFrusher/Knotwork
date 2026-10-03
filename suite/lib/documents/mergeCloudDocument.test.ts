@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { SLICE_NAMES } from "@jfrusher/trousseau";
+import { SLICE_NAMES } from "@jfrusher/knotwork";
 import { fingerprint } from "./fingerprint";
 import { fingerprintParts, mergeCloudDocument } from "./mergeCloudDocument";
 

@@ -1,15 +1,15 @@
 import {
   DAY_KIND,
   DAY_VERSION,
-  TROUSSEAU_KIND,
-  TROUSSEAU_VERSION,
-  TROUSSEAU_EXTENSION,
+  KNOTWORK_KIND,
+  KNOTWORK_VERSION,
+  KNOTWORK_EXTENSION,
   SLICE_NAMES,
   crewSchema,
   dayBlockSchema,
   daySchema,
   dayTeamSchema,
-  emptyTrousseau,
+  emptyKnotwork,
   eventSchema,
   guestsSchema,
   isFromFuture,
@@ -22,7 +22,7 @@ import {
   stationerySchema,
   suggestedFilename,
   timelineSchema,
-  trousseauSchema,
+  knotworkSchema,
   type Crew,
   type Day,
   type DayBlock,
@@ -34,14 +34,14 @@ import {
   type SliceName,
   type Stationery,
   type TimelineSlice,
-  type Trousseau,
-} from "@jfrusher/trousseau";
+  type Knotwork,
+} from "@jfrusher/knotwork";
 
 // A slice name is assignable from a literal.
 const slice: SliceName = "day";
 
 // The envelope's fields have the types an app expects.
-const doc: Trousseau = emptyTrousseau();
+const doc: Knotwork = emptyKnotwork();
 const event: Event = doc.event;
 const names: string = event.coupleNames;
 const curfew: number | null = event.curfewMin;
@@ -92,12 +92,12 @@ void asPackageTeam;
 
 // The file functions compose.
 const text: string = serialise(doc);
-const back: Trousseau = parse(text);
+const back: Knotwork = parse(text);
 const name: string = suggestedFilename(back);
 
 // mergeSlice takes raw data and a slice name.
 const merged: Record<string, unknown> = mergeSlice(back, slice, {});
-const remigrated: Trousseau = migrate(merged);
+const remigrated: Knotwork = migrate(merged);
 
 void names;
 void curfew;
@@ -109,17 +109,17 @@ void remigrated;
 const kinds: readonly [string, number, string, number] = [
   DAY_KIND,
   DAY_VERSION,
-  TROUSSEAU_KIND,
-  TROUSSEAU_VERSION,
+  KNOTWORK_KIND,
+  KNOTWORK_VERSION,
 ];
-const extension: string = TROUSSEAU_EXTENSION;
+const extension: string = KNOTWORK_EXTENSION;
 const everySlice: readonly SliceName[] = SLICE_NAMES;
 const schemas = [
   eventSchema,
   daySchema,
   dayBlockSchema,
   dayTeamSchema,
-  trousseauSchema,
+  knotworkSchema,
   guestsSchema,
   seatingSchema,
   crewSchema,

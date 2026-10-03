@@ -1,4 +1,4 @@
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { money } from "@/lib/money/money";
@@ -44,7 +44,7 @@ export interface Area {
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-function guests(doc: Trousseau): Area {
+function guests(doc: Knotwork): Area {
   const people = Object.values(readGuests(doc));
   if (people.length === 0) return { id: "guests", summary: "No guest list yet", detail: "", progress: null };
   const yes = people.filter((g) => g.rsvpStatus === "confirmed").length;
@@ -61,7 +61,7 @@ function guests(doc: Trousseau): Area {
   };
 }
 
-function costs(doc: Trousseau): Area {
+function costs(doc: Knotwork): Area {
   const accounts = money(readCrew(doc));
   if (accounts.suppliers.length === 0) return { id: "money", summary: "No costs yet", detail: "", progress: null };
   return {
@@ -76,7 +76,7 @@ function costs(doc: Trousseau): Area {
   };
 }
 
-function tasks(doc: Trousseau, today: string): Area {
+function tasks(doc: Knotwork, today: string): Area {
   const list = checklist(readCrew(doc), today);
   const open = list.overdue.length + list.comingUp.length + list.later.length + list.undated.length;
   const all = open + list.done.length;
@@ -95,7 +95,7 @@ function tasks(doc: Trousseau, today: string): Area {
   };
 }
 
-function seating(doc: Trousseau): Area {
+function seating(doc: Knotwork): Area {
   const tables = Object.keys(readSeating(doc).tables).length;
   if (tables === 0) return { id: "seating", summary: "No tables yet", detail: "", progress: null };
   const coming = Object.values(readGuests(doc)).filter(isComing);
@@ -108,7 +108,7 @@ function seating(doc: Trousseau): Area {
   };
 }
 
-function placeCards(doc: Trousseau, raw: unknown): Area {
+function placeCards(doc: Knotwork, raw: unknown): Area {
   const design = stationery(raw);
   if (!design) return { id: "place-cards", summary: "No card design yet", detail: "", progress: null };
   // A card for everyone coming: the rows Place cards draws from the room.
@@ -121,7 +121,7 @@ function placeCards(doc: Trousseau, raw: unknown): Area {
   };
 }
 
-function timeline(doc: Trousseau): Area {
+function timeline(doc: Knotwork): Area {
   const blocks = resolvedDay(doc);
   if (blocks.length === 0) return { id: "timeline", summary: "No day yet", detail: "", progress: null };
   const start = Math.min(...blocks.map((b) => b.startMin));
@@ -134,7 +134,7 @@ function timeline(doc: Trousseau): Area {
   };
 }
 
-function delegation(doc: Trousseau): Area {
+function delegation(doc: Knotwork): Area {
   const crew = readCrew(doc);
   // The jobs on the day; the tasks before it are the Checklist's.
   const jobs = crew.jobs.filter((job) => job.blockId !== null);
@@ -158,7 +158,7 @@ function delegation(doc: Trousseau): Area {
   };
 }
 
-function groupShots(doc: Trousseau): Area {
+function groupShots(doc: Knotwork): Area {
   const shots = readShots(doc);
   const cast = readCast(doc);
   const all = shots.sections.flatMap((section) => section.shots);
@@ -176,7 +176,7 @@ function groupShots(doc: Trousseau): Area {
   };
 }
 
-function ceremony(doc: Trousseau): Area {
+function ceremony(doc: Knotwork): Area {
   const { order, processional, witnesses } = readCeremony(doc);
   if (order.length === 0 && processional.length === 0) return { id: "ceremony", summary: "No ceremony planned yet", detail: "", progress: null };
   const guestList = readGuests(doc);
@@ -201,7 +201,7 @@ function ceremony(doc: Trousseau): Area {
   };
 }
 
-function boxes(doc: Trousseau): Area {
+function boxes(doc: Knotwork): Area {
   const all = readBoxes(doc);
   if (all.boxes.length === 0) return { id: "boxes", summary: "No boxes yet", detail: "", progress: null };
   const { packed, total } = packingOf(all);
@@ -215,7 +215,7 @@ function boxes(doc: Trousseau): Area {
   };
 }
 
-function bar(doc: Trousseau): Area {
+function bar(doc: Knotwork): Area {
   const { heads, spend, unpriced } = barSum(doc);
   if (heads.people + heads.evening === 0) return { id: "bar", summary: "No guests to buy for yet", detail: "", progress: null };
   const priced = spend > 0 ? `About ${Math.round(spend).toLocaleString()}${unpriced > 0 ? `, ${plural(unpriced, "line", "lines")} with no price` : ""}` : "No prices yet";
@@ -228,7 +228,7 @@ function bar(doc: Trousseau): Area {
 }
 
 /** Every area, less those of the tools the wedding has removed. */
-export function overview(doc: Trousseau, raw: unknown, today: string = todayIso()): Area[] {
+export function overview(doc: Knotwork, raw: unknown, today: string = todayIso()): Area[] {
   const hidden = hiddenToolIds(doc);
   return [guests(doc), costs(doc), tasks(doc, today), seating(doc), placeCards(doc, raw), timeline(doc), delegation(doc), groupShots(doc), ceremony(doc), boxes(doc), bar(doc)].filter(
     (area) => !hidden.has(area.id),

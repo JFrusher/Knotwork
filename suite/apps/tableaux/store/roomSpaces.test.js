@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
 import { validatePlanDoc } from './planSchema'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
 
 const s = () => useStore.getState()
@@ -57,7 +57,7 @@ describe('multi-room spaces', () => {
     s().resizeSpace(id, { width: 500, height: 350 })
     let sp = s().room.spaces.find((x) => x.id === id)
     expect(sp).toMatchObject({ width: 500, height: 350 })
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     sp = s().room.spaces.find((x) => x.id === id)
     expect(sp).toMatchObject({ width: 300, height: 200 })
   })

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ListPlus, Trash2 } from "lucide-react";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { readCrew } from "@/lib/model/slices";
 import { addTask, assigneeNames, patchJob, removeJob, setJobStatus } from "@/lib/model/crewActions";
 import type { Crew, Job } from "@/lib/model/types";
@@ -16,7 +16,7 @@ const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-s
 
 /** Every change starts from the wedding as it is now, not as it was at the last render. */
 function write(change: (crew: Crew) => Crew, label: string) {
-  const { doc, setSlice } = useTrousseauStore.getState();
+  const { doc, setSlice } = useKnotworkStore.getState();
   setSlice("crew", change(readCrew(doc)), { label });
 }
 
@@ -27,8 +27,8 @@ function write(change: (crew: Crew) => Crew, label: string) {
  * the couple's own.
  */
 export function ChecklistPage() {
-  const status = useTrousseauStore((s) => s.status);
-  const doc = useTrousseauStore((s) => s.doc);
+  const status = useKnotworkStore((s) => s.status);
+  const doc = useKnotworkStore((s) => s.doc);
   const today = todayIso();
 
   const crew = readCrew(doc);

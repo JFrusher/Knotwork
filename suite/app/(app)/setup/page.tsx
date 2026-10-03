@@ -8,7 +8,7 @@ import { eventChange } from "@/lib/model/useSuite";
 import { readGuests } from "@/lib/model/slices";
 import type { Guest } from "@/lib/model/types";
 import { startingRoom, SEATS, tablesFor, withPasted, type StartingTable } from "@/lib/setup/draft";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { Button, TextField } from "@/components/ui/controls";
 import { useGuestImport, type ImportTarget } from "@/components/shell/guestImportPanel";
 import { WeddingPeople } from "@/components/shell/WeddingPeople";
@@ -38,7 +38,7 @@ interface Draft {
  * the page to sign in, so it comes after the commit, never before.
  */
 export default function SetupPage() {
-  const status = useTrousseauStore((s) => s.status);
+  const status = useKnotworkStore((s) => s.status);
   if (status !== "ready") return <div className="mx-auto mt-16 h-40 max-w-xl animate-pulse rounded-lg bg-stone" />;
   return <Setup />;
 }
@@ -47,7 +47,7 @@ function Setup() {
   // From the wedding as it is: running setup again adds to it, and never
   // throws away what is there.
   const [draft, setDraft] = useState<Draft>(() => {
-    const { doc, raw } = useTrousseauStore.getState();
+    const { doc, raw } = useKnotworkStore.getState();
     const seating = raw["seating"];
     return {
       partners: doc.event.partners,
@@ -125,7 +125,7 @@ function Guests({ draft, setDraft, onNext }: StepProps) {
 
   const intoDraft: ImportTarget = {
     read: () => ({
-      event: { ...useTrousseauStore.getState().doc.event, partners: current.current.partners },
+      event: { ...useKnotworkStore.getState().doc.event, partners: current.current.partners },
       guests: current.current.guests,
       seating: current.current.seating,
     }),
@@ -185,7 +185,7 @@ function Room({ draft, onDone }: { draft: Draft; onDone: () => void }) {
   const [choice, setChoice] = useState<StartingTable | "later">(existing > 0 ? "later" : "round");
 
   function commit() {
-    const { doc, setSlices } = useTrousseauStore.getState();
+    const { doc, setSlices } = useKnotworkStore.getState();
     const seating = choice === "later" ? draft.seating : startingRoom(draft.seating, choice, tablesFor(guests, choice));
     setSlices(
       [
@@ -232,7 +232,7 @@ function Room({ draft, onDone }: { draft: Draft; onDone: () => void }) {
 
 function Together() {
   const client = browserClient();
-  const weddingId = useTrousseauStore((s) => s.weddingId);
+  const weddingId = useKnotworkStore((s) => s.weddingId);
   const [me, setMe] = useState<string | null | undefined>(undefined);
   const [notice, setNotice] = useState<{ text: string; tone: "ok" | "error" } | null>(null);
 

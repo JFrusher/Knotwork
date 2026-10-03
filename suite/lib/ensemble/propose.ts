@@ -1,5 +1,5 @@
 import { newId } from "@/lib/model/ids";
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { partnerNames, possessive } from "@/lib/model/partners";
 import type { CastRole, Guest, Seating, ShotSection } from "@/lib/model/types";
 

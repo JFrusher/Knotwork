@@ -1,4 +1,4 @@
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { longDate } from "@/lib/dates";
 import { readCrew, readTimeline, resolvedDay } from "@/lib/model/slices";
@@ -23,7 +23,7 @@ export interface CallSheet {
   before: Array<{ label: string; by: string }>;
 }
 
-export function callSheet(doc: Trousseau, teamId: string): CallSheet | null {
+export function callSheet(doc: Knotwork, teamId: string): CallSheet | null {
   const crew = readCrew(doc);
   const team = crew.teams.find((entry) => entry.id === teamId);
   if (!team) return null;

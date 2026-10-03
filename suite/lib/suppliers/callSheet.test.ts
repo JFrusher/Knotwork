@@ -2,12 +2,12 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { migrate } from "@jfrusher/trousseau";
+import { migrate } from "@jfrusher/knotwork";
 import { fingerprint } from "@/lib/documents/fingerprint";
 import { callSheet } from "./callSheet";
 
 type Raw = Record<string, any>;
-const raw: Raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const raw: Raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 const doc = migrate(raw);
 const team = (tag: string) => (raw.crew.teams as Array<{ id: string; tag: string }>).find((entry) => entry.tag === tag)!.id;
 

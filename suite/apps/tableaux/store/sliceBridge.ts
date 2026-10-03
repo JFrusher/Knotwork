@@ -1,4 +1,4 @@
-import { useTrousseauStore, type WriteOptions } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore, type WriteOptions } from '@/lib/store/useKnotworkStore'
 import { planFrom, slicesOf } from './plan'
 import type { Plan } from './types'
 
@@ -15,7 +15,7 @@ import type { Plan } from './types'
 
 /** The plan the wedding holds now. */
 export function readDoc(): Plan {
-  const { raw, doc } = useTrousseauStore.getState()
+  const { raw, doc } = useKnotworkStore.getState()
   return planFrom(raw, doc.event)
 }
 
@@ -38,7 +38,7 @@ export function writeDoc(plan: Plan, options: WriteOptions): void {
   const { guests, seating } = slicesOf(plan)
   writing = true
   try {
-    useTrousseauStore.getState().setSlices(
+    useKnotworkStore.getState().setSlices(
       [
         ['guests', guests],
         ['seating', seating],

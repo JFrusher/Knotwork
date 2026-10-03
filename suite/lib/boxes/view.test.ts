@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { migrate } from "@jfrusher/trousseau";
+import { migrate } from "@jfrusher/knotwork";
 import { dayPlaces } from "@/lib/model/slices";
 import type { Box } from "@/lib/model/types";
 import { find, neededAt, packing } from "./view";

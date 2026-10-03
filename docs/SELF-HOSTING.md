@@ -1,6 +1,6 @@
-# Running your own Trousseau
+# Running your own Knotwork
 
-Trousseau is free software and this is a genuinely supported way to use it, not
+Knotwork is free software and this is a genuinely supported way to use it, not
 a theoretical one. Every command below was run on a fresh clone before it was
 written down.
 
@@ -16,7 +16,7 @@ Two pieces, licensed differently (see [`LICENSE`](../LICENSE)):
 - The **application** in `suite/` — a Next.js app. AGPL-3.0-or-later. If you
   host a modified version for other people, they are entitled to your source.
 - The **contract package** at the repo root, published as
-  `@jfrusher/trousseau`. MIT. It is the schemas and the file format.
+  `@jfrusher/knotwork`. MIT. It is the schemas and the file format.
 
 ## Requirements
 
@@ -32,8 +32,8 @@ Two pieces, licensed differently (see [`LICENSE`](../LICENSE)):
 **The order matters, and getting it wrong is the most common way to fail:**
 
 ```sh
-git clone <your fork, or this repo>
-cd Trousseau
+git clone <your fork, or this repo> Knotwork
+cd Knotwork
 
 npm install          # the contract package's dependencies
 npm run build        # builds dist/ — do not skip this
@@ -44,7 +44,7 @@ npm install
 
 ### Why `npm run build` comes first
 
-`suite/package.json` depends on `"@jfrusher/trousseau": "file:.."`, which
+`suite/package.json` depends on `"@jfrusher/knotwork": "file:.."`, which
 resolves to the root's `dist/` directory. A fresh clone has no `dist/`, and
 `npm install` does not create one — only `npm run build` does.
 
@@ -53,7 +53,7 @@ arrives later, and does not mention any of the above:
 
 ```
 Error: Turbopack build failed with 4 errors:
-Error: Module not found: Can't resolve '@jfrusher/trousseau'
+Error: Module not found: Can't resolve '@jfrusher/knotwork'
 ```
 
 If you see that, you are in the right place: run `npm run build` in the repo
@@ -104,6 +104,39 @@ Two things that will catch you out:
 automatically and it is used to build absolute URLs for magic links and guest
 links. On another host you may need an equivalent — see `originOf()` in
 `suite/lib/env.ts`.
+
+### Sign-in: email code, Google and Apple
+
+Sign-in is a six-digit email code, or Google or Apple. None of it needs an
+environment variable in this app — the provider credentials live in Supabase.
+All of it is configured in the Supabase dashboard:
+
+1. **Authentication → URL Configuration.** Set **Site URL** to your production
+   origin, and add every origin you sign in from to **Redirect URLs** with a
+   wildcard, because the callback carries `?next=`:
+   `https://your-host/**` and `http://localhost:3000/**`.
+2. **Authentication → Email Templates → Magic Link.** The email must show the
+   code: include `{{ .Token }}` in the template.
+3. **Google** — in Google Cloud Console, create an OAuth client ID (type *Web
+   application*). Authorised redirect URI:
+   `https://<project-ref>.supabase.co/auth/v1/callback`. Paste the **Client ID**
+   and **Client Secret** into Supabase → Authentication → Providers → Google
+   and enable it.
+4. **Apple** — in the Apple Developer portal:
+   - an **App ID** with *Sign in with Apple* enabled;
+   - a **Services ID** (this is the client ID Supabase asks for), with *Sign in
+     with Apple* configured: domain `<project-ref>.supabase.co`, return URL
+     `https://<project-ref>.supabase.co/auth/v1/callback`;
+   - a **Key** with *Sign in with Apple* enabled — download the `.p8` and note
+     its **Key ID** and your **Team ID**.
+
+   Generate the client secret (a JWT signed with the `.p8`; Supabase's Apple
+   provider page links a generator) and paste the Services ID and secret into
+   Supabase → Authentication → Providers → Apple. **The secret expires after six
+   months at most** — put renewing it in a calendar, or Apple sign-in stops.
+
+A provider left disabled answers the button with Supabase's "provider is not
+enabled" error, shown on the sign-in page.
 
 ## 4. Apply the migrations
 
@@ -165,12 +198,13 @@ Then, in the browser:
 
 1. Open the app. The five tools load and you can add a guest.
    *(Local storage works.)*
-2. Go to `/account` and sign in with a magic link.
-   *(Accounts and email work.)*
+2. Go to `/login` and sign in with an emailed code, then with Google and Apple
+   if you enabled them.
+   *(Accounts, email and providers work.)*
 3. Add a guest, then reload. It is still there.
    *(Cloud sync works.)*
 4. From `/account`, choose **Download my wedding**. You get a
-   `.trousseau.json` file.
+   `.knotwork.json` file.
    *(The document store and the export path work.)*
 
 If step 2 says accounts are not set up, go back to section 3 — it is almost

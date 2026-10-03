@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { Trousseau } from "@jfrusher/trousseau";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import type { Knotwork } from "@jfrusher/knotwork";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { coverage, warningsByJob, type Warning } from "../core/jobs/coverage";
 import { newId } from "../core/model/ids";
 import type { BrigadeDoc, Job, Person, Team } from "../core/model/types";
@@ -11,7 +11,7 @@ export interface Cover {
   byJob: Map<string, Warning[]>;
 }
 
-let view: { doc: Trousseau; brigade: BrigadeDoc } | null = null;
+let view: { doc: Knotwork; brigade: BrigadeDoc } | null = null;
 
 /**
  * The crew and the day as Brigade reads them, from the one wedding.
@@ -20,7 +20,7 @@ let view: { doc: Trousseau; brigade: BrigadeDoc } | null = null;
  * stale view is impossible, and React sees the same object until something
  * changed.
  */
-export function brigadeDoc(doc: Trousseau): BrigadeDoc {
+export function brigadeDoc(doc: Knotwork): BrigadeDoc {
   if (view?.doc === doc) return view.brigade;
   view = { doc, brigade: readSlice(doc) };
   return view.brigade;
@@ -42,8 +42,8 @@ export function coverFor(doc: BrigadeDoc): Cover {
 }
 
 /** What Delegation shows: the wedding as it is now, wherever it was last changed. */
-export const useBrigadeDoc = (): BrigadeDoc => useTrousseauStore((state) => brigadeDoc(state.doc));
-export const useCover = (): Cover => useTrousseauStore((state) => coverFor(brigadeDoc(state.doc)));
+export const useBrigadeDoc = (): BrigadeDoc => useKnotworkStore((state) => brigadeDoc(state.doc));
+export const useCover = (): Cover => useKnotworkStore((state) => coverFor(brigadeDoc(state.doc)));
 
 /** Which jobs the board shows. */
 export interface Filter {
@@ -83,7 +83,7 @@ export interface StoreState {
 export const useStore = create<StoreState>((set, get) => {
   /** Shown as "Undo <label>"; edits with one label close together are one step. */
   const edit = (label: string, change: (doc: BrigadeDoc) => BrigadeDoc) => {
-    const shared = useTrousseauStore.getState();
+    const shared = useKnotworkStore.getState();
     shared.setSlice("crew", crewSlice(change(brigadeDoc(shared.doc))), { label });
   };
 

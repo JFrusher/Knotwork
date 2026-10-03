@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Check as CheckIcon, Copy, Link2, Unlink } from "lucide-react";
 import { browserClient } from "@/lib/accounts/browserClient";
 import { linkUrl, useGuestLink } from "@/lib/share/guestLink";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { Button, Check, Panel } from "@/components/ui/controls";
 import { useConfirm } from "@/components/ui/Confirm";
 
@@ -18,7 +18,7 @@ import { useConfirm } from "@/components/ui/Confirm";
  * they used to be at is worse than none.
  */
 export function GuestLinkPanel() {
-  const weddingId = useTrousseauStore((s) => s.weddingId);
+  const weddingId = useKnotworkStore((s) => s.weddingId);
   const link = useGuestLink((s) => s.link);
   const problem = useGuestLink((s) => s.problem);
   const publish = useGuestLink((s) => s.publish);

@@ -1,4 +1,4 @@
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { coupleTitle, sideLabel } from "@/lib/model/partners";

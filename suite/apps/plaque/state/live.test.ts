@@ -2,8 +2,8 @@ import { beforeEach, expect, test, vi } from "vitest";
 
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined, del: async () => undefined }));
 
-const { emptyTrousseau, migrate } = await import("@jfrusher/trousseau");
-const { useTrousseauStore } = await import("@/lib/store/useTrousseauStore");
+const { emptyKnotwork, migrate } = await import("@jfrusher/knotwork");
+const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { usePlaque } = await import("./store");
 
 /*
@@ -18,13 +18,13 @@ const ROWS = [
   { "First Name": "Eleanor", "Last Name": "Vane", Table: "Table 2", Dietary: "Vegan" },
 ];
 
-const shared = () => useTrousseauStore.getState();
+const shared = () => useKnotworkStore.getState();
 const plaque = () => usePlaque.getState();
 const stored = () => (shared().raw as Raw).stationery as Raw;
 
 beforeEach(() => {
-  const raw = emptyTrousseau() as unknown as Raw;
-  useTrousseauStore.setState({ status: "ready", raw, doc: migrate(raw), past: [], future: [] });
+  const raw = emptyKnotwork() as unknown as Raw;
+  useKnotworkStore.setState({ status: "ready", raw, doc: migrate(raw), past: [], future: [] });
   plaque().setCsv({ headers: HEADERS, rows: ROWS, issues: [], fileName: "guests.csv" });
 });
 

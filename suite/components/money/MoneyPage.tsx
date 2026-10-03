@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { Check } from "lucide-react";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { readCrew } from "@/lib/model/slices";
 import { money, type Payment } from "@/lib/money/money";
 import { daysUntil, longDate, todayIso } from "@/lib/dates";
@@ -18,7 +18,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 function storedCrew(): Record<string, unknown> {
-  const { raw } = useTrousseauStore.getState();
+  const { raw } = useKnotworkStore.getState();
   return isRecord(raw["crew"]) ? raw["crew"] : {};
 }
 
@@ -33,8 +33,8 @@ const amount = (n: number) => n.toLocaleString();
  * reads the crew and writes it, on the one undo stack.
  */
 export function MoneyPage() {
-  const status = useTrousseauStore((s) => s.status);
-  const doc = useTrousseauStore((s) => s.doc);
+  const status = useKnotworkStore((s) => s.status);
+  const doc = useKnotworkStore((s) => s.doc);
 
   const crew = readCrew(doc);
   const accounts = useMemo(() => money(crew), [crew]);
@@ -43,7 +43,7 @@ export function MoneyPage() {
   if (status !== "ready") return <div className="mx-auto mt-10 h-40 max-w-5xl animate-pulse rounded-lg bg-stone" />;
 
   const write = (next: Record<string, unknown>, label: string) =>
-    useTrousseauStore.getState().setSlice("crew", next, { label });
+    useKnotworkStore.getState().setSlice("crew", next, { label });
   const change = (teamId: string, what: TeamMoney) => write(changeTeam(storedCrew(), teamId, what), "money");
   const paid = (payment: Payment) =>
     change(payment.teamId, payment.kind === "deposit" ? { depositPaidOn: today } : { balancePaidOn: today });

@@ -4,11 +4,11 @@ import type { WeddingListing } from "@/lib/accounts/handlers";
 
 /**
  * The cloud transport, and what this device remembers about the wedding it
- * syncs with — kept separate from `useTrousseauStore` so both can be tested
+ * syncs with — kept separate from `useKnotworkStore` so both can be tested
  * with a fake `fetch` and a mocked `idb-keyval`.
  */
 
-const LINK_KEY = "trousseau.cloud.link";
+const LINK_KEY = "knotwork.cloud.link";
 
 /**
  * Which account wedding this device's document belongs to, and what the two

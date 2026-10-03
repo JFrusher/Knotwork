@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { reconcileLoadedDocument } from "@/lib/seating/normalise";
-import { useTrousseauStore } from "./useTrousseauStore";
+import { useKnotworkStore } from "./useKnotworkStore";
 
 /**
  * Reads the stored wedding once, on the client.
@@ -12,8 +12,8 @@ import { useTrousseauStore } from "./useTrousseauStore";
  * for it at import time.
  */
 export function StoreHydrator() {
-  const hydrate = useTrousseauStore((s) => s.hydrate);
-  const startCloudSync = useTrousseauStore((s) => s.startCloudSync);
+  const hydrate = useKnotworkStore((s) => s.hydrate);
+  const startCloudSync = useKnotworkStore((s) => s.startCloudSync);
   useEffect(() => {
     // Cloud sync starts only after the local read has finished. Starting them
     // together would race the two documents, and the local one is what the
@@ -27,7 +27,7 @@ export function StoreHydrator() {
     // Guarded the same way `persist` is: this file is imported by
     // tests that run without a `window`.
     if (typeof window === "undefined") return;
-    const onOnline = () => void useTrousseauStore.getState().syncToCloud();
+    const onOnline = () => void useKnotworkStore.getState().syncToCloud();
     window.addEventListener("online", onOnline);
     return () => window.removeEventListener("online", onOnline);
   }, []);
@@ -39,7 +39,7 @@ export function StoreHydrator() {
     // to the tab still looks, since a browser may have put a background tab's
     // connection to sleep, and a save made then was not heard.
     const onVisible = () => {
-      if (document.visibilityState === "visible") void useTrousseauStore.getState().pullFromCloud();
+      if (document.visibilityState === "visible") void useKnotworkStore.getState().pullFromCloud();
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);

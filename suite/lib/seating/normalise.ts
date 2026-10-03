@@ -1,7 +1,7 @@
 import { splitTitle } from "@/lib/model/partners";
 import { hasLegacyCast, hasLegacyGuests, hasLegacyShots, readCast, readGuests, readSeating, readShots } from "@/lib/model/slices";
 import type { Guest, Seating } from "@/lib/model/types";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 
 interface Plan {
   guests: Record<string, Guest>;
@@ -41,7 +41,7 @@ function reconcile(plan: Plan): Plan {
  * A seat is stored twice — on the table and on the guest — and a document that
  * arrives from somewhere else may already disagree: an older export, a
  * hand-edited file, or two of the original standalone apps that were never
- * reconciled. The Trousseau validator refuses a commit over exactly this, so it
+ * reconciled. The Knotwork validator refuses a commit over exactly this, so it
  * is fixed on the way in rather than carried around.
  *
  * Called after a load, never during editing: the actions keep both sides true
@@ -53,7 +53,7 @@ function reconcile(plan: Plan): Plan {
  * title, and the cast inside the shots rather than in a slice of its own.
  */
 export function reconcileLoadedDocument(): void {
-  const { doc, raw, status, setSlice, setSlices } = useTrousseauStore.getState();
+  const { doc, raw, status, setSlice, setSlices } = useKnotworkStore.getState();
   if (status !== "ready") return;
 
   const before = readGuests(doc);

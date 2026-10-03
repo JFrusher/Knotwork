@@ -1,4 +1,4 @@
-# Trousseau — the toolbox, and four new pieces: travel, ceremony, boxes, bar
+# Knotwork — the toolbox, and four new pieces: travel, ceremony, boxes, bar
 
 Date: 2026-09-29
 Status: direction approved by the maintainer (answers recorded below). Phase 0
@@ -23,7 +23,7 @@ and a good part of it turned out to exist already.
 | T3 | Module 3's assignment exists — Checklist tasks have `personIds`, `dueOn` and `status`, and people are linked to guests. Packing as the maintainer describes it does not: boxes, what is in each, and where and when each must be. | Traced |
 | T4 | Module 1's people exist: Group shots' cast (each partner, their parents, their wedding party, custom roles) mapped to guests. Grandparents, readers, ring bearer and flower party are not roles. | Traced (`lib/model/types.ts`) |
 | T5 | A top-level key the contract does not list survives a sync, but is assembled local-over-server with no conflict (`mergeCloudDocument.ts`, lines 107 and 163), so a partner's edit to it is silently lost on the next push. **Every new slice goes into `SLICE_NAMES`.** | Traced |
-| T6 | Every page loads the same 522 KB of gzipped JavaScript; a tool's own code adds 7 KB (Checklist) to 76 KB (Seating). 144 KB of the shared part is fontkit, reached statically from the store: `useTrousseauStore → documents/assets → portableAssets → plaque/syncAssets → plaque/sliceBridge → plaque/design → template/defaults → text/fit → text/measure`. The PRD's 100 KB per module is already met; the weight is underneath every module. | Reproduced — production build, each route loaded in Chromium and its JS summed; fontkit matched by its shaper tables against `node_modules/fontkit`; the chain traced by static imports |
+| T6 | Every page loads the same 522 KB of gzipped JavaScript; a tool's own code adds 7 KB (Checklist) to 76 KB (Seating). 144 KB of the shared part is fontkit, reached statically from the store: `useKnotworkStore → documents/assets → portableAssets → plaque/syncAssets → plaque/sliceBridge → plaque/design → template/defaults → text/fit → text/measure`. The PRD's 100 KB per module is already met; the weight is underneath every module. | Reproduced — production build, each route loaded in Chromium and its JS summed; fontkit matched by its shaper tables against `node_modules/fontkit`; the chain traced by static imports |
 | T7 | Ctrl/⌘ K is the command palette. | Traced |
 
 ## Decisions
@@ -85,7 +85,7 @@ The maintainer's second answers, the same day, after Phase 0 was built:
   palette — a table, a block — still open where they live. So a wedding that
   has not added Money hears nothing of balances falling due.
 - **The example wedding shows every tool**, held there by a test: it exists to
-  show what Trousseau does, and the tour and front page point at all of it.
+  show what Knotwork does, and the tour and front page point at all of it.
 
 ## Phase 1 — Timeline: travel between places, and calendars
 

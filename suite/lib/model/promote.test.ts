@@ -4,11 +4,11 @@ import { promoteSources } from "./promote";
 /**
  * The failure this prevents: a collected file restores without error, reports
  * success, and leaves an empty app — because the wedding was under `sources`
- * and the tools read the slices. Both shapes are called `.trousseau.json`.
+ * and the tools read the slices. Both shapes are called `.knotwork.json`.
  */
 
 const collected = {
-  kind: "trousseau",
+  kind: "knotwork",
   version: 1,
   event: { date: "2026-09-12", coupleNames: "Jacob and Charis", venueName: "The Hall" },
   guests: {},
@@ -85,7 +85,7 @@ describe("opening a collected wedding", () => {
     });
 
     it("does nothing to a document that needs nothing", () => {
-      const { filled } = promoteSources({ kind: "trousseau", version: 1, guests: { g: {} } });
+      const { filled } = promoteSources({ kind: "knotwork", version: 1, guests: { g: {} } });
       expect(filled).toEqual([]);
     });
   });

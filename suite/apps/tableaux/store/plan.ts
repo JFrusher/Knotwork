@@ -1,4 +1,4 @@
-import { eventSchema, type Event as WeddingEvent } from '@jfrusher/trousseau'
+import { eventSchema, type Event as WeddingEvent } from '@jfrusher/knotwork'
 import { coerceGuests } from '@/lib/model/slices'
 import { DEFAULT_CHAIR_CM, DEFAULT_PPU, deriveSizeUnits } from '../utils/seatPositions'
 import { localeDefaultUnitSystem } from '../utils/units'

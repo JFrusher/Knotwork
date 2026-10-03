@@ -1,4 +1,4 @@
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { TOOLS, type Tool, type ToolId } from "@/lib/tools";
 import { cached } from "./slices";
 
@@ -26,7 +26,7 @@ function storedIds(doc: unknown): string[] | null {
 }
 
 /** The tools the wedding shows, in the registry's order. */
-export function shownTools(doc: Trousseau): readonly Tool[] {
+export function shownTools(doc: Knotwork): readonly Tool[] {
   return cached(doc, "shownTools", () => {
     const ids = storedIds(doc);
     return ids === null ? DEFAULT_TOOLS : TOOLS.filter((tool) => ids.includes(tool.id));
@@ -34,7 +34,7 @@ export function shownTools(doc: Trousseau): readonly Tool[] {
 }
 
 /** The ids of the tools the wedding does not show — removed, or never added — for everything that lists a tool's work. */
-export function hiddenToolIds(doc: Trousseau): ReadonlySet<string> {
+export function hiddenToolIds(doc: Knotwork): ReadonlySet<string> {
   return cached(doc, "hiddenToolIds", () => {
     const shown = shownTools(doc);
     return new Set(TOOLS.filter((tool) => !shown.includes(tool)).map((tool) => tool.id));

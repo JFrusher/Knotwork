@@ -13,7 +13,7 @@ import {
   TextField,
   TimeField,
 } from "@/components/ui/fields";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { roomPlaces } from "../../state/roomPlaces";
 import { CeremonyCues } from "./CeremonyCues";
 import styles from "./InspectorPanel.module.css";
@@ -27,7 +27,7 @@ export function InspectorPanel() {
   // subscribes to that and derives from it — no new array handed back on every
   // render, which under `useSyncExternalStore` is an update loop rather than
   // merely a wasted one.
-  const seating = useTrousseauStore((state) => state.raw["seating"]);
+  const seating = useKnotworkStore((state) => state.raw["seating"]);
   const places = useMemo(() => roomPlaces(seating), [seating]);
   const schedule = useSchedule();
   const selectedId = useStore((state) => state.selectedId);

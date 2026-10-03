@@ -1,4 +1,4 @@
-import { migrate } from "@jfrusher/trousseau";
+import { migrate } from "@jfrusher/knotwork";
 import { choices } from "@/lib/bar/actions";
 import { readBar, readBoxes, readCeremony, readCrew, readGuests, readSeating, readShots } from "./slices";
 

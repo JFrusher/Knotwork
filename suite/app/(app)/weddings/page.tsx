@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { browserClient } from "@/lib/accounts/browserClient";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import type { WeddingListing } from "@/lib/accounts/handlers";
 import { Button } from "@/components/ui/controls";
 import { todayIso } from "@/lib/dates";
@@ -19,7 +19,7 @@ import { WeddingList } from "@/components/weddings/WeddingList";
  */
 export default function WeddingsPage() {
   const client = browserClient();
-  const open = useTrousseauStore((s) => s.weddingId);
+  const open = useKnotworkStore((s) => s.weddingId);
   const [weddings, setWeddings] = useState<WeddingListing[] | "signed-out" | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
 
@@ -54,7 +54,7 @@ export default function WeddingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Trousseau</p>
+      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
       <h1 className="mt-3 font-display text-3xl text-charcoal">Your weddings</h1>
 
       {!client ? (

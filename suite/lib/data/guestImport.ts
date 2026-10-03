@@ -1,4 +1,4 @@
-import type { Event as WeddingEvent } from "@jfrusher/trousseau";
+import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import type { Guest, RsvpStatus, Side } from "@/lib/model/types";
 import { newGuest } from "@/lib/model/factories";
 import { normaliseDietary } from "@/lib/model/dietary";

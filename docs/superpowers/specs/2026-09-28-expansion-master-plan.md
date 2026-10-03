@@ -1,4 +1,4 @@
-# Trousseau — the expansion: planners, setup, and the windows around the tools
+# Knotwork — the expansion: planners, setup, and the windows around the tools
 
 Date: 2026-09-28
 Status: direction approved by the maintainer (answers recorded below). Each
@@ -198,7 +198,7 @@ replaced silently when both sides have work in them.**
     fit together: guests from one and seating from the other leaves every seat
     pointing at nobody. Per-slice choice stays where it is sound — two partners
     editing one wedding.
-- How a device knows "this wedding": the link (`trousseau.cloud.link`) —
+- How a device knows "this wedding": the link (`knotwork.cloud.link`) —
   wedding id, version and per-slice baseline — stored whenever the agreement
   moves. It replaces the one-document write queue, which a start that merges
   from a stored baseline made redundant.
@@ -554,9 +554,9 @@ landed with Sync & history, over keyed records (guests, tables, blocks, jobs).
 
 ## Explicitly deferred
 
-- RSVP collection. Joy and similar do it; Trousseau imports the result.
+- RSVP collection. Joy and similar do it; Knotwork imports the result.
 - Agency teams (more than one planner on a wedding).
-- A public page marketing Trousseau to planners.
+- A public page marketing Knotwork to planners.
 - A binder link for day-of helpers without an account — it would carry phone
   numbers, and deserves its own look at what a link may reveal.
 - Editing tools on phones.

@@ -18,7 +18,7 @@ README). Use the example wedding, never real names.
 > So I built one where that can't happen, and made it free and open source
 > for everyone.
 >
-> Here's how Trousseau works, and what building it with Claude Code taught
+> Here's how Knotwork works, and what building it with Claude Code taught
 > me 🧵
 >
 > [Attach: `assets/motion/seat-to-card.mp4`]
@@ -31,7 +31,7 @@ README). Use the example wedding, never real names.
 > apart until the week of the wedding.
 
 **3/7**
-> Trousseau is one JSON document per wedding, with 11 tools around it.
+> Knotwork is one JSON document per wedding, with 11 tools around it.
 >
 > The rule: a tool rewrites only its own slice and copies everything else
 > byte for byte, even keys from tools that don't exist yet.
@@ -106,7 +106,7 @@ Recording notes for all three:
 | Time | On screen | Voice-over / caption |
 | --- | --- | --- |
 | 0–3s | Close-up of a messy printed spreadsheet covered in crossings-out | **Hook:** "If your seating chart looks like this…" |
-| 3–7s | Hard cut to Trousseau Seating: an empty room drawn to scale | "Draw your actual room. To scale, so if it doesn't fit here, it won't fit on the day." |
+| 3–7s | Hard cut to Knotwork Seating: an empty room drawn to scale | "Draw your actual room. To scale, so if it doesn't fit here, it won't fit on the day." |
 | 7–13s | Drag three round tables in; drag guests onto seats; dietary counts tick up on the right | "Drag people onto seats. It counts the vegetarians for you." |
 | 13–18s | Add a "keep apart" rule between two guests, then seat them together: a warning appears | "Uncle and ex-uncle? Tell it to keep them apart. It'll warn you." |
 | 18–25s | Open Place cards, press **Use the room**: a sheet of cards appears with table numbers | "Then print your place cards. The table numbers are already on them." |
@@ -124,7 +124,7 @@ no ads. #weddingplanning #seatingchart #diywedding #weddingtok
 | --- | --- | --- |
 | 0–3s | Face to camera, or text on black | **Hook:** "Your ceremony just moved 20 minutes. How many things do you have to change?" |
 | 3–8s | A paper run sheet with times, being crossed out and rewritten | "Normally? All of them." |
-| 8–15s | Trousseau Timeline: lanes for the day, suppliers, transport; the ceremony block is pinned | "In Trousseau, you pin the things with fixed times, and everything else follows." |
+| 8–15s | Knotwork Timeline: lanes for the day, suppliers, transport; the ceremony block is pinned | "In Knotwork, you pin the things with fixed times, and everything else follows." |
 | 15–23s | Drag the ceremony 20 minutes later: drinks, photos and speeches slide along; a red collision appears at the curfew | "Move the ceremony and the day moves with it. And it tells you what now runs past the venue's curfew." |
 | 23–30s | Mark the drinks reception as squeezable; the collision clears as drinks shrink | "Let the drinks run shorter, and it fixes itself." |
 | 30–35s | Open Delegation: jobs show their new times | "Everyone's job sheet updates too." |
@@ -139,7 +139,7 @@ no ads. #weddingplanning #seatingchart #diywedding #weddingtok
 ### Script 3: "What your planner doesn't want you to know: the day in your pocket" (≈35s)
 
 > Tone note: the hook is playful. Don't let the video imply that planners are
-> bad, since Trousseau has a planner role and planners are an audience.
+> bad, since Knotwork has a planner role and planners are an audience.
 > Alternative hook if this feels off-brand: "The one thing to have on your
 > phone on your wedding day."
 
@@ -161,7 +161,7 @@ no ads. #weddingplanning #seatingchart #diywedding #weddingtok
 ## 3. Short posts for reuse
 
 **Mastodon / Fediverse (≤500 chars):**
-> I built Trousseau, a free, AGPL wedding planner where every tool shares
+> I built Knotwork, a free, AGPL wedding planner where every tool shares
 > one document. Seat your guests and one click puts the table numbers on the
 > place cards; move the ceremony and the day moves with it. Local-first (IndexedDB, no account),
 > self-hostable, and no analytics on your own instance.
@@ -171,5 +171,5 @@ no ads. #weddingplanning #seatingchart #diywedding #weddingtok
 > #selfhosted #opensource #localfirst
 
 **Bluesky / X one-liner:**
-> Wedding apps keep three copies of your guest list. Trousseau keeps one.
+> Wedding apps keep three copies of your guest list. Knotwork keeps one.
 > Free, open source, no sign-up: trousseau-suite.vercel.app

@@ -16,7 +16,7 @@ export default function GlobalError({
   error: Error & { digest?: string };
 }) {
   useEffect(() => {
-    console.error("[Trousseau] fatal", error);
+    console.error("[Knotwork] fatal", error);
   }, [error]);
 
   return (
@@ -37,7 +37,7 @@ export default function GlobalError({
       >
         <div style={{ maxWidth: "32rem" }}>
           <h1 style={{ margin: 0, fontSize: "1.75rem", color: "#1c1917" }}>
-            Trousseau could not start
+            Knotwork could not start
           </h1>
           <p style={{ marginTop: "1rem", lineHeight: 1.6 }}>
             Your wedding is still saved in this browser. Nothing has been lost, and nothing has

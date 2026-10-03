@@ -1,4 +1,4 @@
-import { migrate, type SliceName } from "@jfrusher/trousseau";
+import { migrate, type SliceName } from "@jfrusher/knotwork";
 import { choices } from "@/lib/bar/actions";
 import { daysUntil } from "@/lib/dates";
 import { emptyBar, readBar, readCeremony } from "@/lib/model/slices";

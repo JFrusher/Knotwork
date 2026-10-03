@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { migrate } from "@jfrusher/trousseau";
+import { migrate } from "@jfrusher/knotwork";
 import { dayPlaces, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "@/lib/model/slices";
 import { neededAt, packingOf } from "@/lib/boxes/view";
 import { readiness } from "@/lib/model/readiness";
@@ -13,12 +13,12 @@ import { TOOLS } from "@/lib/tools";
 import { USUAL_TASKS } from "@/lib/checklist/checklist";
 
 /*
- * The example wedding exists to show what Trousseau does once a wedding is
+ * The example wedding exists to show what Knotwork does once a wedding is
  * under way, so every chapter of the tour must have something real in it to
  * point at: people in seats, a crew with jobs on the day, a shot list with
  * its people, a card design drawn from the room.
  */
-const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.trousseau.json"), "utf8"));
+const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 const doc = migrate(raw);
 const guests = Object.values(readGuests(doc));
 const seating = readSeating(doc);

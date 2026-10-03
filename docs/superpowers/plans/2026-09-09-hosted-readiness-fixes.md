@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Close four gaps found in a consolidation-pass review of Trousseau: no CI gate before Vercel deploys, no retention sweep for the account-based wedding data every real user is now on, no rate limiting on four `/api/accounts/*` routes, and several tools shipping their whole PDF/export stack on every page load instead of on demand.
+**Goal:** Close four gaps found in a consolidation-pass review of Knotwork: no CI gate before Vercel deploys, no retention sweep for the account-based wedding data every real user is now on, no rate limiting on four `/api/accounts/*` routes, and several tools shipping their whole PDF/export stack on every page load instead of on demand.
 
 **Architecture:** Each fix extends a pattern the codebase already uses elsewhere rather than inventing a new one — CI mirrors the sibling Plaque repo's working workflow; the retention sweep mirrors `lib/sync/handlers.ts`'s existing `sweepAbandoned`; rate limiting reuses `lib/sync/rateLimit.ts`'s already-generic `allow()`; lazy loading mirrors Plaque's `ExportBar.tsx` and `WeddingPack.tsx`'s existing dynamic-import calls.
 
@@ -375,10 +375,10 @@ export async function GET(request: Request) {
 
   try {
     const { deleted } = await sweepAbandoned(db);
-    console.info(`[Trousseau] retention sweep removed ${deleted.length} wedding(s)`);
+    console.info(`[Knotwork] retention sweep removed ${deleted.length} wedding(s)`);
     return NextResponse.json({ deleted: deleted.length });
   } catch (cause) {
-    console.error("[Trousseau] retention sweep failed:", cause);
+    console.error("[Knotwork] retention sweep failed:", cause);
     return NextResponse.json({ error: "The sweep failed." }, { status: 503 });
   }
 }
@@ -408,11 +408,11 @@ import { adminDocumentsClient } from "@/lib/documents/supabaseStore";
 
     const total = deleted.length + documentsDeleted.length;
     console.info(
-      `[Trousseau] retention sweep removed ${deleted.length} passphrase wedding(s), ${documentsDeleted.length} account wedding(s)`,
+      `[Knotwork] retention sweep removed ${deleted.length} passphrase wedding(s), ${documentsDeleted.length} account wedding(s)`,
     );
     return NextResponse.json({ deleted: total });
   } catch (cause) {
-    console.error("[Trousseau] retention sweep failed:", cause);
+    console.error("[Knotwork] retention sweep failed:", cause);
     return NextResponse.json({ error: "The sweep failed." }, { status: 503 });
   }
 ```
@@ -1090,7 +1090,7 @@ and change `makePdf`:
           fontSource: browserFontSource(),
           pageSize,
           coupleNames,
-          generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+          generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
         },
         shots.customRoles,
       );
@@ -1142,7 +1142,7 @@ import dynamic from "next/dynamic";
 const DataManager = dynamic(() => import("./DataManager").then((m) => m.DataManager), { ssr: false });
 ```
 
-`DataManager` is already prop-gated (`open`/`onClose`, rendered unconditionally in the JSX but internally checks `open` via `AnimatePresence`) — no other change needed to `Header.tsx`'s JSX; the existing `<DataManager open={dataOpen} onClose={() => setDataOpen(false)} />` call at the bottom stays exactly as it is. `next/dynamic` with `ssr: false` means the component (and everything it imports — `framer-motion`, `@jfrusher/trousseau`, the CSV/guest-import parsing) only loads client-side, on first render of `Header`, but as its own chunk rather than inlined into `Header`'s/the shared layout's chunk — check whether this alone is sufficient or whether a further guard (only mounting `DataManager` at all once `dataOpen` first becomes `true`, via `{dataOpen && <DataManager .../>}` or similar) is worth adding for a bigger win; `next/dynamic` alone still defers the *download* to first render of the page rather than first *open* of the modal, so if the goal is "the chunk doesn't load until the button is clicked," combine it with not rendering `<DataManager>` at all until `dataOpen` has been true at least once. Decide based on Step 3's actual Network-tab observation — don't guess.
+`DataManager` is already prop-gated (`open`/`onClose`, rendered unconditionally in the JSX but internally checks `open` via `AnimatePresence`) — no other change needed to `Header.tsx`'s JSX; the existing `<DataManager open={dataOpen} onClose={() => setDataOpen(false)} />` call at the bottom stays exactly as it is. `next/dynamic` with `ssr: false` means the component (and everything it imports — `framer-motion`, `@jfrusher/knotwork`, the CSV/guest-import parsing) only loads client-side, on first render of `Header`, but as its own chunk rather than inlined into `Header`'s/the shared layout's chunk — check whether this alone is sufficient or whether a further guard (only mounting `DataManager` at all once `dataOpen` first becomes `true`, via `{dataOpen && <DataManager .../>}` or similar) is worth adding for a bigger win; `next/dynamic` alone still defers the *download* to first render of the page rather than first *open* of the modal, so if the goal is "the chunk doesn't load until the button is clicked," combine it with not rendering `<DataManager>` at all until `dataOpen` has been true at least once. Decide based on Step 3's actual Network-tab observation — don't guess.
 
 - [ ] **Step 2: Run the shell's tests**
 

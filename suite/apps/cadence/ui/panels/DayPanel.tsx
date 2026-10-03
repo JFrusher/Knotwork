@@ -2,7 +2,7 @@ import { formatClock } from "../../core/time/minutes";
 import { useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import { Button, Field, NumberField, Panel, Row, TimeField } from "@/components/ui/fields";
 import { useDataPanel } from "@/components/shell/dataPanel";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import styles from "./DayPanel.module.css";
 
 const OFFSETS = [
@@ -27,7 +27,7 @@ export function DayPanel() {
   const setDay = useStore((state) => state.setDay);
   const sun = useSchedule().sun;
   // Live from the wedding rather than from Timeline's copy of it.
-  const event = useTrousseauStore((state) => state.doc.event);
+  const event = useKnotworkStore((state) => state.doc.event);
   const showData = useDataPanel((state) => state.show);
 
   return (

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { create } from "zustand";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { entries, search, type Entry } from "@/lib/palette/search";
 import { Dialog } from "@/components/ui/Dialog";
 
@@ -30,7 +30,7 @@ export function CommandPalette() {
 }
 
 function Finder({ onGo }: { onGo: () => void }) {
-  const doc = useTrousseauStore((s) => s.doc);
+  const doc = useKnotworkStore((s) => s.doc);
   const router = useRouter();
   const all = useMemo(() => entries(doc), [doc]);
   const [query, setQuery] = useState("");

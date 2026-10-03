@@ -1,5 +1,5 @@
 import { publishDay } from "@/lib/model/slices";
-import { useTrousseauStore, type WriteOptions } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore, type WriteOptions } from "@/lib/store/useKnotworkStore";
 import type { TimelineDoc } from "../core/model/types";
 
 /**
@@ -34,7 +34,7 @@ import type { TimelineDoc } from "../core/model/types";
  */
 
 export function writeSlice(next: TimelineDoc, options: WriteOptions): void {
-  const store = useTrousseauStore.getState();
+  const store = useKnotworkStore.getState();
   const { doc } = store;
 
   store.setSlices(

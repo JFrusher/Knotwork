@@ -1,15 +1,15 @@
-# Trousseau — architecture audit (baseline before the couples-product pivot)
+# Knotwork — architecture audit (baseline before the couples-product pivot)
 
 Date: 2026-09-02
 Status: reference — this is a point-in-time audit, not a design. See
 `docs/PRODUCT-ROADMAP.md` for what came after it.
-Scope: root `@jfrusher/trousseau` contract package + `suite/` (Plaque, Cadence,
+Scope: root `@jfrusher/knotwork` contract package + `suite/` (Plaque, Cadence,
 Brigade, Tableaux).
 
 ## Why this exists
 
 Triggered by a real bug: Cadence's printed timeline drifted off the true time
-of day, block after block, on the live `trousseau-suite` Vercel deployment.
+of day, block after block, on the live `knotwork-suite` Vercel deployment.
 Fixing it surfaced that `suite/apps/cadence/` is a hand-ported mirror of a
 separate standalone `cadence` repo, and that the fix had to be applied twice —
 once at the source, once in the port — because nothing keeps the two in sync.
@@ -24,7 +24,7 @@ was audited firsthand during the bug fix itself.
 
 ## 1. Core uses & value proposition
 
-Trousseau is a personal wedding-planning suite, built by one developer for one
+Knotwork is a personal wedding-planning suite, built by one developer for one
 real wedding, not (at the time of this audit) a generalized product. Four
 independent tools each own one facet of the day, sharing one document:
 
@@ -35,7 +35,7 @@ independent tools each own one facet of the day, sharing one document:
 | Cadence | Day-of running order | Timeline/run-sheet/call-sheet PDFs |
 | Brigade | Crew/job assignment | Job sheets, per-person/per-team call sheets |
 
-`suite/` is a Next.js app (deployed to Vercel as `trousseau-suite`) unifying
+`suite/` is a Next.js app (deployed to Vercel as `knotwork-suite`) unifying
 all four behind one shared header/nav/undo chrome — a real shared shell, not
 four apps bolted side by side (shared `Header`/`ChromeSlot`, a live guest count
 in the header sourced from the one Zustand store). An optional
@@ -126,11 +126,11 @@ Patterns worth preserving into whatever comes next:
   can silently contradict; a `replace`-strategy guest re-import leaves subgroup
   membership pointing at dead IDs.
 - Plaque's image upload has no file-size cap (MIME-type checked only).
-- Root `wedding.trousseau.json` (101KB, gitignored) duplicate of `data/wedding.trousseau.json`.
+- Root `wedding.knotwork.json` (101KB, gitignored) duplicate of `data/wedding.knotwork.json`.
 
 ## 5. What happened next
 
 The maintainer's wedding has since happened. The decision coming out of this
-audit was to turn Trousseau into a real product for other couples rather than
+audit was to turn Knotwork into a real product for other couples rather than
 retire it. See `docs/PRODUCT-ROADMAP.md` for the pivot's scope, decomposition,
 and ongoing decisions.

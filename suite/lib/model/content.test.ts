@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
-import { emptyTrousseau } from "@jfrusher/trousseau";
+import { emptyKnotwork } from "@jfrusher/knotwork";
 import { describe, hasContent, summarise } from "./content";
 
-const empty = emptyTrousseau();
+const empty = emptyKnotwork();
 
 test("an empty wedding has nothing to lose", () => {
   expect(hasContent(summarise(empty))).toBe(false);

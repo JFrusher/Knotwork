@@ -28,7 +28,7 @@ const isWideOnServer = () => true;
  *
  * Three tools carried their own, copied from one another: Delegation's told a
  * tablet user to go and open "Cadence", and Place cards named "Plaque" — names
- * nobody using Trousseau has ever seen. The name now comes from the same list
+ * nobody using Knotwork has ever seen. The name now comes from the same list
  * the tabs are drawn from, so it cannot disagree with the tab above it.
  *
  * Outside the tool rather than inside it, so a gated tool never mounts: its

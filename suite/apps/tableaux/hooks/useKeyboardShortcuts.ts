@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { useStore } from '../store/useStore'
 import { fitCanvasToContent, zoomCanvasBy } from '../utils/canvasCoords'
 
@@ -39,7 +39,7 @@ export function useKeyboardShortcuts(): void {
       if (isEditable(document.activeElement)) return
 
       // The wedding's one history: what the header's buttons drive.
-      const history = useTrousseauStore.getState()
+      const history = useKnotworkStore.getState()
       if (mod && key.toLowerCase() === 'z') {
         e.preventDefault()
         if (e.shiftKey) history.redo()

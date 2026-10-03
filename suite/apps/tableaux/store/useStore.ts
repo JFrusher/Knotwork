@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import type { Guide } from '../utils/alignmentSnap'
 import { makeId } from '../utils/ids'
 import type { Seat } from '../utils/seatPositions'
@@ -146,7 +146,7 @@ export const useStore = create<SeatingState>()((set, get) => {
 
   return {
     ...readDoc(),
-    loaded: useTrousseauStore.getState().status === 'ready',
+    loaded: useKnotworkStore.getState().status === 'ready',
     selection: NO_SELECTION,
     selectedGuestIds: [],
     search: '',
@@ -266,7 +266,7 @@ function follow(): void {
   })
 }
 
-useTrousseauStore.subscribe((state, prev) => {
+useKnotworkStore.subscribe((state, prev) => {
   if (state.status !== 'ready' || isWriting()) return
   const changed =
     prev.status !== 'ready' ||

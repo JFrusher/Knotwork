@@ -34,12 +34,12 @@ export async function GET(request: Request) {
   try {
     const { deleted } = await sweepAbandonedDocuments(documentStore(adminClient));
     // A count only: ids identify rows, and a log is no place for them.
-    requestLog(request).info({ deleted: deleted.length }, "[Trousseau] retention sweep");
+    requestLog(request).info({ deleted: deleted.length }, "[Knotwork] retention sweep");
     return NextResponse.json({ deleted: deleted.length });
   } catch (cause) {
     // A failed sweep must be loud: it deletes, it runs unattended, and silence
     // here means data kept past the period the Privacy Policy states.
-    requestLog(request).error({ err: cause }, "[Trousseau] retention sweep failed");
+    requestLog(request).error({ err: cause }, "[Knotwork] retention sweep failed");
     return NextResponse.json({ error: "The sweep failed." }, { status: 503 });
   }
 }

@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { readTimeline } from "@/lib/model/slices";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { DEFAULT_BLOCK_OUTPUTS } from "../core/model/defaults";
 import { newId } from "../core/model/ids";
 import type { Block, DaySettings, OutputId, StyleSpec, TagDetail, TimelineDoc, UploadedFont } from "../core/model/types";
@@ -121,25 +121,25 @@ export interface StoreState {
   cancelPreview: () => void;
 }
 
-let view: { doc: Trousseau; timeline: TimelineDoc } | null = null;
+let view: { doc: Knotwork; timeline: TimelineDoc } | null = null;
 
 /**
  * The day as Timeline reads it, from the one wedding. Memoised on the
  * wedding's identity: every edit anywhere replaces it, so a stale view is
  * impossible, and React sees the same object until something changed.
  */
-export function timelineDoc(doc: Trousseau): TimelineDoc {
+export function timelineDoc(doc: Knotwork): TimelineDoc {
   if (view?.doc === doc) return view.timeline;
   view = { doc, timeline: readTimeline(doc) };
   return view.timeline;
 }
 
 /** The day as it is now, for code outside React. */
-export const currentDoc = (): TimelineDoc => timelineDoc(useTrousseauStore.getState().doc);
+export const currentDoc = (): TimelineDoc => timelineDoc(useKnotworkStore.getState().doc);
 
 /** What Timeline shows: the wedding's day as it is now, wherever it was last changed. */
-export const useTimelineDoc = (): TimelineDoc => useTrousseauStore((state) => timelineDoc(state.doc));
-export const useSchedule = (): Schedule => useTrousseauStore((state) => scheduleFor(timelineDoc(state.doc)));
+export const useTimelineDoc = (): TimelineDoc => useKnotworkStore((state) => timelineDoc(state.doc));
+export const useSchedule = (): Schedule => useKnotworkStore((state) => scheduleFor(timelineDoc(state.doc)));
 
 function withBlocks(doc: TimelineDoc, blocks: Block[]): TimelineDoc {
   return { ...doc, blocks };

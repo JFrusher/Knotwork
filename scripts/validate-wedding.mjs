@@ -1,12 +1,12 @@
 // The gate on the canonical wedding file.
 //
-// Trousseau's zod schema validates the envelope: kind, version, event, and the
+// Knotwork's zod schema validates the envelope: kind, version, event, and the
 // fact that each slice is an object. It deliberately cannot validate slice
 // interiors — that shape belongs to the owning app (see src/slices.ts). The
 // cross-slice invariants live here instead, because they are the ones no single
 // app can check: an app only ever sees its own slice.
 //
-//   node scripts/validate-wedding.mjs [data/wedding.trousseau.json]
+//   node scripts/validate-wedding.mjs [data/wedding.knotwork.json]
 //
 // Exit 1 on any error. Warnings print and exit 0.
 //
@@ -23,7 +23,7 @@ const isObj = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
  * Every cross-slice invariant, as a pure function so it can be tested without
  * a file or a process exit.
  *
- * @param doc a parsed trousseau
+ * @param doc a parsed Knotwork document
  * @returns {{errors: string[], warnings: string[], facts: string[]}}
  */
 export function check(doc) {
@@ -209,12 +209,12 @@ export function check(doc) {
 
 // Not run when imported by the test.
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const file = process.argv[2] ?? "data/wedding.trousseau.json";
+  const file = process.argv[2] ?? "data/wedding.knotwork.json";
   let doc;
   try {
     doc = parse(readFileSync(file, "utf8"));
   } catch (e) {
-    console.error(`${file} does not parse against the trousseau schema:\n  ${e.message}`);
+    console.error(`${file} does not parse against the Knotwork schema:\n  ${e.message}`);
     process.exit(1);
   }
 

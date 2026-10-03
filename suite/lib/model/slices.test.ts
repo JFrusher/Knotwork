@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { emptyTrousseau, migrate } from "@jfrusher/trousseau";
+import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
 import { coerceGuests, personName, PROCESSIONAL_MOMENT_ID, readBoxes, readCast, readCeremony, readCrew, readShots, readTimeline } from "./slices";
 
 describe("coerceGuests keeps what it has no opinion about", () => {
@@ -40,7 +40,7 @@ describe("coerceGuests keeps what it has no opinion about", () => {
 });
 
 describe("readCrew", () => {
-  const docWith = (crew: unknown) => ({ ...emptyTrousseau(), crew } as never);
+  const docWith = (crew: unknown) => ({ ...emptyKnotwork(), crew } as never);
 
   it("reads a team's contract fields", () => {
     const crew = readCrew(
@@ -121,7 +121,7 @@ describe("readTimeline's travel", () => {
   });
 
   it("is empty on a wedding that has never typed one", () => {
-    expect(readTimeline(emptyTrousseau()).travel).toEqual([]);
+    expect(readTimeline(emptyKnotwork()).travel).toEqual([]);
   });
 });
 
@@ -143,8 +143,8 @@ describe("readCast", () => {
   });
 
   it("is empty on a wedding with no cast anywhere", () => {
-    expect(readCast(emptyTrousseau()).customRoles).toEqual([]);
-    expect(Object.values(readCast(emptyTrousseau()).roles).every((ids) => ids.length === 0)).toBe(true);
+    expect(readCast(emptyKnotwork()).customRoles).toEqual([]);
+    expect(Object.values(readCast(emptyKnotwork()).roles).every((ids) => ids.length === 0)).toBe(true);
   });
 });
 

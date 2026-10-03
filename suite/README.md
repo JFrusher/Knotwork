@@ -1,12 +1,13 @@
-# Trousseau
+# Knotwork
 
 Seating, stationery, timeline and crew for one wedding, in one application.
 
-> Briefly called Tableaux Suite, which it shared with one of the four apps it
-> replaces. The name it has now is the repo it lives in — and the metaphor was
-> always about this: a trousseau is the collection carried into a marriage.
-> Stored data written under the old name is moved on first load by
-> [`lib/store/migrateKeys.ts`](lib/store/migrateKeys.ts).
+> Formerly Trousseau, and before that, briefly, Tableaux Suite, which it shared
+> with one of the four apps it replaces. Knotwork is the name for many strands
+> worked into one — which is what this does to a wedding's lists. Stored data
+> written under either old name is moved on first load by
+> [`lib/store/migrateKeys.ts`](lib/store/migrateKeys.ts), and files exported as
+> Trousseau still open.
 >
 > Two things kept the old name on purpose. The HKDF labels in
 > [`lib/sync/crypto.ts`](lib/sync/crypto.ts) are opaque protocol constants that
@@ -20,7 +21,7 @@ This is the four standalone apps — [Tableaux](https://github.com/JFrusher/Tabl
 [Plaque](https://github.com/JFrusher/Plaque),
 [Cadence](https://github.com/JFrusher/cadence) and
 [Brigade](https://github.com/JFrusher/Brigade) — brought onto one document, the
-`.trousseau.json` whose contract lives in the package above this directory.
+`.knotwork.json` whose contract lives in the package above this directory.
 
 ## Why it is here
 
@@ -32,8 +33,8 @@ number, move a block of the day and every job hanging off it moves with it.
 
 ## The store
 
-One Zustand store, [`lib/store/useTrousseauStore.ts`](lib/store/useTrousseauStore.ts),
-holding the Trousseau envelope rather than a flat bag of entities:
+One Zustand store, [`lib/store/useKnotworkStore.ts`](lib/store/useKnotworkStore.ts),
+holding the Knotwork envelope rather than a flat bag of entities:
 
 | Slice | What is in it | Written by |
 | --- | --- | --- |

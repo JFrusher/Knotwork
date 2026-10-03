@@ -4,7 +4,7 @@
 
 **Goal:** Add Ensemble — a fifth, suite-native tool that builds and prints the family/group photo shot list from the guest list, the room, and a small cast of named roles.
 
-**Architecture:** A new `shots` slice (contract package + suite reader/writer), pure logic in `suite/lib/ensemble/` (resolve, propose, actions, PDF/CSV renderers), and a UI in `suite/components/ensemble/` that reads/writes the shared `useTrousseauStore` directly — no standalone app, no separate store, unlike the four existing tools.
+**Architecture:** A new `shots` slice (contract package + suite reader/writer), pure logic in `suite/lib/ensemble/` (resolve, propose, actions, PDF/CSV renderers), and a UI in `suite/components/ensemble/` that reads/writes the shared `useKnotworkStore` directly — no standalone app, no separate store, unlike the four existing tools.
 
 **Tech Stack:** TypeScript, Next.js (suite), Zustand, Zod (contract package), pdf-lib (via Brigade's existing PDF kit), `@dnd-kit/core` + `@dnd-kit/sortable` (already a dependency, newly used), Vitest.
 
@@ -15,11 +15,11 @@
 - Cast vocabulary is **bride/groom** (matches `Guest.side`), not partner-neutral.
 - Reorder uses **`@dnd-kit/core` + `@dnd-kit/sortable`**, not native HTML5 `draggable`.
 - Both suite-wide integrations are in scope: **readiness.ts** rows and the **Wedding Pack** section.
-- Ensemble is **suite-native**: no `suite/apps/ensemble/`, no separate Zustand store, no `sliceBridge`, no `toolGeneration` write-guard. It reads/writes `useTrousseauStore` through `useSuite.ts`, exactly like the suite's own chrome does.
+- Ensemble is **suite-native**: no `suite/apps/ensemble/`, no separate Zustand store, no `sliceBridge`, no `toolGeneration` write-guard. It reads/writes `useKnotworkStore` through `useSuite.ts`, exactly like the suite's own chrome does.
 - No component-level (React Testing Library) tests are added anywhere in this plan — the codebase has none (`@testing-library/react` is installed but imported by zero files). UI tasks are verified by hand with the dev server, matching how every other tool's panels are actually verified here.
 - `suite/lib/data/file.ts`'s `download(filename, data, type?)` takes the filename **first**. Brigade's own `download` (`apps/brigade/state/projectIO.ts`) takes `(bytes, filename)` — do not copy that arg order into suite-native code.
 - Every new pure-logic file (`resolve.ts`, `propose.ts`, `actions.ts`, `shotSheet.ts`, `exports.ts`) gets a real Vitest file. Every new React component does not.
-- Root package (`c:\Projects\Trousseau`) must be rebuilt (`npm run build`) after any change to `src/` before `suite/`'s typecheck or tests will see it — `@jfrusher/trousseau` resolves to `dist/`.
+- Root package (`c:\Projects\Knotwork`) must be rebuilt (`npm run build`) after any change to `src/` before `suite/`'s typecheck or tests will see it — `@jfrusher/knotwork` resolves to `dist/`.
 
 ---
 
@@ -30,7 +30,7 @@
 - Modify: `src/envelope.ts`
 - Modify: `src/envelope.test.ts`
 - Modify: `src/index.ts`
-- Modify: `suite/lib/store/useTrousseauStore.ts` (the `SuiteSlice` import/comment/alias near the top, plus every use of `SuiteSlice` in the file)
+- Modify: `suite/lib/store/useKnotworkStore.ts` (the `SuiteSlice` import/comment/alias near the top, plus every use of `SuiteSlice` in the file)
 - Modify: `suite/lib/sync/client.ts:39`
 - Modify: `suite/lib/model/timeline.ts:15-18` (comment only)
 
@@ -64,7 +64,7 @@ describe("SLICE_NAMES", () => {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run (from `c:\Projects\Trousseau`): `npm test -- envelope.test.ts`
+Run (from `c:\Projects\Knotwork`): `npm test -- envelope.test.ts`
 Expected: FAIL — actual array is the six-name list.
 
 - [ ] **Step 3: Add the schemas**
@@ -100,7 +100,7 @@ export const SLICE_NAMES = [
 ] as const;
 ```
 
-And in `trousseauSchema`, after `stationery: stationerySchema,`:
+And in `knotworkSchema`, after `stationery: stationerySchema,`:
 
 ```ts
   shots: shotsSchema,
@@ -136,20 +136,20 @@ Expected: PASS. Also run `npm test` (full suite) — `src/preservation.test.ts` 
 - [ ] **Step 7: Rebuild the package**
 
 Run: `npm run build`
-This regenerates `dist/`, which `suite/`'s `@jfrusher/trousseau` dependency resolves to. Nothing in `suite/` will see the new slice names until this runs.
+This regenerates `dist/`, which `suite/`'s `@jfrusher/knotwork` dependency resolves to. Nothing in `suite/` will see the new slice names until this runs.
 
 - [ ] **Step 8: Collapse `SuiteSlice` back to `SliceName`**
 
-In `suite/lib/store/useTrousseauStore.ts`, find the import block together with the comment and type alias directly below it:
+In `suite/lib/store/useKnotworkStore.ts`, find the import block together with the comment and type alias directly below it:
 
 ```ts
 import {
-  emptyTrousseau,
+  emptyKnotwork,
   mergeSlice,
   migrate,
   type SliceName,
-  type Trousseau,
-} from "@jfrusher/trousseau";
+  type Knotwork,
+} from "@jfrusher/knotwork";
 
 /**
  * The slices this app writes.
@@ -167,12 +167,12 @@ and replace that whole block (import, comment, and alias together) with just:
 
 ```ts
 import {
-  emptyTrousseau,
+  emptyKnotwork,
   mergeSlice,
   migrate,
   type SliceName,
-  type Trousseau,
-} from "@jfrusher/trousseau";
+  type Knotwork,
+} from "@jfrusher/knotwork";
 ```
 
 Then replace every remaining use of `SuiteSlice` elsewhere in the file with `SliceName` — a search for `SuiteSlice` in this file after the edit above should turn up exactly these:
@@ -196,7 +196,7 @@ with:
 const SYNCED: SliceName[] = [...SLICE_NAMES];
 ```
 
-And update the import: `import { SLICE_NAMES, type SliceName } from "@jfrusher/trousseau";` (drop the `SuiteSlice` import from `@/lib/store/useTrousseauStore` if it's no longer used elsewhere in the file — check with a search for `SuiteSlice` in this file first). Every other use of `SuiteSlice` as a type annotation in this file (`entries: Array<[SuiteSlice, unknown]>`, `take: Array<[SuiteSlice, unknown]>`, the `as SuiteSlice` casts) becomes `SliceName` / drops the cast.
+And update the import: `import { SLICE_NAMES, type SliceName } from "@jfrusher/knotwork";` (drop the `SuiteSlice` import from `@/lib/store/useKnotworkStore` if it's no longer used elsewhere in the file — check with a search for `SuiteSlice` in this file first). Every other use of `SuiteSlice` as a type annotation in this file (`entries: Array<[SuiteSlice, unknown]>`, `take: Array<[SuiteSlice, unknown]>`, the `as SuiteSlice` casts) becomes `SliceName` / drops the cast.
 
 - [ ] **Step 10: Update the stale comment in `timeline.ts`**
 
@@ -220,13 +220,13 @@ with:
 
 - [ ] **Step 11: Run every affected test**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm run typecheck && npm test`
-Expected: PASS. Pay particular attention to `lib/sync/client.test.ts` and `lib/store/useTrousseauStore.test.ts`, which reference `SuiteSlice`/`SYNCED` indirectly.
+Run (from `c:\Projects\Knotwork\suite`): `npm run typecheck && npm test`
+Expected: PASS. Pay particular attention to `lib/sync/client.test.ts` and `lib/store/useKnotworkStore.test.ts`, which reference `SuiteSlice`/`SYNCED` indirectly.
 
 - [ ] **Step 12: Commit**
 
 ```bash
-git add src/slices.ts src/envelope.ts src/envelope.test.ts src/index.ts dist suite/lib/store/useTrousseauStore.ts suite/lib/sync/client.ts suite/lib/model/timeline.ts
+git add src/slices.ts src/envelope.ts src/envelope.test.ts src/index.ts dist suite/lib/store/useKnotworkStore.ts suite/lib/sync/client.ts suite/lib/model/timeline.ts
 git commit -m "feat: add shots and timeline as real contract slice names"
 ```
 
@@ -315,7 +315,7 @@ export interface Shots {
 
 - [ ] **Step 2: Verify it typechecks**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm run typecheck`
+Run (from `c:\Projects\Knotwork\suite`): `npm run typecheck`
 Expected: PASS (these are pure additive type/const exports; nothing consumes them yet).
 
 - [ ] **Step 3: Commit**
@@ -335,7 +335,7 @@ git commit -m "feat: add the group shots types"
 
 **Interfaces:**
 - Consumes: `Cast`, `CastRole`, `CAST_ROLES`, `Shot`, `ShotMember`, `ShotSection`, `Shots` (Task 2).
-- Produces: `emptyCast(): Cast`, `emptyShots(): Shots`, `readShots(doc: Trousseau): Shots` — cached per document, same contract as every other reader in this file.
+- Produces: `emptyCast(): Cast`, `emptyShots(): Shots`, `readShots(doc: Knotwork): Shots` — cached per document, same contract as every other reader in this file.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -347,7 +347,7 @@ In `suite/lib/model/selectors.test.ts`, add `shots: { cast: {}, sections: [{ id:
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm test -- selectors.test.ts`
+Run (from `c:\Projects\Knotwork\suite`): `npm test -- selectors.test.ts`
 Expected: FAIL — `readShots` is not exported from `./slices`.
 
 - [ ] **Step 3: Implement the reader**
@@ -416,7 +416,7 @@ export function emptyShots(): Shots {
   return { cast: emptyCast(), sections: [] };
 }
 
-export function readShots(doc: Trousseau): Shots {
+export function readShots(doc: Knotwork): Shots {
   return cached(doc, "shots", () => {
     const raw: Record<string, unknown> = isRecord((doc as Record<string, unknown>)["shots"])
       ? ((doc as Record<string, unknown>)["shots"] as Record<string, unknown>)
@@ -457,7 +457,7 @@ git commit -m "feat: read the shots slice"
 In `suite/lib/model/useSuite.ts`, add `readShots` to the `import { ... } from "./slices"` block and `Shots` to the `import type { ... } from "./types"` block, then add near `useCrew`:
 
 ```ts
-export const useShots = (): Shots => useTrousseauStore((s) => readShots(s.doc));
+export const useShots = (): Shots => useKnotworkStore((s) => readShots(s.doc));
 ```
 
 - [ ] **Step 2: Add the writer**
@@ -482,7 +482,7 @@ Add `setShots` to the final `return { setEvent, setGuests, setSeating, setTimeli
 
 - [ ] **Step 3: Verify it typechecks**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm run typecheck`
+Run (from `c:\Projects\Knotwork\suite`): `npm run typecheck`
 Expected: PASS. `setSlice("shots", ...)` now type-checks against `SliceName` because Task 1 added `"shots"` to it.
 
 - [ ] **Step 4: Commit**
@@ -620,7 +620,7 @@ describe("cast", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm test -- lib/ensemble/actions.test.ts`
+Run (from `c:\Projects\Knotwork\suite`): `npm test -- lib/ensemble/actions.test.ts`
 Expected: FAIL — `./actions` does not exist.
 
 - [ ] **Step 3: Implement**
@@ -922,7 +922,7 @@ describe("resolveShot: label", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm test -- lib/ensemble/resolve.test.ts`
+Run (from `c:\Projects\Knotwork\suite`): `npm test -- lib/ensemble/resolve.test.ts`
 Expected: FAIL — `./resolve` does not exist.
 
 - [ ] **Step 3: Implement**
@@ -1186,7 +1186,7 @@ describe("propose: generate", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm test -- lib/ensemble/propose.test.ts`
+Run (from `c:\Projects\Knotwork\suite`): `npm test -- lib/ensemble/propose.test.ts`
 Expected: FAIL — `./propose` does not exist.
 
 - [ ] **Step 3: Implement**
@@ -1372,7 +1372,7 @@ const TINT: Record<string, string> = {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm test -- contrast.test.ts`
+Run (from `c:\Projects\Knotwork\suite`): `npm test -- contrast.test.ts`
 Expected: FAIL — `--accent` is not defined for `.ensemble-tokens`.
 
 - [ ] **Step 3: Add the token block**
@@ -1509,7 +1509,7 @@ export function GuestChip({ name, onRemove }: { name: string; onRemove: () => vo
 
 - [ ] **Step 2: Verify it typechecks**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm run typecheck`
+Run (from `c:\Projects\Knotwork\suite`): `npm run typecheck`
 Expected: PASS.
 
 - [ ] **Step 3: Verify by hand**
@@ -1722,7 +1722,7 @@ function ShotRow({
 
 - [ ] **Step 2: Verify it typechecks**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm run typecheck`
+Run (from `c:\Projects\Knotwork\suite`): `npm run typecheck`
 Expected: PASS.
 
 - [ ] **Step 3: Commit**
@@ -1916,7 +1916,7 @@ The three `SelectField`s that add-by-choosing (family/group/role) always render 
 
 - [ ] **Step 2: Verify it typechecks**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm run typecheck`
+Run (from `c:\Projects\Knotwork\suite`): `npm run typecheck`
 Expected: PASS.
 
 - [ ] **Step 3: Commit**
@@ -2013,7 +2013,7 @@ export function CastPanel({
 
 - [ ] **Step 2: Verify it typechecks**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm run typecheck`
+Run (from `c:\Projects\Knotwork\suite`): `npm run typecheck`
 Expected: PASS.
 
 - [ ] **Step 3: Commit**
@@ -2152,7 +2152,7 @@ describe("renderShotSheet", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm test -- lib/ensemble/render/pdf/shotSheet.test.ts`
+Run (from `c:\Projects\Knotwork\suite`): `npm test -- lib/ensemble/render/pdf/shotSheet.test.ts`
 Expected: FAIL — `./shotSheet` does not exist.
 
 - [ ] **Step 3: Implement**
@@ -2455,7 +2455,7 @@ describe("shotListCsv", () => {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm test -- lib/ensemble/exports.test.ts`
+Run (from `c:\Projects\Knotwork\suite`): `npm test -- lib/ensemble/exports.test.ts`
 Expected: FAIL — `./exports` does not exist.
 
 - [ ] **Step 3: Implement**
@@ -2570,7 +2570,7 @@ export function PrintPanel({
         fontSource: browserFontSource(),
         pageSize,
         coupleNames,
-        generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+        generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
       });
       download(`${slug()}-group-shots.pdf`, new Blob([bytes as BlobPart], { type: "application/pdf" }));
     } catch (cause) {
@@ -2632,7 +2632,7 @@ export function PrintPanel({
 
 - [ ] **Step 2: Verify it typechecks**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm run typecheck`
+Run (from `c:\Projects\Knotwork\suite`): `npm run typecheck`
 Expected: PASS.
 
 - [ ] **Step 3: Commit**
@@ -2771,7 +2771,7 @@ export default function GroupShotsPage() {
 
 - [ ] **Step 3: Verify it typechecks**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm run typecheck`
+Run (from `c:\Projects\Knotwork\suite`): `npm run typecheck`
 Expected: PASS.
 
 - [ ] **Step 4: Verify by hand**
@@ -2835,7 +2835,7 @@ describe("group shots", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm test -- readiness.test.ts`
+Run (from `c:\Projects\Knotwork\suite`): `npm test -- readiness.test.ts`
 Expected: FAIL — no `"shots-dangling"` row exists yet.
 
 - [ ] **Step 3: Implement**
@@ -2917,7 +2917,7 @@ Add after `jobList()`:
 
 ```ts
 async function shotSheet(): Promise<Uint8Array | null> {
-  const { doc } = useTrousseauStore.getState();
+  const { doc } = useKnotworkStore.getState();
   const shots = readShots(doc);
   const total = shots.sections.reduce((sum, section) => sum + section.shots.length, 0);
   if (total === 0) return null;
@@ -2930,7 +2930,7 @@ async function shotSheet(): Promise<Uint8Array | null> {
   return renderShotSheet(shots.sections, readGuests(doc), readSeating(doc), shots.cast, {
     fontSource: browserFontSource(),
     coupleNames: doc.event.coupleNames,
-    generatedOn: `Made with Trousseau, ${new Date().toLocaleDateString()}`,
+    generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
   });
 }
 ```
@@ -2978,7 +2978,7 @@ to:
 
 - [ ] **Step 5: Verify it typechecks**
 
-Run (from `c:\Projects\Trousseau\suite`): `npm run typecheck`
+Run (from `c:\Projects\Knotwork\suite`): `npm run typecheck`
 Expected: PASS.
 
 - [ ] **Step 6: Verify by hand**
@@ -3063,7 +3063,7 @@ describe("shots slice", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run (from `c:\Projects\Trousseau`): `npm test -- validate-wedding.test.mjs`
+Run (from `c:\Projects\Knotwork`): `npm test -- validate-wedding.test.mjs`
 Expected: FAIL — no shots checks exist yet.
 
 - [ ] **Step 3: Implement**
@@ -3174,7 +3174,7 @@ In `suite/lib/model/roundTrip.test.ts`:
 
 Since Tasks 3 and 5 are already done by this point in the plan, this task is a pure extension of existing coverage rather than new behavior — run it once after editing:
 
-Run (from `c:\Projects\Trousseau\suite`): `npm test -- roundTrip.test.ts`
+Run (from `c:\Projects\Knotwork\suite`): `npm test -- roundTrip.test.ts`
 Expected: PASS immediately (the underlying `readShots`/`addSection`/`addShot`/`patchShot` already exist and work; this task only adds assertions that exercise them together for the first time).
 
 - [ ] **Step 3: Commit**
@@ -3189,7 +3189,7 @@ git commit -m "test: cover the shots slice in the suite-wide round-trip test"
 ## Task 21: Docs — root README
 
 **Files:**
-- Modify: `README.md` (repo root, `c:\Projects\Trousseau\README.md`)
+- Modify: `README.md` (repo root, `c:\Projects\Knotwork\README.md`)
 
 **Interfaces:** none — copy only.
 

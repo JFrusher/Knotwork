@@ -1,4 +1,4 @@
-# Trousseau — multi-tenant data & storage design
+# Knotwork — multi-tenant data & storage design
 
 Date: 2026-09-02
 Status: approved, ready for implementation planning
@@ -17,7 +17,7 @@ device can reach, with the same cross-tool guarantees the old pipeline
 provided by hand — most importantly the cross-slice validation that already
 caught a real bug (two tools disagreeing on the wedding date).
 
-See `docs/superpowers/specs/2026-09-02-trousseau-architecture-audit.md` for
+See `docs/superpowers/specs/2026-09-02-knotwork-architecture-audit.md` for
 the current state (including the existing E2E-encrypted `suite/lib/sync/`
 backend this design deliberately leaves alone) and
 `docs/superpowers/specs/2026-09-02-identity-accounts-design.md` for the
@@ -28,7 +28,7 @@ backend this design deliberately leaves alone) and
 Two new tables, both keyed to `weddings.id` from subsystem A:
 
 - **`wedding_documents`** — one row per wedding: `wedding_id` (fk, unique),
-  `document` (jsonb — the full Trousseau document, same shape the zod
+  `document` (jsonb — the full Knotwork document, same shape the zod
   contract package already validates), `version` (integer, starts at 0,
   incremented on every successful write — the compare-and-set token),
   `updated_at`, `updated_by` (fk → auth.users).

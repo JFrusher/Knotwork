@@ -42,7 +42,7 @@ export const CHAPTERS: readonly TourChapter[] = [
       {
         anchor: "shell.countdown",
         title: "Your wedding",
-        body: "Who is getting married, where, and when. Everything else in Trousseau hangs off these three facts, so it is worth filling them in first.",
+        body: "Who is getting married, where, and when. Everything else in Knotwork hangs off these three facts, so it is worth filling them in first.",
         route: "/",
       },
       {
@@ -108,7 +108,7 @@ export const CHAPTERS: readonly TourChapter[] = [
       {
         anchor: "seating.import",
         title: "Bring a list you already have",
-        body: "Import a CSV from Joy, Zola, The Knot or your own spreadsheet. Trousseau guesses the columns and asks about anything it cannot. Re-importing updates people rather than duplicating them.",
+        body: "Import a CSV from Joy, Zola, The Knot or your own spreadsheet. Knotwork guesses the columns and asks about anything it cannot. Re-importing updates people rather than duplicating them.",
         route: "/seating",
       },
       {
@@ -186,7 +186,7 @@ export const CHAPTERS: readonly TourChapter[] = [
       {
         anchor: "placecards.export",
         title: "Print a test first",
-        body: "Export the PDF, then print two cards on plain paper and hold them against your real stock. Trousseau refuses to export a card with a missing font or a hole where a monogram should be, which is cheaper than finding out afterwards.",
+        body: "Export the PDF, then print two cards on plain paper and hold them against your real stock. Knotwork refuses to export a card with a missing font or a hole where a monogram should be, which is cheaper than finding out afterwards.",
         route: "/place-cards",
       },
     ],

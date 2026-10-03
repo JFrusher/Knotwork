@@ -1,4 +1,4 @@
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { cached, isComing, readBar, readGuests } from "@/lib/model/slices";
 import type { Bar, BarLine, Figure, Mix, MixedPart, Pour, Shop } from "@/lib/model/types";
 import { BAR_LINES, POURS } from "@/lib/model/types";
@@ -156,7 +156,7 @@ export function sumBar(bar: Bar, listed: number): BarSum {
 }
 
 /** The wedding's bar, worked out from its guest list. Cached per document, for selectors. */
-export function barSum(doc: Trousseau): BarSum {
+export function barSum(doc: Knotwork): BarSum {
   return cached(doc, "barSum", () => {
     const listed = Object.values(readGuests(doc)).filter(isComing).length;
     return sumBar(readBar(doc), listed);

@@ -1,4 +1,4 @@
-import type { Trousseau } from "@jfrusher/trousseau";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import type { Place } from "@/lib/model/slices";
 import type { Box, BoxItem, Boxes } from "@/lib/model/types";

@@ -1,26 +1,26 @@
-# Trousseau Phase 0 — Contract Package Implementation Plan
+# Knotwork Phase 0 — Contract Package Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build and publish `@jfrusher/trousseau` — the schemas, types and file
+**Goal:** Build and publish `@jfrusher/knotwork` — the schemas, types and file
 format four wedding apps will share — without touching any of those apps.
 
 **Architecture:** A tiny ESM TypeScript package with one runtime dependency
 (zod). It defines an envelope of independently-owned slices, validates them, and
-serialises a `.trousseau.json`. Its single most important property is that it
+serialises a `.knotwork.json`. Its single most important property is that it
 never loses data it does not understand: unknown slices and unknown keys within
 slices survive every operation byte-for-byte.
 
 **Tech Stack:** TypeScript 5.9, zod 4, vitest 3, plain `tsc` for the build. No
 bundler, no framework, no React.
 
-**Spec:** `docs/superpowers/specs/2026-08-20-trousseau-design.md`
+**Spec:** `docs/superpowers/specs/2026-08-20-knotwork-design.md`
 
 ## Global Constraints
 
 - **Phase 0 modifies no existing application.** No file outside
-  `c:\Projects\Trousseau` is edited. Fixtures are *copied* in, never moved.
-- **Package name:** `@jfrusher/trousseau`. **Version:** `0.1.0` for the first
+  `c:\Projects\Knotwork` is edited. Fixtures are *copied* in, never moved.
+- **Package name:** `@jfrusher/knotwork`. **Version:** `0.1.0` for the first
   publish.
 - **Node:** `>=18`. **Module system:** ESM only (`"type": "module"`).
 - **Dependencies:** `zod` `^4.4.3` (matching `Tableaux/server/package.json`) is
@@ -73,8 +73,8 @@ bundler, no framework, no React.
 | `src/event.ts` | `event` slice schema and type |
 | `src/day.ts` | `day` slice schema and type — mirrors Cadence's `ResolvedDay` |
 | `src/slices.ts` | `guests`, `seating`, `crew`, `stationery` — open-shaped slices |
-| `src/envelope.ts` | The envelope schema, `SliceName`, `migrate`, `emptyTrousseau` |
-| `src/file.ts` | `serialise` and `parse` for `.trousseau.json` |
+| `src/envelope.ts` | The envelope schema, `SliceName`, `migrate`, `emptyKnotwork` |
+| `src/file.ts` | `serialise` and `parse` for `.knotwork.json` |
 | `fixtures/sample-day.day.json` | Copy of Brigade's fixture, for the leniency test |
 | `fixtures/minimal.day.json` | A day with every optional field absent |
 | `README.md` | Already exists. Task 6 adds usage. |
@@ -103,7 +103,7 @@ screen and so a later phase adding the store client changes one obvious file.
 
 ```json
 {
-  "name": "@jfrusher/trousseau",
+  "name": "@jfrusher/knotwork",
   "version": "0.1.0",
   "description": "The shared data contract behind Tableaux, Plaque, Cadence and Brigade.",
   "license": "MIT",
@@ -577,9 +577,9 @@ The heart of the package. Rules 1 and 2 from the spec become executable here.
 
 **Interfaces:**
 - Consumes: `eventSchema` from Task 1, `daySchema` from Task 2.
-- Produces: `trousseauSchema`, `type Trousseau`, `type SliceName`,
-  `SLICE_NAMES: readonly SliceName[]`, `TROUSSEAU_KIND`, `TROUSSEAU_VERSION`,
-  `emptyTrousseau(): Trousseau`, `migrate(doc: unknown): Trousseau`,
+- Produces: `knotworkSchema`, `type Knotwork`, `type SliceName`,
+  `SLICE_NAMES: readonly SliceName[]`, `KNOTWORK_KIND`, `KNOTWORK_VERSION`,
+  `emptyKnotwork(): Knotwork`, `migrate(doc: unknown): Knotwork`,
   `mergeSlice(raw, slice, value)`.
 
 - [ ] **Step 1: Write the open-shaped slices**
@@ -623,26 +623,26 @@ Create `src/envelope.test.ts`:
 import { describe, expect, it } from "vitest";
 import {
   SLICE_NAMES,
-  TROUSSEAU_KIND,
-  TROUSSEAU_VERSION,
-  emptyTrousseau,
+  KNOTWORK_KIND,
+  KNOTWORK_VERSION,
+  emptyKnotwork,
   migrate,
-  trousseauSchema,
+  knotworkSchema,
 } from "./envelope";
 
-describe("emptyTrousseau", () => {
+describe("emptyKnotwork", () => {
   it("is a valid document", () => {
-    expect(trousseauSchema.safeParse(emptyTrousseau()).success).toBe(true);
+    expect(knotworkSchema.safeParse(emptyKnotwork()).success).toBe(true);
   });
 
   it("has no day until one is published", () => {
-    expect(emptyTrousseau().day).toBeNull();
+    expect(emptyKnotwork().day).toBeNull();
   });
 
   it("returns a fresh object each call, so callers cannot share state", () => {
-    const a = emptyTrousseau();
+    const a = emptyKnotwork();
     a.event.coupleNames = "A & B";
-    expect(emptyTrousseau().event.coupleNames).toBe("");
+    expect(emptyKnotwork().event.coupleNames).toBe("");
   });
 });
 
@@ -666,15 +666,15 @@ describe("SLICE_NAMES", () => {
 describe("migrate", () => {
   it("accepts an empty object as a new, empty wedding", () => {
     const doc = migrate({});
-    expect(doc.kind).toBe(TROUSSEAU_KIND);
-    expect(doc.version).toBe(TROUSSEAU_VERSION);
+    expect(doc.kind).toBe(KNOTWORK_KIND);
+    expect(doc.version).toBe(KNOTWORK_VERSION);
   });
 
   it("accepts a document from the future rather than refusing it", () => {
-    expect(() => migrate({ kind: TROUSSEAU_KIND, version: 99 })).not.toThrow();
+    expect(() => migrate({ kind: KNOTWORK_KIND, version: 99 })).not.toThrow();
   });
 
-  it("throws on something that is not a trousseau at all", () => {
+  it("throws on something that is not a Knotwork document at all", () => {
     expect(() => migrate({ kind: "cadence.day", version: 1 })).toThrow();
   });
 
@@ -699,8 +699,8 @@ import { daySchema } from "./day";
 import { eventSchema } from "./event";
 import { crewSchema, guestsSchema, seatingSchema, stationerySchema } from "./slices";
 
-export const TROUSSEAU_KIND = "trousseau";
-export const TROUSSEAU_VERSION = 1;
+export const KNOTWORK_KIND = "knotwork";
+export const KNOTWORK_VERSION = 1;
 
 /**
  * The slices an app may publish. `sources` is deliberately absent: it is not
@@ -726,9 +726,9 @@ export type SliceName = (typeof SLICE_NAMES)[number];
  * means deleting a slice belonging to an app that has not been written yet.
  * That is the single worst thing this package could do.
  */
-export const trousseauSchema = z.looseObject({
-  kind: z.literal(TROUSSEAU_KIND).default(TROUSSEAU_KIND),
-  version: z.number().default(TROUSSEAU_VERSION),
+export const knotworkSchema = z.looseObject({
+  kind: z.literal(KNOTWORK_KIND).default(KNOTWORK_KIND),
+  version: z.number().default(KNOTWORK_VERSION),
   event: eventSchema.default(() => eventSchema.parse({})),
   guests: guestsSchema,
   seating: seatingSchema,
@@ -740,11 +740,11 @@ export const trousseauSchema = z.looseObject({
   sources: z.record(z.string(), z.unknown()).default(() => ({})),
 });
 
-export type Trousseau = z.infer<typeof trousseauSchema>;
+export type Knotwork = z.infer<typeof knotworkSchema>;
 
 /** A new, empty wedding. A fresh object every call. */
-export function emptyTrousseau(): Trousseau {
-  return trousseauSchema.parse({});
+export function emptyKnotwork(): Knotwork {
+  return knotworkSchema.parse({});
 }
 
 /**
@@ -756,10 +756,10 @@ export function emptyTrousseau(): Trousseau {
  *
  * Throws rather than returning a result: a caller that cannot read the document
  * must not proceed to write over it. Callers that want to tolerate failure use
- * `trousseauSchema.safeParse` and leave the stored bytes alone.
+ * `knotworkSchema.safeParse` and leave the stored bytes alone.
  */
-export function migrate(doc: unknown): Trousseau {
-  return trousseauSchema.parse(doc);
+export function migrate(doc: unknown): Knotwork {
+  return knotworkSchema.parse(doc);
 }
 ```
 
@@ -775,11 +775,11 @@ This is the test the spec says must never be deleted. Create
 
 ```ts
 import { describe, expect, it } from "vitest";
-import { SLICE_NAMES, mergeSlice, migrate, trousseauSchema } from "./envelope";
+import { SLICE_NAMES, mergeSlice, migrate, knotworkSchema } from "./envelope";
 
 /** A document carrying data from an app that does not exist yet. */
 const fromTheFuture = () => ({
-  kind: "trousseau",
+  kind: "knotwork",
   version: 1,
   event: { coupleNames: "Charis & Jacob", hashtag: "#cj2026" },
   guests: { "g-1": { name: "Priya" } },
@@ -820,7 +820,7 @@ describe("rule 2: unknown keys inside a known slice survive", () => {
 describe("no schema in this package strips unknown keys", () => {
   it("round-trips a document with an unknown slice byte-for-byte", () => {
     const before = fromTheFuture();
-    const after = trousseauSchema.parse(structuredClone(before)) as Record<string, unknown>;
+    const after = knotworkSchema.parse(structuredClone(before)) as Record<string, unknown>;
     for (const [key, value] of Object.entries(before)) {
       // Primitives compare whole; objects only need to be a superset, because
       // parsing fills defaults the input did not carry.
@@ -856,7 +856,7 @@ Append to `src/envelope.ts`:
 /**
  * Set one slice on a raw stored document, copying every other key untouched.
  *
- * Takes and returns *raw* data, not a parsed `Trousseau`, and that is the whole
+ * Takes and returns *raw* data, not a parsed `Knotwork`, and that is the whole
  * point. Parsing produces only what the schemas describe; if a schema is ever
  * wrong — a plain `z.object()` slipped in, a slice not yet added here — writing
  * the parsed result back would delete real user data. Merging into the raw
@@ -877,8 +877,8 @@ export function mergeSlice(
       : {};
   return {
     ...base,
-    kind: TROUSSEAU_KIND,
-    version: typeof base["version"] === "number" ? base["version"] : TROUSSEAU_VERSION,
+    kind: KNOTWORK_KIND,
+    version: typeof base["version"] === "number" ? base["version"] : KNOTWORK_VERSION,
     [slice]: value,
   };
 }
@@ -945,14 +945,14 @@ Append to `src/index.ts`:
 ```ts
 export {
   SLICE_NAMES,
-  TROUSSEAU_KIND,
-  TROUSSEAU_VERSION,
-  emptyTrousseau,
+  KNOTWORK_KIND,
+  KNOTWORK_VERSION,
+  emptyKnotwork,
   mergeSlice,
   migrate,
-  trousseauSchema,
+  knotworkSchema,
   type SliceName,
-  type Trousseau,
+  type Knotwork,
 } from "./envelope";
 export {
   crewSchema,
@@ -984,7 +984,7 @@ exist yet."
 
 ---
 
-## Task 4: The `.trousseau.json` file format
+## Task 4: The `.knotwork.json` file format
 
 **Files:**
 - Create: `src/file.ts`
@@ -992,9 +992,9 @@ exist yet."
 - Test: `src/file.test.ts`
 
 **Interfaces:**
-- Consumes: `trousseauSchema`, `migrate`, `emptyTrousseau` from Task 3.
-- Produces: `TROUSSEAU_EXTENSION = ".trousseau.json"`, `serialise(doc): string`,
-  `parse(text): Trousseau`, `suggestedFilename(doc): string`.
+- Consumes: `knotworkSchema`, `migrate`, `emptyKnotwork` from Task 3.
+- Produces: `KNOTWORK_EXTENSION = ".knotwork.json"`, `serialise(doc): string`,
+  `parse(text): Knotwork`, `suggestedFilename(doc): string`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1002,28 +1002,28 @@ Create `src/file.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
-import { emptyTrousseau } from "./envelope";
-import { TROUSSEAU_EXTENSION, parse, serialise, suggestedFilename } from "./file";
+import { emptyKnotwork } from "./envelope";
+import { KNOTWORK_EXTENSION, parse, serialise, suggestedFilename } from "./file";
 
 describe("serialise", () => {
   it("ends with a newline, so the file is well-formed on disk", () => {
-    expect(serialise(emptyTrousseau()).endsWith("\n")).toBe(true);
+    expect(serialise(emptyKnotwork()).endsWith("\n")).toBe(true);
   });
 
   it("is indented, so a diff of two weddings is readable", () => {
-    expect(serialise(emptyTrousseau())).toContain('\n  "kind"');
+    expect(serialise(emptyKnotwork())).toContain('\n  "kind"');
   });
 });
 
 describe("parse", () => {
   it("round-trips a document", () => {
-    const doc = emptyTrousseau();
+    const doc = emptyKnotwork();
     doc.event.coupleNames = "Charis & Jacob";
     expect(parse(serialise(doc)).event.coupleNames).toBe("Charis & Jacob");
   });
 
   it("keeps a slice it does not know about", () => {
-    const text = JSON.stringify({ kind: "trousseau", version: 1, florals: { arch: "peonies" } });
+    const text = JSON.stringify({ kind: "knotwork", version: 1, florals: { arch: "peonies" } });
     expect(parse(text)).toMatchObject({ florals: { arch: "peonies" } });
   });
 
@@ -1033,19 +1033,19 @@ describe("parse", () => {
 
   it("explains itself when handed a Cadence day", () => {
     const day = JSON.stringify({ kind: "cadence.day", version: 1 });
-    expect(() => parse(day)).toThrow(/not a Trousseau file/);
+    expect(() => parse(day)).toThrow(/not a Knotwork file/);
   });
 });
 
 describe("suggestedFilename", () => {
   it("uses the couple's names", () => {
-    const doc = emptyTrousseau();
+    const doc = emptyKnotwork();
     doc.event.coupleNames = "Charis & Jacob";
-    expect(suggestedFilename(doc)).toBe(`charis-and-jacob${TROUSSEAU_EXTENSION}`);
+    expect(suggestedFilename(doc)).toBe(`charis-and-jacob${KNOTWORK_EXTENSION}`);
   });
 
   it("falls back when there are no names yet", () => {
-    expect(suggestedFilename(emptyTrousseau())).toBe(`wedding${TROUSSEAU_EXTENSION}`);
+    expect(suggestedFilename(emptyKnotwork())).toBe(`wedding${KNOTWORK_EXTENSION}`);
   });
 });
 ```
@@ -1060,52 +1060,52 @@ Expected: FAIL — `Failed to resolve import "./file"`.
 Create `src/file.ts`:
 
 ```ts
-import { TROUSSEAU_KIND, migrate, type Trousseau } from "./envelope";
+import { KNOTWORK_KIND, migrate, type Knotwork } from "./envelope";
 
-export const TROUSSEAU_EXTENSION = ".trousseau.json";
+export const KNOTWORK_EXTENSION = ".knotwork.json";
 
 /** Indented and newline-terminated: these files end up in git and in email. */
-export function serialise(doc: Trousseau): string {
+export function serialise(doc: Knotwork): string {
   return JSON.stringify(doc, null, 2) + "\n";
 }
 
 /**
- * Read a `.trousseau.json`.
+ * Read a `.knotwork.json`.
  *
  * Throws with a sentence a person can act on rather than a validation dump.
  * This runs on whatever the user dropped on the window, which is often the
  * wrong file entirely — most usefully, one of the four apps' own save files.
  */
-export function parse(text: string): Trousseau {
+export function parse(text: string): Knotwork {
   let raw: unknown;
   try {
     raw = JSON.parse(text);
   } catch {
-    throw new Error("That file is not valid JSON. Is it a Trousseau file?");
+    throw new Error("That file is not valid JSON. Is it a Knotwork file?");
   }
 
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
-    throw new Error("That file is not a Trousseau file.");
+    throw new Error("That file is not a Knotwork file.");
   }
 
   const kind = (raw as Record<string, unknown>)["kind"];
-  if (kind !== undefined && kind !== TROUSSEAU_KIND) {
+  if (kind !== undefined && kind !== KNOTWORK_KIND) {
     throw new Error(
-      `That is not a Trousseau file — it says it is a "${String(kind)}".`,
+      `That is not a Knotwork file — it says it is a "${String(kind)}".`,
     );
   }
 
   return migrate(raw);
 }
 
-/** `charis-and-jacob.trousseau.json`, or a sensible fallback. */
-export function suggestedFilename(doc: Trousseau): string {
+/** `charis-and-jacob.knotwork.json`, or a sensible fallback. */
+export function suggestedFilename(doc: Knotwork): string {
   const slug = doc.event.coupleNames
     .toLowerCase()
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  return `${slug || "wedding"}${TROUSSEAU_EXTENSION}`;
+  return `${slug || "wedding"}${KNOTWORK_EXTENSION}`;
 }
 ```
 
@@ -1120,7 +1120,7 @@ Append to `src/index.ts`:
 
 ```ts
 export {
-  TROUSSEAU_EXTENSION,
+  KNOTWORK_EXTENSION,
   parse,
   serialise,
   suggestedFilename,
@@ -1134,7 +1134,7 @@ Expected: exit 0.
 
 ```bash
 git add src/
-git commit -m "Add the .trousseau.json file format
+git commit -m "Add the .knotwork.json file format
 
 parse throws a sentence rather than a validation dump: it runs on
 whatever was dropped on the window, and the most likely wrong answer is
@@ -1181,7 +1181,7 @@ Create `verify/tsconfig.json`. These flags are copied verbatim from
     "esModuleInterop": true,
     "skipLibCheck": false,
     "noEmit": true,
-    "paths": { "@jfrusher/trousseau": ["../dist/index.d.ts"] }
+    "paths": { "@jfrusher/knotwork": ["../dist/index.d.ts"] }
   },
   "include": ["consumer.ts"]
 }
@@ -1197,7 +1197,7 @@ will, under the app's own compiler settings:
 
 ```ts
 import {
-  emptyTrousseau,
+  emptyKnotwork,
   isFromFuture,
   mergeSlice,
   migrate,
@@ -1207,14 +1207,14 @@ import {
   type Day,
   type Event,
   type SliceName,
-  type Trousseau,
-} from "@jfrusher/trousseau";
+  type Knotwork,
+} from "@jfrusher/knotwork";
 
 // A slice name is assignable from a literal.
 const slice: SliceName = "day";
 
 // The envelope's fields have the types an app expects.
-const doc: Trousseau = emptyTrousseau();
+const doc: Knotwork = emptyKnotwork();
 const event: Event = doc.event;
 const names: string = event.coupleNames;
 const curfew: number | null = event.curfewMin;
@@ -1232,12 +1232,12 @@ if (day !== null) {
 
 // The file functions compose.
 const text: string = serialise(doc);
-const back: Trousseau = parse(text);
+const back: Knotwork = parse(text);
 const name: string = suggestedFilename(back);
 
 // mergeSlice takes raw data and a slice name.
 const merged: Record<string, unknown> = mergeSlice(back, slice, {});
-const remigrated: Trousseau = migrate(merged);
+const remigrated: Knotwork = migrate(merged);
 
 void names;
 void curfew;
@@ -1290,7 +1290,7 @@ phased rollout exists to avoid."
 
 **Interfaces:**
 - Consumes: everything.
-- Produces: `@jfrusher/trousseau@0.1.0` on npm.
+- Produces: `@jfrusher/knotwork@0.1.0` on npm.
 
 - [ ] **Step 1: Add usage to `README.md`**
 
@@ -1301,13 +1301,13 @@ Append to the existing `README.md`, above the final "Nothing is built yet" line
 ## Install
 
 ```sh
-npm install @jfrusher/trousseau
+npm install @jfrusher/knotwork
 ```
 
 ## Use
 
 ```ts
-import { emptyTrousseau, mergeSlice, migrate, parse, serialise } from "@jfrusher/trousseau";
+import { emptyKnotwork, mergeSlice, migrate, parse, serialise } from "@jfrusher/knotwork";
 
 // Read a stored document. Never throws away what it does not understand.
 const doc = migrate(rawFromStorage);
@@ -1341,7 +1341,7 @@ a write.
 
 ## Design
 
-[The full design](docs/superpowers/specs/2026-08-20-trousseau-design.md), including
+[The full design](docs/superpowers/specs/2026-08-20-knotwork-design.md), including
 why there is no shared UI kit and no monorepo.
 ````
 
@@ -1360,7 +1360,7 @@ If `dist/` is absent, run `npm run build` first and re-check.
 
 - [ ] **Step 4: Confirm the name is available**
 
-Run: `npm view @jfrusher/trousseau`
+Run: `npm view @jfrusher/knotwork`
 Expected: `404 Not Found`, which means the name is free.
 
 If it returns a package, stop and raise it — the spec lists the npm name as an
@@ -1382,12 +1382,12 @@ are private by default, so public access must be explicit:
 npm publish --access public
 ```
 
-Expected: `+ @jfrusher/trousseau@0.1.0`.
+Expected: `+ @jfrusher/knotwork@0.1.0`.
 
 - [ ] **Step 7: Tag the release**
 
 ```bash
-git tag -a v0.1.0 -m "Trousseau 0.1.0 — the contract, no adopters yet"
+git tag -a v0.1.0 -m "Knotwork 0.1.0 — the contract, no adopters yet"
 ```
 
 - [ ] **Step 8: Confirm a real install works**
@@ -1395,12 +1395,12 @@ git tag -a v0.1.0 -m "Trousseau 0.1.0 — the contract, no adopters yet"
 From a scratch directory outside this repo:
 
 ```bash
-mkdir -p /tmp/trousseau-check && cd /tmp/trousseau-check
-npm init -y && npm install @jfrusher/trousseau
-node --input-type=module -e "import {emptyTrousseau} from '@jfrusher/trousseau'; console.log(emptyTrousseau().kind)"
+mkdir -p /tmp/knotwork-check && cd /tmp/knotwork-check
+npm init -y && npm install @jfrusher/knotwork
+node --input-type=module -e "import {emptyKnotwork} from '@jfrusher/knotwork'; console.log(emptyKnotwork().kind)"
 ```
 
-Expected: prints `trousseau`.
+Expected: prints `knotwork`.
 
 ---
 
@@ -1409,7 +1409,7 @@ Expected: prints `trousseau`.
 - [ ] `npm test` passes.
 - [ ] `npm run verify` passes — the emitted types compile under Cadence's
       compiler settings.
-- [ ] `@jfrusher/trousseau@0.1.0` installs from npm in a clean directory and
+- [ ] `@jfrusher/knotwork@0.1.0` installs from npm in a clean directory and
       imports.
 - [ ] `git -C /c/Projects/Plaque status`, and the same for Tableaux, cadence and
       Brigade, all report **no changes**. Phase 0 touched no application, and

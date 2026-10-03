@@ -1,4 +1,4 @@
-# Trousseau — onboarding, billing & legal at product scale
+# Knotwork — onboarding, billing & legal at product scale
 
 Date: 2026-09-02
 Status: approved, ready for implementation planning
@@ -26,7 +26,7 @@ that currently says "written for our wedding."
 
 ## Scope of this subsystem
 
-**1. Relicensing MIT → AGPL.** The root `@jfrusher/trousseau` contract
+**1. Relicensing MIT → AGPL.** The root `@jfrusher/knotwork` contract
 package is currently MIT. The maintainer is sole copyright holder, so this
 is mechanical, not legally complex: update `LICENSE`, update the `license`
 field in every `package.json` (root and `suite/`), and add a note in the

@@ -1,6 +1,6 @@
 # The wedding data, and where it lives
 
-Trousseau holds the canonical wedding. The four apps hold working copies.
+Knotwork holds the canonical wedding. The four apps hold working copies.
 
 Git carries the schemas, the scripts and the **pointers**. DVC carries the data
 itself, to a private OneDrive folder. Nothing with a guest's name on it has ever
@@ -8,8 +8,8 @@ reached a public repo, and this arrangement is what keeps that true.
 
 ```
 data/
-  wedding.trousseau.json        <- canonical. DVC-tracked, git-ignored.
-  wedding.trousseau.json.dvc    <- the pointer. 4 lines of md5, committed.
+  wedding.knotwork.json        <- canonical. DVC-tracked, git-ignored.
+  wedding.knotwork.json.dvc    <- the pointer. 4 lines of md5, committed.
   exports/                      <- derived PDFs and CSVs. DVC-tracked, git-ignored.
   exports.dvc                   <- the pointer. Committed.
   .gitignore                    <- written by DVC. Committed.
@@ -54,7 +54,7 @@ schema and exact bytes together.
 ## Setting up a new device
 
 ```sh
-git clone https://github.com/JFrusher/Trousseau && cd Trousseau
+git clone https://github.com/JFrusher/Trousseau Knotwork && cd Knotwork
 npm install
 
 # The remote URL is per-device and deliberately not committed — it names a path
@@ -96,7 +96,7 @@ directory:
 
 ```sh
 node scripts/bundle.mjs pack ~/Desktop/state.json ~/Desktop/day.cadence.json \
-  -o data/wedding.trousseau.json
+  -o data/wedding.knotwork.json
 ```
 
 `dvc pull` only ever writes `data/`. The apps' own working copies are not

@@ -1,10 +1,10 @@
 /**
  * Fills empty slices from a collected document's `sources`.
  *
- * There are two shapes of Trousseau file in the world. One has the wedding in
+ * There are two shapes of Knotwork file in the world. One has the wedding in
  * its slices, which is what the tools read. The other is what the collector
  * writes: each tool's own export filed under `sources`, with the slices left
- * empty. Both are valid, both are called `.trousseau.json`, and both pass the
+ * empty. Both are valid, both are called `.knotwork.json`, and both pass the
  * validator — so the second one restores without error and produces an empty
  * app under a message saying it worked. That is a trap, and the fix is for the
  * app to accept either rather than for anyone to remember which is which.

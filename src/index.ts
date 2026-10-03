@@ -12,14 +12,14 @@ export {
 } from "./day.js";
 export {
   SLICE_NAMES,
-  TROUSSEAU_KIND,
-  TROUSSEAU_VERSION,
-  emptyTrousseau,
+  KNOTWORK_KIND,
+  KNOTWORK_VERSION,
+  emptyKnotwork,
   mergeSlice,
   migrate,
-  trousseauSchema,
+  knotworkSchema,
   type SliceName,
-  type Trousseau,
+  type Knotwork,
 } from "./envelope.js";
 export {
   barSchema,
@@ -46,7 +46,7 @@ export {
   type Tools,
 } from "./slices.js";
 export {
-  TROUSSEAU_EXTENSION,
+  KNOTWORK_EXTENSION,
   parse,
   serialise,
   suggestedFilename,

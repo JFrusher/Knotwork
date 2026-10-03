@@ -1,4 +1,4 @@
-import { SLICE_NAMES, type SliceName } from "@jfrusher/trousseau";
+import { SLICE_NAMES, type SliceName } from "@jfrusher/knotwork";
 import { fingerprint } from "./fingerprint";
 import { assemble, DERIVED, partInfo, partsOf } from "./parts";
 

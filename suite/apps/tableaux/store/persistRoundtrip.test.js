@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { useStore } from './useStore'
 import { validatePlanDoc } from './planSchema'
-import { useTrousseauStore } from '@/lib/store/useTrousseauStore'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
 
 // A deliberately rich document touching every field that has been suspected of
@@ -132,7 +132,7 @@ describe('persistence round-trip', () => {
     openPlan(richDoc())
     s().createEmptyGroup({ name: 'Temp' })
     expect(Object.keys(s().groups).length).toBe(before + 1)
-    useTrousseauStore.getState().undo()
+    useKnotworkStore.getState().undo()
     expect(Object.keys(s().groups).length).toBe(before)
   })
 })

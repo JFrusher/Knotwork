@@ -26,7 +26,7 @@ import { usePlaque } from "./state/store";
 import { useKeyboard } from "./state/useKeyboard";
 import { Announcer } from "./ui/Announcer";
 import { ToolUndo } from "@/components/shell/ToolUndo";
-import { useTrousseauStore } from "@/lib/store/useTrousseauStore";
+import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { ExportBar } from "./ui/ExportBar";
 import { MissingAssets } from "./ui/MissingAssets";
 import { Pagination } from "./ui/Pagination";
@@ -46,7 +46,7 @@ export function App() {
   // wedding's, which the header's undo drives. The stack is shared, so saying
   // what the next undo takes back is what makes it safe.
   // A save the browser refused, whichever slice it was: the design is in it.
-  const saveError = useTrousseauStore((s) => s.saveError);
+  const saveError = useKnotworkStore((s) => s.saveError);
   useKeyboard();
 
   // App genuinely needs most of the design to draw the card, but it selects

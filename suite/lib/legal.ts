@@ -38,10 +38,10 @@ export const RETENTION_MONTHS = 24;
 
 export const PRIVACY: Policy = {
   title: "Privacy",
-  updated: "2026-10-02",
-  digest: "6ba65e2bbbcef751",
+  updated: "2026-10-03",
+  digest: "3e963c8197556790",
   intro:
-    "Trousseau is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
+    "Knotwork is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
   sections: [
     {
       heading: "Who is responsible",
@@ -61,7 +61,7 @@ export const PRIVACY: Policy = {
     {
       heading: "What an account holds, and who can read it",
       paragraphs: [
-        "An account exists so you and your partner can plan on separate devices. Making one stores your email address, and nothing else about you — there is no password, no profile, and no name field. Signing in sends a link to that address; clicking it is what proves it is you.",
+        "An account exists so you and your partner can plan on separate devices. Making one stores your email address — there is no password, no profile, and no name field. Signing in with your email sends a six-digit code to that address; entering it is what proves it is you. If you choose Continue with Google or Continue with Apple instead, that company confirms who you are and tells the app your email address, along with the name on that account, which the sign-in service keeps with your account and the app never reads or shows. Google or Apple learn that you signed in here; neither ever sees your wedding.",
         "Your wedding is then stored in a database as one document, encrypted at rest, with database rules that make it unreadable to any other account. Inviting your partner or your planner adds exactly that person, by the email address you name. Either of you can see everyone who has access, and remove your planner at any time.",
         "Being straight about it: this is ordinary, well-guarded storage, not encryption I cannot undo. I do not read your wedding and there is no support tool that would let me browse it, but I administer the database, so I could. If that matters more to you than planning across devices does, use the app without an account — it is the default, and nothing leaves your browser.",
         "Earlier versions are kept alongside the current one, so a mistake can be recovered rather than being final: one for every ten minutes each of you spends changing it, and past a month, one for each day it changed.",

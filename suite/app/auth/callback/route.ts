@@ -8,9 +8,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Where every magic link lands — sign-in and partner invites alike.
+ * Where every sign-in lands — an emailed code or link, Google and Apple, and
+ * partner invites alike.
  *
- * Supabase's link carries a PKCE `code`, not a session: it has to be exchanged
+ * Supabase's redirect carries a PKCE `code`, not a session: it has to be exchanged
  * here, server-side, so the session cookies are set on the response before any
  * page renders. `next` is where to go once that's done (the invite page, for
  * an invite), so pages downstream can assume a session already exists.
@@ -57,16 +58,19 @@ export async function GET(request: Request) {
   const code = url.searchParams.get("code");
   const tokenHash = url.searchParams.get("token_hash");
   const next = url.searchParams.get("next");
+  // A provider that refused or was cancelled (Google, Apple) returns here with
+  // `error` and no code — a failed sign-in, not an absent one.
+  const providerError = url.searchParams.get("error");
 
   const destination = sameOriginPath(next, url.origin);
-  let failed = false;
+  let failed = Boolean(providerError);
   let client: Awaited<ReturnType<typeof serverClient>> = null;
   let userId: string | null = null;
 
   try {
     client = await serverClient();
     if (!client) {
-      failed = Boolean(code || tokenHash);
+      failed ||= Boolean(code || tokenHash);
     } else if (tokenHash) {
       // The email template can send a token hash instead of a PKCE code. This
       // one carries everything needed with it, so the link works in whatever
@@ -79,6 +83,12 @@ export async function GET(request: Request) {
       // so this only succeeds in the browser that asked for it.
       const { data, error } = await client.auth.exchangeCodeForSession(code);
       failed = Boolean(error);
+      userId = data.user?.id ?? null;
+    } else if (!providerError) {
+      // Already signed in, in the browser: the emailed six-digit code is
+      // checked there, and the login page comes here afterwards so a first
+      // sign-in starts its wedding the same way every other one does.
+      const { data } = await client.auth.getUser();
       userId = data.user?.id ?? null;
     }
 

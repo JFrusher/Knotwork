@@ -11,7 +11,7 @@ import { requestLog } from "@/lib/server/log";
  * "Download my wedding" — the honest answer to "can I get my data out".
  *
  * Also the migration path off the hosted instance: the file this returns is
- * the same `.trousseau.json` a self-hosted instance, or the local-only mode,
+ * the same `.knotwork.json` a self-hosted instance, or the local-only mode,
  * will open. There is no export format to keep in step, because there is no
  * separate export format.
  */
