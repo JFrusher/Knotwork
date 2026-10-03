@@ -105,6 +105,39 @@ automatically and it is used to build absolute URLs for magic links and guest
 links. On another host you may need an equivalent — see `originOf()` in
 `suite/lib/env.ts`.
 
+### Sign-in: email code, Google and Apple
+
+Sign-in is a six-digit email code, or Google or Apple. None of it needs an
+environment variable in this app — the provider credentials live in Supabase.
+All of it is configured in the Supabase dashboard:
+
+1. **Authentication → URL Configuration.** Set **Site URL** to your production
+   origin, and add every origin you sign in from to **Redirect URLs** with a
+   wildcard, because the callback carries `?next=`:
+   `https://your-host/**` and `http://localhost:3000/**`.
+2. **Authentication → Email Templates → Magic Link.** The email must show the
+   code: include `{{ .Token }}` in the template.
+3. **Google** — in Google Cloud Console, create an OAuth client ID (type *Web
+   application*). Authorised redirect URI:
+   `https://<project-ref>.supabase.co/auth/v1/callback`. Paste the **Client ID**
+   and **Client Secret** into Supabase → Authentication → Providers → Google
+   and enable it.
+4. **Apple** — in the Apple Developer portal:
+   - an **App ID** with *Sign in with Apple* enabled;
+   - a **Services ID** (this is the client ID Supabase asks for), with *Sign in
+     with Apple* configured: domain `<project-ref>.supabase.co`, return URL
+     `https://<project-ref>.supabase.co/auth/v1/callback`;
+   - a **Key** with *Sign in with Apple* enabled — download the `.p8` and note
+     its **Key ID** and your **Team ID**.
+
+   Generate the client secret (a JWT signed with the `.p8`; Supabase's Apple
+   provider page links a generator) and paste the Services ID and secret into
+   Supabase → Authentication → Providers → Apple. **The secret expires after six
+   months at most** — put renewing it in a calendar, or Apple sign-in stops.
+
+A provider left disabled answers the button with Supabase's "provider is not
+enabled" error, shown on the sign-in page.
+
 ## 4. Apply the migrations
 
 Every file in `supabase/migrations/`, in filename order, skipping none. Later
@@ -165,8 +198,9 @@ Then, in the browser:
 
 1. Open the app. The five tools load and you can add a guest.
    *(Local storage works.)*
-2. Go to `/account` and sign in with a magic link.
-   *(Accounts and email work.)*
+2. Go to `/login` and sign in with an emailed code, then with Google and Apple
+   if you enabled them.
+   *(Accounts, email and providers work.)*
 3. Add a guest, then reload. It is still there.
    *(Cloud sync works.)*
 4. From `/account`, choose **Download my wedding**. You get a

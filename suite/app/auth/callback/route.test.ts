@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { sameOriginPath, startsAWedding } from "./route";
 
 const origin = "https://good.example";
@@ -48,5 +48,16 @@ describe("startsAWedding", () => {
 
   it("does not for a planner arriving at their clients' weddings", () => {
     expect(startsAWedding("/weddings")).toBe(false);
+  });
+});
+
+describe("GET", () => {
+  it("reports a provider's refusal as a failed sign-in, not a silent return", async () => {
+    vi.doMock("@/lib/accounts/serverClient", () => ({ serverClient: async () => ({ auth: {} }) }));
+    const { GET } = await import("./route");
+    const response = await GET(
+      new Request(`${origin}/auth/callback?error=access_denied&error_description=cancelled&next=%2Fweddings`),
+    );
+    expect(response.headers.get("location")).toBe(`${origin}/weddings?signin=failed`);
   });
 });
