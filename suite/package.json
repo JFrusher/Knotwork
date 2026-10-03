@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "npm --prefix .. run build && next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npm --prefix .. run build && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test"
