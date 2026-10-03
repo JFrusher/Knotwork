@@ -10,7 +10,7 @@ const SYNC_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "2026
 const ACCOUNTS_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260902000001_accounts.sql");
 const DOCUMENTS_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260903000001_wedding_documents.sql");
 const ROLES_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260928000001_roles.sql");
-const PEOPLE_EMAIL_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20261003000001_wedding_people_email.sql");
+const PEOPLE_EMAIL_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20261003142447_wedding_people_email.sql");
 
 /**
  * A minimal stand-in for Supabase's own `auth` schema: just enough for
