@@ -135,8 +135,9 @@ All of it is configured in the Supabase dashboard:
    Supabase → Authentication → Providers → Apple. **The secret expires after six
    months at most** — put renewing it in a calendar, or Apple sign-in stops.
 
-A provider left disabled answers the button with Supabase's "provider is not
-enabled" error, shown on the sign-in page.
+The sign-in page asks Supabase which providers are switched on and shows a
+button only for those, so a provider you have not set up simply does not
+appear — enable it and its button does.
 
 ## 4. Apply the migrations
 

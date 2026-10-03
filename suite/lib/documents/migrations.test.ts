@@ -21,7 +21,7 @@ const GUEST_LINK_MIGRATION = join(process.cwd(), "..", "supabase", "migrations",
 async function authStub(db: PGlite): Promise<void> {
   await db.exec(`
     create schema if not exists auth;
-    create table auth.users (id uuid primary key, email text not null);
+    create table auth.users (id uuid primary key, email varchar(255) not null);
     create or replace function auth.uid() returns uuid
       language sql stable
       as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;

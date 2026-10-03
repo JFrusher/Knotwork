@@ -4,9 +4,10 @@ import { afterEach, expect, test, vi } from "vitest";
 const signInWithOtp = vi.fn(async (_: unknown) => ({ error: null }));
 const verifyOtp = vi.fn(async (_: unknown) => ({ error: null }));
 const signInWithOAuth = vi.fn(async (_: unknown): Promise<{ error: { message: string } | null }> => ({ error: null }));
-vi.mock("@/lib/accounts/browserClient", () => ({
-  browserClient: () => ({ auth: { signInWithOtp, verifyOtp, signInWithOAuth } }),
-}));
+const client = { auth: { signInWithOtp, verifyOtp, signInWithOAuth } };
+vi.mock("@/lib/accounts/browserClient", () => ({ browserClient: () => client }));
+const enabledProviders = vi.fn(async (): Promise<string[]> => ["google", "apple"]);
+vi.mock("@/lib/accounts/providers", () => ({ enabledProviders }));
 
 const { default: LoginPage } = await import("./page");
 
@@ -78,5 +79,39 @@ test("on the way to an invite, warns that Apple's hidden address will not match 
 test("an ordinary sign-in says nothing about invites", async () => {
   vi.stubGlobal("location", { ...window.location, origin: "https://app.example", search: "" });
   await act(async () => render(<LoginPage />));
+  expect(screen.queryByText("Share My Email")).toBeNull();
+});
+
+test("only the providers switched on in Supabase are offered", async () => {
+  enabledProviders.mockResolvedValueOnce(["google"]);
+  vi.stubGlobal("location", { ...window.location, origin: "https://app.example", search: "" });
+  await act(async () => render(<LoginPage />));
+  expect(screen.getByRole("button", { name: /continue with google/i })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: /continue with apple/i })).toBeNull();
+});
+
+test("with none switched on there are no buttons and no 'or' — just the email code", async () => {
+  enabledProviders.mockResolvedValueOnce([]);
+  vi.stubGlobal("location", { ...window.location, origin: "https://app.example", search: "" });
+  await act(async () => render(<LoginPage />));
+  expect(screen.queryByRole("button", { name: /continue with/i })).toBeNull();
+  expect(screen.queryByRole("separator")).toBeNull();
+  expect(screen.getByRole("button", { name: /send me a code/i })).toBeTruthy();
+});
+
+test("settings that cannot be read offer no buttons, and the email code still works", async () => {
+  enabledProviders.mockRejectedValueOnce(new Error("Auth settings answered 500."));
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+  vi.stubGlobal("location", { ...window.location, origin: "https://app.example", search: "" });
+  await act(async () => render(<LoginPage />));
+  expect(screen.queryByRole("button", { name: /continue with/i })).toBeNull();
+  expect(screen.getByRole("button", { name: /send me a code/i })).toBeTruthy();
+});
+
+test("the Share My Email advice appears only when Apple is offered", async () => {
+  enabledProviders.mockResolvedValueOnce(["google"]);
+  vi.stubGlobal("location", { ...window.location, origin: "https://app.example", search: "?next=%2Finvite%2Fabc123" });
+  await act(async () => render(<LoginPage />));
+  expect(screen.getByText(/Sign in with the address your invite was sent to/)).toBeTruthy();
   expect(screen.queryByText("Share My Email")).toBeNull();
 });

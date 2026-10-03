@@ -72,11 +72,11 @@ README). Use the example wedding, never real names.
 
 **7/7**
 > If you're planning a wedding: it's free, and your guest list never has to
-> leave your laptop → trousseau-suite.vercel.app
+> leave your laptop → knotwork-suite.vercel.app
 >
 > If you build things: the code, specs and a guide to adding your own tool
 > are on GitHub. A ⭐ helps other couples find it →
-> github.com/JFrusher/Trousseau
+> github.com/JFrusher/Knotwork
 
 ---
 
@@ -95,7 +95,7 @@ Recording notes for all three:
 - Use the guided tour's example wedding. **Never film a real guest list.**
 - Captions burned in, because most people watch muted. Keep each caption
   line under six words.
-- End card: "Free · no sign-up · trousseau-suite.vercel.app".
+- End card: "Free · no sign-up · knotwork-suite.vercel.app".
 - Don't film on a phone: the planning tools are made for a laptop. Film the
   Binder on the phone in script 3 only.
 
@@ -166,10 +166,10 @@ no ads. #weddingplanning #seatingchart #diywedding #weddingtok
 > place cards; move the ceremony and the day moves with it. Local-first (IndexedDB, no account),
 > self-hostable, and no analytics on your own instance.
 >
-> https://github.com/JFrusher/Trousseau
+> https://github.com/JFrusher/Knotwork
 >
 > #selfhosted #opensource #localfirst
 
 **Bluesky / X one-liner:**
 > Wedding apps keep three copies of your guest list. Knotwork keeps one.
-> Free, open source, no sign-up: trousseau-suite.vercel.app
+> Free, open source, no sign-up: knotwork-suite.vercel.app
