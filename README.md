@@ -9,13 +9,13 @@
 <sub>Formerly Trousseau.</sub>
 
 [![Licence: AGPL-3.0 app, MIT contract](https://img.shields.io/badge/licence-AGPL--3.0%20app%20%C2%B7%20MIT%20contract-5b4bd5)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/JFrusher/Trousseau?style=flat&logo=github&label=stars)](https://github.com/JFrusher/Trousseau/stargazers)
-[![CI](https://github.com/JFrusher/Trousseau/actions/workflows/ci.yml/badge.svg)](https://github.com/JFrusher/Trousseau/actions/workflows/ci.yml)
+[![GitHub stars](https://img.shields.io/github/stars/JFrusher/Knotwork?style=flat&logo=github&label=stars)](https://github.com/JFrusher/Knotwork/stargazers)
+[![CI](https://github.com/JFrusher/Knotwork/actions/workflows/ci.yml/badge.svg)](https://github.com/JFrusher/Knotwork/actions/workflows/ci.yml)
 [![Self-hostable](https://img.shields.io/badge/self--hostable-Next.js%20%2B%20optional%20Supabase-2f855a)](docs/SELF-HOSTING.md)
-[![No account needed](https://img.shields.io/badge/account-not%20needed-2f855a)](https://trousseau-suite.vercel.app)
+[![No account needed](https://img.shields.io/badge/account-not%20needed-2f855a)](https://knotwork-suite.vercel.app)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-e05d44)](CONTRIBUTING.md)
 
-[**Open Knotwork →**](https://trousseau-suite.vercel.app) &nbsp;·&nbsp;
+[**Open Knotwork →**](https://knotwork-suite.vercel.app) &nbsp;·&nbsp;
 [Run your own copy](#-run-your-own-copy) &nbsp;·&nbsp;
 [How it works](#-how-it-works) &nbsp;·&nbsp;
 [Roadmap](ROADMAP.md) &nbsp;·&nbsp;
@@ -123,7 +123,7 @@ More screenshots, framed images and clips for sharing are in
 
 ## 🚀 Get started in two minutes
 
-1. Open **[trousseau-suite.vercel.app](https://trousseau-suite.vercel.app)**.
+1. Open **[knotwork-suite.vercel.app](https://knotwork-suite.vercel.app)**.
    There is no sign-up.
 2. Press **Data**, and put in your names, your venue and the date.
 3. Import your guest list as a CSV.
@@ -149,7 +149,7 @@ error reporting only runs if you set a Sentry DSN.
 ### Local only: no backend, no account
 
 ```sh
-git clone https://github.com/JFrusher/Trousseau.git Knotwork
+git clone https://github.com/JFrusher/Knotwork.git Knotwork
 cd Knotwork
 npm ci             # installs the contract package and the suite together
 npm run build      # builds the shared contract package; do not skip this
@@ -193,7 +193,7 @@ how to check your instance actually works rather than merely starting.
 - **No account, no upload.** The app saves to your browser, and nothing from
   your wedding leaves the device. The hosted site counts visits to its pages,
   with no cookie and nothing from the wedding in it. Every address is cut to
-  its route first. The [Privacy Policy](https://trousseau-suite.vercel.app/privacy)
+  its route first. The [Privacy Policy](https://knotwork-suite.vercel.app/privacy)
   says exactly what is counted.
 - **With an account**, your wedding syncs between you, your partner and your
   planner. It is stored encrypted at rest, and database-level rules mean no

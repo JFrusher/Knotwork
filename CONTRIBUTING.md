@@ -15,7 +15,7 @@ or a screenshot. Use the guided tour's example wedding, or invent people.
 
 | You have… | Do this |
 | --- | --- |
-| Ten minutes | Try the [hosted app](https://trousseau-suite.vercel.app), and open an issue for anything confusing. Confusion is a bug. |
+| Ten minutes | Try the [hosted app](https://knotwork-suite.vercel.app), and open an issue for anything confusing. Confusion is a bug. |
 | An hour | Pick an issue labelled `good first issue`, or fix a doc that was wrong for you. |
 | A weekend | Take a tool proposal from [ROADMAP.md](ROADMAP.md). |
 | A job nothing does | Build a tool. Read [docs/BUILDING-A-TOOL.md](docs/BUILDING-A-TOOL.md) first. |
@@ -71,7 +71,7 @@ that can browse weddings.
 ### Install and run
 
 ```sh
-git clone https://github.com/JFrusher/Trousseau.git Knotwork
+git clone https://github.com/JFrusher/Knotwork.git Knotwork
 cd Knotwork
 
 npm ci                 # installs the root package and the suite workspace
