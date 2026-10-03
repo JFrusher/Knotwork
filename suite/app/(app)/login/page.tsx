@@ -3,9 +3,8 @@
 import { type JSX, useEffect, useState } from "react";
 import { Mail } from "lucide-react";
 import { browserClient } from "@/lib/accounts/browserClient";
+import { enabledProviders, type Provider } from "@/lib/accounts/providers";
 import { Button, TextField } from "@/components/ui/controls";
-
-type Provider = "google" | "apple";
 
 function GoogleMark() {
   return (
@@ -67,6 +66,18 @@ export default function LoginPage() {
   }, []);
 
   const client = browserClient();
+  // Only the providers this project has switched on — none until we know.
+  const [providers, setProviders] = useState<Provider[]>([]);
+  useEffect(() => {
+    if (!client) return;
+    enabledProviders()
+      .then(setProviders)
+      .catch((cause: unknown) => {
+        // The email code still works; the buttons just are not offered.
+        console.warn("[login] could not read which sign-in providers are on", cause);
+      });
+  }, [client]);
+  const offered = PROVIDERS.filter(({ id }) => providers.includes(id));
   // Where the person was going — an invite, usually. Carried through the
   // link, or it lands on /account, which for an invitee is the wrong door.
   const [next, setNext] = useState<string | null>(null);
@@ -217,29 +228,37 @@ export default function LoginPage() {
           // An invite opens only for the address it was sent to, and Apple's
           // Hide My Email signs in with a relay address that never matches.
           <p className="mb-4 text-sm text-slate">
-            Sign in with the address your invite was sent to. With Apple, choose{" "}
-            <span className="font-medium text-charcoal">Share My Email</span>.
+            Sign in with the address your invite was sent to.
+            {providers.includes("apple") && (
+              <>
+                {" "}With Apple, choose <span className="font-medium text-charcoal">Share My Email</span>.
+              </>
+            )}
           </p>
         )}
-        <div className="space-y-3">
-          {PROVIDERS.map(({ id, label, mark: Mark }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => void continueWith(id)}
-              disabled={busy || leavingFor !== null}
-              className="flex w-full items-center justify-center gap-2.5 rounded border border-charcoal/15 bg-parchment px-3 py-2.5 text-sm font-medium text-charcoal transition hover:border-gold disabled:pointer-events-none disabled:opacity-40"
-            >
-              <Mark />
-              {leavingFor === id ? "Redirecting..." : label}
-            </button>
-          ))}
-        </div>
-        <div className="my-6 flex items-center gap-3 text-xs tracking-[0.14em] text-slate uppercase" role="separator">
-          <span className="h-px flex-1 bg-charcoal/15" />
-          or
-          <span className="h-px flex-1 bg-charcoal/15" />
-        </div>
+        {offered.length > 0 && (
+          <>
+            <div className="space-y-3">
+              {offered.map(({ id, label, mark: Mark }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => void continueWith(id)}
+                  disabled={busy || leavingFor !== null}
+                  className="flex w-full items-center justify-center gap-2.5 rounded border border-charcoal/15 bg-parchment px-3 py-2.5 text-sm font-medium text-charcoal transition hover:border-gold disabled:pointer-events-none disabled:opacity-40"
+                >
+                  <Mark />
+                  {leavingFor === id ? "Redirecting..." : label}
+                </button>
+              ))}
+            </div>
+            <div className="my-6 flex items-center gap-3 text-xs tracking-[0.14em] text-slate uppercase" role="separator">
+              <span className="h-px flex-1 bg-charcoal/15" />
+              or
+              <span className="h-px flex-1 bg-charcoal/15" />
+            </div>
+          </>
+        )}
         <form
           onSubmit={(event) => {
             event.preventDefault();
