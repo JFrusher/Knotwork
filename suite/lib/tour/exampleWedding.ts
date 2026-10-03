@@ -14,6 +14,9 @@ import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
  * device, to put back from Data.
  */
 
+/** The top-level key that marks a document as the example. */
+const EXAMPLE_MARK = "exampleWedding";
+
 /** Nothing worth losing — by the same measure signing in uses. */
 export function isWeddingEmpty(): boolean {
   return !hasContent(summarise(useKnotworkStore.getState().raw));
@@ -38,11 +41,33 @@ export async function loadExampleWedding(confirm: Confirm): Promise<"loaded" | "
   }
   const response = await fetch("/fixtures/example-wedding.knotwork.json");
   if (!response.ok) throw new Error("The example wedding could not be loaded.");
-  const document: unknown = await response.json();
+  const document = (await response.json()) as Record<string, unknown>;
 
   // `silent` keeps it out of the undo stack: the user did not make this change
   // by editing, and offering to undo it would offer to restore what they were
   // just warned they were replacing.
-  useKnotworkStore.getState().replaceDocument(document, { silent: true });
+  //
+  // Marked, so the front page can offer the way back out: someone looking
+  // around must be able to start their own wedding without knowing to clear
+  // the browser. Edits keep the mark (a write merges into the raw document);
+  // anything that replaces the whole document drops it.
+  useKnotworkStore.getState().replaceDocument({ ...document, [EXAMPLE_MARK]: true }, { silent: true });
   return "loaded";
+}
+
+/** Whether this is (an edited copy of) the example wedding. */
+export function isExampleWedding(raw: Record<string, unknown>): boolean {
+  return raw[EXAMPLE_MARK] === true;
+}
+
+/**
+ * Leave the example for an empty wedding of your own.
+ *
+ * Undoable, and the example — with anything changed in it — is kept on this
+ * device as well, so trying it out first never costs anything.
+ */
+export async function startYourOwnWedding(): Promise<void> {
+  const { raw, replaceDocument } = useKnotworkStore.getState();
+  await useCopies.getState().keep(raw, "The example wedding, kept when you started your own.");
+  replaceDocument({}, { label: "starting your own wedding" });
 }

@@ -7,7 +7,7 @@ vi.mock("idb-keyval", () => ({
 }));
 
 const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
-const { isWeddingEmpty, loadExampleWedding } = await import("./exampleWedding");
+const { isExampleWedding, isWeddingEmpty, loadExampleWedding, startYourOwnWedding } = await import("./exampleWedding");
 const { emptyKnotwork } = await import("@jfrusher/knotwork");
 const { useCopies } = await import("@/lib/store/copies");
 
@@ -73,4 +73,27 @@ test("saying yes replaces it, without becoming an undo step", async () => {
   expect(useKnotworkStore.getState().past).toEqual([]);
   // What it replaced is kept, to put back from Data.
   expect(useCopies.getState().copies.map((copy) => Object.keys(copy.document["guests"] as object))).toEqual([["a"]]);
+});
+
+test("the example is marked as the example, and the mark survives an edit", async () => {
+  await loadExampleWedding(async () => true);
+  expect(isExampleWedding(useKnotworkStore.getState().raw)).toBe(true);
+
+  useKnotworkStore.getState().setSlice("guests", { g2: { id: "g2" } });
+  expect(isExampleWedding(useKnotworkStore.getState().raw)).toBe(true);
+});
+
+test("starting your own leaves an empty wedding, keeps the example, and can be undone", async () => {
+  const keep = vi.spyOn(useCopies.getState(), "keep").mockResolvedValue();
+  await loadExampleWedding(async () => true);
+
+  await startYourOwnWedding();
+
+  const { raw } = useKnotworkStore.getState();
+  expect(isExampleWedding(raw)).toBe(false);
+  expect(isWeddingEmpty()).toBe(true);
+  expect(keep).toHaveBeenCalledWith(expect.objectContaining({ exampleWedding: true }), expect.any(String));
+
+  useKnotworkStore.getState().undo();
+  expect(isExampleWedding(useKnotworkStore.getState().raw)).toBe(true);
 });
