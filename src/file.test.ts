@@ -74,3 +74,18 @@ describe("a file exported before the rename", () => {
     expect(parse(JSON.stringify({ kind: "trousseau", version: 1 })).kind).toBe("knotwork");
   });
 });
+
+describe("suggestedFilename on awkward names", () => {
+  it("trims separators from both ends and keeps one between words", () => {
+    expect(suggestedFilename({ ...emptyKnotwork(), event: { ...emptyKnotwork().event, coupleNames: "  --Ann & Bo!!  " } })).toBe(
+      "ann-and-bo.knotwork.json",
+    );
+  });
+
+  it("stays linear on a name that is mostly separators", () => {
+    const coupleNames = `a${"-".repeat(100_000)}b`;
+    const started = performance.now();
+    expect(suggestedFilename({ ...emptyKnotwork(), event: { ...emptyKnotwork().event, coupleNames } })).toBe("a-b.knotwork.json");
+    expect(performance.now() - started).toBeLessThan(100);
+  });
+});

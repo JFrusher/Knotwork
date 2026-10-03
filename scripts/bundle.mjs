@@ -252,7 +252,7 @@ function unpack(file, dir) {
       .toLowerCase()
       .replace(/&/g, " and ")
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "wedding";
+      .replace(/^-|-$/g, "") || "wedding";
 
   for (const [app, native] of Object.entries(doc.sources ?? {})) {
     const ext = APPS.find((a) => a.app === app)?.ext ?? `.${app}.json`;
