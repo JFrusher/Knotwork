@@ -1,4 +1,4 @@
-import { buildArtefacts } from "./data/artefacts";
+import { artefactsOf } from "./data/parts";
 import type { GuestRow } from "./data/rows";
 import {
   hasBackSide,
@@ -61,12 +61,7 @@ export interface JobResult {
 }
 
 export function buildJob(input: JobInput): JobResult {
-  const all = buildArtefacts(
-    input.rows,
-    input.template.rowScope ?? { kind: "per-row" },
-    input.headers,
-    input.rowIds,
-  );
+  const all = artefactsOf(input.template, input.rows, input.headers, input.rowIds);
   const chosen = input.only ? all.filter((artefact) => input.only!.has(artefact.key)) : all;
   const artefacts = input.limit === undefined ? chosen : chosen.slice(0, input.limit);
   const pageRange = input.pages ? { pages: input.pages } : {};

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { buildArtefacts, type Artefact } from "../../core/data/artefacts";
+import type { Artefact } from "../../core/data/artefacts";
+import { artefactsOf } from "../../core/data/parts";
 import type { RowScope } from "../../core/types";
 import { usePlaque } from "../../state/store";
 import { Hint, SelectField, SubGroup } from "../controls";
@@ -34,8 +35,9 @@ function scopeHint(scope: RowScope, rowCount: number, artefactCount: number): st
  * it; the room is always current, and the cards are read from it as it changes.
  */
 export function DataPanel() {
-  const { headers, rows, rowIds, rowIssues, rowScope, setRowScope, printOnly, setPrintOnly } = usePlaque(
+  const { template, headers, rows, rowIds, rowIssues, rowScope, setRowScope, printOnly, setPrintOnly } = usePlaque(
     useShallow((s) => ({
+      template: s.template,
       headers: s.headers,
       rows: s.rows,
       rowIds: s.rowIds,
@@ -46,7 +48,7 @@ export function DataPanel() {
       setPrintOnly: s.setPrintOnly,
     })),
   );
-  const artefacts = useMemo(() => buildArtefacts(rows, rowScope, headers, rowIds), [rows, rowScope, headers, rowIds]);
+  const artefacts = useMemo(() => artefactsOf(template, rows, headers, rowIds), [template, rows, headers, rowIds]);
 
   return (
     <>

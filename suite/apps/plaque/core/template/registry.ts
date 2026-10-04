@@ -109,6 +109,8 @@ export const ELEMENT_KINDS: ElementKindSpec[] = [
         groupBy,
         headingTemplate: groupBy ? `{{${groupBy}}}` : "",
         itemTemplate: name ? `{{${name}}}` : "",
+        sortBy: "",
+        layout: "cells",
         columns: 4,
         gapMm: Math.max(2, inset / 2),
         fontId: DEFAULT_FONT_ID,

@@ -265,6 +265,15 @@ export interface GridElement extends ElementBase {
   headingTemplate: string;
   /** One line per row in the block, e.g. `"{{Name}}"`. */
   itemTemplate: string;
+  /** Orders the lines within a block, by this column; empty keeps the room's order. */
+  sortBy: string;
+  /**
+   * `cells`: a block per equal cell, one size shrunk until all fit — a seating
+   * board. `columns`: blocks flow down newspaper columns at the size asked
+   * for, and a list too long for one page carries on onto the next — a
+   * finder, A to Z.
+   */
+  layout: "cells" | "columns";
   columns: number;
   /** Between blocks, both ways. */
   gapMm: Mm;

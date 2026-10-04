@@ -6,7 +6,7 @@ import styles from "./App.module.css";
 import { BUNDLED_FONTS } from "./assets/fonts";
 import { validateGeometry } from "./core/geometry/validate";
 import { analyseArtefacts, paginate, sheetCountFor } from "./core/imposition/paginate";
-import { buildArtefacts } from "./core/data/artefacts";
+import { artefactsOf } from "./core/data/parts";
 import { hasBackSide, templateForSide } from "./core/imposition/duplex";
 import { templateForRow } from "./core/template/overrides";
 import { PAPER_WHITE, contrastIssues } from "./core/print/contrast";
@@ -37,9 +37,6 @@ import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
 
 const PLACEHOLDER_ROW = { "": "" };
-
-/** Absent scope means per-row: what every design written before scope existed meant. */
-const PER_ROW = { kind: "per-row" } as const;
 
 export function App() {
   const [ready, setReady] = useState(false);
@@ -169,8 +166,8 @@ export function App() {
   // Rows become artefacts once, here. Everything downstream counts artefacts:
   // 150 guests is 150 place cards, or 19 table menus, or one run-sheet.
   const artefacts = useMemo(
-    () => buildArtefacts(rows, template.rowScope ?? PER_ROW, headers, rowIds),
-    [rows, template.rowScope, headers, rowIds],
+    () => artefactsOf(template, rows, headers, rowIds),
+    [template, rows, headers, rowIds],
   );
 
   const previewArtefact = artefacts[previewGuestIndex] ?? artefacts[0] ?? null;

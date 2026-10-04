@@ -13,6 +13,7 @@ import type {
 import { BUNDLED_VIEW, type IconArt } from "../../assets/icons";
 import type { GuestRow } from "../data/rows";
 import { interpolate } from "../csv/interpolate";
+import { flowPlan, gridBlocks } from "./grid";
 import { transformForPanel } from "../geometry/fold";
 import { ptToMm } from "../units";
 import { resolveIconForRow } from "./icons";
@@ -359,16 +360,7 @@ function resolveGrid(
   opts: ResolveOptions,
 ): { elements: ResolvedElement[]; warnings: CardWarning[] } {
   const warnings: CardWarning[] = [];
-  const groups = new Map<string, GuestRow[]>();
-  let leftOut = 0;
-  for (const row of rows) {
-    const value = (row[el.groupBy] ?? "").trim();
-    if (!value) {
-      leftOut += 1;
-      continue;
-    }
-    groups.set(value, [...(groups.get(value) ?? []), row]);
-  }
+  const { blocks, leftOut, missing } = gridBlocks(el, rows);
   if (leftOut > 0) {
     warnings.push({
       elementId: el.id,
@@ -379,21 +371,7 @@ function resolveGrid(
           : `${leftOut} rows have no ${el.groupBy}, so they are not on this grid.`,
     });
   }
-
-  const missingColumns = new Set<string>();
-  const fill = (template: string, row: GuestRow) => {
-    const { text, missing } = interpolate(template, row);
-    for (const name of missing) missingColumns.add(name);
-    return text;
-  };
-  // Tables in the order people read their names: Table 2 before Table 10.
-  const blocks = [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
-    .map(([, members]) => ({
-      heading: fill(el.headingTemplate, members[0]!),
-      items: members.map((row) => fill(el.itemTemplate, row)).filter((line) => line.trim().length > 0),
-    }));
-  for (const name of missingColumns) {
+  for (const name of missing) {
     warnings.push({ elementId: el.id, kind: "missing-field", detail: `No column named "${name}".` });
   }
   if (blocks.length === 0) {
@@ -401,13 +379,22 @@ function resolveGrid(
     return { elements: [], warnings };
   }
 
-  const columns = Math.max(1, Math.min(Math.round(el.columns), blocks.length));
-  const lines = Math.ceil(blocks.length / columns);
+  const flowing = el.layout === "columns";
+  const columns = Math.max(1, Math.round(el.columns));
+  const across = flowing ? columns : Math.min(columns, blocks.length);
+  const down = flowing ? 1 : Math.ceil(blocks.length / across);
   const cell = {
-    w: (el.w - el.gapMm * (columns - 1)) / columns,
-    h: (el.h - el.gapMm * (lines - 1)) / lines,
+    w: (el.w - el.gapMm * (across - 1)) / across,
+    h: (el.h - el.gapMm * (down - 1)) / down,
   };
-  const fit = opts.fitGrid?.(el, blocks, cell) ?? { fontSizePt: el.fontSizePt, overflowed: false, missingFont: true };
+  // Columns are laid out at the size asked for, so a long list carries on
+  // over the page rather than shrinking into illegibility; only a line too
+  // wide for its column makes the text smaller.
+  const fit = opts.fitGrid?.(
+    el,
+    blocks.map((block) => ({ heading: block.heading, items: block.lines })),
+    flowing ? { w: cell.w, h: Number.POSITIVE_INFINITY } : cell,
+  ) ?? { fontSizePt: el.fontSizePt, overflowed: false, missingFont: true };
   if (fit.missingFont) {
     warnings.push({
       elementId: el.id,
@@ -419,54 +406,87 @@ function resolveGrid(
     warnings.push({
       elementId: el.id,
       kind: "overflow",
-      detail: `${blocks.length} blocks do not fit at ${el.fit.minFontSizePt}pt. Try more columns or a bigger box.`,
+      detail: flowing
+        ? `Some lines are too wide for their column at ${el.fit.minFontSizePt}pt. Try fewer columns or a bigger box.`
+        : `${blocks.length} blocks do not fit at ${el.fit.minFontSizePt}pt. Try more columns or a bigger box.`,
     });
   }
 
   const headingPt = fit.fontSizePt * el.headingScale;
-  const headingH = ptToMm(headingPt * el.lineHeight);
+  // Slots are planned at the size asked for; text shrunk for width sits in them.
+  const headingH = ptToMm((flowing ? el.fontSizePt : fit.fontSizePt) * el.headingScale * el.lineHeight);
+  const lineH = ptToMm(el.fontSizePt * el.lineHeight);
   const elements: ResolvedElement[] = [];
-  blocks.forEach((block, index) => {
-    const x = el.x + (index % columns) * (cell.w + el.gapMm);
-    const y = el.y + Math.floor(index / columns) * (cell.h + el.gapMm);
-    const text = (id: string, box: { x: number; y: number; w: number; h: number }, piece: {
-      lines: string[];
-      fontId: string;
-      fontSizePt: Pt;
-      colorHex: string;
-    }): ResolvedElement => {
-      const placed = transformForPanel(box, card);
-      return {
-        id: `${el.id}${id}${index}`,
-        sourceId: el.id,
-        ...placed.box,
-        rotationDeg: placed.rotationDeg,
-        z: el.z,
-        kind: "text",
-        ...piece,
-        align: el.align,
-        vAlign: "top",
-        anchor: "align",
-        lineHeight: el.lineHeight,
-        letterSpacingMm: el.letterSpacingMm,
-        overflowed: fit.overflowed,
-      };
+  const text = (id: string, box: { x: number; y: number; w: number; h: number }, piece: {
+    lines: string[];
+    fontId: string;
+    fontSizePt: Pt;
+    colorHex: string;
+  }): ResolvedElement => {
+    const placed = transformForPanel(box, card);
+    return {
+      id: `${el.id}${id}`,
+      sourceId: el.id,
+      ...placed.box,
+      rotationDeg: placed.rotationDeg,
+      z: el.z,
+      kind: "text",
+      ...piece,
+      align: el.align,
+      vAlign: "top",
+      anchor: "align",
+      lineHeight: el.lineHeight,
+      letterSpacingMm: el.letterSpacingMm,
+      overflowed: fit.overflowed,
     };
-    elements.push(
-      text(GRID_HEADING, { x, y, w: cell.w, h: headingH }, {
-        lines: block.heading ? [block.heading] : [],
-        fontId: el.headingFontId,
-        fontSizePt: headingPt,
-        colorHex: el.headingColorHex,
-      }),
-      text(GRID_LINES, { x, y: y + headingH, w: cell.w, h: Math.max(0, cell.h - headingH) }, {
-        lines: block.items,
-        fontId: el.fontId,
-        fontSizePt: fit.fontSizePt,
-        colorHex: el.colorHex,
-      }),
-    );
-  });
+  };
+  const heading = (n: number, x: number, y: number, block: { heading: string }) =>
+    text(`${GRID_HEADING}${n}`, { x, y, w: cell.w, h: headingH }, {
+      lines: block.heading ? [block.heading] : [],
+      fontId: el.headingFontId,
+      fontSizePt: headingPt,
+      colorHex: el.headingColorHex,
+    });
+  const body = (n: number, x: number, y: number, h: number, lines: string[]) =>
+    text(`${GRID_LINES}${n}`, { x, y, w: cell.w, h }, {
+      lines,
+      fontId: el.fontId,
+      fontSizePt: fit.fontSizePt,
+      colorHex: el.colorHex,
+    });
+
+  if (!flowing) {
+    blocks.forEach((block, index) => {
+      const x = el.x + (index % across) * (cell.w + el.gapMm);
+      const y = el.y + Math.floor(index / across) * (cell.h + el.gapMm);
+      elements.push(heading(index, x, y, block), body(index, x, y + headingH, Math.max(0, cell.h - headingH), block.lines));
+    });
+    return { elements, warnings };
+  }
+
+  // What is here is one page's worth: `withParts` cut the list to fit. Anything
+  // the plan still puts on a later page did not fit at all, and is said so.
+  const runs = flowPlan(el, blocks.map((block) => block.lines.length));
+  const spilt = runs.filter((run) => run.page > 0).reduce((sum, run) => sum + run.to - run.from, 0);
+  if (spilt > 0) {
+    warnings.push({
+      elementId: el.id,
+      kind: "overflow",
+      detail: `${spilt} lines do not fit in these columns.`,
+    });
+  }
+  runs
+    .filter((run) => run.page === 0)
+    .forEach((run, n) => {
+      const x = el.x + run.column * (cell.w + el.gapMm);
+      let y = el.y + run.y;
+      if (run.heading) {
+        elements.push(heading(n, x, y, blocks[run.block]!));
+        y += headingH;
+      }
+      const lines = blocks[run.block]!.lines.slice(run.from, run.to);
+      if (lines.length > 0) elements.push(body(n, x, y, lines.length * lineH, lines));
+    });
   return { elements, warnings };
 }
 

@@ -118,8 +118,13 @@ rather than a page size, so no custom page dimensions are stored:
   flowing into columns inside its box: table-list boards, per-table cards'
   guest list. Shrink-to-fit applies to the whole grid, so one long table cannot
   leave the others unreadable.
-- **`list` spill** — `document` scope may span several pages, by column then by
-  page, with `{{Initial}}` headings. This retires the F9 limitation.
+- **Finder** (as built, phase 5) — the grid's second layout, `columns`: blocks
+  per `{{Initial}}` flow down newspaper columns at the size asked for, lines
+  ordered by `sortBy` (surname). A list that fits one page is balanced across
+  its columns; a longer one is cut into one artefact per page before
+  imposition (`core/data/parts.ts`, `artefactsOf`), so preview, counts,
+  warnings and export see pages as artefacts and needed no change. This
+  retires the F9 limitation.
 - **`room`** — the floor plan from Seating's geometry (`seatPositions`,
   `floorPlanSvg`'s placement), drawn as resolved rects, lines and text so both
   renderers draw it with no new drawing code. Properties: font, name colour,

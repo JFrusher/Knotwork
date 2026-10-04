@@ -30,6 +30,8 @@ const grid = (over: Partial<GridElement> = {}): GridElement => ({
   groupBy: "Table",
   headingTemplate: "{{Table}}",
   itemTemplate: "{{Name}}",
+  sortBy: "",
+  layout: "cells",
   columns: 2,
   gapMm: 10,
   fontId: "crimson",

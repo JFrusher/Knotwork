@@ -113,3 +113,26 @@ test("the seating board starter lays every table out from the room", async ({ pa
   await expect(page.getByRole("button", { name: "Download print-shop PDF" })).toBeEnabled();
   await page.screenshot({ path: process.env.SHOT ?? "test-results/board-starter.png" });
 });
+
+test("the finder starter files every guest A to Z, and carries on to another page when it runs long", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/place-cards");
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await pieces.getByRole("button", { name: "+ New piece" }).click();
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Finder");
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
+  await page.getByLabel("Start from a design").selectOption({ label: "Finder — every guest A to Z, A2" });
+
+  const card = page.getByRole("region", { name: "Card" });
+  await expect(card.getByText("Find your seat")).toBeVisible();
+  await expect(card.getByText(/^Morgan, Alex — Top table$/)).toBeVisible();
+  await expect(page.getByText("1 card · 1 sheet")).toBeVisible();
+  await page.screenshot({ path: process.env.SHOT ?? "test-results/finder.png" });
+
+  // Set large, the same hundred names need more than one page, each its own sheet.
+  await page.getByRole("button", { name: /grid\s*by Initial/ }).click();
+  await page.getByRole("spinbutton", { name: "Size pt" }).fill("30");
+  await page.getByRole("spinbutton", { name: "Size pt" }).press("Enter");
+  await expect(page.getByText(/^[2-9] cards · [2-9] sheets$/)).toBeVisible();
+  await expect(card.getByRole("heading")).toContainText(/All 100 rows — page 1 of [2-9]/);
+});

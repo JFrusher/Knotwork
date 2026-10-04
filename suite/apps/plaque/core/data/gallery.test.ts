@@ -8,7 +8,7 @@ import { defaultCard, defaultSheet } from "../template/defaults";
 import { makeResolveOptions } from "../template/resolve";
 import { unboundTokens } from "../template/rebind";
 import { loadFont, type LoadedFont } from "../text/measure";
-import { buildArtefacts } from "./artefacts";
+import { artefactsOf } from "./parts";
 import { GALLERY, validateGalleryTemplate } from "./gallery";
 
 /**
@@ -23,7 +23,14 @@ const fonts = new Map<string, LoadedFont>(
   ]),
 );
 const resolveOptions = makeResolveOptions(fonts);
-const { headers, rows } = parseCsv(readFileSync("fixtures/guests-150.csv", "utf8"));
+const csv = parseCsv(readFileSync("fixtures/guests-150.csv", "utf8"));
+// What the room adds to every guest: the designs are written against it.
+const headers = [...csv.headers, "Name", "Initial"];
+const rows = csv.rows.map((row) => ({
+  ...row,
+  Name: `${row["First Name"]} ${row["Last Name"]}`,
+  Initial: (row["Last Name"] ?? "").charAt(0).toUpperCase(),
+}));
 
 describe("the template gallery", () => {
   it("ships some", () => {
@@ -71,7 +78,7 @@ describe("the template gallery", () => {
   it("renders real cards from the fixture data", () => {
     for (const entry of GALLERY) {
       const card = { ...defaultCard(), ...entry.card };
-      const artefacts = buildArtefacts(rows, entry.template.rowScope ?? { kind: "per-row" }, headers);
+      const artefacts = artefactsOf(entry.template, rows, headers);
       const { sheets } = paginate(entry.template, artefacts, card, { ...defaultSheet(), ...entry.sheet }, resolveOptions);
 
       const cards = sheets.flatMap((s) => s.cards);
@@ -90,7 +97,7 @@ describe("the template gallery", () => {
     // A shipped design that overflows on the sample data is a bad example.
     for (const entry of GALLERY) {
       const card = { ...defaultCard(), ...entry.card };
-      const artefacts = buildArtefacts(rows, entry.template.rowScope ?? { kind: "per-row" }, headers);
+      const artefacts = artefactsOf(entry.template, rows, headers);
       const { warnings } = paginate(entry.template, artefacts, card, { ...defaultSheet(), ...entry.sheet }, resolveOptions);
       expect([entry.id, warnings.filter((w) => w.kind === "overflow")]).toEqual([entry.id, []]);
     }

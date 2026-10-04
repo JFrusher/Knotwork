@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { buildArtefacts } from "../../core/data/artefacts";
+import { artefactsOf } from "../../core/data/parts";
 import { panelBounds, panelOf } from "../../core/geometry/fold";
 import { boxAtNaturalSize, boxFittedTo, boxWithAspect, MAX_ZOOM } from "../../core/template/imageFit";
 import { templateForRow, type ElementPatch } from "../../core/template/overrides";
@@ -54,8 +54,7 @@ export function InspectorPanel() {
     setCropId,
   } = usePlaque(
     useShallow((s) => {
-      const scope = s.template.rowScope ?? { kind: "per-row" as const };
-      const artefacts = buildArtefacts(s.rows, scope, s.headers, s.rowIds);
+      const artefacts = artefactsOf(s.template, s.rows, s.headers, s.rowIds);
       const artefact = artefacts[s.previewGuestIndex] ?? artefacts[0] ?? null;
       return {
         // The effective element: what this artefact actually prints, so the
@@ -347,11 +346,26 @@ function GridProperties({
 }) {
   return (
     <>
+      <SelectField<GridElement["layout"]>
+        label="Lay it out as"
+        value={element.layout}
+        options={[
+          { value: "cells", label: "A block each, all one size — a seating board" },
+          { value: "columns", label: "Columns, onto more pages if need be — a finder" },
+        ]}
+        onChange={(layout) => patch({ layout })}
+      />
       <SelectField
         label="A block for each"
         value={element.groupBy}
         options={headers.map((h) => ({ value: h, label: h }))}
         onChange={(groupBy) => patch({ groupBy })}
+      />
+      <SelectField
+        label="Lines in order of"
+        value={element.sortBy}
+        options={[{ value: "", label: "As the room lists them" }, ...headers.map((h) => ({ value: h, label: h }))]}
+        onChange={(sortBy) => patch({ sortBy })}
       />
       <TextField
         label="Heading"
@@ -366,8 +380,10 @@ function GridProperties({
         onChange={(itemTemplate) => patch({ itemTemplate })}
       />
       <Hint>
-        Every block shares one size, set as large as the fullest block allows. Somebody with no{" "}
-        {element.groupBy || "value"} is left off, and the warnings say how many.
+        {element.layout === "cells"
+          ? "Every block shares one size, set as large as the fullest block allows."
+          : "Blocks run down each column at the size set below; a list too long for the page carries on onto the next."}{" "}
+        Somebody with no {element.groupBy || "value"} is left off, and the warnings say how many.
       </Hint>
 
       <SubGroup title="Layout">
