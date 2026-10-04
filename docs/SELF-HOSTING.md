@@ -101,9 +101,9 @@ Two things that will catch you out:
   local-only instance, and thoroughly confusing if you meant to enable them.
 
 `VERCEL_PROJECT_PRODUCTION_URL` also appears in the schema. Vercel supplies it
-automatically and it is used to build absolute URLs for magic links and guest
-links. On another host you may need an equivalent — see `originOf()` in
-`suite/lib/env.ts`.
+automatically and it is used to build absolute URLs for canonical links, Open
+Graph tags, the sitemap and `robots.txt`. On another host you may need an
+equivalent — see `siteUrl()` in `suite/lib/env.ts`.
 
 ### Sign-in: email code, Google and Apple
 

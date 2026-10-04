@@ -102,7 +102,8 @@ Extracted from `suite/lib/tools.ts`, the app routes and the tool modules.
   shots.
 - 🔗 **Guest seat links.** One guest sees their own seat and nothing else.
   **Supplier links** let a supplier see and confirm their part.
-- 🤝 **Two partners and a planner.** Magic-link sign-in with no passwords.
+- 🤝 **Two partners and a planner.** No passwords: a six-digit code by email,
+  or Google or Apple.
   Real-time sync and presence. Conflicts are shown, never silently resolved.
   Version history with restore.
 - 🗂️ **Planner mode.** Many weddings per account, and a library of reusable
@@ -193,7 +194,7 @@ a real user base and a clear path to a first PR.
 
 - Modern stack: Next.js 16, React 19, TypeScript, Zustand, zod 4, Tailwind 4,
   Supabase (Postgres + RLS), Vitest, Playwright with axe.
-- A test suite that means it: over 1,800 test cases across 230+ test files,
+- A test suite that means it: 2,067 test cases across 239 test files (4 October 2026),
   plus end-to-end runs against the production build. RLS is tested against
   PGlite.
 - Decisions written down. Every subsystem has a dated spec and plan in

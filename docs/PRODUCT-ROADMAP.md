@@ -159,6 +159,11 @@ against, not a discussion to reopen without a reason.
   wedding, so it is as readable to the server's operator as the wedding is —
   stated in the Privacy Policy, which no longer describes the passphrase
   system.
+- **2026-10-03** — Sign-in is a six-digit code sent by email (2026-10-02),
+  replacing the magic link, with **Continue with Google** and **Continue with
+  Apple** alongside it. Each provider shows only when it is switched on in
+  Supabase. Still no passwords. This supersedes "no social login for now"
+  from 2026-09-02.
 
 ## Subsystem H — Guided tour & example wedding
 
@@ -206,8 +211,9 @@ things to decide.
 
 **Decided:** Supabase Auth; two accounts per wedding via partner invite (not
 a shared login); couple-only roles for now (guests and vendors/crew stay
-link-based, no logins); email + magic-link sign-in, no passwords, no social
-login for now.
+link-based, no logins); no passwords. Sign-in started as an email magic link
+and is now a six-digit emailed code, with Google and Apple alongside it (see
+the decisions log, 2026-10-03).
 
 **Spec written:** [`2026-09-02-identity-accounts-design.md`](superpowers/specs/2026-09-02-identity-accounts-design.md)
 — one-click invite via emailed link (locked to the invited email, rejects a

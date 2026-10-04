@@ -35,7 +35,8 @@ is retyped and nothing disagrees.
 
 ## ✅ V1.1: planning together, and the toolbox (shipped)
 
-- ✅ **Accounts.** Magic-link sign-in, two partners per wedding, and signing in
+- ✅ **Accounts.** No passwords: a six-digit code by email, or Google or Apple.
+  Two partners per wedding, and signing in
   never silently replaces a wedding.
 - ✅ **One live document**, with real-time sync, presence, one undo history,
   and version history with restore.
