@@ -158,8 +158,9 @@ Each phase is one commit, with tests, reviewed before the next.
 
 ## Open questions, to settle at the start of their phase
 
-- Phase 4: what a grid does with an unseated guest — a "Still to seat" block,
-  or left out with a warning. (Today a place card prints with an empty table.)
+- ~~Phase 4: what a grid does with an unseated guest~~ — settled: left off
+  the board, with a warning counting them. A board at the door is public, and
+  a "Still to seat" block is a job list, not signage.
 - Phase 6: whether a `room` element can show only part of the room (one
   marquee of two), or always the whole of it.
 - Phase 3: CMYK or print-shop colour profiles are **not** planned; the PDF is

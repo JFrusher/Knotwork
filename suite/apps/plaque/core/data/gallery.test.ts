@@ -45,7 +45,8 @@ describe("the template gallery", () => {
     // A gallery template referencing an uploaded font would be broken on arrival.
     for (const entry of GALLERY) {
       for (const el of entry.template.elements) {
-        if (el.kind !== "text" && el.kind !== "list") continue;
+        if (el.kind === "grid") expect([entry.id, fonts.has(el.headingFontId)]).toEqual([entry.id, true]);
+        if (el.kind !== "text" && el.kind !== "list" && el.kind !== "grid") continue;
         expect([entry.id, fonts.has(el.fontId)]).toEqual([entry.id, true]);
       }
     }
@@ -60,7 +61,7 @@ describe("the template gallery", () => {
   it("produces a geometry the validator is happy with", () => {
     for (const entry of GALLERY) {
       const card = { ...defaultCard(), ...entry.card };
-      expect([entry.id, hasErrors(validateGeometry(card, defaultSheet()))]).toEqual([
+      expect([entry.id, hasErrors(validateGeometry(card, { ...defaultSheet(), ...entry.sheet }))]).toEqual([
         entry.id,
         false,
       ]);
@@ -71,7 +72,7 @@ describe("the template gallery", () => {
     for (const entry of GALLERY) {
       const card = { ...defaultCard(), ...entry.card };
       const artefacts = buildArtefacts(rows, entry.template.rowScope ?? { kind: "per-row" }, headers);
-      const { sheets } = paginate(entry.template, artefacts, card, defaultSheet(), resolveOptions);
+      const { sheets } = paginate(entry.template, artefacts, card, { ...defaultSheet(), ...entry.sheet }, resolveOptions);
 
       const cards = sheets.flatMap((s) => s.cards);
       expect([entry.id, cards.length > 0]).toEqual([entry.id, true]);
@@ -90,7 +91,7 @@ describe("the template gallery", () => {
     for (const entry of GALLERY) {
       const card = { ...defaultCard(), ...entry.card };
       const artefacts = buildArtefacts(rows, entry.template.rowScope ?? { kind: "per-row" }, headers);
-      const { warnings } = paginate(entry.template, artefacts, card, defaultSheet(), resolveOptions);
+      const { warnings } = paginate(entry.template, artefacts, card, { ...defaultSheet(), ...entry.sheet }, resolveOptions);
       expect([entry.id, warnings.filter((w) => w.kind === "overflow")]).toEqual([entry.id, []]);
     }
   });

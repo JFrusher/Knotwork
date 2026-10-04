@@ -83,13 +83,15 @@ export function Announcer() {
 /** "Guest name text, 42.5mm from left, 18pt" — position and size, as S-B.2 asks. */
 function describe(el: CardElement): string {
   const where = `${round(el.x)}mm from left, ${round(el.y)}mm from top`;
-  const size = el.kind === "text" || el.kind === "list" ? `, ${el.fontSizePt}pt` : "";
+  const size = el.kind === "text" || el.kind === "list" || el.kind === "grid" ? `, ${el.fontSizePt}pt` : "";
   const what =
     el.kind === "text"
       ? `${el.template || "empty"} text`
       : el.kind === "list"
         ? "list"
-        : el.kind;
+        : el.kind === "grid"
+          ? `grid by ${el.groupBy}`
+          : el.kind;
   return `${what}, ${where}${size}`;
 }
 

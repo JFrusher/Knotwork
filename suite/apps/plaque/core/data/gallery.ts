@@ -1,5 +1,7 @@
-import type { CardSpec, Template } from "../types";
+import type { CardSpec, SheetSpec, Template } from "../types";
 import placeCardClassic from "../../templates/place-card-classic.json";
+import seatingBoard from "../../templates/seating-board.json";
+import tableCard from "../../templates/table-card.json";
 import serviceDockets from "../../templates/service-dockets.json";
 import tableMenu from "../../templates/table-menu.json";
 
@@ -25,16 +27,20 @@ export interface GalleryTemplate {
   name: string;
   description: string;
   card: Pick<CardSpec, "widthMm" | "heightMm" | "fold" | "foldPositionMm" | "bleedMm">;
+  /** What a design needs of the sheet, when it is more than paper — a board printed at its own size. */
+  sheet?: Partial<SheetSpec>;
   template: Template;
 }
 
 /**
  * Named rather than globbed. Vite inlined the whole directory at build time;
- * Next has no equivalent, so the three are listed — which a bundler can check,
+ * Next has no equivalent, so they are listed — which a bundler can check,
  * where a glob cannot.
  */
 const FILES: Record<string, unknown> = {
   "place-card-classic.json": placeCardClassic,
+  "seating-board.json": seatingBoard,
+  "table-card.json": tableCard,
   "service-dockets.json": serviceDockets,
   "table-menu.json": tableMenu,
 };
@@ -54,6 +60,7 @@ export function validateGalleryTemplate(value: unknown): string | null {
     const n = card[key];
     if (typeof n !== "number" || !Number.isFinite(n)) return `card.${key}`;
   }
+  if (t["sheet"] !== undefined && (typeof t["sheet"] !== "object" || t["sheet"] === null)) return "sheet";
   const template = t["template"] as Record<string, unknown> | undefined;
   if (!template || !Array.isArray(template["elements"])) return "template.elements";
   if (template["elements"].length === 0) return "template.elements";

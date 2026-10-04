@@ -1,5 +1,5 @@
 import type { FitConfig, Mm, Pt } from "../types";
-import { blockHeightMm, breakLines, widestLineMm, type LoadedFont } from "./measure";
+import { blockHeightMm, breakLines, lineHeightMm, measureWidth, widestLineMm, type LoadedFont } from "./measure";
 
 /** Shrinking steps down in half points. Finer than a printer can show. */
 const STEP_PT = 0.5;
@@ -118,6 +118,48 @@ export function fitBlock(font: LoadedFont, input: FitBlockInput): FitOutcome {
     if (fits(size)) return { lines: input.lines, fontSizePt: round(size), overflowed: false };
   }
   return { lines: input.lines, fontSizePt: round(floor), overflowed: !fits(floor) };
+}
+
+export interface FitGridInput {
+  blocks: Array<{ heading: string; items: string[] }>;
+  cellWMm: Mm;
+  cellHMm: Mm;
+  fontSizePt: Pt;
+  headingScale: number;
+  lineHeight: number;
+  letterSpacingMm: Mm;
+  fit: FitConfig;
+}
+
+/**
+ * One size for every block of a grid: the largest, from the size asked for
+ * down to the floor, at which every heading and every line fits its cell's
+ * width and every block its height. Lines are never wrapped — a wrapped name
+ * reads as two guests.
+ */
+export function fitGrid(
+  itemFont: LoadedFont,
+  headingFont: LoadedFont,
+  input: FitGridInput,
+): { fontSizePt: Pt; overflowed: boolean } {
+  const floor = Math.min(input.fit.minFontSizePt, input.fontSizePt);
+  const fits = (sizePt: Pt): boolean => {
+    const headingPt = sizePt * input.headingScale;
+    return input.blocks.every(
+      (block) =>
+        measureWidth(headingFont, block.heading, headingPt, input.letterSpacingMm) <= input.cellWMm &&
+        widestLineMm(itemFont, block.items, sizePt, input.letterSpacingMm) <= input.cellWMm &&
+        lineHeightMm(headingPt, input.lineHeight) + blockHeightMm(block.items.length, sizePt, input.lineHeight) <=
+          input.cellHMm,
+    );
+  };
+
+  if (fits(input.fontSizePt)) return { fontSizePt: input.fontSizePt, overflowed: false };
+  if (input.fit.mode === "none") return { fontSizePt: input.fontSizePt, overflowed: true };
+  for (let size = input.fontSizePt - STEP_PT; size >= floor; size -= STEP_PT) {
+    if (fits(size)) return { fontSizePt: round(size), overflowed: false };
+  }
+  return { fontSizePt: round(floor), overflowed: !fits(floor) };
 }
 
 function round(pt: Pt): Pt {

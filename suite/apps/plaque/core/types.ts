@@ -249,13 +249,47 @@ export interface ListElement extends ElementBase {
   optical?: OpticalSpec;
 }
 
+/**
+ * A block per group — per table — laid out in columns: the seating board.
+ *
+ * Each block is a heading from the group's first row and a line per row. One
+ * size serves every block, shrunk together until the fullest one fits its
+ * cell, so no table reads smaller than its neighbours. Like a list, it
+ * resolves into ordinary text, so neither renderer draws it specially.
+ */
+export interface GridElement extends ElementBase {
+  kind: "grid";
+  /** The column whose values make the blocks, e.g. `"Table"`. Rows with none are left off. */
+  groupBy: string;
+  /** e.g. `"{{Table}}"`, from the block's first row. */
+  headingTemplate: string;
+  /** One line per row in the block, e.g. `"{{Name}}"`. */
+  itemTemplate: string;
+  columns: number;
+  /** Between blocks, both ways. */
+  gapMm: Mm;
+  fontId: string;
+  /** The lines' size; the heading is `headingScale` times it. */
+  fontSizePt: Pt;
+  headingFontId: string;
+  headingScale: number;
+  headingColorHex: Hex;
+  align: HAlign;
+  lineHeight: number;
+  colorHex: Hex;
+  letterSpacingMm: Mm;
+  /** `minFontSizePt` is the floor; a mode of `none` never shrinks. */
+  fit: FitConfig;
+}
+
 export type CardElement =
   | TextElement
   | IconElement
   | RectElement
   | LineElement
   | ImageElement
-  | ListElement;
+  | ListElement
+  | GridElement;
 
 /**
  * Any field of any element kind, except the two that establish identity.
@@ -270,7 +304,8 @@ type PatchableKey = Exclude<
   | keyof RectElement
   | keyof LineElement
   | keyof ImageElement
-  | keyof ListElement,
+  | keyof ListElement
+  | keyof GridElement,
   "kind" | "id"
 >;
 
@@ -319,6 +354,11 @@ export interface Template {
  */
 export interface ResolvedBase {
   id: ElementId;
+  /**
+   * The design element this came from, when it is one of several pieces of
+   * it — a grid's blocks. Selecting a piece selects the element.
+   */
+  sourceId?: ElementId;
   x: Mm;
   y: Mm;
   w: Mm;

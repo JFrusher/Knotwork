@@ -12,7 +12,7 @@ describe("the element registry", () => {
     // entry, which would make it unreachable rather than undrawable.
     const kinds = ELEMENT_KINDS.map((spec) => spec.kind);
     expect(new Set(kinds).size).toBe(kinds.length);
-    const expected: CardElement["kind"][] = ["text", "list", "icon", "image", "rect", "line"];
+    const expected: CardElement["kind"][] = ["text", "list", "grid", "icon", "image", "rect", "line"];
     expect([...kinds].sort()).toEqual([...expected].sort());
   });
 

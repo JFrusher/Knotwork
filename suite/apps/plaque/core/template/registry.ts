@@ -90,6 +90,41 @@ export const ELEMENT_KINDS: ElementKindSpec[] = [
     },
   },
   {
+    kind: "grid",
+    label: "Grid",
+    describe: (el) => (el.kind === "grid" ? `by ${el.groupBy || "(no column)"}` : ""),
+    create: ({ id, z, card, headers }) => {
+      // Most of the card: a grid is the board, not a corner of it.
+      const inset = Math.min(card.widthMm, card.heightMm) * 0.08;
+      const groupBy = headers.includes("Table") ? "Table" : (headers[0] ?? "");
+      const name = headers.includes("Name") ? "Name" : (headers[0] ?? "");
+      return {
+        id,
+        z,
+        kind: "grid",
+        x: inset,
+        y: inset,
+        w: card.widthMm - inset * 2,
+        h: card.heightMm - inset * 2,
+        groupBy,
+        headingTemplate: groupBy ? `{{${groupBy}}}` : "",
+        itemTemplate: name ? `{{${name}}}` : "",
+        columns: 4,
+        gapMm: Math.max(2, inset / 2),
+        fontId: DEFAULT_FONT_ID,
+        fontSizePt: 24,
+        headingFontId: DEFAULT_FONT_ID,
+        headingScale: 1.4,
+        headingColorHex: "#171613",
+        align: "center",
+        lineHeight: 1.3,
+        colorHex: "#171613",
+        letterSpacingMm: 0,
+        fit: { ...DEFAULT_FIT, mode: "shrink", minFontSizePt: 6 },
+      };
+    },
+  },
+  {
     kind: "icon",
     label: "Icon",
     describe: (el) => (el.kind === "icon" ? (el.sourceField ? `by ${el.sourceField}` : "(no column)") : ""),

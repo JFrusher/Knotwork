@@ -2,6 +2,7 @@ import type {
   CardScene,
   CardSpec,
   ElementId,
+  GridElement,
   ListElement,
   Pt,
   ResolvedElement,
@@ -13,6 +14,7 @@ import { BUNDLED_VIEW, type IconArt } from "../../assets/icons";
 import type { GuestRow } from "../data/rows";
 import { interpolate } from "../csv/interpolate";
 import { transformForPanel } from "../geometry/fold";
+import { ptToMm } from "../units";
 import { resolveIconForRow } from "./icons";
 
 export interface FitResult {
@@ -30,6 +32,12 @@ export interface FitResult {
 export type FitTextFn = (element: TextElement, text: string) => FitResult;
 /** Block fit for a list element: the lines are already decided, only the size is not. */
 export type FitBlockFn = (element: ListElement, lines: string[]) => FitResult;
+/** One size for every block of a grid, fitted to its cells. */
+export type FitGridFn = (
+  element: GridElement,
+  blocks: Array<{ heading: string; items: string[] }>,
+  cell: { w: number; h: number },
+) => { fontSizePt: Pt; overflowed: boolean; missingFont?: boolean };
 export type IconPathFn = (iconId: string) => IconArt | null;
 export type ImageFn = (imageId: string) => ResolvedImageSource | null;
 
@@ -37,6 +45,8 @@ export interface ResolveOptions {
   fitText: FitTextFn;
   /** Without it a list element renders nothing and says so. */
   fitBlock?: FitBlockFn;
+  /** Without it a grid renders at its requested size and says the font is missing. */
+  fitGrid?: FitGridFn;
   iconPath: IconPathFn;
   /** Optional: without it, image elements resolve to nothing and warn. */
   image?: ImageFn;
@@ -61,7 +71,9 @@ export type WarningKind =
   | "missing-image"
   | "missing-font"
   | "unknown-element"
-  | "empty-text";
+  | "empty-text"
+  /** Rows a grid has no block for — guests with no table on a seating board. */
+  | "left-out";
 
 export interface CardWarning {
   elementId: ElementId;
@@ -259,6 +271,13 @@ export function resolveCard(
         break;
       }
 
+      case "grid": {
+        const resolved = resolveGrid(el, rows, card, opts);
+        warnings.push(...resolved.warnings);
+        elements.push(...resolved.elements);
+        break;
+      }
+
       case "rect":
         elements.push({
           ...base,
@@ -322,6 +341,133 @@ export function resolveCard(
   }
 
   return { scene: { elements, backgroundHex: template.backgroundHex }, warnings };
+}
+
+/** A grid's heading pieces are `<grid id>/h<n>`, its lines `<grid id>/i<n>`. */
+export const GRID_HEADING = "/h";
+const GRID_LINES = "/i";
+
+/**
+ * A grid's blocks, cut into equal cells left to right then down, each a
+ * heading and a stack of lines as ordinary text. Every cell is placed through
+ * the fold on its own, so a grid on a folded card lands as any element would.
+ */
+function resolveGrid(
+  el: GridElement,
+  rows: GuestRow[],
+  card: CardSpec,
+  opts: ResolveOptions,
+): { elements: ResolvedElement[]; warnings: CardWarning[] } {
+  const warnings: CardWarning[] = [];
+  const groups = new Map<string, GuestRow[]>();
+  let leftOut = 0;
+  for (const row of rows) {
+    const value = (row[el.groupBy] ?? "").trim();
+    if (!value) {
+      leftOut += 1;
+      continue;
+    }
+    groups.set(value, [...(groups.get(value) ?? []), row]);
+  }
+  if (leftOut > 0) {
+    warnings.push({
+      elementId: el.id,
+      kind: "left-out",
+      detail:
+        leftOut === 1
+          ? `One row has no ${el.groupBy}, so it is not on this grid.`
+          : `${leftOut} rows have no ${el.groupBy}, so they are not on this grid.`,
+    });
+  }
+
+  const missingColumns = new Set<string>();
+  const fill = (template: string, row: GuestRow) => {
+    const { text, missing } = interpolate(template, row);
+    for (const name of missing) missingColumns.add(name);
+    return text;
+  };
+  // Tables in the order people read their names: Table 2 before Table 10.
+  const blocks = [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+    .map(([, members]) => ({
+      heading: fill(el.headingTemplate, members[0]!),
+      items: members.map((row) => fill(el.itemTemplate, row)).filter((line) => line.trim().length > 0),
+    }));
+  for (const name of missingColumns) {
+    warnings.push({ elementId: el.id, kind: "missing-field", detail: `No column named "${name}".` });
+  }
+  if (blocks.length === 0) {
+    warnings.push({ elementId: el.id, kind: "empty-text", detail: "This grid has no blocks to show." });
+    return { elements: [], warnings };
+  }
+
+  const columns = Math.max(1, Math.min(Math.round(el.columns), blocks.length));
+  const lines = Math.ceil(blocks.length / columns);
+  const cell = {
+    w: (el.w - el.gapMm * (columns - 1)) / columns,
+    h: (el.h - el.gapMm * (lines - 1)) / lines,
+  };
+  const fit = opts.fitGrid?.(el, blocks, cell) ?? { fontSizePt: el.fontSizePt, overflowed: false, missingFont: true };
+  if (fit.missingFont) {
+    warnings.push({
+      elementId: el.id,
+      kind: "missing-font",
+      detail: `The font "${assetLabel(opts, el.fontId)}" or "${assetLabel(opts, el.headingFontId)}" is not on this device, so this grid cannot be sized correctly.`,
+    });
+  }
+  if (fit.overflowed) {
+    warnings.push({
+      elementId: el.id,
+      kind: "overflow",
+      detail: `${blocks.length} blocks do not fit at ${el.fit.minFontSizePt}pt. Try more columns or a bigger box.`,
+    });
+  }
+
+  const headingPt = fit.fontSizePt * el.headingScale;
+  const headingH = ptToMm(headingPt * el.lineHeight);
+  const elements: ResolvedElement[] = [];
+  blocks.forEach((block, index) => {
+    const x = el.x + (index % columns) * (cell.w + el.gapMm);
+    const y = el.y + Math.floor(index / columns) * (cell.h + el.gapMm);
+    const text = (id: string, box: { x: number; y: number; w: number; h: number }, piece: {
+      lines: string[];
+      fontId: string;
+      fontSizePt: Pt;
+      colorHex: string;
+    }): ResolvedElement => {
+      const placed = transformForPanel(box, card);
+      return {
+        id: `${el.id}${id}${index}`,
+        sourceId: el.id,
+        ...placed.box,
+        rotationDeg: placed.rotationDeg,
+        z: el.z,
+        kind: "text",
+        ...piece,
+        align: el.align,
+        vAlign: "top",
+        anchor: "align",
+        lineHeight: el.lineHeight,
+        letterSpacingMm: el.letterSpacingMm,
+        overflowed: fit.overflowed,
+      };
+    };
+    elements.push(
+      text(GRID_HEADING, { x, y, w: cell.w, h: headingH }, {
+        lines: block.heading ? [block.heading] : [],
+        fontId: el.headingFontId,
+        fontSizePt: headingPt,
+        colorHex: el.headingColorHex,
+      }),
+      text(GRID_LINES, { x, y: y + headingH, w: cell.w, h: Math.max(0, cell.h - headingH) }, {
+        lines: block.items,
+        fontId: el.fontId,
+        fontSizePt: fit.fontSizePt,
+        colorHex: el.colorHex,
+      }),
+    );
+  });
+  return { elements, warnings };
 }
 
 /** The filename the user knows the asset by, falling back to its id. */

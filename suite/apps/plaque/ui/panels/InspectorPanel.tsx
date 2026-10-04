@@ -11,6 +11,7 @@ import type {
   FitMode,
   HAlign,
   ImageFit,
+  GridElement,
   ListElement,
   ShrinkAnchor,
   TextElement,
@@ -155,6 +156,15 @@ export function InspectorPanel() {
           headers={headers}
           fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
           fonts={fonts}
+          patch={patch}
+        />
+      )}
+
+      {element.kind === "grid" && (
+        <GridProperties
+          element={element}
+          headers={headers}
+          fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
           patch={patch}
         />
       )}
@@ -323,6 +333,129 @@ export function InspectorPanel() {
  * table, the run-sheet for the whole event. Its typography controls are the
  * text ones; only the binding and the fit differ, so it reuses them.
  */
+/** A block per table, in columns: what makes a seating board. */
+function GridProperties({
+  element,
+  headers,
+  fontOptions,
+  patch,
+}: {
+  element: GridElement;
+  headers: string[];
+  fontOptions: Array<{ value: string; label: string }>;
+  patch: (p: Partial<CardElement>) => void;
+}) {
+  return (
+    <>
+      <SelectField
+        label="A block for each"
+        value={element.groupBy}
+        options={headers.map((h) => ({ value: h, label: h }))}
+        onChange={(groupBy) => patch({ groupBy })}
+      />
+      <TextField
+        label="Heading"
+        value={element.headingTemplate}
+        placeholder="{{Table}}"
+        onChange={(headingTemplate) => patch({ headingTemplate })}
+      />
+      <TextField
+        label="One line per guest"
+        value={element.itemTemplate}
+        placeholder="{{Name}}"
+        onChange={(itemTemplate) => patch({ itemTemplate })}
+      />
+      <Hint>
+        Every block shares one size, set as large as the fullest block allows. Somebody with no{" "}
+        {element.groupBy || "value"} is left off, and the warnings say how many.
+      </Hint>
+
+      <SubGroup title="Layout">
+        <Row>
+          <NumberField
+            label="Columns"
+            value={element.columns}
+            step={1}
+            min={1}
+            onChange={(columns) => patch({ columns: Math.max(1, Math.round(columns)) })}
+          />
+          <NumberField
+            label="Gap"
+            value={element.gapMm}
+            step={1}
+            min={0}
+            suffix="mm"
+            onChange={(gapMm) => patch({ gapMm })}
+          />
+        </Row>
+      </SubGroup>
+
+      <SubGroup title="Typography">
+        <SelectField
+          label="Heading font"
+          value={element.headingFontId}
+          options={fontOptions}
+          onChange={(headingFontId) => patch({ headingFontId })}
+        />
+        <Row>
+          <NumberField
+            label="Heading size"
+            value={element.headingScale}
+            step={0.1}
+            min={0.5}
+            suffix="×"
+            onChange={(headingScale) => patch({ headingScale })}
+          />
+          <ColorField
+            label="Heading colour"
+            value={element.headingColorHex}
+            onChange={(c) => patch({ headingColorHex: c ?? "#000000" })}
+          />
+        </Row>
+        <SelectField label="Font" value={element.fontId} options={fontOptions} onChange={(fontId) => patch({ fontId })} />
+        <Row>
+          <NumberField
+            label="Size"
+            value={element.fontSizePt}
+            step={0.5}
+            min={1}
+            suffix="pt"
+            onChange={(fontSizePt) => patch({ fontSizePt })}
+          />
+          <NumberField
+            label="Smallest"
+            value={element.fit.minFontSizePt}
+            step={0.5}
+            min={1}
+            suffix="pt"
+            onChange={(minFontSizePt) => patch({ fit: { ...element.fit, minFontSizePt } })}
+          />
+        </Row>
+        <Row>
+          <NumberField
+            label="Line height"
+            value={element.lineHeight}
+            step={0.05}
+            min={0.5}
+            onChange={(lineHeight) => patch({ lineHeight })}
+          />
+          <SelectField<HAlign>
+            label="Align"
+            value={element.align}
+            options={[
+              { value: "left", label: "Left" },
+              { value: "center", label: "Centre" },
+              { value: "right", label: "Right" },
+            ]}
+            onChange={(align) => patch({ align })}
+          />
+        </Row>
+        <ColorField label="Colour" value={element.colorHex} onChange={(c) => patch({ colorHex: c ?? "#000000" })} />
+      </SubGroup>
+    </>
+  );
+}
+
 function ListProperties({
   element,
   headers,

@@ -346,6 +346,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     applyGalleryTemplate: (entry) =>
       commit("a gallery design", (s) => ({
         card: { ...s.card, ...entry.card },
+        sheet: { ...s.sheet, ...entry.sheet },
         // The gallery is written against the sample column names; rebinding
         // re-attaches it to whatever this CSV calls them (S-B.1).
         template: rebindTemplate(
@@ -564,11 +565,18 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
           uploadedFontIds: s.uploadedFontIds.filter((existing) => existing !== id),
           template: {
             ...s.template,
-            elements: s.template.elements.map((el) =>
-              (el.kind === "text" || el.kind === "list") && el.fontId === id
+            elements: s.template.elements.map((el) => {
+              if (el.kind === "grid") {
+                return {
+                  ...el,
+                  fontId: el.fontId === id ? DEFAULT_FONT_ID : el.fontId,
+                  headingFontId: el.headingFontId === id ? DEFAULT_FONT_ID : el.headingFontId,
+                };
+              }
+              return (el.kind === "text" || el.kind === "list") && el.fontId === id
                 ? { ...el, fontId: DEFAULT_FONT_ID }
-                : el,
-            ),
+                : el;
+            }),
           },
         };
       }),

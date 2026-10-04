@@ -76,6 +76,17 @@ export function rebindTemplate(
   const elements: CardElement[] = template.elements.map((el) => {
     if (el.kind === "text") return { ...el, template: rewrite(el.template) };
     if (el.kind === "list") return { ...el, itemTemplate: rewrite(el.itemTemplate) };
+    if (el.kind === "grid") {
+      const target = resolve(el.groupBy);
+      if (!target && !unmatched.includes(el.groupBy)) unmatched.push(el.groupBy);
+      if (target && target !== el.groupBy) renamed[el.groupBy] = target;
+      return {
+        ...el,
+        groupBy: target ?? el.groupBy,
+        headingTemplate: rewrite(el.headingTemplate),
+        itemTemplate: rewrite(el.itemTemplate),
+      };
+    }
     if (el.kind === "icon") {
       const target = el.sourceField ? resolve(el.sourceField) : null;
       if (el.sourceField && !target && !unmatched.includes(el.sourceField)) {
@@ -112,11 +123,19 @@ export function unboundTokens(template: Template, headers: string[]): string[] {
   const live = new Set(headers);
   const out = new Set<string>();
   for (const el of template.elements) {
-    const text = el.kind === "text" ? el.template : el.kind === "list" ? el.itemTemplate : "";
+    const text =
+      el.kind === "text"
+        ? el.template
+        : el.kind === "list"
+          ? el.itemTemplate
+          : el.kind === "grid"
+            ? `${el.headingTemplate} ${el.itemTemplate}`
+            : "";
     for (const token of tokensIn(text)) {
       if (!live.has(token)) out.add(token);
     }
     if (el.kind === "icon" && el.sourceField && !live.has(el.sourceField)) out.add(el.sourceField);
+    if (el.kind === "grid" && el.groupBy && !live.has(el.groupBy)) out.add(el.groupBy);
   }
   return [...out];
 }

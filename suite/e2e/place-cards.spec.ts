@@ -94,3 +94,22 @@ test("a seating board goes to a print shop at full size, or onto A4 at home in t
   expect(new Set(tiles.map(([w, h]) => `${w}x${h}`))).toEqual(new Set(["297x210"]));
   await page.screenshot({ path: process.env.SHOT ?? "test-results/board.png" });
 });
+
+test("the seating board starter lays every table out from the room", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/place-cards");
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await pieces.getByRole("button", { name: "+ New piece" }).click();
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Seating board");
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
+  await page.getByLabel("Start from a design").selectOption({ label: "Seating board — every table, A1" });
+
+  const card = page.getByRole("region", { name: "Card" });
+  await expect(card.getByText("Find your seat")).toBeVisible();
+  await expect(card.getByText("Top table")).toBeVisible();
+  // Table 13 has nobody at it, so it has no block; Table 12 has one guest.
+  await expect(card.getByText("Table 12")).toBeVisible();
+  await expect(card.getByText("Table 13")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Download print-shop PDF" })).toBeEnabled();
+  await page.screenshot({ path: process.env.SHOT ?? "test-results/board-starter.png" });
+});
