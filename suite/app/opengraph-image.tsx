@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Knotwork — seating, stationery, timeline and crew for one wedding";
+export const alt = "Knotwork — free wedding planning tools that agree with each other";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -30,10 +30,10 @@ export default function OpengraphImage() {
       >
         <div style={{ fontSize: 96, letterSpacing: "-0.02em" }}>Knotwork</div>
         <div style={{ marginTop: 24, fontSize: 34, color: "#44403c" }}>
-          One wedding. Four tools. One document.
+          One wedding. Every tool. One document.
         </div>
         <div style={{ marginTop: 48, fontSize: 24, color: "#849e86" }}>
-          Yours, on your own device.
+          Free and open source. No account needed.
         </div>
       </div>
     ),
