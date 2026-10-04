@@ -1,4 +1,4 @@
-import { beforeEach, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test } from 'vitest'
 import { newGuest } from '@/lib/model/factories'
 import { addConstraint, addToFamily, createFamily, createGroup, dissolveGroup, removeConstraint, removeFromFamily } from './actions'
 import { applyPatch } from './patch'
@@ -72,4 +72,45 @@ test('removing a rule removes only that rule', () => {
     addConstraint({ kind: 'together', guestIds: ['g1', 'g3'] }),
   )
   expect(run(next, removeConstraint(next.constraints[0].id)).constraints.map((c) => c.kind)).toEqual(['together'])
+})
+
+// A plus-one goes where their guest goes. Someone deliberately put in another
+// family stays where they were put.
+describe('a plus-one and families', () => {
+  const withPlusOne = (): Plan => ({
+    ...plan,
+    guests: { ...plan.guests, p1: { ...guest('p1', 'Plus One'), plusOneOf: 'g1' } },
+  })
+
+  test('follows their guest into a family', () => {
+    const [withFamily, meta] = step(withPlusOne(), createFamily())
+    const familyId = meta.newFamilyId as string
+    const next = run(withFamily, addToFamily(familyId, 'g1'))
+    expect(next.guests.p1.familyId).toBe(familyId)
+    expect(next.families[familyId].memberIds).toEqual(['g1', 'p1'])
+  })
+
+  test('follows their guest from one family to another', () => {
+    const [one, m1] = step(withPlusOne(), createFamily())
+    const [two, m2] = step(run(one, addToFamily(m1.newFamilyId as string, 'g1')), createFamily())
+    const next = run(two, addToFamily(m2.newFamilyId as string, 'g1'))
+    expect(next.guests.p1.familyId).toBe(m2.newFamilyId)
+    expect(next.families[m1.newFamilyId as string].memberIds).toEqual([])
+  })
+
+  test('stays in a different family someone put them in', () => {
+    const [one, m1] = step(withPlusOne(), createFamily())
+    const [two, m2] = step(run(one, addToFamily(m1.newFamilyId as string, 'p1')), createFamily())
+    const next = run(two, addToFamily(m2.newFamilyId as string, 'g1'))
+    expect(next.guests.p1.familyId).toBe(m1.newFamilyId)
+    expect(next.families[m2.newFamilyId as string].memberIds).toEqual(['g1'])
+  })
+
+  test('leaves the family with their guest', () => {
+    const [withFamily, meta] = step(withPlusOne(), createFamily())
+    const familyId = meta.newFamilyId as string
+    const next = run(withFamily, addToFamily(familyId, 'g1'), addToFamily(familyId, 'p1'), removeFromFamily('g1'))
+    expect(next.guests.p1.familyId).toBeNull()
+    expect(next.families[familyId].memberIds).toEqual([])
+  })
 })
