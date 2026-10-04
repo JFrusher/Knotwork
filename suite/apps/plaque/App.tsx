@@ -57,6 +57,7 @@ export function App() {
     rows,
     rowIds,
     headers,
+    room,
     fonts,
     images,
     uploadedIcons,
@@ -79,6 +80,7 @@ export function App() {
       rows: s.rows,
       rowIds: s.rowIds,
       headers: s.headers,
+      room: s.room,
       fonts: s.fonts,
       images: s.images,
       uploadedIcons: s.uploadedIcons,
@@ -159,8 +161,8 @@ export function App() {
   }, [cropId, setCropId]);
 
   const resolveOptions = useMemo(
-    () => makeResolveOptions(fonts, uploadedIcons, images, assetNames),
-    [fonts, uploadedIcons, images, assetNames],
+    () => makeResolveOptions(fonts, uploadedIcons, images, assetNames, room),
+    [fonts, uploadedIcons, images, assetNames, room],
   );
 
   // Rows become artefacts once, here. Everything downstream counts artefacts:

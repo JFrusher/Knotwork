@@ -127,6 +127,33 @@ export const ELEMENT_KINDS: ElementKindSpec[] = [
     },
   },
   {
+    kind: "room",
+    label: "Room",
+    describe: (el) => (el.kind === "room" ? (el.show === "room" ? "the whole room" : "this table") : ""),
+    create: ({ id, z, card }) => {
+      const inset = Math.min(card.widthMm, card.heightMm) * 0.08;
+      return {
+        id,
+        z,
+        kind: "room",
+        x: inset,
+        y: inset,
+        w: card.widthMm - inset * 2,
+        h: card.heightMm - inset * 2,
+        show: "room",
+        seatLabels: "first",
+        fontId: DEFAULT_FONT_ID,
+        fontSizePt: 9,
+        colorHex: "#171613",
+        tableHex: "#e8dfcf",
+        seatHex: "#c9b48f",
+        wallHex: "#7a6a55",
+        tableLabels: true,
+        walls: true,
+      };
+    },
+  },
+  {
     kind: "icon",
     label: "Icon",
     describe: (el) => (el.kind === "icon" ? (el.sourceField ? `by ${el.sourceField}` : "(no column)") : ""),

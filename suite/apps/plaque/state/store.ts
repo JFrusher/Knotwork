@@ -26,6 +26,7 @@ import type {
   ElementId,
   Rect,
   ResolvedImageSource,
+  RoomScene,
   RowScope,
   SheetSpec,
   Template,
@@ -37,6 +38,7 @@ import { useKnotworkStore, type WriteOptions } from "@/lib/store/useKnotworkStor
 import { DESIGN_KEYS, designFor, designOf, initialSuite, newPiece, type Design, type Suite } from "./design";
 import { readDesign, readSuite, writeDesign, writeSuite } from "./sliceBridge";
 import { roomRows, withMerges, type Merged } from "./fromRoom";
+import { roomScene } from "./roomScene";
 
 export interface PieceSummary {
   id: string;
@@ -61,6 +63,8 @@ export interface RoomData {
   rowIds: string[];
   /** Said about the list as a whole, such as guests with no table yet. */
   rowIssues: RowIssue[];
+  /** The seating plan, for a room element to draw. */
+  room: RoomScene;
 }
 
 export interface PlaqueState extends Design, RoomData {
@@ -204,7 +208,12 @@ function live(wedding: Wedding, merged: Merged): RoomData {
   const inputs = [wedding.raw["guests"], wedding.raw["seating"], wedding.raw["event"], merged];
   if (lastLive && inputs.every((input, i) => input === lastLive!.inputs[i])) return lastLive.data;
   const room = roomRows(wedding.doc);
-  const data = { headers: room.headers, ...withMerges(room, merged), rowIssues: room.issues };
+  const data = {
+    headers: room.headers,
+    ...withMerges(room, merged),
+    rowIssues: room.issues,
+    room: roomScene(wedding.doc),
+  };
   lastLive = { inputs, data };
   return data;
 }
@@ -573,7 +582,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
                   headingFontId: el.headingFontId === id ? DEFAULT_FONT_ID : el.headingFontId,
                 };
               }
-              return (el.kind === "text" || el.kind === "list") && el.fontId === id
+              return (el.kind === "text" || el.kind === "list" || el.kind === "room") && el.fontId === id
                 ? { ...el, fontId: DEFAULT_FONT_ID }
                 : el;
             }),

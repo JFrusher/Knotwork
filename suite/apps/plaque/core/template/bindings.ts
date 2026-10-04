@@ -4,6 +4,7 @@ import type {
   ElementId,
   GridElement,
   ListElement,
+  RoomScene,
   Pt,
   ResolvedElement,
   ResolvedImageSource,
@@ -14,6 +15,7 @@ import { BUNDLED_VIEW, type IconArt } from "../../assets/icons";
 import type { GuestRow } from "../data/rows";
 import { interpolate } from "../csv/interpolate";
 import { flowPlan, gridBlocks } from "./grid";
+import { resolveRoom } from "./room";
 import { transformForPanel } from "../geometry/fold";
 import { ptToMm } from "../units";
 import { resolveIconForRow } from "./icons";
@@ -48,6 +50,8 @@ export interface ResolveOptions {
   fitBlock?: FitBlockFn;
   /** Without it a grid renders at its requested size and says the font is missing. */
   fitGrid?: FitGridFn;
+  /** The seating plan a room element draws. Without it, it draws nothing and says so. */
+  room?: () => RoomScene | null;
   iconPath: IconPathFn;
   /** Optional: without it, image elements resolve to nothing and warn. */
   image?: ImageFn;
@@ -269,6 +273,13 @@ export function resolveCard(
           overflowed: fit.overflowed,
           ...(el.optical ? { optical: el.optical } : {}),
         });
+        break;
+      }
+
+      case "room": {
+        const resolved = resolveRoom(el, row, card, opts);
+        warnings.push(...resolved.warnings);
+        elements.push(...resolved.elements);
         break;
       }
 

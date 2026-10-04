@@ -125,12 +125,16 @@ rather than a page size, so no custom page dimensions are stored:
   imposition (`core/data/parts.ts`, `artefactsOf`), so preview, counts,
   warnings and export see pages as artefacts and needed no change. This
   retires the F9 limitation.
-- **`room`** — the floor plan from Seating's geometry (`seatPositions`,
-  `floorPlanSvg`'s placement), drawn as resolved rects, lines and text so both
-  renderers draw it with no new drawing code. Properties: font, name colour,
-  table fill and stroke, seat style, table labels on or off, seat labels
-  (first name / full name / seat number / none), zones and walls on or off,
-  optional `focusTable` for a single table's mini diagram.
+- **`room`** (as built, phase 6) — the floor plan from Seating's own geometry
+  pass (`layoutFloorPlan`, now exported), handed to core as a `RoomScene`
+  provider the way fonts and images are. It resolves into filled paths
+  (tables, chairs), lines (walls) and text (labels, names), so both renderers
+  draw it with no new code. Properties: show the whole room or just this
+  card's table (by `{{Table}}`), seat labels (first name / whole name / seat
+  number / none), font, largest name size, colours for names, tables, chairs
+  and walls, table labels and walls on or off. Names hang off each chair,
+  away from the table, as wide as the gap to the next chair, and stay upright
+  however a table is turned. Zones and doors are not drawn.
 - **`qr`** — encodes a token (default `{{Guest Link}}`) as vector modules, so
   it prints sharp at any size.
 
@@ -166,7 +170,7 @@ Each phase is one commit, with tests, reviewed before the next.
 - ~~Phase 4: what a grid does with an unseated guest~~ — settled: left off
   the board, with a warning counting them. A board at the door is public, and
   a "Still to seat" block is a job list, not signage.
-- Phase 6: whether a `room` element can show only part of the room (one
-  marquee of two), or always the whole of it.
+- ~~Phase 6: part of the room~~ — settled for now: the whole room, or one
+  table. A part (one marquee of two) is a later addition.
 - Phase 3: CMYK or print-shop colour profiles are **not** planned; the PDF is
   RGB, as now. Say so if a print shop needs otherwise.

@@ -291,6 +291,29 @@ export interface GridElement extends ElementBase {
   fit: FitConfig;
 }
 
+/**
+ * The room drawn to scale from the seating plan — every table, or the one this
+ * card is for — with the guests' names at their seats. It resolves into
+ * shapes, lines and text, so neither renderer draws a floor plan specially.
+ */
+export interface RoomElement extends ElementBase {
+  kind: "room";
+  /** The whole room, or the table this artefact is for (its `{{Table}}`). */
+  show: "room" | "table";
+  /** What each seat says: a first name, a whole name, its number, or nothing. */
+  seatLabels: "first" | "name" | "number" | "none";
+  fontId: string;
+  /** Names are set at this size or smaller, each fitted to the room by its seat. */
+  fontSizePt: Pt;
+  colorHex: Hex;
+  tableHex: Hex;
+  seatHex: Hex;
+  wallHex: Hex;
+  /** Each table's own name, on it. */
+  tableLabels: boolean;
+  walls: boolean;
+}
+
 export type CardElement =
   | TextElement
   | IconElement
@@ -298,7 +321,8 @@ export type CardElement =
   | LineElement
   | ImageElement
   | ListElement
-  | GridElement;
+  | GridElement
+  | RoomElement;
 
 /**
  * Any field of any element kind, except the two that establish identity.
@@ -314,7 +338,8 @@ type PatchableKey = Exclude<
   | keyof LineElement
   | keyof ImageElement
   | keyof ListElement
-  | keyof GridElement,
+  | keyof GridElement
+  | keyof RoomElement,
   "kind" | "id"
 >;
 
@@ -349,6 +374,41 @@ export interface Template {
    * the project file.
    */
   overrides?: Record<string, Record<ElementId, ElementPatch>>;
+}
+
+/**
+ * The seating plan as a room element needs it: positions in the plan's own
+ * units, which the element scales into its box. Built outside core from the
+ * wedding (state/roomScene) and handed in, as fonts and images are.
+ */
+export interface RoomScene {
+  bounds: { x: number; y: number; w: number; h: number };
+  walls: Segment[];
+  /** A seat's drawn radius. */
+  seatRadius: number;
+  tables: RoomTable[];
+}
+
+export interface RoomTable {
+  label: string;
+  x: number;
+  y: number;
+  rotationDeg: number;
+  /** The table's outline in its own coordinates, centred on 0,0, before rotation. */
+  pathD: string;
+  view: { x: number; y: number; w: number; h: number };
+  seats: RoomSeat[];
+}
+
+export interface RoomSeat {
+  x: number;
+  y: number;
+  /** Away from the table, unit length: where the name hangs. */
+  out: Point;
+  number: number;
+  /** Empty for an empty chair. */
+  first: string;
+  name: string;
 }
 
 // ---------------------------------------------------------------------------

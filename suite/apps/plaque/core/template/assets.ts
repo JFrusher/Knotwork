@@ -42,6 +42,9 @@ export function missingAssets(
     if (el.kind === "text" && !BUNDLED_FONT_IDS.has(el.fontId) && !hasFont(el.fontId)) {
       note(el.fontId, "font", el.id);
     }
+    if (el.kind === "room" && !BUNDLED_FONT_IDS.has(el.fontId) && !hasFont(el.fontId)) {
+      note(el.fontId, "font", el.id);
+    }
     if (el.kind === "grid") {
       for (const fontId of [el.fontId, el.headingFontId]) {
         if (!BUNDLED_FONT_IDS.has(fontId) && !hasFont(fontId)) note(fontId, "font", el.id);

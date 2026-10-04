@@ -91,7 +91,11 @@ function describe(el: CardElement): string {
         ? "list"
         : el.kind === "grid"
           ? `grid by ${el.groupBy}`
-          : el.kind;
+          : el.kind === "room"
+            ? el.show === "room"
+              ? "plan of the room"
+              : "plan of this table"
+            : el.kind;
   return `${what}, ${where}${size}`;
 }
 

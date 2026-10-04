@@ -13,6 +13,7 @@ import type {
   ImageFit,
   GridElement,
   ListElement,
+  RoomElement,
   ShrinkAnchor,
   TextElement,
   VAlign,
@@ -163,6 +164,14 @@ export function InspectorPanel() {
         <GridProperties
           element={element}
           headers={headers}
+          fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
+          patch={patch}
+        />
+      )}
+
+      {element.kind === "room" && (
+        <RoomProperties
+          element={element}
           fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
           patch={patch}
         />
@@ -332,6 +341,69 @@ export function InspectorPanel() {
  * table, the run-sheet for the whole event. Its typography controls are the
  * text ones; only the binding and the fit differ, so it reuses them.
  */
+/** The room to scale from the seating plan, or one table of it. */
+function RoomProperties({
+  element,
+  fontOptions,
+  patch,
+}: {
+  element: RoomElement;
+  fontOptions: Array<{ value: string; label: string }>;
+  patch: (p: Partial<CardElement>) => void;
+}) {
+  return (
+    <>
+      <SelectField<RoomElement["show"]>
+        label="Show"
+        value={element.show}
+        options={[
+          { value: "room", label: "The whole room" },
+          { value: "table", label: "Just this card's table" },
+        ]}
+        onChange={(show) => patch({ show })}
+      />
+      <SelectField<RoomElement["seatLabels"]>
+        label="At each seat"
+        value={element.seatLabels}
+        options={[
+          { value: "first", label: "First name" },
+          { value: "name", label: "Whole name" },
+          { value: "number", label: "Seat number" },
+          { value: "none", label: "Nothing" },
+        ]}
+        onChange={(seatLabels) => patch({ seatLabels })}
+      />
+      <Hint>
+        Drawn from Seating as it stands: move a table or a guest there and it moves here. Each name is
+        set as large as the room by its chair allows, up to the size below.
+      </Hint>
+      <Row>
+        <CheckboxField label="Table names" checked={element.tableLabels} onChange={(tableLabels) => patch({ tableLabels })} />
+        <CheckboxField label="Walls" checked={element.walls} onChange={(walls) => patch({ walls })} />
+      </Row>
+
+      <SubGroup title="Typography">
+        <SelectField label="Font" value={element.fontId} options={fontOptions} onChange={(fontId) => patch({ fontId })} />
+        <NumberField
+          label="Largest name"
+          value={element.fontSizePt}
+          step={0.5}
+          min={1}
+          suffix="pt"
+          onChange={(fontSizePt) => patch({ fontSizePt })}
+        />
+        <ColorField label="Names" value={element.colorHex} onChange={(c) => patch({ colorHex: c ?? "#000000" })} />
+      </SubGroup>
+
+      <SubGroup title="Colours">
+        <ColorField label="Tables" value={element.tableHex} onChange={(c) => patch({ tableHex: c ?? "#e8dfcf" })} />
+        <ColorField label="Chairs" value={element.seatHex} onChange={(c) => patch({ seatHex: c ?? "#c9b48f" })} />
+        <ColorField label="Walls" value={element.wallHex} onChange={(c) => patch({ wallHex: c ?? "#7a6a55" })} />
+      </SubGroup>
+    </>
+  );
+}
+
 /** A block per table, in columns: what makes a seating board. */
 function GridProperties({
   element,

@@ -69,7 +69,7 @@ export function Preflight({
   onChoose,
   onCancel,
 }: PreflightProps) {
-  const { card, sheet, template, fonts, images, uploadedIcons, assetNames, printer } =
+  const { card, sheet, template, fonts, images, uploadedIcons, assetNames, room, printer } =
     usePlaque(
       useShallow((s) => ({
         card: s.card,
@@ -79,13 +79,14 @@ export function Preflight({
         images: s.images,
         uploadedIcons: s.uploadedIcons,
         assetNames: s.assetNames,
+        room: s.room,
         printer: s.printers.find((p) => p.id === s.activePrinterId) ?? null,
       })),
     );
 
   const resolveOptions = useMemo(
-    () => makeResolveOptions(fonts, uploadedIcons, images, assetNames),
-    [fonts, uploadedIcons, images, assetNames],
+    () => makeResolveOptions(fonts, uploadedIcons, images, assetNames, room),
+    [fonts, uploadedIcons, images, assetNames, room],
   );
 
   // Only the sheets shown as thumbnails are imposed.

@@ -136,6 +136,8 @@ export function unboundTokens(template: Template, headers: string[]): string[] {
     }
     if (el.kind === "icon" && el.sourceField && !live.has(el.sourceField)) out.add(el.sourceField);
     if (el.kind === "grid" && el.groupBy && !live.has(el.groupBy)) out.add(el.groupBy);
+    // A table's own map finds its table by the artefact's.
+    if (el.kind === "room" && el.show === "table" && !live.has("Table")) out.add("Table");
   }
   return [...out];
 }

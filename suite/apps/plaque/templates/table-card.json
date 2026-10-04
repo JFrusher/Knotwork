@@ -3,7 +3,7 @@
   "version": 1,
   "id": "table-card",
   "name": "Table card — who sits here, A5",
-  "description": "One card per table: its name and its guests, to stand in the middle of it.",
+  "description": "One card per table: its name, its guests, and where each of them sits.",
   "card": {
     "widthMm": 148,
     "heightMm": 210,
@@ -59,13 +59,13 @@
         "x": 14,
         "y": 58,
         "w": 120,
-        "h": 138,
+        "h": 70,
         "z": 2,
         "itemTemplate": "{{First Name}} {{Last Name}}",
         "bullet": "",
         "skipEmpty": true,
         "fontId": "crimson",
-        "fontSizePt": 16,
+        "fontSizePt": 14,
         "align": "center",
         "vAlign": "top",
         "lineHeight": 1.5,
@@ -77,6 +77,25 @@
           "maxLines": 1,
           "anchor": "align"
         }
+      },
+      {
+        "kind": "room",
+        "id": "seats",
+        "x": 14,
+        "y": 132,
+        "w": 120,
+        "h": 66,
+        "z": 3,
+        "show": "table",
+        "seatLabels": "first",
+        "fontId": "crimson",
+        "fontSizePt": 8,
+        "colorHex": "#2b2620",
+        "tableHex": "#e8dfcf",
+        "seatHex": "#c9b48f",
+        "wallHex": "#7a6a55",
+        "tableLabels": false,
+        "walls": false
       }
     ]
   }

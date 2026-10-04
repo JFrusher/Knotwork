@@ -53,7 +53,7 @@ describe("the template gallery", () => {
     for (const entry of GALLERY) {
       for (const el of entry.template.elements) {
         if (el.kind === "grid") expect([entry.id, fonts.has(el.headingFontId)]).toEqual([entry.id, true]);
-        if (el.kind !== "text" && el.kind !== "list" && el.kind !== "grid") continue;
+        if (el.kind !== "text" && el.kind !== "list" && el.kind !== "grid" && el.kind !== "room") continue;
         expect([entry.id, fonts.has(el.fontId)]).toEqual([entry.id, true]);
       }
     }

@@ -136,3 +136,31 @@ test("the finder starter files every guest A to Z, and carries on to another pag
   await expect(page.getByText(/^[2-9] cards · [2-9] sheets$/)).toBeVisible();
   await expect(card.getByRole("heading")).toContainText(/All 100 rows — page 1 of [2-9]/);
 });
+
+test("the floor plan starter draws the room from Seating, a first name at every taken chair", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/place-cards");
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await pieces.getByRole("button", { name: "+ New piece" }).click();
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Floor plan");
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
+  await page.getByLabel("Start from a design").selectOption({ label: "Floor plan — the room to scale, A1" });
+
+  const card = page.getByRole("region", { name: "Card" });
+  await expect(card.getByText("Top table")).toBeVisible();
+  await expect(card.getByText("Alex", { exact: true })).toBeVisible();
+  await page.screenshot({ path: process.env.SHOT ?? "test-results/floor-plan.png" });
+});
+
+test("the table card starter shows its own table, and who sits where at it", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/place-cards");
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await pieces.getByRole("button", { name: "+ New piece" }).click();
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Table cards");
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
+  await page.getByLabel("Start from a design").selectOption({ label: "Table card — who sits here, A5" });
+  // Thirteen tables with people at them, and one for the three still to seat.
+  await expect(page.getByText(/^14 cards · \d+ sheets?$/)).toBeVisible();
+  await page.screenshot({ path: process.env.SHOT2 ?? "test-results/table-card.png" });
+});

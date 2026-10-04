@@ -77,6 +77,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
     uploadedIcons,
     pieceName,
     printOnly,
+    room,
     assetNames,
     printer,
   } = usePlaque(
@@ -92,6 +93,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
         uploadedIcons: s.uploadedIcons,
         pieceName: s.pieces.find((p) => p.id === s.pieceId)?.name ?? "",
         printOnly: s.printOnly,
+        room: s.room,
         assetNames: s.assetNames,
         printer: s.printers.find((p) => p.id === s.activePrinterId) ?? null,
       })),
@@ -154,7 +156,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
         rows,
         headers,
         rowIds,
-        resolve: makeResolveOptions(fonts, uploadedIcons, images, assetNames),
+        resolve: makeResolveOptions(fonts, uploadedIcons, images, assetNames, room),
         scale: effectiveScale(printer?.scale),
         ...(tiles ? { tile: sheet.tilePaper } : {}),
         ...(sheet.duplex && !tiles
