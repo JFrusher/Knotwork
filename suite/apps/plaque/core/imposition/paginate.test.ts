@@ -16,6 +16,7 @@ const card = (over: Partial<CardSpec> = {}): CardSpec => ({
 
 const sheet = (over: Partial<SheetSpec> = {}): SheetSpec => ({
   page: "A4",
+  tilePaper: "A4",
   orientation: "portrait",
   marginTopMm: 10,
   marginRightMm: 10,

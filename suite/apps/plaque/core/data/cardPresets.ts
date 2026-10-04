@@ -1,5 +1,5 @@
 import raw from "../../data/card-presets.json";
-import { PAGE_SIZES_MM } from "../units";
+import { LARGEST_CARD_MM } from "../units";
 import type { CardSpec, FoldAxis } from "../types";
 
 /**
@@ -50,9 +50,8 @@ export function validateCardPreset(value: unknown): string | null {
   if (preset.fold !== "none" && (preset.foldPositionMm <= 0 || preset.foldPositionMm >= span)) {
     return "foldPositionMm";
   }
-  // Nothing here should be bigger than the largest paper Plaque can print on.
-  const longest = Math.max(...Object.values(PAGE_SIZES_MM).map((s) => Math.max(s.w, s.h)));
-  if (Math.max(preset.widthMm, preset.heightMm) > longest) return "widthMm";
+  // Nothing here should be bigger than a print shop will take.
+  if (Math.max(preset.widthMm, preset.heightMm) > LARGEST_CARD_MM) return "widthMm";
   return null;
 }
 

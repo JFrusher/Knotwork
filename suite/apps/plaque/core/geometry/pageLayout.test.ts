@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardSpec, SheetSpec } from "../types";
-import { cardOriginOnSheet, computeLayout, fitCount, usableSize } from "./pageLayout";
+import { cardOriginOnSheet, computeLayout, fitCount, sheetPageMm, usableSize } from "./pageLayout";
 
 const card = (over: Partial<CardSpec> = {}): CardSpec => ({
   widthMm: 85,
@@ -14,6 +14,7 @@ const card = (over: Partial<CardSpec> = {}): CardSpec => ({
 
 const sheet = (over: Partial<SheetSpec> = {}): SheetSpec => ({
   page: "A4",
+  tilePaper: "A4",
   orientation: "portrait",
   marginTopMm: 10,
   marginRightMm: 10,
@@ -49,10 +50,23 @@ describe("fitCount", () => {
   });
 });
 
+describe("a page the card's own size", () => {
+  it("is the card and its margins, so exactly one fits, at full size", () => {
+    const board = card({ widthMm: 594, heightMm: 841 });
+    const fit = sheet({ page: "FIT", marginTopMm: 8, marginRightMm: 8, marginBottomMm: 8, marginLeftMm: 8 });
+    expect(sheetPageMm(board, fit)).toEqual({ w: 610, h: 857 });
+    expect(computeLayout(board, fit)).toMatchObject({ perSheet: 1, origin: { x: 8, y: 8 } });
+  });
+
+  it("is the named paper otherwise", () => {
+    expect(sheetPageMm(card(), sheet({ page: "A3" }))).toEqual({ w: 297, h: 420 });
+  });
+});
+
 describe("computeLayout", () => {
   it("hits the spec's worked example: A4, 85x55, 10mm margins, 5mm gaps", () => {
     const layout = computeLayout(card(), sheet());
-    expect(usableSize(sheet())).toEqual({ w: 190, h: 277 });
+    expect(usableSize(card(), sheet())).toEqual({ w: 190, h: 277 });
     expect(layout.cols).toBe(2);
     expect(layout.rows).toBe(4);
     expect(layout.perSheet).toBe(8);

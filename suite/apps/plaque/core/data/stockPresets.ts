@@ -1,5 +1,5 @@
 import raw from "../../data/stock-presets.json";
-import type { CardSpec, Orientation, PageSizeName, SheetSpec } from "../types";
+import type { CardSpec, Orientation, PaperName, SheetSpec } from "../types";
 import { pageSizeMm } from "../units";
 
 /**
@@ -16,7 +16,7 @@ import { pageSizeMm } from "../units";
 export interface StockPreset {
   id: string;
   name: string;
-  page: PageSizeName;
+  page: PaperName;
   orientation: Orientation;
   widthMm: number;
   heightMm: number;
@@ -82,7 +82,7 @@ export function validatePreset(value: unknown): string | null {
   for (const key of ["id", "name"]) {
     if (typeof p[key] !== "string" || !p[key]) return key;
   }
-  if (p["page"] !== "A4" && p["page"] !== "LETTER") return "page";
+  if (p["page"] !== "A4" && p["page"] !== "LETTER" && p["page"] !== "A3") return "page";
   if (p["orientation"] !== "portrait" && p["orientation"] !== "landscape") return "orientation";
   for (const key of ["widthMm", "heightMm", "gapXMm", "gapYMm"]) {
     const n = p[key];

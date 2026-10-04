@@ -108,7 +108,8 @@ function readPiece(
     id,
     name,
     card: source["card"] as Piece["card"],
-    sheet: source["sheet"] as Piece["sheet"],
+    // Absent in anything written before boards could be tiled at home.
+    sheet: { tilePaper: "A4", ...(source["sheet"] as object) } as Piece["sheet"],
     template: source["template"] as Template,
   };
   if (!legacy) {

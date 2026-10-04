@@ -61,3 +61,36 @@ test("a table renamed in Seating is on the cards with nothing pressed", async ({
   await expect(page.getByText(/Printing from the room, as it stands: 100 guests/)).toBeVisible();
   await page.screenshot({ path: process.env.SHOT ?? "test-results/live.png" });
 });
+
+test("a seating board goes to a print shop at full size, or onto A4 at home in tiles", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/place-cards");
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await pieces.getByRole("button", { name: "+ New piece" }).click();
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
+
+  await page.getByLabel("What are you making?").selectOption({ label: "Seating board — A1, 594 × 841mm" });
+  await page.getByLabel("Paper").selectOption({ label: "The card's own size" });
+  await page.getByLabel("Print one artefact per").selectOption({ label: "The whole list — a board, a seating list" });
+
+  const pdfPages = async (button: string, choose?: string) => {
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      (async () => {
+        await page.getByRole("button", { name: button }).click();
+        if (choose) await page.getByRole("button", { name: choose }).click();
+      })(),
+    ]);
+    const { PDFDocument } = await import("pdf-lib");
+    const pdf = await PDFDocument.load(await (await import("node:fs/promises")).readFile((await download.path())!));
+    return pdf.getPages().map((p) => [Math.round((p.getWidth() / 72) * 25.4), Math.round((p.getHeight() / 72) * 25.4)]);
+  };
+
+  // One page: the board plus room for its crop marks.
+  expect(await pdfPages("Download print-shop PDF", "Download all 1 sheet")).toEqual([[608, 855]]);
+  // Fifteen A4 sheets, turned whichever way takes fewest.
+  const tiles = await pdfPages("Tile it onto A4");
+  expect(tiles.length).toBe(15);
+  expect(new Set(tiles.map(([w, h]) => `${w}x${h}`))).toEqual(new Set(["297x210"]));
+  await page.screenshot({ path: process.env.SHOT ?? "test-results/board.png" });
+});

@@ -1,3 +1,4 @@
+import { homePaper } from "../../core/units";
 import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
@@ -31,7 +32,7 @@ export function DuplexCard() {
     useShallow((s) => ({
       printers: s.printers,
       activePrinterId: s.activePrinterId,
-      page: s.sheet.page,
+      page: homePaper(s.sheet),
       orientation: s.sheet.orientation,
     })),
   );

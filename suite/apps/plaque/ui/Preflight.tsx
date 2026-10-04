@@ -198,9 +198,12 @@ export function Preflight({
           <button type="button" className={styles.button} onClick={() => onChoose("first")}>
             Sheet 1 only
           </button>
-          <button type="button" className={styles.button} onClick={() => onChoose("test")}>
-            Two test cards on plain paper
-          </button>
+          {/* A board's proof on plain paper is its tiles, offered beside the download. */}
+          {sheet.page !== "FIT" && (
+            <button type="button" className={styles.button} onClick={() => onChoose("test")}>
+              Two test cards on plain paper
+            </button>
+          )}
           {sheet.duplex && hasBackSide(template) && (
             <button type="button" className={styles.button} onClick={() => onChoose("duplex-test")}>
               Duplex test sheet first

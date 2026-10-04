@@ -1,9 +1,9 @@
 import { pageSizeMm } from "../units";
-import type { CardRotation, CardSpec, Mm, Orientation, PageSizeName, SheetSpec } from "../types";
+import type { CardRotation, CardSpec, Mm, Orientation, PaperName, SheetSpec } from "../types";
 import { computeLayout } from "./pageLayout";
 
 export interface SuggestOptions {
-  pages?: PageSizeName[];
+  pages?: PaperName[];
   /** Floor for the gap between cards. Raised automatically when bleed demands it. */
   minGapMm?: Mm;
   /** Suggestions never place a card inside this border. */
@@ -14,7 +14,7 @@ export interface SuggestOptions {
 export interface LayoutSuggestion {
   id: string;
   label: string;
-  page: PageSizeName;
+  page: PaperName;
   orientation: Orientation;
   cardRotationDeg: CardRotation;
   cols: number;
@@ -54,7 +54,7 @@ export function minimumGapMm(card: CardSpec, floor: Mm): Mm {
  * the user picks a size, the app works out how to waste the least card stock.
  */
 export function suggestLayouts(card: CardSpec, opts: SuggestOptions = {}): LayoutSuggestion[] {
-  const pages = opts.pages ?? (["A4", "LETTER"] as PageSizeName[]);
+  const pages = opts.pages ?? (["A4", "LETTER"] as PaperName[]);
   const margin = opts.printerMarginMm ?? 5;
   const gap = minimumGapMm(card, opts.minGapMm ?? 5);
   const maxResults = opts.maxResults ?? 6;
@@ -78,6 +78,7 @@ export function suggestLayouts(card: CardSpec, opts: SuggestOptions = {}): Layou
         const probe: SheetSpec = {
           ...patch,
           printerMarginMm: margin,
+          tilePaper: "A4",
           cropMarks: true,
           cutLines: true,
           foldGuides: true,
@@ -127,14 +128,14 @@ function orientationRank(o: Orientation): number {
 }
 
 function describe(
-  page: PageSizeName,
+  page: PaperName,
   orientation: Orientation,
   rotation: CardRotation,
   cols: number,
   rows: number,
   perSheet: number,
 ): string {
-  const name = page === "A4" ? "A4" : "Letter";
+  const name = page === "LETTER" ? "Letter" : page;
   const turned = rotation === 90 ? ", cards turned" : "";
   return `${name} ${orientation}${turned} — ${cols} × ${rows}, ${perSheet} per sheet`;
 }

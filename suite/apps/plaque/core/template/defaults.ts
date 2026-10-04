@@ -60,6 +60,7 @@ export function defaultSheet(): SheetSpec {
     gapYMm: 5,
     cardRotationDeg: 0,
     printerMarginMm: 5,
+    tilePaper: "A4",
     cropMarks: true,
     cutLines: true,
     foldGuides: true,

@@ -30,7 +30,13 @@ export type Segment = readonly [Point, Point];
 // Card and sheet
 // ---------------------------------------------------------------------------
 
-export type PageSizeName = "A4" | "LETTER";
+/** Paper a printer is fed. */
+export type PaperName = "A4" | "LETTER" | "A3";
+/**
+ * `FIT` makes the page the card's own size plus its margins: one board or
+ * poster per page, at full size, which is what a print shop wants.
+ */
+export type PageSizeName = PaperName | "FIT";
 export type Orientation = "portrait" | "landscape";
 
 /**
@@ -77,6 +83,8 @@ export interface SheetSpec {
    * property of the printer, not the design — see PrinterProfile.
    */
   duplex: boolean;
+  /** The paper a `FIT` page is tiled onto, for printing a board at home. */
+  tilePaper: PaperName;
   /**
    * PDF only. A strip along the foot of each sheet naming sizes, fold, applied
    * printer scale, card count and build hash, with a printed rule — so a

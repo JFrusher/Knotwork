@@ -98,16 +98,19 @@ current source (`fileName === "the room"` → `room`). The migration is a
 
 ### Paper
 
-`PageSizeName` gains `A3 | A2 | A1 | A0 | POSTER_18x24 | POSTER_24x36`, plus
-`CUSTOM` with width and height. A piece whose card is the page (one artefact per
-page, no imposition) exports two ways:
+As built (phase 3). A board is a card the size of the board — A3 to A0, 50 × 70
+cm, 18 × 24 in and 24 × 36 in are card presets, and the card-size cap is A0 —
+rather than a page size, so no custom page dimensions are stored:
 
-- **Print shop** — one page at full size, with bleed and crop marks.
-- **Tile** — the same page cut into A4/Letter tiles with a 10 mm overlap, tile
-  labels ("B2"), and alignment marks. This is a step in `paginate`, after
-  imposition, so every renderer gets it for free.
-
-The card-preset size cap follows the new largest page.
+- `A3` joins A4 and Letter as paper to impose on.
+- `FIT` — "the card's own size" — makes the page the card plus its margins:
+  one board per page at full size, with bleed and crop marks. That is the
+  **print-shop** PDF. Home-printer warnings do not apply to it.
+- **Tile** cuts each full-size sheet into A4, Letter or A3 (`sheet.tilePaper`)
+  with a 10 mm margin and a 10 mm overlap: trim lines on the inner edges,
+  landing lines where the next tile lays, and the tile's name in the slug
+  strip. A step after imposition (`core/imposition/tile.ts`), so neither
+  renderer changed.
 
 ### New elements
 

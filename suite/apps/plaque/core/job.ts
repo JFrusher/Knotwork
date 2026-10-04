@@ -10,10 +10,11 @@ import {
   type FlipEdge,
 } from "./imposition/duplex";
 import { paginate, type GuestWarning } from "./imposition/paginate";
+import { tileSheets } from "./imposition/tile";
 import { effectiveScale } from "./print/printerProfile";
 import { SLUG_RULE_MM, buildFingerprint, slugText } from "./print/slug";
 import type { ResolveOptions } from "./template/bindings";
-import type { CardSpec, Sheet, SheetSpec, Template } from "./types";
+import type { CardSpec, PaperName, Sheet, SheetSpec, Template } from "./types";
 
 /**
  * One job, from data to sheets.
@@ -42,6 +43,11 @@ export interface JobInput {
   limit?: number;
   /** Only the artefacts with these keys — a reprint of a few. */
   only?: ReadonlySet<string>;
+  /**
+   * Cut each sheet into tiles of this paper, for a board printed at home. One
+   * sided: a board has no back.
+   */
+  tile?: PaperName;
 }
 
 export interface JobResult {
@@ -75,6 +81,28 @@ export function buildJob(input: JobInput): JobResult {
     pageRange,
   );
 
+  const buildHash = buildFingerprint({
+    card: input.card,
+    sheet: input.sheet,
+    template: input.template,
+    rowCount: artefacts.length,
+    scale,
+  });
+
+  if (input.tile) {
+    if (input.duplex) throw new Error("A board tiled at home is printed one side only.");
+    const tiled = tileSheets(front.sheets, input.tile);
+    return {
+      sheets: tiled.sheets,
+      warnings: front.warnings,
+      artefactCount: artefacts.length,
+      // The tile's label goes where the slug would: it is what a tile needs to say.
+      slugTexts: tiled.labels,
+      slugRuleMm: SLUG_RULE_MM,
+      buildHash,
+    };
+  }
+
   let sheets = front.sheets;
   const wantsDuplex = input.sheet.duplex && hasBackSide(input.template) && input.duplex;
   if (wantsDuplex && input.duplex) {
@@ -99,14 +127,6 @@ export function buildJob(input: JobInput): JobResult {
     );
     sheets = interleave(front.sheets, backs);
   }
-
-  const buildHash = buildFingerprint({
-    card: input.card,
-    sheet: input.sheet,
-    template: input.template,
-    rowCount: artefacts.length,
-    scale,
-  });
 
   const slugTexts: string[] = [];
   for (const s of sheets) {

@@ -1,8 +1,7 @@
-import { pageSizeMm } from "../units";
 import type { CardSpec, SheetSpec } from "../types";
 import { MARK_LENGTH_MM } from "./cropMarks";
 import { foldPositionIsValid } from "./fold";
-import { computeLayout, usableSize } from "./pageLayout";
+import { computeLayout, sheetPageMm, usableSize } from "./pageLayout";
 
 export type Severity = "error" | "warning";
 
@@ -36,8 +35,11 @@ export function validateGeometry(
   printer: ValidateContext = {},
 ): Issue[] {
   const issues: Issue[] = [];
-  const page = pageSizeMm(sheet.page, sheet.orientation);
-  const usable = usableSize(sheet);
+  const page = sheetPageMm(card, sheet);
+  const usable = usableSize(card, sheet);
+  // A print shop prints to the edge of the sheet it is given: what a home
+  // printer cannot reach is not its problem.
+  const atHome = sheet.page !== "FIT";
   const layout = computeLayout(card, sheet);
 
   if (card.widthMm <= 0 || card.heightMm <= 0) {
@@ -86,7 +88,8 @@ export function validateGeometry(
 
   if (card.bleedMm > 0) {
     const need = card.bleedMm * 2;
-    if (sheet.gapXMm < need || sheet.gapYMm < need) {
+    // Only between cards that have a neighbour that way: a lone board has none.
+    if ((layout.cols > 1 && sheet.gapXMm < need) || (layout.rows > 1 && sheet.gapYMm < need)) {
       issues.push({
         id: "bleed-overlap",
         severity: "warning",
@@ -105,7 +108,7 @@ export function validateGeometry(
     typeof printer.unprintableMarginMm === "number" && Number.isFinite(printer.unprintableMarginMm)
       ? printer.unprintableMarginMm
       : null;
-  const unprintable = Math.max(sheet.printerMarginMm, measured ?? 0);
+  const unprintable = atHome ? Math.max(sheet.printerMarginMm, measured ?? 0) : 0;
   if (minMargin < unprintable) {
     const whose =
       measured !== null && measured >= sheet.printerMarginMm

@@ -1,3 +1,4 @@
+import { homePaper } from "../core/units";
 import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { hasErrors, type Issue } from "../core/geometry/validate";
@@ -19,7 +20,10 @@ import { Preflight, type PreflightChoice } from "./Preflight";
 /** Two is enough to check size, fit and colour, and wastes nothing. */
 const TEST_CARDS = 2;
 
-const SUFFIX: Record<PreflightChoice, string> = {
+type Variant = PreflightChoice | "tiles";
+
+const SUFFIX: Record<Variant, string> = {
+  tiles: "-tiles",
   all: "",
   first: "-sheet-1",
   test: "-test-cards",
@@ -97,6 +101,8 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
   const [note, setNote] = useState<string | null>(null);
   const [preflight, setPreflight] = useState(false);
 
+  /** A board or poster at its own size: for a print shop, or tiled at home. */
+  const printShop = sheet.page === "FIT";
   const blocked =
     hasErrors(issues) || artefacts.length === 0 || sheetCount === 0 || missing.length > 0;
 
@@ -114,7 +120,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       const { duplexTestPdf } = await import("../render/pdf/duplexTestPdf");
       const { dx, dy } = backCorrection(printer);
       const bytes = await duplexTestPdf({
-        page: sheet.page,
+        page: homePaper(sheet),
         orientation: sheet.orientation,
         flipEdge: printer?.flipEdge ?? "long",
         backOffsetXMm: dx,
@@ -128,7 +134,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
     }
   }
 
-  async function download(variant: PreflightChoice = "all") {
+  async function download(variant: Variant = "all") {
     if (variant === "duplex-test") return downloadDuplexTest();
     setBusy(true);
     setError(null);
@@ -138,6 +144,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       // this moment, so they load on the first export rather than on page open.
       const { renderPdf } = await import("../render/pdf/renderPdf");
       const test = variant === "test";
+      const tiles = variant === "tiles";
       // The same pipeline the CLI runs — see core/job. Nothing about imposition,
       // duplex or the slug lines lives in this component.
       const job = buildJob({
@@ -149,7 +156,8 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
         rowIds,
         resolve: makeResolveOptions(fonts, uploadedIcons, images, assetNames),
         scale: effectiveScale(printer?.scale),
-        ...(sheet.duplex
+        ...(tiles ? { tile: sheet.tilePaper } : {}),
+        ...(sheet.duplex && !tiles
           ? {
               duplex: {
                 flipEdge: printer?.flipEdge ?? "long",
@@ -158,7 +166,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
               },
             }
           : {}),
-        ...(variant === "all" ? {} : { pages: { from: 0, to: 0 } }),
+        ...(variant === "all" || tiles ? {} : { pages: { from: 0, to: 0 } }),
         ...(test ? { limit: TEST_CARDS } : {}),
         ...(printOnly ? { only: new Set(printOnly) } : {}),
       });
@@ -166,11 +174,12 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       const { bytes, notSubset } = await renderPdf({
         sheets: job.sheets,
         fonts,
-        title: test ? `${pieceName} — test cards` : pieceName,
+        title: test ? `${pieceName} — test cards` : tiles ? `${pieceName} — tiles` : pieceName,
         scale: effectiveScale(printer?.scale),
         // A test print always carries the slug: it is the run where knowing the
         // applied scale and seeing a printed rule is worth most.
-        ...(sheet.slugLine || test
+        // A tile always carries its label: it says which tile it is and how it goes together.
+        ...(sheet.slugLine || test || tiles
           ? { slug: { texts: job.slugTexts, ruleMm: job.slugRuleMm } }
           : {}),
       });
@@ -212,17 +221,29 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
         disabled={blocked || busy}
         onClick={() => setPreflight(true)}
       >
-        {busy ? "Generating…" : "Download print-ready PDF"}
+        {busy ? "Generating…" : printShop ? "Download print-shop PDF" : "Download print-ready PDF"}
       </button>
-      <button
-        type="button"
-        className={styles.secondary}
-        disabled={blocked || busy}
-        title="The first two cards on one sheet, at true scale, with cut lines — print this on plain paper first."
-        onClick={() => void download("test")}
-      >
-        Two test cards
-      </button>
+      {printShop ? (
+        <button
+          type="button"
+          className={styles.secondary}
+          disabled={blocked || busy}
+          title="The same, cut into pieces of ordinary paper to trim and lay over one another."
+          onClick={() => void download("tiles")}
+        >
+          Tile it onto {sheet.tilePaper === "LETTER" ? "Letter" : sheet.tilePaper}
+        </button>
+      ) : (
+        <button
+          type="button"
+          className={styles.secondary}
+          disabled={blocked || busy}
+          title="The first two cards on one sheet, at true scale, with cut lines — print this on plain paper first."
+          onClick={() => void download("test")}
+        >
+          Two test cards
+        </button>
+      )}
       <span className={styles.meta}>
         {missingLabel(missing, assetNames) ??
           (artefacts.length === 0
