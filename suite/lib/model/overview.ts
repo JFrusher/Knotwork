@@ -4,7 +4,7 @@ import { resolveMembers } from "@/lib/cast/resolve";
 import { money } from "@/lib/money/money";
 import { todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
-import { printsFromFile, stationeryPieces } from "./readiness";
+import { stationeryPieces } from "./readiness";
 import { dayPlaces, isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
 import { neededAt, packingOf } from "@/lib/boxes/view";
 import { hiddenToolIds } from "./toolbox";
@@ -116,7 +116,7 @@ function placeCards(doc: Knotwork, raw: unknown): Area {
   return {
     id: "place-cards",
     summary: plural(cards, "card", "cards"),
-    detail: printsFromFile(pieces) ? "From an imported file" : "Drawn from the room",
+    detail: pieces.length === 1 ? "Drawn from the room" : `${pieces.length} pieces, drawn from the room`,
     progress: null,
   };
 }

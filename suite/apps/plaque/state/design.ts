@@ -1,6 +1,6 @@
-import type { RowIssue, GuestRow } from "../core/data/rows";
-import { defaultCard, defaultSheet } from "../core/template/defaults";
+import { defaultCard, defaultSheet, defaultTemplate } from "../core/template/defaults";
 import type { CardSpec, SheetSpec, Template } from "../core/types";
+import { ROOM_COLUMNS, type Merged } from "./fromRoom";
 import { FIRST_PIECE } from "./suite";
 
 /**
@@ -8,20 +8,16 @@ import { FIRST_PIECE } from "./suite";
  * else in Plaque's store — fonts, images, printers, what is selected, which
  * page — belongs to this window.
  *
- * Guest data is included deliberately: losing a hundred and fifty names to an
- * accidental tab close is the worst papercut this app could have.
+ * No guest data: every piece prints from the room as it stands, so a copy of
+ * the list here could only ever be a stale one. What is kept is who shares a
+ * card, by guest id, which the room cannot know.
  */
 export interface Design {
   card: CardSpec;
   sheet: SheetSpec;
   template: Template;
-  headers: string[];
-  rows: GuestRow[];
-  /** Row identity and combines, without which per-row overrides lose their anchor. */
-  rowIds: string[];
-  merged: Record<string, { indexes: number[]; ids: string[]; rows: GuestRow[] }>;
-  csvIssues: RowIssue[];
-  fileName: string | null;
+  /** Guests printed together on one card. See `withMerges`. */
+  merged: Merged;
   uploadedIcons: Record<string, string>;
   /** Filenames of uploaded assets, so a lost blob can still be named (S-D1.4). */
   assetNames: Record<string, string>;
@@ -34,34 +30,20 @@ export const DESIGN_KEYS = [
   "card",
   "sheet",
   "template",
-  "headers",
-  "rows",
-  "rowIds",
   "merged",
-  "csvIssues",
-  "fileName",
   "uploadedIcons",
   "assetNames",
   "snapEnabled",
   "sheetCollapsed",
 ] as const satisfies readonly (keyof Design)[];
 
-/**
- * The starting design has an EMPTY template on purpose. Building a default
- * template before any CSV exists would produce elements bound to columns that
- * do not exist, and would then block `setCsv` from laying out a real one.
- */
+/** A blank design: nothing on the card yet. */
 export function initialDesign(): Design {
   return {
     card: defaultCard(),
     sheet: defaultSheet(),
     template: { elements: [], backgroundHex: null },
-    headers: [],
-    rows: [],
-    rowIds: [],
     merged: {},
-    csvIssues: [],
-    fileName: null,
     uploadedIcons: {},
     assetNames: {},
     snapEnabled: true,
@@ -75,17 +57,7 @@ export function designOf(source: Design): Design {
 }
 
 /** What each piece has of its own. Everything else in a `Design` is shared by the suite. */
-export const PIECE_KEYS = [
-  "card",
-  "sheet",
-  "template",
-  "headers",
-  "rows",
-  "rowIds",
-  "merged",
-  "csvIssues",
-  "fileName",
-] as const satisfies readonly (keyof Design)[];
+export const PIECE_KEYS = ["card", "sheet", "template", "merged"] as const satisfies readonly (keyof Design)[];
 
 export type PieceDesign = Pick<Design, (typeof PIECE_KEYS)[number]>;
 export type SharedDesign = Omit<Design, (typeof PIECE_KEYS)[number]>;
@@ -101,10 +73,14 @@ export interface Suite extends SharedDesign {
   pieces: Piece[];
 }
 
-/** A wedding's stationery before anything is made: one empty set of place cards. */
+/**
+ * A wedding's stationery before anything is made: place cards, laid out for
+ * the room's columns so the first thing anyone sees is a card with a name on it.
+ */
 export function initialSuite(): Suite {
   const { pieces: _none, ...shared } = splitDesign(initialDesign());
-  return { ...shared, pieces: [newPiece(FIRST_PIECE.id, FIRST_PIECE.name)] };
+  const placeCards = newPiece(FIRST_PIECE.id, FIRST_PIECE.name);
+  return { ...shared, pieces: [{ ...placeCards, template: defaultTemplate([...ROOM_COLUMNS], placeCards.card) }] };
 }
 
 /** An empty piece. */

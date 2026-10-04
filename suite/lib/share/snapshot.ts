@@ -1,4 +1,5 @@
 import { guestName, isComing } from "@/lib/model/slices";
+import { seatsOf } from "@/lib/model/seats";
 import type { Guest, Seating } from "@/lib/model/types";
 
 /**
@@ -60,16 +61,7 @@ export function shareSnapshot(
   event: { coupleNames: string; venueName: string; date: string },
   options: ShareOptions,
 ): ShareSnapshot {
-  const seatOf = new Map<string, { table: string; seat: number | null }>();
-  for (const table of Object.values(seating.tables)) {
-    table.assignedGuestIds.forEach((id, index) => {
-      if (id === null) return;
-      seatOf.set(id, {
-        table: table.label,
-        seat: table.seatMode === "seat" ? index + 1 : null,
-      });
-    });
-  }
+  const seatOf = seatsOf(seating);
 
   const shared: SharedGuest[] = [];
   for (const guest of Object.values(guests)) {

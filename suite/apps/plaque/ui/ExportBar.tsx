@@ -61,8 +61,21 @@ export interface ExportBarProps {
 
 /** The primary action. Everything else on screen exists to make this button correct. */
 export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: ExportBarProps) {
-  const { card, sheet, template, rows, headers, rowIds, fonts, images, uploadedIcons, fileName, assetNames, printer } =
-    usePlaque(
+  const {
+    card,
+    sheet,
+    template,
+    rows,
+    headers,
+    rowIds,
+    fonts,
+    images,
+    uploadedIcons,
+    pieceName,
+    printOnly,
+    assetNames,
+    printer,
+  } = usePlaque(
       useShallow((s) => ({
         card: s.card,
         sheet: s.sheet,
@@ -73,7 +86,8 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
         fonts: s.fonts,
         images: s.images,
         uploadedIcons: s.uploadedIcons,
-        fileName: s.fileName,
+        pieceName: s.pieces.find((p) => p.id === s.pieceId)?.name ?? "",
+        printOnly: s.printOnly,
         assetNames: s.assetNames,
         printer: s.printers.find((p) => p.id === s.activePrinterId) ?? null,
       })),
@@ -146,12 +160,13 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
           : {}),
         ...(variant === "all" ? {} : { pages: { from: 0, to: 0 } }),
         ...(test ? { limit: TEST_CARDS } : {}),
+        ...(printOnly ? { only: new Set(printOnly) } : {}),
       });
 
       const { bytes, notSubset } = await renderPdf({
         sheets: job.sheets,
         fonts,
-        title: test ? `${nameFor(fileName)} — test cards` : nameFor(fileName),
+        title: test ? `${pieceName} — test cards` : pieceName,
         scale: effectiveScale(printer?.scale),
         // A test print always carries the slug: it is the run where knowing the
         // applied scale and seeing a printed rule is worth most.
@@ -166,7 +181,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
           ? `${notSubset.join(", ")} could not be reduced, so the PDF is larger than usual.`
           : null,
       );
-      save(bytes, `${nameFor(fileName)}${SUFFIX[variant]}.pdf`);
+      save(bytes, `${fileNameFor(pieceName)}${SUFFIX[variant]}.pdf`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "The PDF could not be generated.");
     } finally {
@@ -211,8 +226,10 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       <span className={styles.meta}>
         {missingLabel(missing, assetNames) ??
           (artefacts.length === 0
-            ? "Press “Use the room” to begin"
-            : `${artefacts.length} ${artefacts.length === 1 ? "card" : "cards"} · ${sheetCount} ${sheetCount === 1 ? "sheet" : "sheets"}`)}
+            ? "No guests yet — add them in Seating or Guests"
+            : printOnly
+              ? `Just ${printOnly.length} of ${artefacts.length} ${artefacts.length === 1 ? "card" : "cards"}`
+              : `${artefacts.length} ${artefacts.length === 1 ? "card" : "cards"} · ${sheetCount} ${sheetCount === 1 ? "sheet" : "sheets"}`)}
       </span>
       {printer && isNotableDrift(printer.scale) && (
         <span className={styles.note}>
@@ -235,7 +252,7 @@ function missingLabel(
   return `Blocked: ${names.join(", ")} ${names.length === 1 ? "is" : "are"} missing from this device.`;
 }
 
-function nameFor(fileName: string | null): string {
-  if (!fileName) return "place-cards";
-  return fileName.replace(/\.[^.]+$/, "") || "place-cards";
+/** "Table numbers" saves as table-numbers.pdf. */
+function fileNameFor(pieceName: string): string {
+  return pieceName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "stationery";
 }

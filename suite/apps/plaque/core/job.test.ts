@@ -45,6 +45,12 @@ describe("buildJob", () => {
     expect(buildJob(input({ limit: 2 })).artefactCount).toBe(2);
   });
 
+  it("prints only the chosen artefacts for a reprint of a few", () => {
+    const job = buildJob(input({ only: new Set(["row:r3", "row:r40"]) }));
+    expect(job.artefactCount).toBe(2);
+    expect(job.sheets).toHaveLength(1);
+  });
+
   it("builds only the requested page range", () => {
     const job = buildJob(input({ pages: { from: 0, to: 0 } }));
     expect(job.sheets).toHaveLength(1);

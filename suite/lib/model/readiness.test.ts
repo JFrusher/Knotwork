@@ -70,23 +70,8 @@ describe("what is left to do", () => {
       stationery: { version: 1, rows: [{}], template: { elements: [] }, ...extra },
     });
 
-    it("objects when the cards come from a file rather than the room", () => {
-      expect(ids(design({ fileName: "guests.csv" }))).toContain("cards-from-file");
-    });
-
-    it("says nothing when they come from the room", () => {
-      expect(ids(design({ fileName: "the room" }))).not.toContain("cards-from-file");
-    });
-
-    it("says nothing about a piece with no list yet", () => {
-      expect(ids(design({ fileName: null, rows: [] }))).not.toContain("cards-from-file");
-    });
-
-    it("objects when any one piece comes from a file", () => {
-      const piece = (id: string, fileName: string) => ({ id, name: id, fileName, rows: [{}], template: { elements: [] } });
-      const suite = (...pieces: unknown[]) => ({ guests: GUESTS, ...TABLES, stationery: { version: 3, pieces } });
-      expect(ids(suite(piece("a", "the room"), piece("b", "the room")))).not.toContain("cards-from-file");
-      expect(ids(suite(piece("a", "the room"), piece("b", "guests.csv")))).toContain("cards-from-file");
+    it("never says the cards came from a file: they are read from the room", () => {
+      expect(ids(design({ fileName: "guests.csv" }))).not.toContain("cards-from-file");
     });
 
     it("notices a dietary requirement the card cannot show", () => {

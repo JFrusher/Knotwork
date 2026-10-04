@@ -1,13 +1,9 @@
 import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { buildArtefacts } from "../../core/data/artefacts";
+import { buildArtefacts, type Artefact } from "../../core/data/artefacts";
 import type { RowScope } from "../../core/types";
 import { usePlaque } from "../../state/store";
 import { Hint, SelectField, SubGroup } from "../controls";
-import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
-import { guestName, isComing, readGuests } from "@/lib/model/slices";
-import type { Guest } from "@/lib/model/types";
-import { rowsFromRoom } from "../../state/fromRoom";
 import styles from "./DataPanel.module.css";
 
 const PER_ROW: RowScope = { kind: "per-row" };
@@ -31,113 +27,71 @@ function scopeHint(scope: RowScope, rowCount: number, artefactCount: number): st
 }
 
 /**
- * The guest list the cards print from: the room, all of it or a chosen few.
+ * What this piece prints from: the room, live.
  *
- * There is no file import. A CSV exported before the last three people moved
- * prints three wrong tables and looks perfectly fine doing it; the room is
- * always current.
+ * There is no file import and nothing to press. A CSV exported before the last
+ * three people moved prints three wrong tables and looks perfectly fine doing
+ * it; the room is always current, and the cards are read from it as it changes.
  */
 export function DataPanel() {
-  const { headers, rows, csvIssues, fileName, setCsv, rowScope, setRowScope } = usePlaque(
+  const { headers, rows, rowIds, rowIssues, rowScope, setRowScope, printOnly, setPrintOnly } = usePlaque(
     useShallow((s) => ({
       headers: s.headers,
       rows: s.rows,
-      csvIssues: s.csvIssues,
-      fileName: s.fileName,
-      setCsv: s.setCsv,
+      rowIds: s.rowIds,
+      rowIssues: s.rowIssues,
       rowScope: s.template.rowScope ?? PER_ROW,
       setRowScope: s.setRowScope,
+      printOnly: s.printOnly,
+      setPrintOnly: s.setPrintOnly,
     })),
   );
-  // Counting is cheap and it is the only honest way to say what the scope did.
-  const artefactCount = buildArtefacts(rows, rowScope, headers).length;
-  // Subscribed to the shared wedding, not to Plaque's own store: seat someone
-  // in the room next door and this list has to move. Read through the
-  // per-document cache, so the selector returns the same record until the
-  // document changes and never allocates.
-  const everyone = useKnotworkStore((s) => readGuests(s.doc));
-  // Cards for the guests who are coming, which is who `rowsFromRoom` prints:
-  // a count that included the ones who said no would promise cards it then
-  // leaves out.
-  const roomGuests = useMemo(
-    () => Object.fromEntries(Object.entries(everyone).filter(([, guest]) => isComing(guest))),
-    [everyone],
-  );
-  const roomCount = Object.keys(roomGuests).length;
+  const artefacts = useMemo(() => buildArtefacts(rows, rowScope, headers, rowIds), [rows, rowScope, headers, rowIds]);
 
   return (
     <>
-      {roomCount === 0 ? (
-        <Hint>
-          No guests yet. Add them in Seating, or import a list from the Data button, and they
-          appear here.
-        </Hint>
-      ) : (
-        <button
-          type="button"
-          data-tour="placecards.useroom"
-          className={styles.button}
-          onClick={() => setCsv(rowsFromRoom())}
-          title="Take the guest list and table numbers from the seating plan"
-        >
-          Use the room — {roomCount} {roomCount === 1 ? "guest" : "guests"}
-        </button>
-      )}
+      <p data-tour="placecards.room" className={styles.live}>
+        {rows.length === 0
+          ? "No guests yet. Add them in Seating, or import a list from the Data button, and they appear here."
+          : `Printing from the room, as it stands: ${rows.length} ${rows.length === 1 ? "guest" : "guests"}. Seat someone and their card already knows.`}
+      </p>
 
-      {roomCount > 0 && (
-        <FewGuests guests={roomGuests} onUse={(ids) => setCsv(rowsFromRoom(ids))} />
-      )}
-
-      {fileName && (
-        <Hint>
-          {rows.length === roomCount
-            ? `Printing all ${rows.length} guests from the room.`
-            : `Printing ${rows.length} of the room's ${roomCount} guests.`}
-        </Hint>
-      )}
-
-      {headers.length > 0 && (
+      {rows.length > 0 && (
         <>
           <SelectField
             label="Print one artefact per"
             value={scopeValue(rowScope)}
             options={[
-              { value: "per-row", label: "Row — place cards, badges, tags" },
-              ...headers.map((h) => ({ value: `group:${h}`, label: `Group by ${h} — menus, table cards` })),
-              { value: "document", label: "The whole list — run-sheet, seating list" },
+              { value: "per-row", label: "Guest — place cards, escort cards, badges" },
+              ...headers.map((h) => ({ value: `group:${h}`, label: `Group by ${h} — table cards, menus` })),
+              { value: "document", label: "The whole list — a board, a seating list" },
             ]}
             onChange={(value) => setRowScope(parseScope(value))}
           />
-          <Hint>
-            {scopeHint(rowScope, rows.length, artefactCount)}
-          </Hint>
+          <Hint>{scopeHint(rowScope, rows.length, artefacts.length)}</Hint>
         </>
       )}
 
-      {headers.length > 0 && (
-        <SubGroup title={`Columns (${headers.length})`}>
-          <div className={styles.tokens}>
-            {headers.map((h) => (
-              <code key={h} className={styles.token} title="Use this in any text element">
-                {`{{${h}}}`}
-              </code>
-            ))}
-          </div>
-        </SubGroup>
+      {artefacts.length > 1 && (
+        <ReprintFew artefacts={artefacts} printOnly={printOnly} onChoose={setPrintOnly} />
       )}
 
-      {csvIssues.length > 0 && (
-        <details className={styles.issues}>
-          <summary>
-            {csvIssues.length} {csvIssues.length === 1 ? "row needs" : "rows need"} a look
-          </summary>
-          <ul>
-            {csvIssues.slice(0, 20).map((issue, i) => (
-              <li key={i}>{issue.message}</li>
-            ))}
-            {csvIssues.length > 20 && <li>…and {csvIssues.length - 20} more.</li>}
-          </ul>
-        </details>
+      <SubGroup title={`Columns (${headers.length})`}>
+        <div className={styles.tokens}>
+          {headers.map((h) => (
+            <code key={h} className={styles.token} title="Use this in any text element">
+              {`{{${h}}}`}
+            </code>
+          ))}
+        </div>
+      </SubGroup>
+
+      {rowIssues.length > 0 && (
+        <ul className={styles.issues}>
+          {rowIssues.map((issue) => (
+            <li key={issue.message}>{issue.message}</li>
+          ))}
+        </ul>
       )}
     </>
   );
@@ -145,51 +99,60 @@ export function DataPanel() {
 
 /**
  * Reprinting a handful — a misspelt name, a late change of table — without
- * running the whole list through the printer again.
+ * running the whole list through the printer again. Chosen by card rather than
+ * by guest, so it works the same for a place card, a combined card or a table.
  */
-function FewGuests({
-  guests,
-  onUse,
+function ReprintFew({
+  artefacts,
+  printOnly,
+  onChoose,
 }: {
-  guests: Record<string, Guest>;
-  onUse: (ids: ReadonlySet<string>) => void;
+  artefacts: Artefact[];
+  printOnly: string[] | null;
+  onChoose: (keys: string[] | null) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set());
-  const everyone = useMemo(
-    () =>
-      Object.values(guests)
-        .map((guest) => ({ id: guest.id, name: guestName(guest) }))
-        .sort((a, b) => a.name.localeCompare(b.name, "en")),
-    [guests],
-  );
+  const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set(printOnly ?? []));
   const needle = query.trim().toLowerCase();
-  const shown = needle ? everyone.filter((guest) => guest.name.toLowerCase().includes(needle)) : everyone;
+  const shown = needle ? artefacts.filter((a) => a.label.toLowerCase().includes(needle)) : artefacts;
 
-  const toggle = (id: string) =>
+  const toggle = (key: string) =>
     setChosen((current) => {
       const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
+
+  if (printOnly) {
+    return (
+      <div className={styles.only}>
+        <Hint>
+          The PDF will hold just {printOnly.length} of {artefacts.length}.
+        </Hint>
+        <button type="button" className={styles.button} onClick={() => onChoose(null)}>
+          Print them all again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <SubGroup title="Reprint just a few" open={false}>
       <input
         type="search"
         className={styles.search}
-        placeholder="Find a guest"
-        aria-label="Find a guest"
+        placeholder="Find a card"
+        aria-label="Find a card"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
-      <ul className={styles.picker} aria-label="Guests to print">
-        {shown.map((guest) => (
-          <li key={guest.id}>
+      <ul className={styles.picker} aria-label="Cards to print">
+        {shown.map((artefact) => (
+          <li key={artefact.key}>
             <label className={styles.pick}>
-              <input type="checkbox" checked={chosen.has(guest.id)} onChange={() => toggle(guest.id)} />
-              {guest.name || "Unnamed guest"}
+              <input type="checkbox" checked={chosen.has(artefact.key)} onChange={() => toggle(artefact.key)} />
+              {artefact.label}
             </label>
           </li>
         ))}
@@ -198,11 +161,9 @@ function FewGuests({
         type="button"
         className={styles.button}
         disabled={chosen.size === 0}
-        onClick={() => onUse(chosen)}
+        onClick={() => onChoose(artefacts.filter((a) => chosen.has(a.key)).map((a) => a.key))}
       >
-        {chosen.size === 0
-          ? "Choose guests to print"
-          : `Print just these ${chosen.size}`}
+        {chosen.size === 0 ? "Choose cards to print" : `Print just these ${chosen.size}`}
       </button>
     </SubGroup>
   );

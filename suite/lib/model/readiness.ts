@@ -75,17 +75,6 @@ export function stationeryPieces(raw: unknown): Record<string, unknown>[] {
 }
 
 /**
- * True when some piece prints names from an imported file rather than from the
- * room. A piece with no rows yet was printed from nothing, so it cannot
- * disagree with anything.
- */
-export function printsFromFile(pieces: Record<string, unknown>[]): boolean {
-  return pieces.some(
-    (piece) => piece["fileName"] !== "the room" && Array.isArray(piece["rows"]) && piece["rows"].length > 0,
-  );
-}
-
-/**
  * Every column the card design binds, so we can tell what it can and cannot
  * show: the tokens in its text, and the column an icon is drawn from — the
  * same two Plaque's own `unboundTokens` counts.
@@ -150,24 +139,6 @@ export function readiness(doc: Knotwork, raw: unknown, today: string = todayIso(
           : `${unseated.length} guests have no table yet.`,
       href: "/seating",
       action: "Seat them",
-    });
-  }
-
-  /**
-   * The cards were printed from a file rather than from the room.
-   *
-   * This is the failure the suite exists to prevent, and the one that costs
-   * real money: a CSV exported before the last three people moved prints three
-   * wrong tables and looks perfectly correct doing it.
-   */
-  if (printsFromFile(pieces)) {
-    out.push({
-      id: "cards-from-file",
-      severity: "blocking",
-      message:
-        "The place cards come from an imported file, not from the room, so they can disagree with the seating plan.",
-      href: "/place-cards",
-      action: "Use the room",
     });
   }
 

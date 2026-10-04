@@ -182,9 +182,6 @@ function daysBefore(iso: string, days: number): string {
   return when.toISOString().slice(0, 10);
 }
 
-/** What a piece with no guest list yet holds. */
-const EMPTY_LIST = { headers: [], rows: [], rowIds: [], merged: {}, csvIssues: [], fileName: null };
-
 let counter = 0;
 const newId = (prefix: string) => `${prefix}_${Date.now().toString(36)}${(counter++).toString(36)}`;
 
@@ -199,16 +196,14 @@ export function applyTo(kind: Kind, content: Raw, raw: Raw): Array<[SliceName, u
       const current = record(raw["stationery"]);
       const held = new Map(storedPieces(current).map((piece) => [piece["id"], piece]));
       const { version: _version, pieces: _pieces, ...shared } = content;
-      // A piece this wedding already has keeps its list; a new one starts
-      // empty, for Place cards to fill from the room when asked.
-      const pieces = storedPieces(content).map((piece) => {
-        const own = held.get(piece["id"]);
-        return {
-          ...EMPTY_LIST,
-          ...(own ? pick(own, Object.keys(EMPTY_LIST)) : {}),
-          ...pick(piece, ["id", "name", "card", "sheet", "template"]),
-        };
-      });
+      // Every piece prints from this wedding's room. A piece it already has
+      // keeps who shares a card; a new one has nobody combined yet.
+      const pieces = storedPieces(content).map((piece) => ({
+        // Only a wedding already on pieces holds combines by guest; an older one's
+        // are moved over when Place cards first reads it.
+        merged: current["version"] === SUITE_VERSION ? record(held.get(piece["id"])?.["merged"]) : {},
+        ...pick(piece, ["id", "name", "card", "sheet", "template"]),
+      }));
       return [
         [
           "stationery",

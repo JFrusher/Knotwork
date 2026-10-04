@@ -1,5 +1,15 @@
+import type { GuestRow } from "../core/data/rows";
+import type { Template } from "../core/types";
 import type { Piece, Suite } from "./design";
+import type { Merged } from "./fromRoom";
 import { SUITE_VERSION, isRecord, storedPieces } from "./suite";
+
+/**
+ * The guest a row printed before the room was live, or null. Saves before
+ * version 3 stored the rows themselves and keyed per-guest tweaks by position
+ * in them; matching a stored row to a guest is what carries those tweaks over.
+ */
+export type GuestIdFor = (row: GuestRow) => string | null;
 
 export const VERSION = SUITE_VERSION;
 
@@ -32,7 +42,7 @@ export type LoadResult =
  * A slice with no version was written by something other than Place cards —
  * an empty envelope, most likely — and is treated as nothing saved.
  */
-export function load(slice: unknown): LoadResult {
+export function load(slice: unknown, guestIdFor: GuestIdFor = () => null): LoadResult {
   if (slice === null || slice === undefined) return { status: "empty" };
   if (!isRecord(slice)) return { status: "discarded", reason: "The saved design could not be read." };
   if (!("version" in slice)) return { status: "empty" };
@@ -51,7 +61,7 @@ export function load(slice: unknown): LoadResult {
   const pieces: Piece[] = [];
   const problems: string[] = [];
   for (const stored of storedPieces(slice)) {
-    const read = readPiece(stored, pieces);
+    const read = readPiece(stored, pieces, version === VERSION ? null : guestIdFor, problems);
     if (typeof read === "string") problems.push(read);
     else pieces.push(read);
   }
@@ -75,8 +85,17 @@ export function load(slice: unknown): LoadResult {
   };
 }
 
-/** One piece, or why it cannot be read. `before` is what has been read already. */
-function readPiece(source: Record<string, unknown>, before: Piece[]): Piece | string {
+/**
+ * One piece, or why it cannot be read. `before` is what has been read already.
+ * `legacy` is set for a piece saved before version 3, whose rows go and whose
+ * tweaks are re-keyed from positions to guests.
+ */
+function readPiece(
+  source: Record<string, unknown>,
+  before: Piece[],
+  legacy: GuestIdFor | null,
+  notes: string[],
+): Piece | string {
   const id = source["id"];
   const name = typeof source["name"] === "string" && source["name"] ? source["name"] : "A piece";
   if (typeof id !== "string" || !id) return `"${name}" had no id, so it was left out.`;
@@ -84,26 +103,75 @@ function readPiece(source: Record<string, unknown>, before: Piece[]): Piece | st
 
   const bad = firstBadDesignField(source);
   if (bad) return `${bad} "${name}" was left out.`;
-  if (!Array.isArray(source["rows"]) || !Array.isArray(source["headers"])) {
-    return `The saved guest list for "${name}" could not be read, so it was left out.`;
-  }
 
-  const rows = source["rows"] as Piece["rows"];
-  return {
+  const design = {
     id,
     name,
     card: source["card"] as Piece["card"],
     sheet: source["sheet"] as Piece["sheet"],
-    template: source["template"] as Piece["template"],
-    headers: source["headers"] as string[],
-    rows,
-    // Absent in anything written before per-row editing. Positional ids match
-    // what buildArtefacts falls back to, so overrides keyed by them still land.
-    rowIds: Array.isArray(source["rowIds"]) ? (source["rowIds"] as string[]) : rows.map((_, i) => `r${i}`),
-    merged: isRecord(source["merged"]) ? (source["merged"] as Piece["merged"]) : {},
-    csvIssues: Array.isArray(source["csvIssues"]) ? (source["csvIssues"] as Piece["csvIssues"]) : [],
-    fileName: typeof source["fileName"] === "string" ? source["fileName"] : null,
+    template: source["template"] as Template,
   };
+  if (!legacy) {
+    const merged = source["merged"] ?? {};
+    const valid =
+      isRecord(merged) &&
+      Object.values(merged).every((ids) => Array.isArray(ids) && ids.every((id) => typeof id === "string"));
+    if (!valid) return `The combined cards on "${name}" could not be read, so it was left out.`;
+    return { ...design, merged: merged as Merged };
+  }
+  if (!Array.isArray(source["rows"])) {
+    return `The saved guest list for "${name}" could not be read, so it was left out.`;
+  }
+  const { lost, ...moved } = fromRows(source, design.template, legacy);
+  if (lost > 0) {
+    notes.push(
+      lost === 1
+        ? `One guest's own change to "${name}" no longer matches anybody on the list, so it was dropped.`
+        : `${lost} guests' own changes to "${name}" no longer match anybody on the list, so they were dropped.`,
+    );
+  }
+  return { ...design, ...moved };
+}
+
+/**
+ * A pre-3 piece's tweaks and combined cards, moved off the rows it stored and
+ * onto the guests those rows were. A tweak whose row matches no guest goes,
+ * and is counted in `lost` so the loss is said rather than silent.
+ */
+function fromRows(
+  source: Record<string, unknown>,
+  template: Template,
+  guestIdFor: GuestIdFor,
+): Pick<Piece, "template" | "merged"> & { lost: number } {
+  const rows = source["rows"] as GuestRow[];
+  const rowIds = Array.isArray(source["rowIds"]) ? (source["rowIds"] as string[]) : rows.map((_, i) => `r${i}`);
+  const oldMerged = isRecord(source["merged"]) ? (source["merged"] as Record<string, { rows?: GuestRow[] }>) : {};
+
+  const newKey = new Map<string, string>();
+  const merged: Merged = {};
+  rows.forEach((row, index) => {
+    const rowId = rowIds[index] ?? `r${index}`;
+    const members = oldMerged[rowId]?.rows;
+    if (Array.isArray(members)) {
+      const ids = members.map(guestIdFor).filter((gid): gid is string => gid !== null);
+      if (ids.length > 0) {
+        merged[rowId] = ids;
+        newKey.set(rowId, rowId);
+      }
+      return;
+    }
+    const guestId = guestIdFor(row);
+    if (guestId) newKey.set(rowId, guestId);
+  });
+
+  const before = Object.entries(template.overrides ?? {});
+  const overrides = Object.fromEntries(
+    before.flatMap(([rowId, patch]) => {
+      const key = newKey.get(rowId);
+      return key ? [[key, patch]] : [];
+    }),
+  );
+  return { template: { ...template, overrides }, merged, lost: before.length - Object.keys(overrides).length };
 }
 
 /** Returns a message naming the offending field, or null when the design is usable. */

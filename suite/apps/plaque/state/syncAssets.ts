@@ -76,7 +76,7 @@ export async function acceptAsset(id: string, bytes: Uint8Array): Promise<void> 
 
 /** The filename the user uploaded it under, if the design still remembers. */
 function nameOf(assetId: string): string | undefined {
-  return readSuite(useKnotworkStore.getState().raw).suite.assetNames[assetId];
+  return readSuite(useKnotworkStore.getState()).suite.assetNames[assetId];
 }
 
 /** PNG and JPEG are the two a PDF can carry, so they are the two Plaque takes. */

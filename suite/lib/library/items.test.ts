@@ -61,37 +61,35 @@ describe("putting it into another wedding", () => {
     crew: { jobs: [{ id: "j1", blockId: null, label: "Book the venue", dueOn: "2028-01-01" }] },
   };
 
-  it("gives a wedding with no cards a design and an empty list to fill from the room", () => {
+  it("gives a wedding with no cards the design, to print from its own room", () => {
     const [[slice, stationery]] = applyTo("cards", extract("cards", example)!, other) as Array<[string, Record<string, unknown>]>;
     expect(slice).toBe("stationery");
     expect(stationery).toMatchObject({ version: 3 });
     const pieces = stationery["pieces"] as Array<Record<string, unknown>>;
-    expect(pieces[0]).toMatchObject({ id: "place-cards", rows: [], headers: [], fileName: null });
+    expect(pieces[0]).toMatchObject({ id: "place-cards", merged: {} });
+    expect(pieces[0]).not.toHaveProperty("rows");
     expect(pieces[0]!["template"]).toBeTruthy();
   });
 
-  it("keeps the list of a piece the wedding already has, and gives a new piece an empty one", () => {
+  it("keeps who shares a card on a piece the wedding already has, and nobody combined on a new one", () => {
     const kept = extract("cards", example)!;
     const board = { id: "board", name: "Seating board", card: { widthMm: 594 }, sheet: {}, template: { elements: [] } };
     const content = { ...kept, pieces: [...(kept["pieces"] as unknown[]), board] };
     const held = {
       ...other,
-      stationery: {
-        version: 3,
-        pieces: [{ id: "place-cards", name: "Place cards", rows: [{ Name: "Robin" }], headers: ["Name"], fileName: "the room" }],
-      },
+      stationery: { version: 3, pieces: [{ id: "place-cards", name: "Place cards", merged: { "merged:x": ["r1", "r2"] } }] },
     };
     const [[, stationery]] = applyTo("cards", content, held) as Array<[string, { pieces: Array<Record<string, unknown>> }]>;
     expect(stationery.pieces.map((p) => p["id"])).toEqual(["place-cards", "board"]);
-    expect(stationery.pieces[0]).toMatchObject({ rows: [{ Name: "Robin" }], fileName: "the room" });
-    expect(stationery.pieces[1]).toMatchObject({ rows: [], fileName: null, card: { widthMm: 594 } });
+    expect(stationery.pieces[0]).toMatchObject({ merged: { "merged:x": ["r1", "r2"] } });
+    expect(stationery.pieces[1]).toMatchObject({ merged: {}, card: { widthMm: 594 } });
   });
 
   it("still puts in a design kept before there were pieces", () => {
     const old = { version: 2, card: { widthMm: 85 }, sheet: {}, template: { elements: [] } };
     const [[, stationery]] = applyTo("cards", old, other) as Array<[string, { pieces: Array<Record<string, unknown>> }]>;
     expect(stationery.pieces).toEqual([
-      expect.objectContaining({ id: "place-cards", name: "Place cards", card: { widthMm: 85 }, rows: [] }),
+      expect.objectContaining({ id: "place-cards", name: "Place cards", card: { widthMm: 85 }, merged: {} }),
     ]);
     expect(Object.keys(stationery.pieces[0]!)).not.toContain("version");
   });

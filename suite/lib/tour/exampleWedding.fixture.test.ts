@@ -90,10 +90,10 @@ test("the shot list names real people, with nobody missing from it", () => {
 });
 
 test("the place cards are drawn from the room, and agree with it", () => {
-  const [placeCards] = raw.stationery.pieces as Array<{ fileName?: string; rows?: unknown[] }>;
+  const [placeCards] = raw.stationery.pieces as Array<Record<string, unknown>>;
   expect(raw.stationery.version).toBe(3);
-  expect(placeCards!.fileName).toBe("the room");
-  expect(placeCards!.rows?.length).toBeGreaterThan(0);
+  // Nothing copied: every card is read from the room as it stands.
+  expect(placeCards).not.toHaveProperty("rows");
   expect(readiness(doc, raw).filter((r) => r.severity === "blocking")).toEqual([]);
 });
 

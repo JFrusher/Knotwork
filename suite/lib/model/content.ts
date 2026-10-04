@@ -1,7 +1,6 @@
 import { migrate } from "@jfrusher/knotwork";
 import { choices } from "@/lib/bar/actions";
 import { readBar, readBoxes, readCeremony, readCrew, readGuests, readSeating, readShots } from "./slices";
-import { storedPieces } from "@/apps/plaque/state/suite";
 
 /**
  * What a wedding holds, in the terms a person would recognise it by.
@@ -26,8 +25,6 @@ export interface WeddingSummary {
   boxes: number;
   /** Things chosen on the Bar: a figure changed, a price typed. */
   bar: number;
-  /** Names on a card design that came from a file rather than the room. */
-  cards: number;
 }
 
 export function summarise(raw: unknown): WeddingSummary {
@@ -46,7 +43,6 @@ export function summarise(raw: unknown): WeddingSummary {
     walking: readCeremony(doc).processional.length,
     boxes: readBoxes(doc).boxes.length,
     bar: choices(readBar(doc)),
-    cards: storedPieces(doc.stationery).reduce((sum, piece) => sum + (Array.isArray(piece["rows"]) ? piece["rows"].length : 0), 0),
   };
 }
 

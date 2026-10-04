@@ -166,9 +166,9 @@ export const CHAPTERS: readonly TourChapter[] = [
     title: "Printing the cards",
     steps: [
       {
-        anchor: "placecards.useroom",
-        title: "Use the room",
-        body: "This pulls your guest list in with the table numbers already attached, straight from Seating. This is the button that saves you typing a hundred names again.",
+        anchor: "placecards.room",
+        title: "Printed from the room",
+        body: "Every card reads its guest straight from Seating, table number and seat included. Move somebody and their card has already moved with them; nothing is typed twice.",
         route: "/place-cards",
       },
       {

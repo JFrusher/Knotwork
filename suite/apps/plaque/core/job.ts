@@ -40,6 +40,8 @@ export interface JobInput {
   pages?: { from: number; to: number };
   /** Limit to the first N artefacts — the two-test-cards path. */
   limit?: number;
+  /** Only the artefacts with these keys — a reprint of a few. */
+  only?: ReadonlySet<string>;
 }
 
 export interface JobResult {
@@ -59,7 +61,8 @@ export function buildJob(input: JobInput): JobResult {
     input.headers,
     input.rowIds,
   );
-  const artefacts = input.limit === undefined ? all : all.slice(0, input.limit);
+  const chosen = input.only ? all.filter((artefact) => input.only!.has(artefact.key)) : all;
+  const artefacts = input.limit === undefined ? chosen : chosen.slice(0, input.limit);
   const pageRange = input.pages ? { pages: input.pages } : {};
   const scale = effectiveScale(input.scale);
 

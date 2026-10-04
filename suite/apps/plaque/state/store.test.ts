@@ -3,13 +3,21 @@ import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { usePlaque } from "./store";
 
-const HEADERS = ["First Name", "Last Name", "Table", "Dietary"];
-const ROWS = [
-  { "First Name": "Charis", "Last Name": "Smith", Table: "Table 1", Dietary: "Vegetarian" },
-  { "First Name": "Eleanor", "Last Name": "Vane", Table: "Table 2", Dietary: "Vegan" },
-];
+const GUESTS = {
+  g1: { id: "g1", firstName: "Charis", lastName: "Smith", assignedTableId: "t1" },
+  g2: { id: "g2", firstName: "Eleanor", lastName: "Vane", assignedTableId: "t2" },
+};
+const TOBIAS = { g3: { id: "g3", firstName: "Tobias", lastName: "Ashdown", assignedTableId: "t1" } };
+const TABLES = {
+  t1: { id: "t1", label: "Table 1", assignedGuestIds: ["g1", "g3"] },
+  t2: { id: "t2", label: "Table 2", assignedGuestIds: ["g2"] },
+};
 
-const csv = () => ({ headers: HEADERS, rows: ROWS, issues: [], fileName: "guests.csv" });
+/** Puts guests in the room, as Seating would: Place cards reads them from there. */
+const room = (guests: Record<string, unknown> = GUESTS, tables: Record<string, unknown> = TABLES) => {
+  const raw = { ...useKnotworkStore.getState().raw, guests, seating: { tables } };
+  useKnotworkStore.setState({ raw, doc: migrate(raw) });
+};
 const state = () => usePlaque.getState();
 // Place cards' undo is the wedding's.
 const undo = () => useKnotworkStore.getState().undo();
@@ -25,29 +33,41 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe("first upload", () => {
-  it("starts with no elements, so the default template is not built against columns that do not exist", () => {
-    expect(state().template.elements).toEqual([]);
+describe("a new wedding", () => {
+  it("starts with a place card laid out for the room's columns", () => {
+    const text = state().template.elements.find((el) => el.kind === "text");
+    expect(text?.kind === "text" && text.template).toContain("{{First Name}}");
   });
 
-  it("lays out a real template as soon as a CSV lands", () => {
-    state().setCsv(csv());
-    const elements = state().template.elements;
-    expect(elements.length).toBeGreaterThan(0);
-    const text = elements.find((el) => el.kind === "text");
-    expect(text?.kind === "text" && text.template).toBe("{{First Name}} {{Last Name}}");
+  it("prints whoever is in the room, without being asked", () => {
+    expect(state().rows).toEqual([]);
+    room();
+    expect(state().rows.map((row) => row["Name"])).toEqual(["Charis Smith", "Eleanor Vane"]);
+    expect(state().rowIds).toEqual(["g1", "g2"]);
   });
 
-  it("never overwrites a design the user has already made", () => {
-    state().setCsv(csv());
+  it("follows a move in the room, and leaves the design alone", () => {
+    room();
     state().addElement("rect");
-    const before = state().template.elements.map((el) => el.id);
-    state().setCsv({ ...csv(), headers: ["Name"], fileName: "other.csv" });
-    expect(state().template.elements.map((el) => el.id)).toEqual(before);
+    const design = state().template;
+    room(GUESTS, { t1: { id: "t1", label: "Table 1", assignedGuestIds: ["g1", "g2"] } });
+    expect(state().rows.map((row) => row["Table"])).toEqual(["Table 1", "Table 1"]);
+    expect(state().template).toBe(design);
+  });
+
+  it("follows a name corrected on the guest list", () => {
+    room();
+    room({ ...GUESTS, g2: { ...GUESTS.g2, lastName: "Vane-Ashby" } });
+    expect(state().rows[1]?.["Name"]).toBe("Eleanor Vane-Ashby");
   });
 });
 
 describe("elements", () => {
+  // A blank piece: the place cards start with a design already on them.
+  beforeEach(() => {
+    state().addPiece("Blank");
+  });
+
   it("selects what it adds", () => {
     state().addElement("text");
     expect(state().selectedId).toBe(state().template.elements[0]?.id);
@@ -84,7 +104,7 @@ describe("elements", () => {
 
 describe("copying the front onto the back", () => {
   beforeEach(() => {
-    state().setCsv(csv());
+    room();
   });
 
   it("gives the back the same design at the same card coordinates", () => {
@@ -195,7 +215,7 @@ describe("card and sheet", () => {
   });
 
   it("returns to sheet one whenever the layout changes underneath", () => {
-    state().setCsv(csv());
+    room();
     state().setPage(3);
     state().setSheet({ gapXMm: 8 });
     expect(state().page).toBe(0);
@@ -204,7 +224,6 @@ describe("card and sheet", () => {
 
 describe("fonts", () => {
   it("moves elements off a font that is removed rather than leaving them blank", () => {
-    state().setCsv(csv());
     const font = { id: "user:x", family: "X" } as never;
     state().addFont(font, "X");
     const textEl = state().template.elements.find((el) => el.kind === "text")!;
@@ -217,61 +236,54 @@ describe("fonts", () => {
 });
 
 describe("clearAll", () => {
-  it("wipes the guest list and the design — and can be undone", () => {
-    state().setCsv(csv());
+  it("returns the stationery to its starting place cards — and can be undone", () => {
+    room();
     state().addElement("rect");
-    const elements = state().template.elements;
+    state().addPiece("Menus");
+    const before = state().pieces;
     state().clearAll();
-    expect(state().rows).toEqual([]);
-    expect(state().headers).toEqual([]);
-    expect(state().template.elements).toEqual([]);
-    expect(state().fileName).toBeNull();
+    expect(state().pieces).toEqual([{ id: "place-cards", name: "Place cards" }]);
+    expect(state().template.elements.some((el) => el.kind === "rect")).toBe(false);
+    // The guests are the room's, not the design's: clearing the cards keeps them.
+    expect(state().rows).toHaveLength(2);
 
     undo();
-    expect(state().template.elements).toEqual(elements);
+    expect(state().pieces).toEqual(before);
   });
 });
 
 describe("combining rows (S-I.3)", () => {
-  const threeRows = () => ({
-    headers: HEADERS,
-    rows: [
-      ...ROWS,
-      { "First Name": "Tobias", "Last Name": "Ashdown", Table: "Table 1", Dietary: "" },
-    ],
-    issues: [],
-    fileName: "guests.csv",
-  });
+  const three = () => room({ ...GUESTS, ...TOBIAS });
 
-  it("gives every row an id, so an override can outlive a re-order", () => {
-    state().setCsv(csv());
-    expect(state().rowIds).toHaveLength(ROWS.length);
-    expect(new Set(state().rowIds).size).toBe(ROWS.length);
+  it("gives every row its guest's id, so an override follows the guest", () => {
+    room();
+    expect(state().rowIds).toEqual(["g1", "g2"]);
   });
 
   it("joins two guests onto one row and drops the originals from the list", () => {
-    state().setCsv(threeRows());
+    three();
     state().combineRows([0, 2]);
     expect(state().rows).toHaveLength(2);
     expect(state().rows[0]?.["First Name"]).toBe("Charis & Tobias");
+    expect(Object.values(state().merged)).toEqual([["g1", "g3"]]);
   });
 
   it("says a shared value once rather than repeating it", () => {
-    state().setCsv(threeRows());
+    three();
     state().combineRows([0, 2]);
     // Both are on Table 1; the card should not read "Table 1 & Table 1".
     expect(state().rows[0]?.["Table"]).toBe("Table 1");
   });
 
-  it("puts the combined row where the first of its sources was", () => {
-    state().setCsv(threeRows());
+  it("puts the combined row where the first of its guests was", () => {
+    three();
     state().combineRows([1, 2]);
     expect(state().rows[0]?.["First Name"]).toBe("Charis");
     expect(state().rows[1]?.["First Name"]).toBe("Eleanor & Tobias");
   });
 
   it("restores the originals exactly when split again", () => {
-    state().setCsv(threeRows());
+    three();
     const before = state().rows;
     const beforeIds = state().rowIds;
     state().combineRows([0, 2]);
@@ -281,21 +293,36 @@ describe("combining rows (S-I.3)", () => {
     expect(state().merged).toEqual({});
   });
 
+  it("opens a combined card up rather than nesting it, when it is combined again", () => {
+    three();
+    state().combineRows([0, 1]);
+    state().combineRows([0, 1]);
+    expect(state().rows).toHaveLength(1);
+    expect(Object.values(state().merged)).toEqual([["g1", "g2", "g3"]]);
+  });
+
+  it("follows its guests: one moving table moves the card's table line", () => {
+    three();
+    state().combineRows([0, 2]);
+    room({ ...GUESTS, ...TOBIAS }, { t2: { id: "t2", label: "Table 2", assignedGuestIds: ["g1", "g2", "g3"] } });
+    expect(state().rows[0]?.["Table"]).toBe("Table 2");
+  });
+
   it("refuses to combine fewer than two rows", () => {
-    state().setCsv(csv());
+    room();
     state().combineRows([0]);
     expect(state().rows).toHaveLength(2);
   });
 
   it("ignores a split of something that was never combined", () => {
-    state().setCsv(csv());
+    room();
     state().splitRow("nope");
     expect(state().rows).toHaveLength(2);
   });
 
   it("is taken back by undo as by its inverse, split", () => {
     vi.useFakeTimers();
-    state().setCsv(threeRows());
+    three();
     const rows = state().rows;
     vi.advanceTimersByTime(1000);
     state().combineRows([0, 2]);
@@ -306,19 +333,11 @@ describe("combining rows (S-I.3)", () => {
     state().splitRow(state().rowIds[0]!);
     expect(state().rows).toEqual(rows);
   });
-
-  it("drops ids and combines when a new CSV arrives", () => {
-    state().setCsv(threeRows());
-    state().combineRows([0, 2]);
-    state().setCsv(csv());
-    expect(state().merged).toEqual({});
-    expect(state().rowIds).toHaveLength(ROWS.length);
-  });
 });
 
 describe("per-row overrides (D1)", () => {
   it("stores and clears a patch for one row", () => {
-    state().setCsv(csv());
+    room();
     state().addElement("text");
     const elementId = state().template.elements[0]!.id;
     const rowId = state().rowIds[0]!;
@@ -331,7 +350,7 @@ describe("per-row overrides (D1)", () => {
   });
 
   it("is undoable, because it is design and not data", () => {
-    state().setCsv(csv());
+    room();
     state().addElement("text");
     const elementId = state().template.elements[0]!.id;
     state().overrideForRow(state().rowIds[0]!, elementId, { fontSizePt: 11 });
@@ -340,28 +359,11 @@ describe("per-row overrides (D1)", () => {
   });
 });
 
-describe("a second CSV with different headers (S-B.1)", () => {
-  it("re-attaches the design by column role rather than unbinding it", () => {
-    state().setCsv(csv());
-    const before = state().template.elements.length;
-    expect(before).toBeGreaterThan(0);
-
-    state().setCsv({
-      headers: ["Guest First", "Guest Last", "Tbl", "Dietary Needs"],
-      rows: [{ "Guest First": "Ada", "Guest Last": "Lovelace", Tbl: "Table 1", "Dietary Needs": "" }],
-      issues: [],
-      fileName: "next-year.csv",
-    });
-
-    const templates = state()
-      .template.elements.flatMap((el) => (el.kind === "text" ? [el.template] : []));
-    expect(state().template.elements).toHaveLength(before);
-    expect(templates.join(" ")).toContain("{{Guest First}}");
-    expect(templates.join(" ")).not.toContain("{{First Name}}");
-  });
-
-  it("builds a fresh template only when there was nothing to keep", () => {
-    state().setCsv(csv());
-    expect(state().template.elements.length).toBeGreaterThan(0);
+describe("reprinting a few", () => {
+  it("is forgotten when another piece is opened", () => {
+    room();
+    state().setPrintOnly(["row:g1"]);
+    state().addPiece("Escort cards");
+    expect(state().printOnly).toBeNull();
   });
 });

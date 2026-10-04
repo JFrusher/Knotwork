@@ -5,6 +5,7 @@ vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => unde
 const { emptyKnotwork, migrate } = await import("@jfrusher/knotwork");
 const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { usePlaque } = await import("./store");
+const { initialSuite } = await import("./design");
 
 /*
  * Place cards hold no copy of the wedding: the design is the stationery
@@ -12,11 +13,14 @@ const { usePlaque } = await import("./store");
  * it from anywhere is what the editor shows.
  */
 type Raw = Record<string, any>;
-const HEADERS = ["First Name", "Last Name", "Table", "Dietary"];
-const ROWS = [
-  { "First Name": "Charis", "Last Name": "Smith", Table: "Table 1", Dietary: "Vegetarian" },
-  { "First Name": "Eleanor", "Last Name": "Vane", Table: "Table 2", Dietary: "Vegan" },
-];
+const GUESTS = {
+  g1: { id: "g1", firstName: "Charis", lastName: "Smith", assignedTableId: "t1" },
+  g2: { id: "g2", firstName: "Eleanor", lastName: "Vane", assignedTableId: "t2" },
+};
+const TABLES = {
+  t1: { id: "t1", label: "Table 1", assignedGuestIds: ["g1"] },
+  t2: { id: "t2", label: "Table 2", assignedGuestIds: ["g2"] },
+};
 
 const shared = () => useKnotworkStore.getState();
 const plaque = () => usePlaque.getState();
@@ -25,9 +29,14 @@ const stored = () => (shared().raw as Raw).stationery as Raw;
 const piece = () => (stored().pieces as Raw[]).find((p) => p.id === plaque().pieceId)!;
 
 beforeEach(() => {
-  const raw = emptyKnotwork() as unknown as Raw;
+  // A wedding with two guests seated, and Place cards already saved once.
+  const raw = {
+    ...(emptyKnotwork() as unknown as Raw),
+    guests: GUESTS,
+    seating: { tables: TABLES },
+    stationery: { version: 3, savedAt: null, ...initialSuite() },
+  };
   useKnotworkStore.setState({ status: "ready", raw, doc: migrate(raw), past: [], future: [] });
-  plaque().setCsv({ headers: HEADERS, rows: ROWS, issues: [], fileName: "guests.csv" });
 });
 
 test("an edit is in the wedding the moment it is made", () => {
@@ -117,10 +126,13 @@ test("pieces share their uploaded assets' names", () => {
   expect(stored().assetNames).toEqual({ "user:mono": "Monogram.png" });
 });
 
-test("a copied piece keeps the design and the list, under its own name", () => {
+test("a copied piece keeps the design and who shares a card, under its own name", () => {
+  plaque().combineRows([0, 1]);
+  const template = plaque().template;
   plaque().duplicatePiece("place-cards");
   expect(plaque().pieces.map((p) => p.name)).toEqual(["Place cards", "Place cards (copy)"]);
-  expect(plaque().rows).toEqual(ROWS);
+  expect(plaque().template).toEqual(template);
+  expect(plaque().rows.map((row) => row["Name"])).toEqual(["Charis Smith & Eleanor Vane"]);
   expect(plaque().pieceId).not.toBe("place-cards");
 });
 
@@ -139,14 +151,42 @@ test("removing the piece on screen shows its neighbour, and the last piece canno
   expect(() => plaque().removePiece("place-cards")).toThrow(/last piece/);
 });
 
-test("a wedding saved with one design opens it as its place cards, and the next edit keeps it", () => {
+test("a wedding saved with one design and a copy of the list opens from the room, keeping each guest's own change", () => {
   const { pieces, ...sharedParts } = stored();
-  const [{ id: _id, name: _name, ...flat }] = pieces as Raw[];
-  shared().setSlice("stationery", { ...sharedParts, ...flat, version: 2 }, { silent: true });
+  const [{ id: _id, name: _name, merged: _merged, template, ...flat }] = pieces as Raw[];
+  const name = template.elements.find((el: Raw) => el.kind === "text").id;
+  // Version 2 kept the rows themselves — here, Eleanor still on the table she
+  // has since left — and keyed a tweak to her by her position in them.
+  shared().setSlice(
+    "stationery",
+    {
+      ...sharedParts,
+      ...flat,
+      version: 2,
+      template: { ...template, overrides: { r1: { [name]: { fontSizePt: 11 } } } },
+      headers: ["First Name", "Last Name", "Name", "Table"],
+      rows: [
+        { "First Name": "Charis", "Last Name": "Smith", Name: "Charis Smith", Table: "Table 1" },
+        { "First Name": "Eleanor", "Last Name": "Vane", Name: "Eleanor Vane", Table: "Table 9" },
+      ],
+      rowIds: ["r0", "r1"],
+      fileName: "the room",
+    },
+    { silent: true },
+  );
   expect(plaque().pieces).toEqual([{ id: "place-cards", name: "Place cards" }]);
-  expect(plaque().rows).toEqual(ROWS);
+  expect(plaque().rows.map((row) => row["Table"])).toEqual(["Table 1", "Table 2"]);
+  expect(plaque().template.overrides).toEqual({ g2: { [name]: { fontSizePt: 11 } } });
 
   plaque().setBackground("#fdfbf7");
   expect(stored().version).toBe(3);
-  expect(piece().rows).toEqual(ROWS);
+  expect(piece()).not.toHaveProperty("rows");
+  expect(piece().template.overrides).toEqual({ g2: { [name]: { fontSizePt: 11 } } });
+});
+
+test("a guest seated in the room is on the card at once, on any piece", () => {
+  plaque().addPiece("Escort cards");
+  const seating = { tables: { ...TABLES, t2: { ...TABLES.t2, label: "Top table" } } };
+  shared().setSlice("seating", seating, { label: "the room" });
+  expect(plaque().rows.map((row) => row["Table"])).toEqual(["Table 1", "Top table"]);
 });

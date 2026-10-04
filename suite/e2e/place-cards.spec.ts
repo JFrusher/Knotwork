@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { seedExampleWedding, storedDocument } from "./wedding";
+import { openSeating, seedExampleWedding, storedDocument } from "./wedding";
 
 const elementCount = async (page: Parameters<typeof storedDocument>[0]) =>
   ((await storedDocument(page)).stationery.pieces[0].template.elements as unknown[]).length;
@@ -45,4 +45,19 @@ test("a second piece is designed on its own and kept in the wedding beside the f
   await pieces.getByRole("tab", { name: "Place cards" }).click();
   await expect(pieces.getByRole("tab", { name: "Place cards" })).toHaveAttribute("aria-selected", "true");
   await page.screenshot({ path: process.env.SHOT ?? "test-results/pieces.png" });
+});
+
+test("a table renamed in Seating is on the cards with nothing pressed", async ({ page }) => {
+  await seedExampleWedding(page);
+  await openSeating(page);
+  await page.getByRole("button", { name: /^Top table, / }).click();
+  await page.getByLabel("Table name").fill("Head table");
+  await page.getByLabel("Table name").press("Enter");
+
+  await page.getByRole("link", { name: "Place cards" }).click();
+  // Alex Morgan sits at the top table, and is the first card.
+  const card = page.getByRole("region", { name: "Card" });
+  await expect(card.getByText("Head table")).toBeVisible();
+  await expect(page.getByText(/Printing from the room, as it stands: 100 guests/)).toBeVisible();
+  await page.screenshot({ path: process.env.SHOT ?? "test-results/live.png" });
 });

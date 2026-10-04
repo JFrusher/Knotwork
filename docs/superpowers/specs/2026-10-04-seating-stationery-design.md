@@ -25,6 +25,8 @@ says now.
 | F6 | Seating prints separately: a to-scale floor-plan PDF and two fixed card layouts in jsPDF (`apps/tableaux/utils/exportPdf.ts`, `cardTemplates.ts`, `components/layout/PrintModal.tsx`). It shares no fonts, tokens or design with Place cards, so the two can disagree. | Traced |
 | F7 | Rows already have stable ids, and per-row overrides hang off the id (`core/data/artefacts.ts`, `rowId`). Using guest ids as row ids lets a hand-tweaked card follow its guest through a move. | Traced |
 | F8 | The guest link carries its decryption key in the fragment (`lib/share/guestLink.ts:23`), but what it decrypts is an allow-list of name, table and seat (`lib/share/snapshot.ts`) — the same facts a printed board shows. A QR code of it on a public board discloses nothing the board does not. | Traced |
+| F10 | Found while building phase 2: there is no CSV import left in Place cards. `setCsv` is only ever called with the room's rows (`DataPanel.tsx`: "There is no file import"). So a piece has no "file" source to keep, and the spec's `source` field is dropped: every piece prints from the room. | Traced (every `setCsv` caller) |
+| F11 | A seat is stored twice, on the table and on the guest, and the tables win: `lib/seating/normalise.ts` rebuilds the guest side from `assignedGuestIds` on load, and the validator refuses a commit where they disagree. Seat lookups read the tables. | Traced |
 | F9 | `document` scope makes exactly one artefact, so a list longer than one page cannot spill onto a second (`core/data/artefacts.ts`, the "ponytail" note). The alphabetical finder needs that spill. | Traced |
 
 ## Decisions
@@ -76,16 +78,19 @@ interface Stationery {
 }
 interface Piece {
   id, name;
-  source: { kind: "room" } | { kind: "csv"; headers; rows; rowIds; fileName };
   card: CardSpec; sheet: SheetSpec; template: Template;
+  /** Guests printed together on one card, by guest id. */
+  merged: Record<string, string[]>;
   printed: PrintRecord | null;   // decision 9
 }
 ```
 
-`source: room` stores no rows. Rows are derived per render from the document
-through the per-document cache in `lib/model/slices.ts` (selectors must not
-allocate). CSV import stays, as a piece's other source, for anyone not using
-Seating.
+A piece stores no rows (F10). Rows are derived from the document through the
+per-document cache in `lib/model/slices.ts` (selectors must not allocate),
+keyed by guest id, so per-guest tweaks and combined cards follow their people.
+A save from before pieces is migrated: its stored rows go, and its tweaks and
+combines are re-keyed from positions to guests by name, saying what could not
+be matched.
 
 A stored single design migrates to one piece called "Place cards", with its
 current source (`fileName === "the room"` → `room`). The migration is a

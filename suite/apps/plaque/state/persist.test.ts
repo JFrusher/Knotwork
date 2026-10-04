@@ -42,8 +42,9 @@ describe("load", () => {
     expect(result.data.version).toBe(3);
     expect(result.data.savedAt).toBe("2026-08-17T13:42:00.000Z");
     expect(result.data.pieces).toHaveLength(1);
-    expect(result.data.pieces[0]).toMatchObject({ ...FIRST_PIECE, fileName: "guests.csv" });
-    expect(result.data.pieces[0]!.rows).toHaveLength(1);
+    expect(result.data.pieces[0]).toMatchObject(FIRST_PIECE);
+    // The rows it printed are the room's to say now; none are kept.
+    expect(Object.keys(result.data.pieces[0]!).sort()).toEqual(["card", "id", "merged", "name", "sheet", "template"]);
     expect(result.problem).toBeNull();
   });
 
@@ -99,11 +100,40 @@ describe("load", () => {
     expect(result.status === "ok" && Object.keys(result.data.pieces[0]!)).not.toContain("past");
   });
 
-  it("gives rows positional ids when the save predates them", () => {
-    // Overrides keyed by those same positional ids still land after an upgrade.
-    const { rowIds: _rowIds, ...older } = good();
-    const result = load(older);
-    expect(result.status === "ok" && result.data.pieces[0]!.rowIds).toEqual(["r0"]);
+  it("moves a guest's own change from the row they were on to the guest", () => {
+    const tweak = { fontSizePt: 11 };
+    const saved = good({ template: { ...design().template, overrides: { r0: { name: tweak } } } });
+    const result = load(saved, (row) => (row["First Name"] === "Charis" ? "g7" : null));
+    expect(result.status === "ok" && result.data.pieces[0]!.template.overrides).toEqual({ g7: { name: tweak } });
+    expect(result.status === "ok" && result.problem).toBeNull();
+  });
+
+  it("finds the rows of a save from before rows had ids by their position", () => {
+    const { rowIds: _rowIds, ...older } = good({ template: { ...design().template, overrides: { r0: { name: {} } } } });
+    const result = load(older, () => "g7");
+    expect(result.status === "ok" && Object.keys(result.data.pieces[0]!.template.overrides!)).toEqual(["g7"]);
+  });
+
+  it("says so when a guest's own change matches nobody on the list any more", () => {
+    const saved = good({ template: { ...design().template, overrides: { r0: { name: { fontSizePt: 11 } } } } });
+    const result = load(saved, () => null);
+    expect(result.status === "ok" && result.data.pieces[0]!.template.overrides).toEqual({});
+    expect(result.status === "ok" && result.problem).toMatch(/One guest's own change to "Place cards"/);
+  });
+
+  it("keeps two guests on one card, now by who they are", () => {
+    const ada = { "First Name": "Ada" };
+    const grace = { "First Name": "Grace" };
+    const saved = good({
+      rows: [{ "First Name": "Ada & Grace" }],
+      rowIds: ["merged:x"],
+      merged: { "merged:x": { indexes: [0, 1], ids: ["r0", "r1"], rows: [ada, grace] } },
+      template: { ...design().template, overrides: { "merged:x": { name: { fontSizePt: 9 } } } },
+    });
+    const ids: Record<string, string> = { Ada: "g1", Grace: "g2" };
+    const result = load(saved, (row) => ids[row["First Name"]!] ?? null);
+    expect(result.status === "ok" && result.data.pieces[0]!.merged).toEqual({ "merged:x": ["g1", "g2"] });
+    expect(result.status === "ok" && Object.keys(result.data.pieces[0]!.template.overrides!)).toEqual(["merged:x"]);
   });
 
   it("upgrades a v1 save, which had no timestamp", () => {
@@ -113,15 +143,18 @@ describe("load", () => {
     if (result.status !== "ok") return;
     expect(result.data.version).toBe(3);
     expect(result.data.savedAt).toBeNull();
-    expect(result.data.pieces[0]!.rows).toHaveLength(1);
+    expect(result.data.pieces).toHaveLength(1);
   });
 });
 
 describe("load, with pieces", () => {
-  const piece = (id: string, name: string, over: Record<string, unknown> = {}) => {
-    const { version: _v, savedAt: _s, uploadedIcons: _u, assetNames: _a, snapEnabled: _n, sheetCollapsed: _c, ...own } = good();
-    return { id, name, ...own, ...over };
-  };
+  const piece = (id: string, name: string, over: Record<string, unknown> = {}) => ({
+    id,
+    name,
+    ...design(),
+    merged: {},
+    ...over,
+  });
   const suite = (pieces: unknown[]) => ({
     version: 3,
     savedAt: null,
@@ -156,6 +189,12 @@ describe("load, with pieces", () => {
     const result = load(suite([piece("a", "Place cards"), piece("a", "Escort cards")]));
     expect(result.status === "ok" && result.data.pieces.map((p) => p.name)).toEqual(["Place cards"]);
     expect(result.status === "ok" && result.problem).toMatch(/Escort cards/);
+  });
+
+  it("reads who shares a card, and leaves out a piece whose combines are not guest lists", () => {
+    const result = load(suite([piece("a", "Place cards", { merged: { "merged:x": ["g1", "g2"] } }), piece("b", "Menus", { merged: { m: { rows: [] } } })]));
+    expect(result.status === "ok" && result.data.pieces.map((p) => p.merged)).toEqual([{ "merged:x": ["g1", "g2"] }]);
+    expect(result.status === "ok" && result.problem).toMatch(/combined cards on "Menus"/);
   });
 
   it("discards a suite with no readable piece", () => {

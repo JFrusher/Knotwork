@@ -1,11 +1,10 @@
 import { create } from "zustand";
 import { DEFAULT_FONT_ID } from "../assets/fonts";
 import type { RowIssue, GuestRow } from "../core/data/rows";
-import { defaultRowIds } from "../core/data/artefacts";
 import { defaultFoldPosition } from "../core/geometry/fold";
 import { sideOf } from "../core/imposition/duplex";
 import type { LayoutSuggestion } from "../core/geometry/suggestLayouts";
-import { defaultTemplate, newId } from "../core/template/defaults";
+import { newId } from "../core/template/defaults";
 import {
   withOverride,
   withoutOverride,
@@ -33,9 +32,11 @@ import type {
 } from "../core/types";
 import type { LoadedFont } from "../core/text/measure";
 import type { PrinterProfile } from "../core/print/printerProfile";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { useKnotworkStore, type WriteOptions } from "@/lib/store/useKnotworkStore";
 import { DESIGN_KEYS, designFor, designOf, initialSuite, newPiece, type Design, type Suite } from "./design";
 import { readDesign, readSuite, writeDesign, writeSuite } from "./sliceBridge";
+import { roomRows, withMerges, type Merged } from "./fromRoom";
 
 export interface PieceSummary {
   id: string;
@@ -49,7 +50,20 @@ export type NewElementKind = CardElement["kind"];
  * Place cards' state: the design, which is the wedding's stationery slice and
  * only ever shown here (see `design.ts`), and what belongs to this window.
  */
-export interface PlaqueState extends Design {
+/**
+ * What the open piece prints from: the room as it stands, with its combined
+ * cards in place. Worked out, never stored — see `fromRoom`.
+ */
+export interface RoomData {
+  headers: string[];
+  rows: GuestRow[];
+  /** A guest id, or a combined card's id, per row. */
+  rowIds: string[];
+  /** Said about the list as a whole, such as guests with no table yet. */
+  rowIssues: RowIssue[];
+}
+
+export interface PlaqueState extends Design, RoomData {
   /** Why the wedding's saved design could not be read, when it could not. */
   designProblem: string | null;
 
@@ -61,6 +75,13 @@ export interface PlaqueState extends Design {
   pieceId: string;
   /** Every piece, in order, for the switcher. Same array until a name or the order changes. */
   pieces: PieceSummary[];
+
+  /**
+   * Artefact keys to export instead of all of them — a reprint of a few cards.
+   * This window's, and cleared with the piece: a selection that outlived the
+   * moment would quietly print a short run later.
+   */
+  printOnly: string[] | null;
 
   /**
    * Parsed faces, keyed by fontId — bundled and uploaded alike. Held in the
@@ -110,7 +131,7 @@ export interface PlaqueState extends Design {
   /** The last piece cannot be removed: a wedding's stationery always has one. */
   removePiece: (id: string) => void;
 
-  setCsv: (data: { headers: string[]; rows: GuestRow[]; issues: RowIssue[]; fileName: string }) => void;
+  setPrintOnly: (keys: string[] | null) => void;
   setCard: (patch: Partial<CardSpec>) => void;
   setSheet: (patch: Partial<SheetSpec>) => void;
   applySuggestion: (s: LayoutSuggestion) => void;
@@ -173,6 +194,21 @@ export interface PlaqueState extends Design {
   clearAll: () => void;
 }
 
+type Wedding = { raw: Record<string, unknown>; doc: Knotwork };
+
+/** The last room read, so a design edit does not rebuild every row. */
+let lastLive: { inputs: unknown[]; data: RoomData } | null = null;
+
+/** The open piece's rows: the room, with its combined cards in place. */
+function live(wedding: Wedding, merged: Merged): RoomData {
+  const inputs = [wedding.raw["guests"], wedding.raw["seating"], wedding.raw["event"], merged];
+  if (lastLive && inputs.every((input, i) => input === lastLive!.inputs[i])) return lastLive.data;
+  const room = roomRows(wedding.doc);
+  const data = { headers: room.headers, ...withMerges(room, merged), rowIssues: room.issues };
+  lastLive = { inputs, data };
+  return data;
+}
+
 export const usePlaque = create<PlaqueState>()((set, get) => {
   /**
    * A change to the design goes into the wedding, which is what this store
@@ -207,13 +243,16 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
 
   /** A change to the suite itself — its pieces — rather than to the piece on screen. */
   const changeSuite = (label: string, mutate: (suite: Suite) => Suite) =>
-    writeSuite(mutate(readSuite(useKnotworkStore.getState().raw).suite), { label });
+    writeSuite(mutate(readSuite(useKnotworkStore.getState()).suite), { label });
 
   /** Shows piece `id`, starting it from its first card and the front. */
-  const open = (suite: Suite, id: string) =>
+  const open = (suite: Suite, id: string) => {
+    const design = designFor(suite, id);
     set({
-      ...designFor(suite, id),
+      ...design,
+      ...live(useKnotworkStore.getState(), design.merged),
       pieceId: id,
+      printOnly: null,
       pieces: summarise(suite, get().pieces),
       editingSide: "front",
       selectedId: null,
@@ -221,10 +260,13 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
       page: 0,
       previewGuestIndex: 0,
     });
+  };
 
-  const opened = readDesign(useKnotworkStore.getState().raw, null);
+  const opened = readDesign(useKnotworkStore.getState(), null);
   return {
     ...opened.design,
+    ...live(useKnotworkStore.getState(), opened.design.merged),
+    printOnly: null,
     designProblem: opened.problem,
     pieceId: opened.pieceId,
     pieces: summarise(opened.suite, []),
@@ -241,12 +283,12 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     page: 0,
     previewGuestIndex: 0,
 
-    switchPiece: (id) => open(readSuite(useKnotworkStore.getState().raw).suite, id),
+    switchPiece: (id) => open(readSuite(useKnotworkStore.getState()).suite, id),
 
     addPiece: (name) => {
       const piece = newPiece(newId(), name);
       changeSuite(`adding ${name}`, (suite) => ({ ...suite, pieces: [...suite.pieces, piece] }));
-      open(readSuite(useKnotworkStore.getState().raw).suite, piece.id);
+      open(readSuite(useKnotworkStore.getState()).suite, piece.id);
     },
 
     duplicatePiece: (id) => {
@@ -258,7 +300,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
         const copy = { ...source, id: copyId, name: `${source.name} (copy)` };
         return { ...suite, pieces: [...suite.pieces.slice(0, at + 1), copy, ...suite.pieces.slice(at + 1)] };
       });
-      open(readSuite(useKnotworkStore.getState().raw).suite, copyId);
+      open(readSuite(useKnotworkStore.getState()).suite, copyId);
     },
 
     renamePiece: (id, name) =>
@@ -268,7 +310,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
       })),
 
     removePiece: (id) => {
-      const { suite } = readSuite(useKnotworkStore.getState().raw);
+      const { suite } = readSuite(useKnotworkStore.getState());
       if (suite.pieces.length <= 1) throw new Error("The last piece cannot be removed.");
       const removed = suite.pieces.find((p) => p.id === id);
       if (!removed) throw new Error(`No piece "${id}" in the stationery.`);
@@ -282,28 +324,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
       }));
     },
 
-    setCsv: ({ headers, rows, issues, fileName }) =>
-      commit("the guest list", (s) => ({
-        headers,
-        rows,
-        // A new file is a new dataset: old ids, and the combines built on them,
-        // do not carry over.
-        rowIds: defaultRowIds(rows.length),
-        merged: {},
-        csvIssues: issues,
-        fileName,
-        page: 0,
-        previewGuestIndex: 0,
-        // A blank template means this is the first upload; give the user a card
-        // that already renders their data rather than an empty rectangle.
-        // Otherwise the existing design is re-attached by column ROLE, so a
-        // template survives next year's export with different header names
-        // (S-B.1). Tokens that cannot be matched are left alone and reported.
-        template:
-          s.template.elements.length === 0
-            ? defaultTemplate(headers, s.card)
-            : rebindTemplate(s.template, s.headers, headers).template,
-      })),
+    setPrintOnly: (printOnly) => set({ printOnly }),
 
     setCard: (patch) =>
       commit("the card", (s) => {
@@ -344,67 +365,29 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
         previewGuestIndex: 0,
       })),
 
-    // Combine and split change the guest list, not the design, and are each
-    // other's exact inverse. Undo takes either back too: the wedding's history
-    // shares what did not change, so two thousand rows cost nothing extra.
+    // Combine and split change who shares a card, which is all of the guest
+    // list a piece keeps. Undo takes either back, on the wedding's history.
     combineRows: (indexes) =>
       commit("combining guests", (s) => {
-        const picked = [...new Set(indexes)].sort((a, b) => a - b);
-        const rows = picked.map((i) => s.rows[i]).filter((r): r is GuestRow => Boolean(r));
-        if (rows.length < 2) return {};
-
-        const at = picked[0]!;
-        const id = `merged:${newId()}`;
-        const combined: GuestRow = {};
-        for (const header of s.headers) {
-          // Distinct values joined, in order: "Ada & Grace" for the names,
-          // "Table 4" once for the table they share.
-          const values = [...new Set(rows.map((r) => r[header]).filter(Boolean))];
-          combined[header] = values.join(" & ");
-        }
-
-        const keep = new Set(picked);
-        return {
-          rows: [
-            ...s.rows.slice(0, at).filter((_, i) => !keep.has(i)),
-            combined,
-            ...s.rows.slice(at + 1).filter((_, i) => !keep.has(at + 1 + i)),
-          ],
-          rowIds: [
-            ...s.rowIds.slice(0, at).filter((_, i) => !keep.has(i)),
-            id,
-            ...s.rowIds.slice(at + 1).filter((_, i) => !keep.has(at + 1 + i)),
-          ],
-          merged: {
-            ...s.merged,
-            // Positions, not just ids: "splitting restores the originals
-            // exactly" includes putting them back where they were.
-            [id]: { indexes: picked, ids: picked.map((i) => s.rowIds[i] ?? `r${i}`), rows },
-          },
-          previewGuestIndex: 0,
-          page: 0,
-        };
+        const picked = [...new Set(indexes)].map((i) => s.rowIds[i]).filter((id): id is string => Boolean(id));
+        if (picked.length < 2) return {};
+        // A combined card picked again is opened up into its people: three
+        // on one card is one card, not a card inside a card.
+        const merged: Merged = { ...s.merged };
+        const members = picked.flatMap((id) => {
+          const inside = merged[id];
+          delete merged[id];
+          return inside ?? [id];
+        });
+        merged[`merged:${newId()}`] = members;
+        return { merged, previewGuestIndex: 0, page: 0 };
       }),
 
     splitRow: (rowId) =>
       commit("splitting guests", (s) => {
-        const record = s.merged[rowId];
-        const at = s.rowIds.indexOf(rowId);
-        if (!record || at === -1) return {};
+        if (!s.merged[rowId]) return {};
         const { [rowId]: _dropped, ...merged } = s.merged;
-
-        // Drop the synthetic row, then put each source back at the index it
-        // came from. Ascending order makes each insertion land correctly; the
-        // clamp covers a list that has since been edited elsewhere.
-        const rows = [...s.rows.slice(0, at), ...s.rows.slice(at + 1)];
-        const rowIds = [...s.rowIds.slice(0, at), ...s.rowIds.slice(at + 1)];
-        for (const [i, index] of record.indexes.entries()) {
-          const target = Math.min(index, rows.length);
-          rows.splice(target, 0, record.rows[i]!);
-          rowIds.splice(target, 0, record.ids[i]!);
-        }
-
-        return { rows, rowIds, merged, previewGuestIndex: 0, page: 0 };
+        return { merged, previewGuestIndex: 0, page: 0 };
       }),
 
     overrideForRow: (rowId, elementId, patch) =>
@@ -649,13 +632,16 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
  * partner's device alike. Followed as it changes, synchronously, so there is
  * never a moment the two disagree.
  */
-function follow(raw: Record<string, unknown>): void {
-  const { design, problem, pieceId, suite } = readDesign(raw, usePlaque.getState().pieceId);
+function follow(wedding: Wedding): void {
+  const { design, problem, pieceId, suite } = readDesign(wedding, usePlaque.getState().pieceId);
   const present = (id: ElementId | null) => id !== null && design.template.elements.some((el) => el.id === id);
   usePlaque.setState((s) => ({
     ...design,
+    ...live(wedding, design.merged),
     designProblem: problem,
     pieceId,
+    // Another piece now: its cards are not the ones that were picked.
+    printOnly: pieceId === s.pieceId ? s.printOnly : null,
     pieces: summarise(suite, s.pieces),
     // Something undone, or removed elsewhere, is no longer there to select.
     selectedId: present(s.selectedId) ? s.selectedId : null,
@@ -663,8 +649,15 @@ function follow(raw: Record<string, unknown>): void {
   }));
 }
 
+/**
+ * The cards follow the room: a guest seated next door, a name corrected on the
+ * guest list or a partner's name changed is on the card the moment it is made.
+ * Only the slices a card reads are watched, so an edit to the timeline costs
+ * Place cards nothing.
+ */
 useKnotworkStore.subscribe((state, prev) => {
-  if (state.raw["stationery"] !== prev.raw["stationery"]) follow(state.raw);
+  const watched = ["stationery", "guests", "seating", "event"] as const;
+  if (watched.some((slice) => state.raw[slice] !== prev.raw[slice])) follow(state);
 });
 
 /** The switcher's list, reusing `previous` when nothing it shows has changed. */
