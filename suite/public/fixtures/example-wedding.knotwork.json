@@ -3424,1159 +3424,1165 @@
     ]
   },
   "stationery": {
-    "version": 2,
+    "version": 3,
     "savedAt": "2026-09-28T18:41:46.031Z",
-    "card": {
-      "widthMm": 85,
-      "heightMm": 55,
-      "fold": "none",
-      "foldPositionMm": 27.5,
-      "invertBackPanel": true,
-      "bleedMm": 0
-    },
-    "sheet": {
-      "page": "A4",
-      "orientation": "portrait",
-      "marginTopMm": 10,
-      "marginRightMm": 10,
-      "marginBottomMm": 10,
-      "marginLeftMm": 10,
-      "gapXMm": 5,
-      "gapYMm": 5,
-      "cardRotationDeg": 0,
-      "printerMarginMm": 5,
-      "cropMarks": true,
-      "cutLines": true,
-      "foldGuides": true,
-      "bleedGuides": true,
-      "duplex": false,
-      "slugLine": false
-    },
-    "template": {
-      "elements": [
-        {
-          "kind": "text",
-          "id": "17332f7a-db86-4f48-a989-f3bd5715ae1d",
-          "x": 8,
-          "y": 16.5,
-          "w": 69,
-          "h": 14,
-          "z": 0,
-          "template": "{{First Name}} {{Last Name}}",
-          "fontId": "crimson",
-          "fontSizePt": 22,
-          "align": "center",
-          "vAlign": "middle",
-          "lineHeight": 1.15,
-          "colorHex": "#171613",
-          "letterSpacingMm": 0,
-          "fit": {
-            "mode": "shrink",
-            "minFontSizePt": 8,
-            "maxLines": 2,
-            "anchor": "align"
-          }
+    "pieces": [
+      {
+        "id": "place-cards",
+        "name": "Place cards",
+        "card": {
+          "widthMm": 85,
+          "heightMm": 55,
+          "fold": "none",
+          "foldPositionMm": 27.5,
+          "invertBackPanel": true,
+          "bleedMm": 0
         },
-        {
-          "kind": "text",
-          "id": "f097dd87-10c6-4893-82a8-f04d2fad394e",
-          "x": 8,
-          "y": 31.5,
-          "w": 69,
-          "h": 7,
-          "z": 1,
-          "template": "{{Table}}",
-          "fontId": "crimson",
-          "fontSizePt": 10,
-          "align": "center",
-          "vAlign": "middle",
-          "lineHeight": 1.2,
-          "colorHex": "#6f6d68",
-          "letterSpacingMm": 0.3,
-          "fit": {
-            "mode": "shrink",
-            "minFontSizePt": 6,
-            "maxLines": 2,
-            "anchor": "align"
-          }
+        "sheet": {
+          "page": "A4",
+          "orientation": "portrait",
+          "marginTopMm": 10,
+          "marginRightMm": 10,
+          "marginBottomMm": 10,
+          "marginLeftMm": 10,
+          "gapXMm": 5,
+          "gapYMm": 5,
+          "cardRotationDeg": 0,
+          "printerMarginMm": 5,
+          "cropMarks": true,
+          "cutLines": true,
+          "foldGuides": true,
+          "bleedGuides": true,
+          "duplex": false,
+          "slugLine": false
         },
-        {
-          "kind": "icon",
-          "id": "d1b0c0a8-cdfe-426f-ac9e-7bad6093f9c3",
-          "x": 69,
-          "y": 39,
-          "w": 8,
-          "h": 8,
-          "z": 2,
-          "sourceField": "Dietary",
-          "rules": [
+        "template": {
+          "elements": [
             {
-              "match": "Vegetarian",
-              "iconId": "vegetarian"
+              "kind": "text",
+              "id": "17332f7a-db86-4f48-a989-f3bd5715ae1d",
+              "x": 8,
+              "y": 16.5,
+              "w": 69,
+              "h": 14,
+              "z": 0,
+              "template": "{{First Name}} {{Last Name}}",
+              "fontId": "crimson",
+              "fontSizePt": 22,
+              "align": "center",
+              "vAlign": "middle",
+              "lineHeight": 1.15,
+              "colorHex": "#171613",
+              "letterSpacingMm": 0,
+              "fit": {
+                "mode": "shrink",
+                "minFontSizePt": 8,
+                "maxLines": 2,
+                "anchor": "align"
+              }
             },
             {
-              "match": "Veggie",
-              "iconId": "vegetarian"
+              "kind": "text",
+              "id": "f097dd87-10c6-4893-82a8-f04d2fad394e",
+              "x": 8,
+              "y": 31.5,
+              "w": 69,
+              "h": 7,
+              "z": 1,
+              "template": "{{Table}}",
+              "fontId": "crimson",
+              "fontSizePt": 10,
+              "align": "center",
+              "vAlign": "middle",
+              "lineHeight": 1.2,
+              "colorHex": "#6f6d68",
+              "letterSpacingMm": 0.3,
+              "fit": {
+                "mode": "shrink",
+                "minFontSizePt": 6,
+                "maxLines": 2,
+                "anchor": "align"
+              }
             },
             {
-              "match": "V",
-              "iconId": "vegetarian"
-            },
-            {
-              "match": "VEG",
-              "iconId": "vegetarian"
-            },
-            {
-              "match": "Vegan",
-              "iconId": "vegan"
-            },
-            {
-              "match": "VG",
-              "iconId": "vegan"
-            },
-            {
-              "match": "Plant-based",
-              "iconId": "vegan"
-            },
-            {
-              "match": "Plant based",
-              "iconId": "vegan"
-            },
-            {
-              "match": "Gluten-Free",
-              "iconId": "gluten-free"
-            },
-            {
-              "match": "Gluten Free",
-              "iconId": "gluten-free"
-            },
-            {
-              "match": "Gluten free",
-              "iconId": "gluten-free"
-            },
-            {
-              "match": "GF",
-              "iconId": "gluten-free"
-            },
-            {
-              "match": "No gluten",
-              "iconId": "gluten-free"
-            },
-            {
-              "match": "Coeliac",
-              "iconId": "gluten-free"
-            },
-            {
-              "match": "Celiac",
-              "iconId": "gluten-free"
-            },
-            {
-              "match": "Dairy-Free",
-              "iconId": "dairy-free"
-            },
-            {
-              "match": "Dairy Free",
-              "iconId": "dairy-free"
-            },
-            {
-              "match": "Dairy free",
-              "iconId": "dairy-free"
-            },
-            {
-              "match": "DF",
-              "iconId": "dairy-free"
-            },
-            {
-              "match": "No dairy",
-              "iconId": "dairy-free"
-            },
-            {
-              "match": "Lactose-free",
-              "iconId": "dairy-free"
-            },
-            {
-              "match": "Lactose free",
-              "iconId": "dairy-free"
-            },
-            {
-              "match": "Nut-Free",
-              "iconId": "nut-free"
-            },
-            {
-              "match": "Nut Free",
-              "iconId": "nut-free"
-            },
-            {
-              "match": "Nut free",
-              "iconId": "nut-free"
-            },
-            {
-              "match": "NF",
-              "iconId": "nut-free"
-            },
-            {
-              "match": "No nuts",
-              "iconId": "nut-free"
-            },
-            {
-              "match": "Nut allergy",
-              "iconId": "nut-free"
-            },
-            {
-              "match": "Halal",
-              "iconId": "halal"
-            },
-            {
-              "match": "Kosher",
-              "iconId": "kosher"
-            },
-            {
-              "match": "Child",
-              "iconId": "child"
-            },
-            {
-              "match": "Children",
-              "iconId": "child"
-            },
-            {
-              "match": "Kids",
-              "iconId": "child"
-            },
-            {
-              "match": "Kid",
-              "iconId": "child"
-            },
-            {
-              "match": "Child meal",
-              "iconId": "child"
+              "kind": "icon",
+              "id": "d1b0c0a8-cdfe-426f-ac9e-7bad6093f9c3",
+              "x": 69,
+              "y": 39,
+              "w": 8,
+              "h": 8,
+              "z": 2,
+              "sourceField": "Dietary",
+              "rules": [
+                {
+                  "match": "Vegetarian",
+                  "iconId": "vegetarian"
+                },
+                {
+                  "match": "Veggie",
+                  "iconId": "vegetarian"
+                },
+                {
+                  "match": "V",
+                  "iconId": "vegetarian"
+                },
+                {
+                  "match": "VEG",
+                  "iconId": "vegetarian"
+                },
+                {
+                  "match": "Vegan",
+                  "iconId": "vegan"
+                },
+                {
+                  "match": "VG",
+                  "iconId": "vegan"
+                },
+                {
+                  "match": "Plant-based",
+                  "iconId": "vegan"
+                },
+                {
+                  "match": "Plant based",
+                  "iconId": "vegan"
+                },
+                {
+                  "match": "Gluten-Free",
+                  "iconId": "gluten-free"
+                },
+                {
+                  "match": "Gluten Free",
+                  "iconId": "gluten-free"
+                },
+                {
+                  "match": "Gluten free",
+                  "iconId": "gluten-free"
+                },
+                {
+                  "match": "GF",
+                  "iconId": "gluten-free"
+                },
+                {
+                  "match": "No gluten",
+                  "iconId": "gluten-free"
+                },
+                {
+                  "match": "Coeliac",
+                  "iconId": "gluten-free"
+                },
+                {
+                  "match": "Celiac",
+                  "iconId": "gluten-free"
+                },
+                {
+                  "match": "Dairy-Free",
+                  "iconId": "dairy-free"
+                },
+                {
+                  "match": "Dairy Free",
+                  "iconId": "dairy-free"
+                },
+                {
+                  "match": "Dairy free",
+                  "iconId": "dairy-free"
+                },
+                {
+                  "match": "DF",
+                  "iconId": "dairy-free"
+                },
+                {
+                  "match": "No dairy",
+                  "iconId": "dairy-free"
+                },
+                {
+                  "match": "Lactose-free",
+                  "iconId": "dairy-free"
+                },
+                {
+                  "match": "Lactose free",
+                  "iconId": "dairy-free"
+                },
+                {
+                  "match": "Nut-Free",
+                  "iconId": "nut-free"
+                },
+                {
+                  "match": "Nut Free",
+                  "iconId": "nut-free"
+                },
+                {
+                  "match": "Nut free",
+                  "iconId": "nut-free"
+                },
+                {
+                  "match": "NF",
+                  "iconId": "nut-free"
+                },
+                {
+                  "match": "No nuts",
+                  "iconId": "nut-free"
+                },
+                {
+                  "match": "Nut allergy",
+                  "iconId": "nut-free"
+                },
+                {
+                  "match": "Halal",
+                  "iconId": "halal"
+                },
+                {
+                  "match": "Kosher",
+                  "iconId": "kosher"
+                },
+                {
+                  "match": "Child",
+                  "iconId": "child"
+                },
+                {
+                  "match": "Children",
+                  "iconId": "child"
+                },
+                {
+                  "match": "Kids",
+                  "iconId": "child"
+                },
+                {
+                  "match": "Kid",
+                  "iconId": "child"
+                },
+                {
+                  "match": "Child meal",
+                  "iconId": "child"
+                }
+              ],
+              "fallbackIconId": null,
+              "colorHex": "#46443f"
             }
           ],
-          "fallbackIconId": null,
-          "colorHex": "#46443f"
-        }
-      ],
-      "backgroundHex": null
-    },
-    "headers": [
-      "First Name",
-      "Last Name",
-      "Name",
-      "Table",
-      "Dietary",
-      "Side"
-    ],
-    "rows": [
-      {
-        "First Name": "Alex",
-        "Last Name": "Morgan",
-        "Name": "Alex Morgan",
-        "Table": "Top table",
-        "Dietary": "",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Alexander",
-        "Last Name": "Delacroix-Hall",
-        "Name": "Alexander Delacroix-Hall",
-        "Table": "Table 4",
-        "Dietary": "Vegetarian",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Alexander",
-        "Last Name": "Dubois",
-        "Name": "Alexander Dubois",
-        "Table": "Table 10",
-        "Dietary": "Dairy-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Alexander",
-        "Last Name": "Okonkwo",
-        "Name": "Alexander Okonkwo",
-        "Table": "Table 2",
-        "Dietary": "Kosher",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Alexander",
-        "Last Name": "Vane",
-        "Name": "Alexander Vane",
-        "Table": "Table 6",
-        "Dietary": "Vegan",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Anneliese",
-        "Last Name": "Fairweather",
-        "Name": "Anneliese Fairweather",
-        "Table": "Table 5",
-        "Dietary": "Vegetarian",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Anneliese",
-        "Last Name": "Smith",
-        "Name": "Anneliese Smith",
-        "Table": "Table 1",
-        "Dietary": "Dairy-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Anneliese",
-        "Last Name": "Whitlock",
-        "Name": "Anneliese Whitlock",
-        "Table": "Table 3",
-        "Dietary": "Gluten-Free",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Bartholomew",
-        "Last Name": "Pemberton-Blythe",
-        "Name": "Bartholomew Pemberton-Blythe",
-        "Table": "",
-        "Dietary": "Halal",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Bartholomew",
-        "Last Name": "Sørensen",
-        "Name": "Bartholomew Sørensen",
-        "Table": "Table 4",
-        "Dietary": "Dairy-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Bartholomew",
-        "Last Name": "Wright",
-        "Name": "Bartholomew Wright",
-        "Table": "Table 4",
-        "Dietary": "Vegetarian",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Beatrix",
-        "Last Name": "Abernathy",
-        "Name": "Beatrix Abernathy",
-        "Table": "Table 3",
-        "Dietary": "Halal",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Beatrix",
-        "Last Name": "Lindqvist",
-        "Name": "Beatrix Lindqvist",
-        "Table": "Table 7",
-        "Dietary": "Vegetarian",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Beatrix",
-        "Last Name": "Raghunathan",
-        "Name": "Beatrix Raghunathan",
-        "Table": "Table 6",
-        "Dietary": "Dairy-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Beatrix",
-        "Last Name": "Thistlewood",
-        "Name": "Beatrix Thistlewood",
-        "Table": "Table 9",
-        "Dietary": "Gluten-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Callum",
-        "Last Name": "Fairweather",
-        "Name": "Callum Fairweather",
-        "Table": "Table 6",
-        "Dietary": "Nut-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Callum",
-        "Last Name": "Featherstonehaugh",
-        "Name": "Callum Featherstonehaugh",
-        "Table": "Table 8",
-        "Dietary": "Vegan",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Callum",
-        "Last Name": "Smith",
-        "Name": "Callum Smith",
-        "Table": "Table 1",
-        "Dietary": "Dairy-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Callum",
-        "Last Name": "Whitlock",
-        "Name": "Callum Whitlock",
-        "Table": "Table 3",
-        "Dietary": "Kosher",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Casper",
-        "Last Name": "Nakamura",
-        "Name": "Casper Nakamura",
-        "Table": "Table 11",
-        "Dietary": "Kosher",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Casper",
-        "Last Name": "Pemberton-Blythe",
-        "Name": "Casper Pemberton-Blythe",
-        "Table": "Table 5",
-        "Dietary": "Vegan",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Casper",
-        "Last Name": "Sørensen",
-        "Name": "Casper Sørensen",
-        "Table": "Table 9",
-        "Dietary": "Dairy-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Casper",
-        "Last Name": "Wright",
-        "Name": "Casper Wright",
-        "Table": "Table 4",
-        "Dietary": "Nut-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Charis",
-        "Last Name": "Fairweather",
-        "Name": "Charis Fairweather",
-        "Table": "Table 10",
-        "Dietary": "Vegetarian",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Charis",
-        "Last Name": "Featherstonehaugh",
-        "Name": "Charis Featherstonehaugh",
-        "Table": "Table 8",
-        "Dietary": "Halal",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Charis",
-        "Last Name": "Smith",
-        "Name": "Charis Smith",
-        "Table": "Table 1",
-        "Dietary": "Dairy-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Charis",
-        "Last Name": "Whitlock",
-        "Name": "Charis Whitlock",
-        "Table": "Table 3",
-        "Dietary": "Kosher",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Chloé",
-        "Last Name": "Fairweather",
-        "Name": "Chloé Fairweather",
-        "Table": "Table 11",
-        "Dietary": "Nut-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Chloé",
-        "Last Name": "Featherstonehaugh",
-        "Name": "Chloé Featherstonehaugh",
-        "Table": "Table 10",
-        "Dietary": "Vegan",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Chloé",
-        "Last Name": "Smith",
-        "Name": "Chloé Smith",
-        "Table": "Table 1",
-        "Dietary": "",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Chloé",
-        "Last Name": "Whitlock",
-        "Name": "Chloé Whitlock",
-        "Table": "Table 3",
-        "Dietary": "Gluten-Free",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "David",
-        "Last Name": "Morgan",
-        "Name": "David Morgan",
-        "Table": "Top table",
-        "Dietary": "",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Devendra",
-        "Last Name": "Abernathy",
-        "Name": "Devendra Abernathy",
-        "Table": "Table 3",
-        "Dietary": "Vegan",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Devendra",
-        "Last Name": "Lindqvist",
-        "Name": "Devendra Lindqvist",
-        "Table": "Table 7",
-        "Dietary": "Nut-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Devendra",
-        "Last Name": "Raghunathan",
-        "Name": "Devendra Raghunathan",
-        "Table": "Table 5",
-        "Dietary": "",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Devendra",
-        "Last Name": "Thistlewood",
-        "Name": "Devendra Thistlewood",
-        "Table": "Table 4",
-        "Dietary": "Gluten-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Eleanor",
-        "Last Name": "Abernathy",
-        "Name": "Eleanor Abernathy",
-        "Table": "Table 3",
-        "Dietary": "Vegan",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Eleanor",
-        "Last Name": "Lindqvist",
-        "Name": "Eleanor Lindqvist",
-        "Table": "Table 7",
-        "Dietary": "Nut-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Eleanor",
-        "Last Name": "Raghunathan",
-        "Name": "Eleanor Raghunathan",
-        "Table": "Table 7",
-        "Dietary": "Dairy-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Eleanor",
-        "Last Name": "Thistlewood",
-        "Name": "Eleanor Thistlewood",
-        "Table": "Table 10",
-        "Dietary": "Kosher",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Florence",
-        "Last Name": "Abernathy",
-        "Name": "Florence Abernathy",
-        "Table": "Table 3",
-        "Dietary": "Vegan",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Florence",
-        "Last Name": "Lindqvist",
-        "Name": "Florence Lindqvist",
-        "Table": "Table 7",
-        "Dietary": "Vegetarian",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Florence",
-        "Last Name": "Raghunathan",
-        "Name": "Florence Raghunathan",
-        "Table": "Table 11",
-        "Dietary": "Dairy-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Florence",
-        "Last Name": "Thistlewood",
-        "Name": "Florence Thistlewood",
-        "Table": "Table 1",
-        "Dietary": "Kosher",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Helen",
-        "Last Name": "Morgan",
-        "Name": "Helen Morgan",
-        "Table": "Top table",
-        "Dietary": "",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Hugh",
-        "Last Name": "Delacroix-Hall",
-        "Name": "Hugh Delacroix-Hall",
-        "Table": "Table 2",
-        "Dietary": "Vegetarian",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Hugh",
-        "Last Name": "Okonkwo",
-        "Name": "Hugh Okonkwo",
-        "Table": "Table 2",
-        "Dietary": "Gluten-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Hugh",
-        "Last Name": "Vane",
-        "Name": "Hugh Vane",
-        "Table": "Table 6",
-        "Dietary": "Halal",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Ines",
-        "Last Name": "Ashdown",
-        "Name": "Ines Ashdown",
-        "Table": "Top table",
-        "Dietary": "Kosher",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Ines",
-        "Last Name": "Castellanos",
-        "Name": "Ines Castellanos",
-        "Table": "Table 5",
-        "Dietary": "Dairy-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Ines",
-        "Last Name": "MacIntyre",
-        "Name": "Ines MacIntyre",
-        "Table": "Table 9",
-        "Dietary": "Vegetarian",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Ines",
-        "Last Name": "Oyelaran",
-        "Name": "Ines Oyelaran",
-        "Table": "Table 2",
-        "Dietary": "Vegan",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Jonty",
-        "Last Name": "Ashdown",
-        "Name": "Jonty Ashdown",
-        "Table": "Table 11",
-        "Dietary": "Gluten-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Jonty",
-        "Last Name": "Castellanos",
-        "Name": "Jonty Castellanos",
-        "Table": "Table 5",
-        "Dietary": "",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Jonty",
-        "Last Name": "Oyelaran",
-        "Name": "Jonty Oyelaran",
-        "Table": "Table 1",
-        "Dietary": "Halal",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Kwame",
-        "Last Name": "Delacroix-Hall",
-        "Name": "Kwame Delacroix-Hall",
-        "Table": "Table 11",
-        "Dietary": "Vegetarian",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Kwame",
-        "Last Name": "Dubois",
-        "Name": "Kwame Dubois",
-        "Table": "Table 8",
-        "Dietary": "Dairy-Free",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Kwame",
-        "Last Name": "Okonkwo",
-        "Name": "Kwame Okonkwo",
-        "Table": "Table 2",
-        "Dietary": "Kosher",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Kwame",
-        "Last Name": "Vane",
-        "Name": "Kwame Vane",
-        "Table": "Table 6",
-        "Dietary": "Halal",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Lucia",
-        "Last Name": "Reyes",
-        "Name": "Lucia Reyes",
-        "Table": "Top table",
-        "Dietary": "",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Marguerite",
-        "Last Name": "Delacroix-Hall",
-        "Name": "Marguerite Delacroix-Hall",
-        "Table": "Table 1",
-        "Dietary": "Nut-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Marguerite",
-        "Last Name": "Dubois",
-        "Name": "Marguerite Dubois",
-        "Table": "Table 8",
-        "Dietary": "",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Marguerite",
-        "Last Name": "Okonkwo",
-        "Name": "Marguerite Okonkwo",
-        "Table": "Table 2",
-        "Dietary": "Kosher",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Marguerite",
-        "Last Name": "Vane",
-        "Name": "Marguerite Vane",
-        "Table": "Table 6",
-        "Dietary": "Vegan",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Mateo",
-        "Last Name": "Reyes",
-        "Name": "Mateo Reyes",
-        "Table": "Top table",
-        "Dietary": "",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Niamh",
-        "Last Name": "Ashdown",
-        "Name": "Niamh Ashdown",
-        "Table": "Table 7",
-        "Dietary": "Kosher",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Niamh",
-        "Last Name": "Castellanos",
-        "Name": "Niamh Castellanos",
-        "Table": "Table 5",
-        "Dietary": "Dairy-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Niamh",
-        "Last Name": "MacIntyre",
-        "Name": "Niamh MacIntyre",
-        "Table": "",
-        "Dietary": "Vegetarian",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Niamh",
-        "Last Name": "Oyelaran",
-        "Name": "Niamh Oyelaran",
-        "Table": "Table 10",
-        "Dietary": "Halal",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Ólafur",
-        "Last Name": "Delacroix-Hall",
-        "Name": "Ólafur Delacroix-Hall",
-        "Table": "Table 10",
-        "Dietary": "Nut-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Ólafur",
-        "Last Name": "Dubois",
-        "Name": "Ólafur Dubois",
-        "Table": "Table 12",
-        "Dietary": "",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Ólafur",
-        "Last Name": "Okonkwo",
-        "Name": "Ólafur Okonkwo",
-        "Table": "Table 2",
-        "Dietary": "Gluten-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Ólafur",
-        "Last Name": "Vane",
-        "Name": "Ólafur Vane",
-        "Table": "Table 6",
-        "Dietary": "Halal",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Ottoline",
-        "Last Name": "Fairweather",
-        "Name": "Ottoline Fairweather",
-        "Table": "Table 9",
-        "Dietary": "Nut-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Ottoline",
-        "Last Name": "Featherstonehaugh",
-        "Name": "Ottoline Featherstonehaugh",
-        "Table": "Table 8",
-        "Dietary": "Halal",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Ottoline",
-        "Last Name": "Smith",
-        "Name": "Ottoline Smith",
-        "Table": "Table 1",
-        "Dietary": "",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Priya",
-        "Last Name": "Ashdown",
-        "Name": "Priya Ashdown",
-        "Table": "Table 6",
-        "Dietary": "Gluten-Free",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Priya",
-        "Last Name": "Castellanos",
-        "Name": "Priya Castellanos",
-        "Table": "Table 5",
-        "Dietary": "",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Priya",
-        "Last Name": "MacIntyre",
-        "Name": "Priya MacIntyre",
-        "Table": "Table 11",
-        "Dietary": "Nut-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Priya",
-        "Last Name": "Oyelaran",
-        "Name": "Priya Oyelaran",
-        "Table": "Table 9",
-        "Dietary": "Vegan",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Rafferty",
-        "Last Name": "Nakamura",
-        "Name": "Rafferty Nakamura",
-        "Table": "Table 8",
-        "Dietary": "Kosher",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Rafferty",
-        "Last Name": "Pemberton-Blythe",
-        "Name": "Rafferty Pemberton-Blythe",
-        "Table": "Table 9",
-        "Dietary": "Halal",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Rafferty",
-        "Last Name": "Sørensen",
-        "Name": "Rafferty Sørensen",
-        "Table": "Top table",
-        "Dietary": "Dairy-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Rafferty",
-        "Last Name": "Wright",
-        "Name": "Rafferty Wright",
-        "Table": "Table 4",
-        "Dietary": "Vegetarian",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Sam",
-        "Last Name": "Reyes",
-        "Name": "Sam Reyes",
-        "Table": "Top table",
-        "Dietary": "",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Saoirse",
-        "Last Name": "Nakamura",
-        "Name": "Saoirse Nakamura",
-        "Table": "Table 8",
-        "Dietary": "Gluten-Free",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Saoirse",
-        "Last Name": "Pemberton-Blythe",
-        "Name": "Saoirse Pemberton-Blythe",
-        "Table": "Table 7",
-        "Dietary": "Halal",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Saoirse",
-        "Last Name": "Sørensen",
-        "Name": "Saoirse Sørensen",
-        "Table": "Table 11",
-        "Dietary": "",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Saoirse",
-        "Last Name": "Wright",
-        "Name": "Saoirse Wright",
-        "Table": "Table 4",
-        "Dietary": "Nut-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Tobias",
-        "Last Name": "Nakamura",
-        "Name": "Tobias Nakamura",
-        "Table": "Table 9",
-        "Dietary": "Kosher",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Tobias",
-        "Last Name": "Pemberton-Blythe",
-        "Name": "Tobias Pemberton-Blythe",
-        "Table": "Table 10",
-        "Dietary": "Vegan",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Tobias",
-        "Last Name": "Sørensen",
-        "Name": "Tobias Sørensen",
-        "Table": "Table 2",
-        "Dietary": "",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Tobias",
-        "Last Name": "Wright",
-        "Name": "Tobias Wright",
-        "Table": "Table 4",
-        "Dietary": "Nut-Free",
-        "Side": "Alex’s side"
-      },
-      {
-        "First Name": "Wilhelmina",
-        "Last Name": "Ashdown",
-        "Name": "Wilhelmina Ashdown",
-        "Table": "Table 9",
-        "Dietary": "Kosher",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Wilhelmina",
-        "Last Name": "Castellanos",
-        "Name": "Wilhelmina Castellanos",
-        "Table": "Table 5",
-        "Dietary": "",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Wilhelmina",
-        "Last Name": "MacIntyre",
-        "Name": "Wilhelmina MacIntyre",
-        "Table": "Table 8",
-        "Dietary": "Nut-Free",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Wilhelmina",
-        "Last Name": "Oyelaran",
-        "Name": "Wilhelmina Oyelaran",
-        "Table": "Table 11",
-        "Dietary": "Vegan",
-        "Side": "Both sides"
-      },
-      {
-        "First Name": "Zainab",
-        "Last Name": "Lindqvist",
-        "Name": "Zainab Lindqvist",
-        "Table": "Table 7",
-        "Dietary": "Vegetarian",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Zainab",
-        "Last Name": "Raghunathan",
-        "Name": "Zainab Raghunathan",
-        "Table": "Table 10",
-        "Dietary": "",
-        "Side": "Sam’s side"
-      },
-      {
-        "First Name": "Zainab",
-        "Last Name": "Thistlewood",
-        "Name": "Zainab Thistlewood",
-        "Table": "",
-        "Dietary": "Gluten-Free",
-        "Side": "Sam’s side"
+          "backgroundHex": null
+        },
+        "headers": [
+          "First Name",
+          "Last Name",
+          "Name",
+          "Table",
+          "Dietary",
+          "Side"
+        ],
+        "rows": [
+          {
+            "First Name": "Alex",
+            "Last Name": "Morgan",
+            "Name": "Alex Morgan",
+            "Table": "Top table",
+            "Dietary": "",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Alexander",
+            "Last Name": "Delacroix-Hall",
+            "Name": "Alexander Delacroix-Hall",
+            "Table": "Table 4",
+            "Dietary": "Vegetarian",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Alexander",
+            "Last Name": "Dubois",
+            "Name": "Alexander Dubois",
+            "Table": "Table 10",
+            "Dietary": "Dairy-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Alexander",
+            "Last Name": "Okonkwo",
+            "Name": "Alexander Okonkwo",
+            "Table": "Table 2",
+            "Dietary": "Kosher",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Alexander",
+            "Last Name": "Vane",
+            "Name": "Alexander Vane",
+            "Table": "Table 6",
+            "Dietary": "Vegan",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Anneliese",
+            "Last Name": "Fairweather",
+            "Name": "Anneliese Fairweather",
+            "Table": "Table 5",
+            "Dietary": "Vegetarian",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Anneliese",
+            "Last Name": "Smith",
+            "Name": "Anneliese Smith",
+            "Table": "Table 1",
+            "Dietary": "Dairy-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Anneliese",
+            "Last Name": "Whitlock",
+            "Name": "Anneliese Whitlock",
+            "Table": "Table 3",
+            "Dietary": "Gluten-Free",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Bartholomew",
+            "Last Name": "Pemberton-Blythe",
+            "Name": "Bartholomew Pemberton-Blythe",
+            "Table": "",
+            "Dietary": "Halal",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Bartholomew",
+            "Last Name": "Sørensen",
+            "Name": "Bartholomew Sørensen",
+            "Table": "Table 4",
+            "Dietary": "Dairy-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Bartholomew",
+            "Last Name": "Wright",
+            "Name": "Bartholomew Wright",
+            "Table": "Table 4",
+            "Dietary": "Vegetarian",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Beatrix",
+            "Last Name": "Abernathy",
+            "Name": "Beatrix Abernathy",
+            "Table": "Table 3",
+            "Dietary": "Halal",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Beatrix",
+            "Last Name": "Lindqvist",
+            "Name": "Beatrix Lindqvist",
+            "Table": "Table 7",
+            "Dietary": "Vegetarian",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Beatrix",
+            "Last Name": "Raghunathan",
+            "Name": "Beatrix Raghunathan",
+            "Table": "Table 6",
+            "Dietary": "Dairy-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Beatrix",
+            "Last Name": "Thistlewood",
+            "Name": "Beatrix Thistlewood",
+            "Table": "Table 9",
+            "Dietary": "Gluten-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Callum",
+            "Last Name": "Fairweather",
+            "Name": "Callum Fairweather",
+            "Table": "Table 6",
+            "Dietary": "Nut-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Callum",
+            "Last Name": "Featherstonehaugh",
+            "Name": "Callum Featherstonehaugh",
+            "Table": "Table 8",
+            "Dietary": "Vegan",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Callum",
+            "Last Name": "Smith",
+            "Name": "Callum Smith",
+            "Table": "Table 1",
+            "Dietary": "Dairy-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Callum",
+            "Last Name": "Whitlock",
+            "Name": "Callum Whitlock",
+            "Table": "Table 3",
+            "Dietary": "Kosher",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Casper",
+            "Last Name": "Nakamura",
+            "Name": "Casper Nakamura",
+            "Table": "Table 11",
+            "Dietary": "Kosher",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Casper",
+            "Last Name": "Pemberton-Blythe",
+            "Name": "Casper Pemberton-Blythe",
+            "Table": "Table 5",
+            "Dietary": "Vegan",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Casper",
+            "Last Name": "Sørensen",
+            "Name": "Casper Sørensen",
+            "Table": "Table 9",
+            "Dietary": "Dairy-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Casper",
+            "Last Name": "Wright",
+            "Name": "Casper Wright",
+            "Table": "Table 4",
+            "Dietary": "Nut-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Charis",
+            "Last Name": "Fairweather",
+            "Name": "Charis Fairweather",
+            "Table": "Table 10",
+            "Dietary": "Vegetarian",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Charis",
+            "Last Name": "Featherstonehaugh",
+            "Name": "Charis Featherstonehaugh",
+            "Table": "Table 8",
+            "Dietary": "Halal",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Charis",
+            "Last Name": "Smith",
+            "Name": "Charis Smith",
+            "Table": "Table 1",
+            "Dietary": "Dairy-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Charis",
+            "Last Name": "Whitlock",
+            "Name": "Charis Whitlock",
+            "Table": "Table 3",
+            "Dietary": "Kosher",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Chloé",
+            "Last Name": "Fairweather",
+            "Name": "Chloé Fairweather",
+            "Table": "Table 11",
+            "Dietary": "Nut-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Chloé",
+            "Last Name": "Featherstonehaugh",
+            "Name": "Chloé Featherstonehaugh",
+            "Table": "Table 10",
+            "Dietary": "Vegan",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Chloé",
+            "Last Name": "Smith",
+            "Name": "Chloé Smith",
+            "Table": "Table 1",
+            "Dietary": "",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Chloé",
+            "Last Name": "Whitlock",
+            "Name": "Chloé Whitlock",
+            "Table": "Table 3",
+            "Dietary": "Gluten-Free",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "David",
+            "Last Name": "Morgan",
+            "Name": "David Morgan",
+            "Table": "Top table",
+            "Dietary": "",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Devendra",
+            "Last Name": "Abernathy",
+            "Name": "Devendra Abernathy",
+            "Table": "Table 3",
+            "Dietary": "Vegan",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Devendra",
+            "Last Name": "Lindqvist",
+            "Name": "Devendra Lindqvist",
+            "Table": "Table 7",
+            "Dietary": "Nut-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Devendra",
+            "Last Name": "Raghunathan",
+            "Name": "Devendra Raghunathan",
+            "Table": "Table 5",
+            "Dietary": "",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Devendra",
+            "Last Name": "Thistlewood",
+            "Name": "Devendra Thistlewood",
+            "Table": "Table 4",
+            "Dietary": "Gluten-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Eleanor",
+            "Last Name": "Abernathy",
+            "Name": "Eleanor Abernathy",
+            "Table": "Table 3",
+            "Dietary": "Vegan",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Eleanor",
+            "Last Name": "Lindqvist",
+            "Name": "Eleanor Lindqvist",
+            "Table": "Table 7",
+            "Dietary": "Nut-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Eleanor",
+            "Last Name": "Raghunathan",
+            "Name": "Eleanor Raghunathan",
+            "Table": "Table 7",
+            "Dietary": "Dairy-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Eleanor",
+            "Last Name": "Thistlewood",
+            "Name": "Eleanor Thistlewood",
+            "Table": "Table 10",
+            "Dietary": "Kosher",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Florence",
+            "Last Name": "Abernathy",
+            "Name": "Florence Abernathy",
+            "Table": "Table 3",
+            "Dietary": "Vegan",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Florence",
+            "Last Name": "Lindqvist",
+            "Name": "Florence Lindqvist",
+            "Table": "Table 7",
+            "Dietary": "Vegetarian",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Florence",
+            "Last Name": "Raghunathan",
+            "Name": "Florence Raghunathan",
+            "Table": "Table 11",
+            "Dietary": "Dairy-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Florence",
+            "Last Name": "Thistlewood",
+            "Name": "Florence Thistlewood",
+            "Table": "Table 1",
+            "Dietary": "Kosher",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Helen",
+            "Last Name": "Morgan",
+            "Name": "Helen Morgan",
+            "Table": "Top table",
+            "Dietary": "",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Hugh",
+            "Last Name": "Delacroix-Hall",
+            "Name": "Hugh Delacroix-Hall",
+            "Table": "Table 2",
+            "Dietary": "Vegetarian",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Hugh",
+            "Last Name": "Okonkwo",
+            "Name": "Hugh Okonkwo",
+            "Table": "Table 2",
+            "Dietary": "Gluten-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Hugh",
+            "Last Name": "Vane",
+            "Name": "Hugh Vane",
+            "Table": "Table 6",
+            "Dietary": "Halal",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Ines",
+            "Last Name": "Ashdown",
+            "Name": "Ines Ashdown",
+            "Table": "Top table",
+            "Dietary": "Kosher",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Ines",
+            "Last Name": "Castellanos",
+            "Name": "Ines Castellanos",
+            "Table": "Table 5",
+            "Dietary": "Dairy-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Ines",
+            "Last Name": "MacIntyre",
+            "Name": "Ines MacIntyre",
+            "Table": "Table 9",
+            "Dietary": "Vegetarian",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Ines",
+            "Last Name": "Oyelaran",
+            "Name": "Ines Oyelaran",
+            "Table": "Table 2",
+            "Dietary": "Vegan",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Jonty",
+            "Last Name": "Ashdown",
+            "Name": "Jonty Ashdown",
+            "Table": "Table 11",
+            "Dietary": "Gluten-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Jonty",
+            "Last Name": "Castellanos",
+            "Name": "Jonty Castellanos",
+            "Table": "Table 5",
+            "Dietary": "",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Jonty",
+            "Last Name": "Oyelaran",
+            "Name": "Jonty Oyelaran",
+            "Table": "Table 1",
+            "Dietary": "Halal",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Kwame",
+            "Last Name": "Delacroix-Hall",
+            "Name": "Kwame Delacroix-Hall",
+            "Table": "Table 11",
+            "Dietary": "Vegetarian",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Kwame",
+            "Last Name": "Dubois",
+            "Name": "Kwame Dubois",
+            "Table": "Table 8",
+            "Dietary": "Dairy-Free",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Kwame",
+            "Last Name": "Okonkwo",
+            "Name": "Kwame Okonkwo",
+            "Table": "Table 2",
+            "Dietary": "Kosher",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Kwame",
+            "Last Name": "Vane",
+            "Name": "Kwame Vane",
+            "Table": "Table 6",
+            "Dietary": "Halal",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Lucia",
+            "Last Name": "Reyes",
+            "Name": "Lucia Reyes",
+            "Table": "Top table",
+            "Dietary": "",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Marguerite",
+            "Last Name": "Delacroix-Hall",
+            "Name": "Marguerite Delacroix-Hall",
+            "Table": "Table 1",
+            "Dietary": "Nut-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Marguerite",
+            "Last Name": "Dubois",
+            "Name": "Marguerite Dubois",
+            "Table": "Table 8",
+            "Dietary": "",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Marguerite",
+            "Last Name": "Okonkwo",
+            "Name": "Marguerite Okonkwo",
+            "Table": "Table 2",
+            "Dietary": "Kosher",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Marguerite",
+            "Last Name": "Vane",
+            "Name": "Marguerite Vane",
+            "Table": "Table 6",
+            "Dietary": "Vegan",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Mateo",
+            "Last Name": "Reyes",
+            "Name": "Mateo Reyes",
+            "Table": "Top table",
+            "Dietary": "",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Niamh",
+            "Last Name": "Ashdown",
+            "Name": "Niamh Ashdown",
+            "Table": "Table 7",
+            "Dietary": "Kosher",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Niamh",
+            "Last Name": "Castellanos",
+            "Name": "Niamh Castellanos",
+            "Table": "Table 5",
+            "Dietary": "Dairy-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Niamh",
+            "Last Name": "MacIntyre",
+            "Name": "Niamh MacIntyre",
+            "Table": "",
+            "Dietary": "Vegetarian",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Niamh",
+            "Last Name": "Oyelaran",
+            "Name": "Niamh Oyelaran",
+            "Table": "Table 10",
+            "Dietary": "Halal",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Ólafur",
+            "Last Name": "Delacroix-Hall",
+            "Name": "Ólafur Delacroix-Hall",
+            "Table": "Table 10",
+            "Dietary": "Nut-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Ólafur",
+            "Last Name": "Dubois",
+            "Name": "Ólafur Dubois",
+            "Table": "Table 12",
+            "Dietary": "",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Ólafur",
+            "Last Name": "Okonkwo",
+            "Name": "Ólafur Okonkwo",
+            "Table": "Table 2",
+            "Dietary": "Gluten-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Ólafur",
+            "Last Name": "Vane",
+            "Name": "Ólafur Vane",
+            "Table": "Table 6",
+            "Dietary": "Halal",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Ottoline",
+            "Last Name": "Fairweather",
+            "Name": "Ottoline Fairweather",
+            "Table": "Table 9",
+            "Dietary": "Nut-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Ottoline",
+            "Last Name": "Featherstonehaugh",
+            "Name": "Ottoline Featherstonehaugh",
+            "Table": "Table 8",
+            "Dietary": "Halal",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Ottoline",
+            "Last Name": "Smith",
+            "Name": "Ottoline Smith",
+            "Table": "Table 1",
+            "Dietary": "",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Priya",
+            "Last Name": "Ashdown",
+            "Name": "Priya Ashdown",
+            "Table": "Table 6",
+            "Dietary": "Gluten-Free",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Priya",
+            "Last Name": "Castellanos",
+            "Name": "Priya Castellanos",
+            "Table": "Table 5",
+            "Dietary": "",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Priya",
+            "Last Name": "MacIntyre",
+            "Name": "Priya MacIntyre",
+            "Table": "Table 11",
+            "Dietary": "Nut-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Priya",
+            "Last Name": "Oyelaran",
+            "Name": "Priya Oyelaran",
+            "Table": "Table 9",
+            "Dietary": "Vegan",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Rafferty",
+            "Last Name": "Nakamura",
+            "Name": "Rafferty Nakamura",
+            "Table": "Table 8",
+            "Dietary": "Kosher",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Rafferty",
+            "Last Name": "Pemberton-Blythe",
+            "Name": "Rafferty Pemberton-Blythe",
+            "Table": "Table 9",
+            "Dietary": "Halal",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Rafferty",
+            "Last Name": "Sørensen",
+            "Name": "Rafferty Sørensen",
+            "Table": "Top table",
+            "Dietary": "Dairy-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Rafferty",
+            "Last Name": "Wright",
+            "Name": "Rafferty Wright",
+            "Table": "Table 4",
+            "Dietary": "Vegetarian",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Sam",
+            "Last Name": "Reyes",
+            "Name": "Sam Reyes",
+            "Table": "Top table",
+            "Dietary": "",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Saoirse",
+            "Last Name": "Nakamura",
+            "Name": "Saoirse Nakamura",
+            "Table": "Table 8",
+            "Dietary": "Gluten-Free",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Saoirse",
+            "Last Name": "Pemberton-Blythe",
+            "Name": "Saoirse Pemberton-Blythe",
+            "Table": "Table 7",
+            "Dietary": "Halal",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Saoirse",
+            "Last Name": "Sørensen",
+            "Name": "Saoirse Sørensen",
+            "Table": "Table 11",
+            "Dietary": "",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Saoirse",
+            "Last Name": "Wright",
+            "Name": "Saoirse Wright",
+            "Table": "Table 4",
+            "Dietary": "Nut-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Tobias",
+            "Last Name": "Nakamura",
+            "Name": "Tobias Nakamura",
+            "Table": "Table 9",
+            "Dietary": "Kosher",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Tobias",
+            "Last Name": "Pemberton-Blythe",
+            "Name": "Tobias Pemberton-Blythe",
+            "Table": "Table 10",
+            "Dietary": "Vegan",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Tobias",
+            "Last Name": "Sørensen",
+            "Name": "Tobias Sørensen",
+            "Table": "Table 2",
+            "Dietary": "",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Tobias",
+            "Last Name": "Wright",
+            "Name": "Tobias Wright",
+            "Table": "Table 4",
+            "Dietary": "Nut-Free",
+            "Side": "Alex’s side"
+          },
+          {
+            "First Name": "Wilhelmina",
+            "Last Name": "Ashdown",
+            "Name": "Wilhelmina Ashdown",
+            "Table": "Table 9",
+            "Dietary": "Kosher",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Wilhelmina",
+            "Last Name": "Castellanos",
+            "Name": "Wilhelmina Castellanos",
+            "Table": "Table 5",
+            "Dietary": "",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Wilhelmina",
+            "Last Name": "MacIntyre",
+            "Name": "Wilhelmina MacIntyre",
+            "Table": "Table 8",
+            "Dietary": "Nut-Free",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Wilhelmina",
+            "Last Name": "Oyelaran",
+            "Name": "Wilhelmina Oyelaran",
+            "Table": "Table 11",
+            "Dietary": "Vegan",
+            "Side": "Both sides"
+          },
+          {
+            "First Name": "Zainab",
+            "Last Name": "Lindqvist",
+            "Name": "Zainab Lindqvist",
+            "Table": "Table 7",
+            "Dietary": "Vegetarian",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Zainab",
+            "Last Name": "Raghunathan",
+            "Name": "Zainab Raghunathan",
+            "Table": "Table 10",
+            "Dietary": "",
+            "Side": "Sam’s side"
+          },
+          {
+            "First Name": "Zainab",
+            "Last Name": "Thistlewood",
+            "Name": "Zainab Thistlewood",
+            "Table": "",
+            "Dietary": "Gluten-Free",
+            "Side": "Sam’s side"
+          }
+        ],
+        "rowIds": [
+          "r0",
+          "r1",
+          "r2",
+          "r3",
+          "r4",
+          "r5",
+          "r6",
+          "r7",
+          "r8",
+          "r9",
+          "r10",
+          "r11",
+          "r12",
+          "r13",
+          "r14",
+          "r15",
+          "r16",
+          "r17",
+          "r18",
+          "r19",
+          "r20",
+          "r21",
+          "r22",
+          "r23",
+          "r24",
+          "r25",
+          "r26",
+          "r27",
+          "r28",
+          "r29",
+          "r30",
+          "r31",
+          "r32",
+          "r33",
+          "r34",
+          "r35",
+          "r36",
+          "r37",
+          "r38",
+          "r39",
+          "r40",
+          "r41",
+          "r42",
+          "r43",
+          "r44",
+          "r45",
+          "r46",
+          "r47",
+          "r48",
+          "r49",
+          "r50",
+          "r51",
+          "r52",
+          "r53",
+          "r54",
+          "r55",
+          "r56",
+          "r57",
+          "r58",
+          "r59",
+          "r60",
+          "r61",
+          "r62",
+          "r63",
+          "r64",
+          "r65",
+          "r66",
+          "r67",
+          "r68",
+          "r69",
+          "r70",
+          "r71",
+          "r72",
+          "r73",
+          "r74",
+          "r75",
+          "r76",
+          "r77",
+          "r78",
+          "r79",
+          "r80",
+          "r81",
+          "r82",
+          "r83",
+          "r84",
+          "r85",
+          "r86",
+          "r87",
+          "r88",
+          "r89",
+          "r90",
+          "r91",
+          "r92",
+          "r93",
+          "r94",
+          "r95",
+          "r96",
+          "r97",
+          "r98",
+          "r99"
+        ],
+        "merged": {},
+        "csvIssues": [
+          {
+            "row": null,
+            "message": "3 guests have no table yet, so their cards have no table on them."
+          }
+        ],
+        "fileName": "the room"
       }
     ],
-    "rowIds": [
-      "r0",
-      "r1",
-      "r2",
-      "r3",
-      "r4",
-      "r5",
-      "r6",
-      "r7",
-      "r8",
-      "r9",
-      "r10",
-      "r11",
-      "r12",
-      "r13",
-      "r14",
-      "r15",
-      "r16",
-      "r17",
-      "r18",
-      "r19",
-      "r20",
-      "r21",
-      "r22",
-      "r23",
-      "r24",
-      "r25",
-      "r26",
-      "r27",
-      "r28",
-      "r29",
-      "r30",
-      "r31",
-      "r32",
-      "r33",
-      "r34",
-      "r35",
-      "r36",
-      "r37",
-      "r38",
-      "r39",
-      "r40",
-      "r41",
-      "r42",
-      "r43",
-      "r44",
-      "r45",
-      "r46",
-      "r47",
-      "r48",
-      "r49",
-      "r50",
-      "r51",
-      "r52",
-      "r53",
-      "r54",
-      "r55",
-      "r56",
-      "r57",
-      "r58",
-      "r59",
-      "r60",
-      "r61",
-      "r62",
-      "r63",
-      "r64",
-      "r65",
-      "r66",
-      "r67",
-      "r68",
-      "r69",
-      "r70",
-      "r71",
-      "r72",
-      "r73",
-      "r74",
-      "r75",
-      "r76",
-      "r77",
-      "r78",
-      "r79",
-      "r80",
-      "r81",
-      "r82",
-      "r83",
-      "r84",
-      "r85",
-      "r86",
-      "r87",
-      "r88",
-      "r89",
-      "r90",
-      "r91",
-      "r92",
-      "r93",
-      "r94",
-      "r95",
-      "r96",
-      "r97",
-      "r98",
-      "r99"
-    ],
-    "merged": {},
-    "csvIssues": [
-      {
-        "row": null,
-        "message": "3 guests have no table yet, so their cards have no table on them."
-      }
-    ],
-    "fileName": "the room",
     "uploadedIcons": {},
     "assetNames": {},
     "snapEnabled": true,

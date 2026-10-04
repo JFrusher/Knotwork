@@ -21,6 +21,8 @@ const ROWS = [
 const shared = () => useKnotworkStore.getState();
 const plaque = () => usePlaque.getState();
 const stored = () => (shared().raw as Raw).stationery as Raw;
+/** The piece on screen, as the wedding holds it. */
+const piece = () => (stored().pieces as Raw[]).find((p) => p.id === plaque().pieceId)!;
 
 beforeEach(() => {
   const raw = emptyKnotwork() as unknown as Raw;
@@ -30,21 +32,25 @@ beforeEach(() => {
 
 test("an edit is in the wedding the moment it is made", () => {
   plaque().setBackground("#fdfbf7");
-  expect(stored().template.backgroundHex).toBe("#fdfbf7");
+  expect(piece().template.backgroundHex).toBe("#fdfbf7");
 });
 
 test("a change to the stationery from elsewhere is what the editor shows", () => {
-  shared().setSlice("stationery", { ...stored(), template: { ...stored().template, backgroundHex: "#112233" } }, { label: "a design from the library" });
+  shared().setSlice(
+    "stationery",
+    { ...stored(), pieces: [{ ...piece(), template: { ...piece().template, backgroundHex: "#112233" } }] },
+    { label: "a design from the library" },
+  );
   expect(plaque().template.backgroundHex).toBe("#112233");
 });
 
 test("the header's undo takes a Place cards edit back, on the wedding's one history", () => {
   plaque().addElement("rect");
   expect(shared().past.at(-1)?.label).toBe("adding to the card");
-  const count = stored().template.elements.length;
+  const count = piece().template.elements.length;
 
   shared().undo();
-  expect(stored().template.elements.length).toBe(count - 1);
+  expect(piece().template.elements.length).toBe(count - 1);
   expect(plaque().template.elements.length).toBe(count - 1);
 });
 
@@ -80,10 +86,67 @@ test("a selected element undone out of existence is no longer selected", () => {
 });
 
 test("a design the wedding holds that cannot be read is said so, and the next edit starts fresh", () => {
-  shared().setSlice("stationery", { ...stored(), card: { ...stored().card, widthMm: "85" } }, { silent: true });
+  shared().setSlice(
+    "stationery",
+    { ...stored(), pieces: [{ ...piece(), card: { ...piece().card, widthMm: "85" } }] },
+    { silent: true },
+  );
   expect(plaque().designProblem).toMatch(/widthMm.*Starting fresh/);
 
   plaque().setBackground("#fdfbf7");
   expect(plaque().designProblem).toBeNull();
-  expect(stored().card.widthMm).toBe(85);
+  expect(piece().card.widthMm).toBe(85);
+});
+
+test("a new piece opens empty, and editing it leaves the place cards as they were", () => {
+  const placeCards = plaque().template;
+  plaque().addPiece("Table numbers");
+  expect(plaque().pieces.map((p) => p.name)).toEqual(["Place cards", "Table numbers"]);
+  expect(plaque().template.elements).toEqual([]);
+
+  plaque().setBackground("#223344");
+  expect(piece().name).toBe("Table numbers");
+  plaque().switchPiece("place-cards");
+  expect(plaque().template).toEqual(placeCards);
+});
+
+test("pieces share their uploaded assets' names", () => {
+  plaque().noteAssetName("user:mono", "Monogram.png");
+  plaque().addPiece("Menus");
+  expect(plaque().assetNames["user:mono"]).toBe("Monogram.png");
+  expect(stored().assetNames).toEqual({ "user:mono": "Monogram.png" });
+});
+
+test("a copied piece keeps the design and the list, under its own name", () => {
+  plaque().duplicatePiece("place-cards");
+  expect(plaque().pieces.map((p) => p.name)).toEqual(["Place cards", "Place cards (copy)"]);
+  expect(plaque().rows).toEqual(ROWS);
+  expect(plaque().pieceId).not.toBe("place-cards");
+});
+
+test("undoing a new piece takes it away and shows the first", () => {
+  plaque().addPiece("Escort cards");
+  shared().undo();
+  expect(plaque().pieces.map((p) => p.name)).toEqual(["Place cards"]);
+  expect(plaque().pieceId).toBe("place-cards");
+});
+
+test("removing the piece on screen shows its neighbour, and the last piece cannot go", () => {
+  plaque().addPiece("Board");
+  plaque().removePiece(plaque().pieceId);
+  expect(plaque().pieces.map((p) => p.name)).toEqual(["Place cards"]);
+  expect(plaque().pieceId).toBe("place-cards");
+  expect(() => plaque().removePiece("place-cards")).toThrow(/last piece/);
+});
+
+test("a wedding saved with one design opens it as its place cards, and the next edit keeps it", () => {
+  const { pieces, ...sharedParts } = stored();
+  const [{ id: _id, name: _name, ...flat }] = pieces as Raw[];
+  shared().setSlice("stationery", { ...sharedParts, ...flat, version: 2 }, { silent: true });
+  expect(plaque().pieces).toEqual([{ id: "place-cards", name: "Place cards" }]);
+  expect(plaque().rows).toEqual(ROWS);
+
+  plaque().setBackground("#fdfbf7");
+  expect(stored().version).toBe(3);
+  expect(piece().rows).toEqual(ROWS);
 });

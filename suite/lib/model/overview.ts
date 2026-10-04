@@ -4,7 +4,7 @@ import { resolveMembers } from "@/lib/cast/resolve";
 import { money } from "@/lib/money/money";
 import { todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
-import { stationery } from "./readiness";
+import { printsFromFile, stationeryPieces } from "./readiness";
 import { dayPlaces, isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, resolvedDay } from "./slices";
 import { neededAt, packingOf } from "@/lib/boxes/view";
 import { hiddenToolIds } from "./toolbox";
@@ -109,14 +109,14 @@ function seating(doc: Knotwork): Area {
 }
 
 function placeCards(doc: Knotwork, raw: unknown): Area {
-  const design = stationery(raw);
-  if (!design) return { id: "place-cards", summary: "No card design yet", detail: "", progress: null };
+  const pieces = stationeryPieces(raw);
+  if (pieces.length === 0) return { id: "place-cards", summary: "No card design yet", detail: "", progress: null };
   // A card for everyone coming: the rows Place cards draws from the room.
   const cards = Object.values(readGuests(doc)).filter(isComing).length;
   return {
     id: "place-cards",
     summary: plural(cards, "card", "cards"),
-    detail: design["fileName"] === "the room" ? "Drawn from the room" : "From an imported file",
+    detail: printsFromFile(pieces) ? "From an imported file" : "Drawn from the room",
     progress: null,
   };
 }

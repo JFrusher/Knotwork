@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defaultCard, defaultSheet, defaultTemplate } from "../core/template/defaults";
-import { load, type Persisted } from "./persist";
+import { load } from "./persist";
+import { FIRST_PIECE } from "./suite";
 
 const design = () => ({
   card: defaultCard(),
@@ -8,7 +9,8 @@ const design = () => ({
   template: defaultTemplate(["First Name", "Last Name"]),
 });
 
-const good = (over: Partial<Persisted> = {}): Persisted => ({
+/** A save from before pieces: one flat design. Every one of these must still open. */
+const good = (over: Record<string, unknown> = {}) => ({
   version: 2,
   savedAt: "2026-08-17T13:42:00.000Z",
   ...design(),
@@ -33,11 +35,16 @@ describe("load", () => {
     expect(load({})).toEqual({ status: "empty" });
   });
 
-  it("accepts a well-formed save", () => {
+  it("opens a single-design save as the one piece it always was", () => {
     const result = load(good());
     expect(result.status).toBe("ok");
-    expect(result.status === "ok" && result.data.rows).toHaveLength(1);
-    expect(result.status === "ok" && result.data.savedAt).toBe("2026-08-17T13:42:00.000Z");
+    if (result.status !== "ok") return;
+    expect(result.data.version).toBe(3);
+    expect(result.data.savedAt).toBe("2026-08-17T13:42:00.000Z");
+    expect(result.data.pieces).toHaveLength(1);
+    expect(result.data.pieces[0]).toMatchObject({ ...FIRST_PIECE, fileName: "guests.csv" });
+    expect(result.data.pieces[0]!.rows).toHaveLength(1);
+    expect(result.problem).toBeNull();
   });
 
   it("discards a save from another version rather than half-applying it", () => {
@@ -88,14 +95,15 @@ describe("load", () => {
   it("reads a design saved when the undo history travelled with it, and leaves the history behind", () => {
     const result = load({ ...good(), past: [design()], future: [] });
     expect(result.status).toBe("ok");
-    expect(result.status === "ok" && Object.keys(result.data).sort()).toEqual(Object.keys(good()).sort());
+    expect(result.status === "ok" && Object.keys(result.data)).not.toContain("past");
+    expect(result.status === "ok" && Object.keys(result.data.pieces[0]!)).not.toContain("past");
   });
 
   it("gives rows positional ids when the save predates them", () => {
     // Overrides keyed by those same positional ids still land after an upgrade.
     const { rowIds: _rowIds, ...older } = good();
     const result = load(older);
-    expect(result.status === "ok" && result.data.rowIds).toEqual(["r0"]);
+    expect(result.status === "ok" && result.data.pieces[0]!.rowIds).toEqual(["r0"]);
   });
 
   it("upgrades a v1 save, which had no timestamp", () => {
@@ -103,8 +111,56 @@ describe("load", () => {
     const result = load(v1);
     expect(result.status).toBe("ok");
     if (result.status !== "ok") return;
-    expect(result.data.version).toBe(2);
+    expect(result.data.version).toBe(3);
     expect(result.data.savedAt).toBeNull();
-    expect(result.data.rows).toHaveLength(1);
+    expect(result.data.pieces[0]!.rows).toHaveLength(1);
+  });
+});
+
+describe("load, with pieces", () => {
+  const piece = (id: string, name: string, over: Record<string, unknown> = {}) => {
+    const { version: _v, savedAt: _s, uploadedIcons: _u, assetNames: _a, snapEnabled: _n, sheetCollapsed: _c, ...own } = good();
+    return { id, name, ...own, ...over };
+  };
+  const suite = (pieces: unknown[]) => ({
+    version: 3,
+    savedAt: null,
+    pieces,
+    uploadedIcons: { "user:leaf": "M0 0" },
+    assetNames: { "user:x": "Monogram.png" },
+    snapEnabled: false,
+    sheetCollapsed: true,
+  });
+
+  it("reads every piece in order, with what they share", () => {
+    const result = load(suite([piece("a", "Place cards"), piece("b", "Table numbers")]));
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") return;
+    expect(result.data.pieces.map((p) => p.name)).toEqual(["Place cards", "Table numbers"]);
+    expect(result.data.assetNames).toEqual({ "user:x": "Monogram.png" });
+    expect(result.data.uploadedIcons).toEqual({ "user:leaf": "M0 0" });
+    expect(result.data.snapEnabled).toBe(false);
+    expect(result.data.sheetCollapsed).toBe(true);
+  });
+
+  it("leaves out a piece it cannot read, keeps the rest, and names the one it lost", () => {
+    const broken = piece("b", "Table numbers", { card: { ...good().card, widthMm: "100" } });
+    const result = load(suite([piece("a", "Place cards"), broken]));
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") return;
+    expect(result.data.pieces.map((p) => p.id)).toEqual(["a"]);
+    expect(result.problem).toMatch(/widthMm.*"Table numbers" was left out/);
+  });
+
+  it("leaves out a second piece under an id already read", () => {
+    const result = load(suite([piece("a", "Place cards"), piece("a", "Escort cards")]));
+    expect(result.status === "ok" && result.data.pieces.map((p) => p.name)).toEqual(["Place cards"]);
+    expect(result.status === "ok" && result.problem).toMatch(/Escort cards/);
+  });
+
+  it("discards a suite with no readable piece", () => {
+    expect(load(suite([]))).toMatchObject({ status: "discarded" });
+    expect(load(suite([piece("", "Nameless")]))).toMatchObject({ status: "discarded" });
+    expect(load({ ...suite([]), pieces: "nope" })).toMatchObject({ status: "discarded" });
   });
 });

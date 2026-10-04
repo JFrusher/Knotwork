@@ -3,6 +3,7 @@ import { choices } from "@/lib/bar/actions";
 import { daysUntil } from "@/lib/dates";
 import { emptyBar, readBar, readCeremony } from "@/lib/model/slices";
 import type { ShotMember } from "@/lib/model/types";
+import { SUITE_VERSION, storedPieces } from "@/apps/plaque/state/suite";
 
 /**
  * What a planner keeps from one wedding to use in another, and how it goes
@@ -58,11 +59,18 @@ export function extract(kind: Kind, raw: Raw): Raw | null {
   switch (kind) {
     case "cards": {
       const stationery = record(raw["stationery"]);
-      if (!isRecord(stationery["template"])) return null;
-      // The design, and the per-row tweaks and the choice of rows left behind:
-      // both are about this wedding's guests.
-      const { overrides: _overrides, rowScope: _rowScope, ...template } = stationery["template"];
-      return { ...pick(stationery, ["version", "card", "sheet", "uploadedIcons", "assetNames", "snapEnabled"]), template };
+      const pieces = storedPieces(stationery).filter((piece) => isRecord(piece["template"]));
+      if (pieces.length === 0) return null;
+      return {
+        version: SUITE_VERSION,
+        ...pick(stationery, ["uploadedIcons", "assetNames", "snapEnabled"]),
+        // Each piece's design and what it is for, without the per-row tweaks or
+        // the list: both are about this wedding's guests.
+        pieces: pieces.map((piece) => {
+          const { overrides: _overrides, ...template } = record(piece["template"]);
+          return { ...pick(piece, ["id", "name", "card", "sheet"]), template };
+        }),
+      };
     }
     case "day": {
       const timeline = record(raw["timeline"]);
@@ -174,6 +182,9 @@ function daysBefore(iso: string, days: number): string {
   return when.toISOString().slice(0, 10);
 }
 
+/** What a piece with no guest list yet holds. */
+const EMPTY_LIST = { headers: [], rows: [], rowIds: [], merged: {}, csvIssues: [], fileName: null };
+
 let counter = 0;
 const newId = (prefix: string) => `${prefix}_${Date.now().toString(36)}${(counter++).toString(36)}`;
 
@@ -186,10 +197,30 @@ export function applyTo(kind: Kind, content: Raw, raw: Raw): Array<[SliceName, u
   switch (kind) {
     case "cards": {
       const current = record(raw["stationery"]);
-      // A wedding with no cards yet gets an empty list, which Place cards
-      // fills from the room when it is asked to.
-      const list = "version" in current ? {} : { headers: [], rows: [], rowIds: [], merged: {}, csvIssues: [], fileName: null };
-      return [["stationery", { ...current, ...list, ...content, savedAt: null }]];
+      const held = new Map(storedPieces(current).map((piece) => [piece["id"], piece]));
+      const { version: _version, pieces: _pieces, ...shared } = content;
+      // A piece this wedding already has keeps its list; a new one starts
+      // empty, for Place cards to fill from the room when asked.
+      const pieces = storedPieces(content).map((piece) => {
+        const own = held.get(piece["id"]);
+        return {
+          ...EMPTY_LIST,
+          ...(own ? pick(own, Object.keys(EMPTY_LIST)) : {}),
+          ...pick(piece, ["id", "name", "card", "sheet", "template"]),
+        };
+      });
+      return [
+        [
+          "stationery",
+          {
+            ...pick(current, ["uploadedIcons", "assetNames", "snapEnabled", "sheetCollapsed"]),
+            ...pick(shared, ["uploadedIcons", "assetNames", "snapEnabled"]),
+            version: SUITE_VERSION,
+            savedAt: null,
+            pieces,
+          },
+        ],
+      ];
     }
     case "day":
       return [["timeline", { ...record(raw["timeline"]), ...content }]];

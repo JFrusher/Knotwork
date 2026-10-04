@@ -19,7 +19,9 @@ const mentionsAnyGuest = (value: unknown) => {
 describe("keeping a design from one wedding", () => {
   it("keeps the card design without a single guest's name in it", () => {
     const cards = extract("cards", example)!;
-    expect(Object.keys(cards).sort()).toEqual(["assetNames", "card", "sheet", "snapEnabled", "template", "uploadedIcons", "version"]);
+    expect(Object.keys(cards).sort()).toEqual(["assetNames", "pieces", "snapEnabled", "uploadedIcons", "version"]);
+    const [piece] = cards["pieces"] as Array<Record<string, unknown>>;
+    expect(Object.keys(piece!).sort()).toEqual(["card", "id", "name", "sheet", "template"]);
     expect(mentionsAnyGuest(cards)).toEqual([]);
   });
 
@@ -62,8 +64,36 @@ describe("putting it into another wedding", () => {
   it("gives a wedding with no cards a design and an empty list to fill from the room", () => {
     const [[slice, stationery]] = applyTo("cards", extract("cards", example)!, other) as Array<[string, Record<string, unknown>]>;
     expect(slice).toBe("stationery");
-    expect(stationery).toMatchObject({ rows: [], headers: [], version: 2 });
-    expect(stationery["template"]).toBeTruthy();
+    expect(stationery).toMatchObject({ version: 3 });
+    const pieces = stationery["pieces"] as Array<Record<string, unknown>>;
+    expect(pieces[0]).toMatchObject({ id: "place-cards", rows: [], headers: [], fileName: null });
+    expect(pieces[0]!["template"]).toBeTruthy();
+  });
+
+  it("keeps the list of a piece the wedding already has, and gives a new piece an empty one", () => {
+    const kept = extract("cards", example)!;
+    const board = { id: "board", name: "Seating board", card: { widthMm: 594 }, sheet: {}, template: { elements: [] } };
+    const content = { ...kept, pieces: [...(kept["pieces"] as unknown[]), board] };
+    const held = {
+      ...other,
+      stationery: {
+        version: 3,
+        pieces: [{ id: "place-cards", name: "Place cards", rows: [{ Name: "Robin" }], headers: ["Name"], fileName: "the room" }],
+      },
+    };
+    const [[, stationery]] = applyTo("cards", content, held) as Array<[string, { pieces: Array<Record<string, unknown>> }]>;
+    expect(stationery.pieces.map((p) => p["id"])).toEqual(["place-cards", "board"]);
+    expect(stationery.pieces[0]).toMatchObject({ rows: [{ Name: "Robin" }], fileName: "the room" });
+    expect(stationery.pieces[1]).toMatchObject({ rows: [], fileName: null, card: { widthMm: 594 } });
+  });
+
+  it("still puts in a design kept before there were pieces", () => {
+    const old = { version: 2, card: { widthMm: 85 }, sheet: {}, template: { elements: [] } };
+    const [[, stationery]] = applyTo("cards", old, other) as Array<[string, { pieces: Array<Record<string, unknown>> }]>;
+    expect(stationery.pieces).toEqual([
+      expect.objectContaining({ id: "place-cards", name: "Place cards", card: { widthMm: 85 }, rows: [] }),
+    ]);
+    expect(Object.keys(stationery.pieces[0]!)).not.toContain("version");
   });
 
   it("puts the room in, keeps the families, and unseats everyone from the tables that went", () => {

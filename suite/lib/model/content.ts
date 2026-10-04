@@ -1,6 +1,7 @@
 import { migrate } from "@jfrusher/knotwork";
 import { choices } from "@/lib/bar/actions";
 import { readBar, readBoxes, readCeremony, readCrew, readGuests, readSeating, readShots } from "./slices";
+import { storedPieces } from "@/apps/plaque/state/suite";
 
 /**
  * What a wedding holds, in the terms a person would recognise it by.
@@ -32,7 +33,6 @@ export interface WeddingSummary {
 export function summarise(raw: unknown): WeddingSummary {
   const doc = migrate(raw);
   const crew = readCrew(doc);
-  const stationery = doc.stationery as { rows?: unknown };
   return {
     names: doc.event.coupleNames.trim(),
     date: doc.event.date,
@@ -46,7 +46,7 @@ export function summarise(raw: unknown): WeddingSummary {
     walking: readCeremony(doc).processional.length,
     boxes: readBoxes(doc).boxes.length,
     bar: choices(readBar(doc)),
-    cards: Array.isArray(stationery.rows) ? stationery.rows.length : 0,
+    cards: storedPieces(doc.stationery).reduce((sum, piece) => sum + (Array.isArray(piece["rows"]) ? piece["rows"].length : 0), 0),
   };
 }
 

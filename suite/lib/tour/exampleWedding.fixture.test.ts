@@ -90,9 +90,10 @@ test("the shot list names real people, with nobody missing from it", () => {
 });
 
 test("the place cards are drawn from the room, and agree with it", () => {
-  const stationery = raw.stationery as { fileName?: string; rows?: unknown[] };
-  expect(stationery.fileName).toBe("the room");
-  expect(stationery.rows?.length).toBeGreaterThan(0);
+  const [placeCards] = raw.stationery.pieces as Array<{ fileName?: string; rows?: unknown[] }>;
+  expect(raw.stationery.version).toBe(3);
+  expect(placeCards!.fileName).toBe("the room");
+  expect(placeCards!.rows?.length).toBeGreaterThan(0);
   expect(readiness(doc, raw).filter((r) => r.severity === "blocking")).toEqual([]);
 });
 

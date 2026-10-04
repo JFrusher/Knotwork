@@ -39,3 +39,14 @@ test("a wedding is described by its names and what is in it", () => {
   expect(describe(summarise(raw))).toBe("Alex & Sam — 2 guests");
   expect(describe(summarise(empty))).toBe("A wedding with no names yet");
 });
+
+test("names printed from a file count across every piece", () => {
+  const stationery = {
+    version: 3,
+    pieces: [
+      { id: "a", name: "Place cards", rows: [{}, {}] },
+      { id: "b", name: "Escort cards", rows: [{}] },
+    ],
+  };
+  expect(summarise({ ...empty, stationery }).cards).toBe(3);
+});

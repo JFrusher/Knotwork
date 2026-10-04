@@ -31,6 +31,7 @@ import { ExportBar } from "./ui/ExportBar";
 import { MissingAssets } from "./ui/MissingAssets";
 import { Pagination } from "./ui/Pagination";
 import { PersistenceBar } from "./ui/PersistenceBar";
+import { PiecesBar } from "./ui/PiecesBar";
 import { RowsDrawer } from "./ui/RowsDrawer";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
@@ -275,10 +276,11 @@ export function App() {
       <Sidebar />
 
       <div className={styles.main}>
+        <PiecesBar />
         {saveError && (
           <PersistenceBar
             reason={saveError}
-            onRetry={() => writeDesign(designOf(usePlaque.getState()), { silent: true })}
+            onRetry={() => writeDesign(designOf(usePlaque.getState()), usePlaque.getState().pieceId, { silent: true })}
           />
         )}
 

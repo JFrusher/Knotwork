@@ -34,8 +34,13 @@ import type {
 import type { LoadedFont } from "../core/text/measure";
 import type { PrinterProfile } from "../core/print/printerProfile";
 import { useKnotworkStore, type WriteOptions } from "@/lib/store/useKnotworkStore";
-import { DESIGN_KEYS, designOf, initialDesign, type Design } from "./design";
-import { readDesign, writeDesign } from "./sliceBridge";
+import { DESIGN_KEYS, designFor, designOf, initialSuite, newPiece, type Design, type Suite } from "./design";
+import { readDesign, readSuite, writeDesign, writeSuite } from "./sliceBridge";
+
+export interface PieceSummary {
+  id: string;
+  name: string;
+}
 
 /** Every kind the registry knows about — see core/template/registry. */
 export type NewElementKind = CardElement["kind"];
@@ -47,6 +52,15 @@ export type NewElementKind = CardElement["kind"];
 export interface PlaqueState extends Design {
   /** Why the wedding's saved design could not be read, when it could not. */
   designProblem: string | null;
+
+  /**
+   * The piece on screen. This window's choice, not the wedding's: a partner
+   * opening the seating board does not move anybody else off the place cards,
+   * and undo never switches pieces.
+   */
+  pieceId: string;
+  /** Every piece, in order, for the switcher. Same array until a name or the order changes. */
+  pieces: PieceSummary[];
 
   /**
    * Parsed faces, keyed by fontId — bundled and uploaded alike. Held in the
@@ -86,6 +100,15 @@ export interface PlaqueState extends Design {
   cropId: ElementId | null;
   page: number;
   previewGuestIndex: number;
+
+  switchPiece: (id: string) => void;
+  /** A new, empty piece, opened. */
+  addPiece: (name: string) => void;
+  /** A copy of a piece — design and data — opened. */
+  duplicatePiece: (id: string) => void;
+  renamePiece: (id: string, name: string) => void;
+  /** The last piece cannot be removed: a wedding's stationery always has one. */
+  removePiece: (id: string) => void;
 
   setCsv: (data: { headers: string[]; rows: GuestRow[]; issues: RowIssue[]; fileName: string }) => void;
   setCard: (patch: Partial<CardSpec>) => void;
@@ -165,7 +188,9 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
       if ((DESIGN_KEYS as readonly string[]).includes(key)) design[key as keyof Design] = value;
       else local[key as keyof PlaqueState] = value;
     }
-    if (Object.keys(design).length > 0) writeDesign({ ...designOf(s), ...(design as Partial<Design>) }, options);
+    if (Object.keys(design).length > 0) {
+      writeDesign({ ...designOf(s), ...(design as Partial<Design>) }, s.pieceId, options);
+    }
     if (Object.keys(local).length > 0) set(local as Partial<PlaqueState>);
   };
   /** An edit: shown as "Undo <label>". */
@@ -180,10 +205,29 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     ),
   });
 
-  const opened = readDesign(useKnotworkStore.getState().raw);
+  /** A change to the suite itself — its pieces — rather than to the piece on screen. */
+  const changeSuite = (label: string, mutate: (suite: Suite) => Suite) =>
+    writeSuite(mutate(readSuite(useKnotworkStore.getState().raw).suite), { label });
+
+  /** Shows piece `id`, starting it from its first card and the front. */
+  const open = (suite: Suite, id: string) =>
+    set({
+      ...designFor(suite, id),
+      pieceId: id,
+      pieces: summarise(suite, get().pieces),
+      editingSide: "front",
+      selectedId: null,
+      cropId: null,
+      page: 0,
+      previewGuestIndex: 0,
+    });
+
+  const opened = readDesign(useKnotworkStore.getState().raw, null);
   return {
     ...opened.design,
     designProblem: opened.problem,
+    pieceId: opened.pieceId,
+    pieces: summarise(opened.suite, []),
     fonts: new Map(),
     fontLabels: {},
     images: new Map(),
@@ -196,6 +240,47 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     cropId: null,
     page: 0,
     previewGuestIndex: 0,
+
+    switchPiece: (id) => open(readSuite(useKnotworkStore.getState().raw).suite, id),
+
+    addPiece: (name) => {
+      const piece = newPiece(newId(), name);
+      changeSuite(`adding ${name}`, (suite) => ({ ...suite, pieces: [...suite.pieces, piece] }));
+      open(readSuite(useKnotworkStore.getState().raw).suite, piece.id);
+    },
+
+    duplicatePiece: (id) => {
+      const copyId = newId();
+      changeSuite("copying a piece", (suite) => {
+        const at = suite.pieces.findIndex((p) => p.id === id);
+        const source = suite.pieces[at];
+        if (!source) throw new Error(`No piece "${id}" in the stationery.`);
+        const copy = { ...source, id: copyId, name: `${source.name} (copy)` };
+        return { ...suite, pieces: [...suite.pieces.slice(0, at + 1), copy, ...suite.pieces.slice(at + 1)] };
+      });
+      open(readSuite(useKnotworkStore.getState().raw).suite, copyId);
+    },
+
+    renamePiece: (id, name) =>
+      changeSuite("a piece's name", (suite) => ({
+        ...suite,
+        pieces: suite.pieces.map((p) => (p.id === id ? { ...p, name } : p)),
+      })),
+
+    removePiece: (id) => {
+      const { suite } = readSuite(useKnotworkStore.getState().raw);
+      if (suite.pieces.length <= 1) throw new Error("The last piece cannot be removed.");
+      const removed = suite.pieces.find((p) => p.id === id);
+      if (!removed) throw new Error(`No piece "${id}" in the stationery.`);
+      // The one on screen goes: show its neighbour rather than jumping to the start.
+      const at = suite.pieces.indexOf(removed);
+      const next = suite.pieces[at + 1] ?? suite.pieces[at - 1]!;
+      if (get().pieceId === id) set({ pieceId: next.id });
+      changeSuite(`removing ${removed.name}`, (current) => ({
+        ...current,
+        pieces: current.pieces.filter((p) => p.id !== id),
+      }));
+    },
 
     setCsv: ({ headers, rows, issues, fileName }) =>
       commit("the guest list", (s) => ({
@@ -548,10 +633,12 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     toggleSheetCollapsed: () => note((s) => ({ sheetCollapsed: !s.sheetCollapsed })),
 
     clearAll: () => {
-      writeDesign(initialDesign(), { label: "clearing the cards" });
+      const suite = initialSuite();
+      writeSuite(suite, { label: "clearing the cards" });
       // Bundled faces stay loaded; only uploaded ones are the user's data,
       // and those are removed from the map by the caller after clearing IDB.
-      set({ uploadedFontIds: [], editingSide: "front", selectedId: null, page: 0, previewGuestIndex: 0 });
+      set({ uploadedFontIds: [] });
+      open(suite, suite.pieces[0]!.id);
     },
   };
 });
@@ -563,11 +650,13 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
  * never a moment the two disagree.
  */
 function follow(raw: Record<string, unknown>): void {
-  const { design, problem } = readDesign(raw);
+  const { design, problem, pieceId, suite } = readDesign(raw, usePlaque.getState().pieceId);
   const present = (id: ElementId | null) => id !== null && design.template.elements.some((el) => el.id === id);
   usePlaque.setState((s) => ({
     ...design,
     designProblem: problem,
+    pieceId,
+    pieces: summarise(suite, s.pieces),
     // Something undone, or removed elsewhere, is no longer there to select.
     selectedId: present(s.selectedId) ? s.selectedId : null,
     cropId: present(s.cropId) ? s.cropId : null,
@@ -577,6 +666,14 @@ function follow(raw: Record<string, unknown>): void {
 useKnotworkStore.subscribe((state, prev) => {
   if (state.raw["stationery"] !== prev.raw["stationery"]) follow(state.raw);
 });
+
+/** The switcher's list, reusing `previous` when nothing it shows has changed. */
+function summarise(suite: Suite, previous: PieceSummary[]): PieceSummary[] {
+  const same =
+    previous.length === suite.pieces.length &&
+    suite.pieces.every((p, i) => previous[i]!.id === p.id && previous[i]!.name === p.name);
+  return same ? previous : suite.pieces.map(({ id, name }) => ({ id, name }));
+}
 
 function nextZ(template: Template): number {
   return Math.max(0, ...template.elements.map((el) => el.z)) + 1;
