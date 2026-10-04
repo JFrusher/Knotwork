@@ -6,7 +6,7 @@ Two sequences: **A**, three outreach emails to people who can put Knotwork in fr
 
 | # | Point |
 | --- | --- |
-| 1 | `knotwork.app` is a **placeholder domain**. |
+| 1 | The site is `knotwork-suite.vercel.app` (decided 2026-10-04: no new domain for the launch). |
 | 2 | **Sequence B cannot be sent today.** Knotwork has no way to email users and no permission to. See "Before Sequence B" below. It is written so each email also works as an in-app message. |
 | 3 | Sequence A goes to people in a professional capacity, one at a time, from your own address. It is not a mail merge. Under UK rules, sole traders count as individuals, so keep it personal, relevant to their work, and stop at the first "no". I'm not a lawyer; if this grows beyond a few dozen hand-written emails, check the ICO's guidance on direct marketing. |
 | 4 | Everything in square brackets is for you to fill in. If a bracket can't be filled honestly, cut the sentence. |
@@ -61,14 +61,14 @@ After email 3, stop. Do not send a fourth.
 >
 > It's called Knotwork. There's no paid version, no adverts and no sign-up: you open it and your guest list stays in your own browser. It's open source, so that can't change later.
 >
-> There's an example wedding already loaded if you'd like a look: knotwork.app
+> There's an example wedding already loaded if you'd like a look: knotwork-suite.vercel.app
 >
 > I'm not asking for a review. If it seems like something your readers would use, I'd be glad of a mention, and I'm happy to write up anything useful for you: a short guide to doing a table plan, say, with no pitch in it.
 >
 > Either way, thank you for [the post / the newsletter].
 >
 > Jacob
-> [knotwork.app · reply to this address]
+> [knotwork-suite.vercel.app · reply to this address]
 
 **Opener swap — A2, for planners and coordinators**
 
@@ -112,7 +112,7 @@ Sent on day 5, as a reply in the same thread. It gives something; it does not as
 >
 > [Choose one, and attach or link it:]
 >
-> **For bloggers:** I wrote a short guide to [how much drink to buy for a UK wedding / what a registrar will and won't allow for ceremony music / the four boxes to pack for the day]. No sign-up, no pitch: knotwork.app/blog/[slug]. You're welcome to link to it or borrow from it.
+> **For bloggers:** I wrote a short guide to [how much drink to buy for a UK wedding / what a registrar will and won't allow for ceremony music / the four boxes to pack for the day]. No sign-up, no pitch: knotwork-suite.vercel.app/blog/[slug]. You're welcome to link to it or borrow from it.
 >
 > **For planners:** here's the PDF pack the example wedding produces: floor plan, run sheet, job list and photo list in one file. It's the quickest way to judge whether the output is good enough to put in front of a client. [attach]
 >
@@ -136,7 +136,7 @@ Sent on day 12. Short. It makes it easy to say no.
 >
 > If Knotwork isn't right for [your readers / your business / the show], no problem at all, and you needn't reply.
 >
-> If it's just bad timing, it'll still be there, and still free: knotwork.app
+> If it's just bad timing, it'll still be there, and still free: knotwork-suite.vercel.app
 >
 > And if you did take a look and something put you off, I'd honestly rather hear that than nothing. One line is plenty.
 >
@@ -227,7 +227,7 @@ Each email below has an **in-app version**: one or two lines for the "Next" card
 >
 > Every other tool builds on that list, so it's the only thing you'll ever type once.
 >
-> → Open Guests: knotwork.app/guests
+> → Open Guests: knotwork-suite.vercel.app/guests
 >
 > Not ready? The guided tour has a finished example wedding with 100 guests you can poke at instead.
 >
@@ -266,7 +266,7 @@ Each email below has an **in-app version**: one or two lines for the "Next" card
 >
 > Start with one table. The rest goes quickly.
 >
-> → Open Seating: knotwork.app/seating
+> → Open Seating: knotwork-suite.vercel.app/seating
 >
 > Jacob
 >
@@ -303,7 +303,7 @@ Each email below has an **in-app version**: one or two lines for the "Next" card
 >
 > The same list also writes your **group photo list**, from who's related to whom.
 >
-> → Open Place cards: knotwork.app/place-cards
+> → Open Place cards: knotwork-suite.vercel.app/place-cards
 >
 > If something here doesn't work the way you expected, just reply. It comes to me.
 >
@@ -339,7 +339,7 @@ Each email below has an **in-app version**: one or two lines for the "Next" card
 >
 > **3. Share the load.** Invite your partner from the account page, and you'll both see changes as they're made. There's also one PDF with the floor plan, run sheet, jobs and photo list for whoever's helping.
 >
-> → Open Timeline: knotwork.app/timeline
+> → Open Timeline: knotwork-suite.vercel.app/timeline
 >
 > That's all four. You won't hear from me again unless you write first, and I hope you do, especially if something's missing. Every tool in Knotwork started as someone's answer to "what are you still doing in a spreadsheet?"
 >
@@ -347,7 +347,7 @@ Each email below has an **in-app version**: one or two lines for the "Next" card
 >
 > Jacob
 >
-> P.S. Once it's all over, other couples would love to hear how it went: knotwork.app/blog/share
+> P.S. Once it's all over, other couples would love to hear how it went: knotwork-suite.vercel.app/blog/share
 >
 > —
 > 4 of 4. That's the lot. Unsubscribe anyway: [link].

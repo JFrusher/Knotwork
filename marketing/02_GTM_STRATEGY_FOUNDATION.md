@@ -278,7 +278,7 @@ The honest answer to "what's the catch?", in order:
 | # | Decision | My recommendation | Affects |
 | --- | --- | --- | --- |
 | D1 | Primary market: UK or US? | **UK** for couples; global for developers | Subreddits, examples, spelling, launch hours |
-| D2 | Domain | Buy one that says Knotwork. `knotwork.app` is a placeholder I have **not** checked for availability. | Every asset |
+| D2 | Domain | Buy one that says Knotwork. `knotwork.app` is a placeholder I have **not** checked for availability. **Decided 2026-10-04:** stay on `knotwork-suite.vercel.app`. | Every asset |
 | D3 | Onboarding by email, or in the app? | **In the app** (audit, G7) | `email-sequences.md` Part B |
 | D4 | Use the word "only"? | Not until LibreWeddingPlanner's repo has been read | USP, Product Hunt tagline |
 | D5 | Is the personal story accurate as written? | Yours to confirm | All copy |

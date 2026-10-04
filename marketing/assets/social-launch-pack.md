@@ -6,7 +6,7 @@ Product Hunt, X, LinkedIn and Reddit. This adds to `marketing/copy/`; it does no
 
 | # | Check |
 | --- | --- |
-| 1 | `knotwork.app` is a **placeholder**. Replace it with the real domain. Until the repo is renamed, the GitHub link is `github.com/JFrusher/Trousseau`. |
+| 1 | The site is `knotwork-suite.vercel.app` (decided 2026-10-04: no new domain for the launch). The repo is `github.com/JFrusher/Knotwork`. |
 | 2 | **Sign-in is a six-digit emailed code, or Google or Apple.** It is not a magic link. Fix this in `marketing/copy/hacker-news.md` and `reddit-posts.md` before they go out. |
 | 3 | Every personal detail (your wedding, the two apps that disagreed about the date) must be exactly as it happened. Edit anything that isn't. |
 | 4 | Screenshots and clips use the example wedding only. Never a real guest list. |
@@ -27,7 +27,7 @@ Product Hunt, X, LinkedIn and Reddit. This adds to `marketing/copy/`; it does no
 | Tagline, alternative B | The open-source wedding planner with nothing to sell you | 56 |
 | **Topics** | Wedding Planning · Open Source · Productivity | |
 | **Pricing** | Free | |
-| **Links** | Website: `knotwork.app` · GitHub: repo URL | |
+| **Links** | Website: `knotwork-suite.vercel.app` · GitHub: repo URL | |
 | **First comment** | Maker comment, below | |
 
 **Description** (252 / 260 characters)
@@ -73,7 +73,7 @@ Product Hunt's gallery is 1270×760. The hero images are 1600×1000, a slightly 
 >
 > I'd love to know: **what job did you end up doing in a spreadsheet?** That question is how every tool in it got built.
 >
-> Try it (no sign-up): knotwork.app
+> Try it (no sign-up): knotwork-suite.vercel.app
 
 ### Product Hunt notes
 
@@ -100,7 +100,7 @@ Three launch posts for three audiences. Post them on different days. Each is wri
 >
 > Free. No sign-up. No adverts. I built it for our wedding.
 >
-> knotwork.app
+> knotwork-suite.vercel.app
 >
 > [Attach: `motion/seat-to-card.mp4`]
 
@@ -142,7 +142,7 @@ Three launch posts for three audiences. Post them on different days. Each is wri
 > What it is: local-first, no account needed, AGPL, and self-hostable with no analytics.
 
 **6/6**
-> Planning a wedding, or know someone who is? It's free, and the guest list never has to leave their laptop → knotwork.app
+> Planning a wedding, or know someone who is? It's free, and the guest list never has to leave their laptop → knotwork-suite.vercel.app
 >
 > If you build things, the code and every design spec are here → github.com/JFrusher/Knotwork
 
@@ -158,7 +158,7 @@ Three launch posts for three audiences. Post them on different days. Each is wri
 >
 > It exists because I needed it.
 >
-> knotwork.app
+> knotwork-suite.vercel.app
 >
 > [Attach: `images/pledge.png`]
 
@@ -206,7 +206,7 @@ Two posts, written for LinkedIn, not adapted from X. No numbering, short paragra
 > #OpenSource #SoftwareEngineering #ProductDevelopment
 
 **First comment:**
-> Try it, no sign-up: knotwork.app
+> Try it, no sign-up: knotwork-suite.vercel.app
 > Code, specs and plans: github.com/JFrusher/Knotwork
 
 **Attach:** `images/hero-overview.png`, or a document carousel of `square-overview`, `square-seating`, `square-place-cards`, `square-timeline`, `pledge`.
@@ -244,7 +244,7 @@ Two posts, written for LinkedIn, not adapted from X. No numbering, short paragra
 > #WeddingPlanner #WeddingIndustry #EventPlanning
 
 **First comment:**
-> knotwork.app — no sign-up needed to look around. There's an example wedding with 100 guests and a full day already in it.
+> knotwork-suite.vercel.app — no sign-up needed to look around. There's an example wedding with 100 guests and a full day already in it.
 
 **Attach:** `images/hero-timeline.png`, or `motion/ceremony-moves.mp4` uploaded natively.
 
@@ -302,7 +302,7 @@ Alternatives:
 >
 > It's free, properly: no premium version, no ads, no supplier adverts. You don't need to make an account. It saves in your browser, so your guest list doesn't go anywhere unless you choose to sync with your partner. The code's public if that sort of thing matters to you.
 >
-> There's an example wedding in it if you just want a look round: knotwork.app
+> There's an example wedding in it if you just want a look round: knotwork-suite.vercel.app
 >
 > Mostly I'd like to know **what's missing**. What did you end up doing in a spreadsheet or on paper that you wish something had just done for you? Every tool in it started as an answer to that.
 
