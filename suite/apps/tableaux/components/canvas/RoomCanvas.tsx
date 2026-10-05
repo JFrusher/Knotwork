@@ -141,11 +141,9 @@ export default function RoomCanvas() {
     [canvas.panX, canvas.panY, canvas.zoom]
   )
 
-  // TODO(ux-audit): startZoneDraw and startCalibrate below both register only
-  // pointermove/pointerup on window, no pointercancel (same bug class fixed
-  // in TableHandles.jsx, see tmp/ux-audit.md #C13) — a pointer release/
-  // cancel outside the window can strand a draft zone or calibration line
-  // mid-draw. See tmp/ux-audit.md #C14.
+  // A cancelled pointer (a system gesture, an interrupted touch) is not a
+  // release: it drops the draft and commits nothing. Without listening for it
+  // the draft stayed on the canvas, still following the pointer.
   const startZoneDraw = (e: ReactPointerEvent) => {
     const start = screenToCanvas(e.clientX, e.clientY)
     const onMove = (ev: PointerEvent) => {
@@ -153,9 +151,15 @@ export default function RoomCanvas() {
       draftRef.current = rect
       setDraftZone(rect)
     }
-    const onUp = () => {
+    const stop = () => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', stop)
+      draftRef.current = null
+      setDraftZone(null)
+      setActiveTool('select')
+    }
+    const onUp = () => {
       const r = draftRef.current
       if (r && r.width > 16 && r.height > 16) {
         addZone({
@@ -167,12 +171,11 @@ export default function RoomCanvas() {
           shape: 'rect',
         })
       }
-      draftRef.current = null
-      setDraftZone(null)
-      setActiveTool('select')
+      stop()
     }
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', stop)
   }
 
   const startCalibrate = (e: ReactPointerEvent) => {
@@ -183,11 +186,15 @@ export default function RoomCanvas() {
       line = { x1: start.x, y1: start.y, x2: end.x, y2: end.y }
       setDraftLine(line)
     }
-    const onUp = () => {
+    const stop = () => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', stop)
       setDraftLine(null)
       setActiveTool('select')
+    }
+    const onUp = () => {
+      stop()
       if (line) {
         const dist = Math.hypot(line.x2 - line.x1, line.y2 - line.y1)
         if (dist > 8) openModal('calibrate', { pixelDistance: dist })
@@ -195,6 +202,7 @@ export default function RoomCanvas() {
     }
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', stop)
   }
 
   // ── polygon room drawing: click to drop vertices, Enter/click-start to close ──

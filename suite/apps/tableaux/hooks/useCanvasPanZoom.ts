@@ -65,11 +65,6 @@ export function useCanvasPanZoom() {
       }
       window.addEventListener('pointermove', onMove)
       window.addEventListener('pointerup', onUp)
-      // TODO(ux-audit): no pointercancel listener (same bug class fixed in
-      // TableHandles.jsx — see tmp/ux-audit.md #C13). A pointer release/
-      // cancel outside the window here leaves isPanning stuck true (cursor
-      // stuck "grabbing"). RoomCanvas.jsx's zone-draw/calibration-line
-      // dragging has the same gap. See tmp/ux-audit.md #C14.
       window.addEventListener('pointercancel', onUp)
     },
     [setCanvas]
