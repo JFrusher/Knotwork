@@ -57,7 +57,13 @@ export function StampChairs({ element }: { element: RoomElement }) {
               </button>
             )}
           </div>
-          {uncovered.length === 0 && <Hint>No table here numbers its seats, so there are no chairs to name.</Hint>}
+          {uncovered.length === 0 && (
+            <Hint>
+              {room.tables.length === 0
+                ? "There is no seating plan yet. Add tables in Seating, and their chairs appear here."
+                : "No table here numbers its seats, so there are no chairs to name. Set a table to number its seats in Seating."}
+            </Hint>
+          )}
         </>
       ) : uncovered.length === 0 ? (
         <Hint>Every chair has its box ({stamped}).</Hint>

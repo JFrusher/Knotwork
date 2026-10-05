@@ -13,7 +13,7 @@
 .choice {
   padding: 2px var(--sp-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--surface);
   font: inherit;
   font-size: var(--text-xs);

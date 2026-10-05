@@ -196,10 +196,18 @@ test("after printing, a change in the room names the cards it made wrong, and re
   await expect(page.getByRole("region", { name: "Card" }).getByText("Head table", { exact: true })).toBeVisible();
   const notice = page.getByRole("status").filter({ hasText: "changed" });
   await expect(notice).toContainText("8 cards have changed: Alex Morgan");
-  await notice.getByRole("button", { name: "Print just these 8" }).click();
+  await page.getByRole("button", { name: "Print just these 8" }).click();
   await expect(page.getByText("Just 8 of 100 cards")).toBeVisible();
   // The sheets on screen are the ones that will print: the eight, not the hundred.
   await expect(page.getByText("Sheet 1 of 1", { exact: true })).toBeVisible();
+
+  // Once the eight are printed, nothing is out of date and the next print is the whole run again.
+  const reprint = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download print-ready PDF" }).click();
+  await page.getByRole("button", { name: /^Download all \d+ sheets?$/ }).click();
+  await reprint;
+  await expect(page.getByText(/^100 cards · \d+ sheets$/)).toBeVisible();
+  await expect(notice).toHaveCount(0);
   await page.screenshot({ path: process.env.SHOT ?? "test-results/reprint.png" });
 });
 
@@ -239,7 +247,7 @@ test("a chair picked on the map goes into the text, and the card names whoever s
   // One line for the design, not one per free-seating table's card.
   await expect(page.getByText(/there is no seat 1, so it says nothing there/)).toHaveCount(1);
   await expect(page.getByRole("region", { name: "Card" }).getByText(sitter, { exact: true }).first()).toBeVisible();
-  await expect(chair).toHaveClass(/used/);
+  await expect(chair.locator("..")).toHaveClass(/used/);
   await page.screenshot({ path: process.env.SHOT ?? "test-results/chair-picker.png" });
 });
 

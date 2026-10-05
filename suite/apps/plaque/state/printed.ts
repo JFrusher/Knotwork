@@ -2,9 +2,9 @@ import { fingerprint } from "@/lib/documents/fingerprint";
 import type { Artefact } from "../core/data/artefacts";
 import { normalise } from "../core/data/artefacts";
 import { columnsUsed } from "../core/template/rebind";
-import { chairRef, chairValues } from "../core/template/chairs";
+import { asKnown, chairName, chairRef, chairValues } from "../core/template/chairs";
 import { tokensIn } from "../core/csv/interpolate";
-import type { RoomScene, Template } from "../core/types";
+import type { RoomScene, RoomTable, Template } from "../core/types";
 
 /**
  * What a piece last went to the printer as: when, and each card's data, so a
@@ -44,12 +44,25 @@ export function printBasis(template: Template, room: RoomScene): PrintBasis {
   return (artefact) => {
     const drawn = plans.map((show) =>
       show === "room"
-        ? room
-        : room.tables.filter((table) => normalise(table.label) === normalise(artefact.row["Table"] ?? "")),
+        ? { bounds: room.bounds, walls: room.walls, tables: room.tables.map((table) => drawnTable(template, table)) }
+        : room.tables
+            .filter((table) => normalise(table.label) === normalise(artefact.row["Table"] ?? ""))
+            .map((table) => drawnTable(template, table)),
     );
     const sitters = chairs.length > 0 ? chairValues(chairs, artefact.row, room, template).values : {};
-    return fingerprint([artefact.rows.map((row) => columns.map((column) => row[column] ?? "")), drawn, sitters]);
+    const rows = artefact.rows.map((row) => asKnown(template, row));
+    return fingerprint([rows.map((row) => columns.map((column) => row[column] ?? "")), drawn, sitters]);
   };
+}
+
+/**
+ * What a plan draws of a table: where it is, its shape and who sits where by
+ * the name the design gives them. Nothing else of a sitter's row — a dietary
+ * need changing does not change the plan.
+ */
+function drawnTable(template: Template, table: RoomTable) {
+  const { seats, interior: _interior, ...shape } = table;
+  return { ...shape, seats: seats.map((seat) => [seat.x, seat.y, seat.number, seat.row ? chairName(template, seat.row) : ""]) };
 }
 
 /**

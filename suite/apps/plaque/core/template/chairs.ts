@@ -46,6 +46,15 @@ export function chairName(template: Pick<Template, "chairName">, row: GuestRow):
   return row["Known As"] || interpolate(template.chairName ?? DEFAULT_CHAIR_NAME, row).text;
 }
 
+/**
+ * A row as a design prints it: `{{Known As}}` is the name the guest is known
+ * by, else the design's name format applied to them. Every card and every
+ * reprint check reads rows through this, so the two cannot disagree.
+ */
+export function asKnown(template: Pick<Template, "chairName">, row: GuestRow): GuestRow {
+  return { ...row, "Known As": chairName(template, row) };
+}
+
 /** The table a chair is at: the card's own, or the one named. */
 export function chairTable(ref: ChairRef, scene: RoomScene, cardTable: string): RoomTable | null {
   const wanted = normalise(ref.table ?? cardTable);

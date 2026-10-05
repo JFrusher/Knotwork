@@ -3,6 +3,7 @@ import { ptToMm } from "../units";
 import type { GridElement, Template } from "../types";
 import { flowPlan, gridBlocks } from "../template/grid";
 import { artefactsOf } from "./parts";
+import { noFit, resolveCard } from "../template/bindings";
 
 /**
  * A finder: everyone A to Z under their letter, in newspaper columns, carrying
@@ -108,5 +109,33 @@ describe("cutting a long list into pages", () => {
 
   it("leaves a design without a flowing grid alone", () => {
     expect(artefactsOf(template(finder({ layout: "cells" })), many, headers)).toHaveLength(1);
+  });
+});
+
+describe("a finder over several pages", () => {
+  const card = { widthMm: 210, heightMm: 297, fold: "none", foldPositionMm: 0, invertBackPanel: false, bleedMm: 0 } as const;
+  /** Every name each page prints, page by page. */
+  const printed = (template: Template, rows: ReturnType<typeof guest>[]) =>
+    artefactsOf(template, rows, headers).map((part) =>
+      resolveCard(template, part.row, card, { fitText: noFit, iconPath: () => null }, part.rows)
+        .scene.elements.flatMap((el) => (el.kind === "text" ? el.lines.filter((line) => line.length > 1) : [])),
+    );
+
+  it("prints every guest once, a letter carried over to a new page under its heading again", () => {
+    const rows = Array.from({ length: 25 }, (_, i) => guest(`G${String(i).padStart(2, "0")}`, "Smith"));
+    const template: Template = { backgroundHex: null, rowScope: { kind: "document" }, elements: [finder({ columns: 1 })] };
+    const pages = printed(template, rows);
+    expect(pages.length).toBeGreaterThan(1);
+    expect(pages.flat().sort()).toEqual(rows.map((r) => `Smith, ${r["First Name"]}`).sort());
+  });
+
+  it("cuts pages by the names as they print, not as they are stored", () => {
+    const rows = Array.from({ length: 40 }, (_, i) => ({ ...guest(`G${String(i).padStart(2, "0")}`, "Smith"), "Known As": "" }));
+    const template: Template = {
+      backgroundHex: null,
+      rowScope: { kind: "document" },
+      elements: [finder({ columns: 1, itemTemplate: "{{Known As}}" })],
+    };
+    expect(printed(template, rows).flat()).toHaveLength(40);
   });
 });

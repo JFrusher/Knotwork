@@ -1,3 +1,4 @@
+import { asKnown } from "../template/chairs";
 import { flowPlan, gridBlocks } from "../template/grid";
 import type { GridElement, Template } from "../types";
 import { buildArtefacts, type Artefact } from "./artefacts";
@@ -32,12 +33,14 @@ export function withParts(template: Template, artefacts: Artefact[]): Artefact[]
   if (!flow) return artefacts;
 
   return artefacts.flatMap((artefact) => {
-    const { blocks } = gridBlocks(flow, artefact.rows);
+    // Cut by the names as the page prints them.
+    const named = artefact.rows.map((row) => asKnown(template, row));
+    const { blocks } = gridBlocks(flow, named);
+    const indexOf = new Map(named.map((row, i) => [row, i]));
     const runs = flowPlan(flow, blocks.map((block) => block.rows.length));
     const pages = Math.max(0, ...runs.map((run) => run.page)) + 1;
     if (pages === 1) return [artefact];
 
-    const indexOf = new Map(artefact.rows.map((row, i) => [row, i]));
     return Array.from({ length: pages }, (_, page) => {
       const picked = runs
         .filter((run) => run.page === page)

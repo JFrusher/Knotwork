@@ -1,5 +1,6 @@
 import type { Knotwork } from "@jfrusher/knotwork";
 import { useKnotworkStore, type WriteOptions } from "@/lib/store/useKnotworkStore";
+import { keepThroughHistory } from "@/lib/store/unhistoried";
 import { guestName, readGuests } from "@/lib/model/slices";
 import type { GuestRow } from "../core/data/rows";
 import { designFor, initialSuite, withDesign, type Design, type Suite } from "./design";
@@ -72,4 +73,30 @@ function byName(doc: Knotwork): GuestIdFor {
     const name = row["Name"] || [row["First Name"], row["Last Name"]].filter(Boolean).join(" ");
     return index.get(key(name ?? "")) ?? null;
   };
+}
+
+/**
+ * What each piece was last printed as is a fact about paper, not an edit:
+ * undo and redo keep it as it is now, piece by piece.
+ */
+keepThroughHistory((now, restored) => {
+  const printedNow = new Map<unknown, unknown>(
+    pieceList(now["stationery"]).map((p) => [p["id"], p["printed"]]),
+  );
+  const target = restored["stationery"];
+  const pieces = pieceList(target);
+  if (pieces.length === 0) return restored;
+  return {
+    ...restored,
+    stationery: {
+      ...(target as Record<string, unknown>),
+      pieces: pieces.map((p) => (printedNow.has(p["id"]) ? { ...p, printed: printedNow.get(p["id"]) } : p)),
+    },
+  };
+});
+
+/** The pieces of a stored stationery slice, or none for any other shape. */
+function pieceList(slice: unknown): Array<Record<string, unknown>> {
+  const pieces = typeof slice === "object" && slice !== null ? (slice as Record<string, unknown>)["pieces"] : null;
+  return Array.isArray(pieces) ? (pieces as Array<Record<string, unknown>>) : [];
 }

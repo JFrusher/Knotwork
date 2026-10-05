@@ -22,7 +22,7 @@
 .chip {
   padding: 2px var(--sp-2);
   border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: none;
   font: inherit;
   font-size: var(--text-xs);

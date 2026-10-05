@@ -136,4 +136,20 @@ describe("stamping a plan's names", () => {
     plaque().stampChairs(plan().id, true);
     expect(boxes().map((b) => b.template)).toEqual(Array.from({ length: 10 }, (_, i) => `{{At seat ${i + 1}}}`));
   });
+
+  test("on a table's own map, a box sits centred on its chair on every table's card, whatever the table's size", async () => {
+    const { chairCells, placeChairs } = await import("../core/template/room");
+    const tables = (shared().raw.seating as Raw).tables;
+    const t2 = { id: "t2", label: "Table 2", type: "round", capacity: 4, x: 700, y: 300, seatMode: "seat", assignedGuestIds: [] };
+    shared().setSlice("seating", { tables: { ...tables, t2 } }, { label: "the room" });
+    plaque().updateElement(plan().id, { show: "table" } as never);
+    plaque().stampChairs(plan().id, true);
+    const row = { Table: "Table 2" };
+    const placed = placeChairs(plaque().template, plaque().room, row).elements.find(
+      (el): el is (typeof boxes extends () => Array<infer T> ? T : never) => el.kind === "text" && el.chair?.seat === 1,
+    )!;
+    const cell = chairCells(plan(), plaque().room, row).find((c) => c.seat.number === 1)!.box;
+    expect(placed.x + placed.w / 2).toBeCloseTo(cell.x + cell.w / 2);
+    expect(placed.y + placed.h / 2).toBeCloseTo(cell.y + cell.h / 2);
+  });
 });

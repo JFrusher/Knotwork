@@ -146,9 +146,11 @@ function flowInto(el: FlowSpec, counts: number[]): FlowRun[] {
         to += 1;
       }
       runs.push({ page, column, y: top, block, heading, from, to });
-      heading = false;
       from = to;
       if (from < count) nextColumn();
+      // A letter carried onto a new page is headed again: the reader starts
+      // there, and each page then plans alone exactly as it does here.
+      heading = from < count && column === 0;
     }
   });
   return runs;

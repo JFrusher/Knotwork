@@ -17,7 +17,7 @@ import { interpolate, tokensIn } from "../csv/interpolate";
 import { flowPlan, gridBlocks } from "./grid";
 import { placeChairs, resolveRoom } from "./room";
 import { qrPath } from "./qr";
-import { chairRef, chairValues } from "./chairs";
+import { asKnown, chairRef, chairValues } from "./chairs";
 import { transformForPanel } from "../geometry/fold";
 import { ptToMm } from "../units";
 import { resolveIconForRow } from "./icons";
@@ -117,6 +117,9 @@ export function resolveCard(
   const elements: ResolvedElement[] = [];
   // Boxes that follow a chair go to that chair on this card's plan first.
   template = placeChairs(template, opts.room?.() ?? null, row);
+  // Every guest as this design names them.
+  row = asKnown(template, row);
+  rows = rows.map((r) => asKnown(template, r));
 
   // Chair tokens name whoever sits in a seat of this card's table, not a column
   // of its own row: they are read from the room, once per element, and said

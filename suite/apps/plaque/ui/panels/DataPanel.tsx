@@ -3,6 +3,7 @@ import { useShallow } from "zustand/react/shallow";
 import type { Artefact } from "../../core/data/artefacts";
 import { artefactsOf } from "../../core/data/parts";
 import type { RowScope } from "../../core/types";
+import { printing } from "../../state/printed";
 import { usePlaque } from "../../state/store";
 import { Hint, SelectField, SubGroup } from "../controls";
 import styles from "./DataPanel.module.css";
@@ -77,7 +78,7 @@ export function DataPanel() {
         </>
       )}
 
-      {artefacts.length > 1 && (
+      {(artefacts.length > 1 || printOnly) && (
         <ReprintFew artefacts={artefacts} printOnly={printOnly} onChoose={setPrintOnly} />
       )}
 
@@ -133,7 +134,7 @@ function ReprintFew({
     return (
       <div className={styles.only}>
         <Hint>
-          The PDF will hold just {printOnly.length} of {artefacts.length}.
+          The PDF will hold just {printing(artefacts, printOnly).length} of {artefacts.length}.
         </Hint>
         <button type="button" className={styles.button} onClick={() => onChoose(null)}>
           Print them all again

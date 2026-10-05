@@ -25,7 +25,7 @@
         "w": 78,
         "h": 16,
         "z": 0,
-        "template": "{{First Name}} {{Last Name}}",
+        "template": "{{Known As}}",
         "fontId": "great-vibes",
         "fontSizePt": 24,
         "align": "center",

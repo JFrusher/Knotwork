@@ -15,11 +15,17 @@ const A4 = { short: 595.28, long: 841.89 };
 
 /**
  * The plan the wedding pack prints: the wedding's own floor plan — the first
- * piece that draws the whole room — as designed in Place cards. A wedding that
- * has not made one yet gets the floor plan design as it starts.
+ * piece that is one sheet for the whole list and draws the whole room — as
+ * designed in Place cards. An escort card with a little map of the room is not
+ * a floor plan. A wedding that has not made one yet gets the floor plan design
+ * as it starts.
  */
 export function packFloorPlan(suite: Suite, headers: string[]): { name: string; card: CardSpec; sheet: SheetSpec; template: Template } {
-  const piece = suite.pieces.find((p) => p.template.elements.some((el) => el.kind === "room" && el.show === "room"));
+  const piece = suite.pieces.find(
+    (p) =>
+      p.template.rowScope?.kind === "document" &&
+      p.template.elements.some((el) => el.kind === "room" && el.show === "room"),
+  );
   if (piece) return { name: piece.name, card: piece.card, sheet: piece.sheet, template: piece.template };
   const entry = GALLERY.find((g) => g.id === "floor-plan");
   if (!entry) throw new Error('The gallery has no "floor-plan" design.');

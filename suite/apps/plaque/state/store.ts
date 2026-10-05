@@ -35,7 +35,7 @@ import type { LoadedFont } from "../core/text/measure";
 import type { PrinterProfile } from "../core/print/printerProfile";
 import type { Knotwork } from "@jfrusher/knotwork";
 import { useKnotworkStore, type WriteOptions } from "@/lib/store/useKnotworkStore";
-import { DESIGN_KEYS, designFor, designOf, initialSuite, newPiece, type Design, type Suite } from "./design";
+import { DESIGN_KEYS, designFor, designOf, initialSuite, newPiece, withDesign, type Design, type Suite } from "./design";
 import { readDesign, readSuite, writeDesign, writeSuite } from "./sliceBridge";
 import { roomRows, withMerges, type Merged } from "./fromRoom";
 import { roomScene } from "./roomScene";
@@ -43,7 +43,7 @@ import { printBasis, recordPrint } from "./printed";
 import { normalise, type Artefact } from "../core/data/artefacts";
 import { artefactsOf } from "../core/data/parts";
 import { makeResolveOptions } from "../core/template/resolve";
-import { chairCells, chairNameSize, placeChairs, planLayout, stampableChairs } from "../core/template/room";
+import { centredOn, chairCells, chairNameSize, placeChairs, planLayout, stampableChairs } from "../core/template/room";
 import { chairToken } from "../core/template/chairs";
 import { linkUrl, useGuestLink } from "@/lib/share/guestLink";
 
@@ -149,8 +149,12 @@ export interface PlaqueState extends Design, RoomData {
   removePiece: (id: string) => void;
 
   setPrintOnly: (keys: string[] | null) => void;
-  /** These artefacts have gone to the printer: the record changes since are measured from. */
-  notePrinted: (artefacts: Artefact[], partial: boolean) => void;
+  /**
+   * These artefacts of piece `pieceId` have gone to the printer: the record
+   * changes since are measured from. Named, not assumed: a print can finish
+   * after another piece is opened.
+   */
+  notePrinted: (pieceId: string, artefacts: Artefact[], partial: boolean) => void;
   setCard: (patch: Partial<CardSpec>) => void;
   setSheet: (patch: Partial<SheetSpec>) => void;
   applySuggestion: (s: LayoutSuggestion) => void;
@@ -328,9 +332,11 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
       if (!entry) throw new Error(`No piece or design called "${id}".`);
       // "Floor plan — the room to scale, A1" is called "Floor plan".
       const name = entry.name.split(" — ")[0]!;
-      changeSuite(`adding ${name}`, (current) => ({ ...current, pieces: [...current.pieces, newPiece(id, name)] }));
+      // Made with its design in one step, so one undo takes the whole piece back.
+      const fresh = newPiece(id, name);
+      const piece = { ...fresh, ...fromGallery(entry, fresh.card, fresh.sheet, get().headers) };
+      changeSuite(`adding ${name}`, (current) => ({ ...current, pieces: [...current.pieces, piece] }));
       open(readSuite(useKnotworkStore.getState()).suite, id);
-      get().applyGalleryTemplate(entry);
     },
 
     addPiece: (name) => {
@@ -365,20 +371,25 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
       // The one on screen goes: show its neighbour rather than jumping to the start.
       const at = suite.pieces.indexOf(removed);
       const next = suite.pieces[at + 1] ?? suite.pieces[at - 1]!;
-      if (get().pieceId === id) set({ pieceId: next.id });
+      const wasOpen = get().pieceId === id;
       changeSuite(`removing ${removed.name}`, (current) => ({
         ...current,
         pieces: current.pieces.filter((p) => p.id !== id),
       }));
+      if (wasOpen) open(readSuite(useKnotworkStore.getState()).suite, next.id);
     },
 
     setPrintOnly: (printOnly) => set({ printOnly }),
 
     // Bookkeeping, not an edit: nobody undoes having printed something.
-    notePrinted: (artefacts, partial) =>
-      note((s) => ({
-        printed: recordPrint(s.printed, artefacts, partial, new Date().toISOString(), printBasis(s.template, s.room)),
-      })),
+    notePrinted: (pieceId, artefacts, partial) => {
+      const { suite } = readSuite(useKnotworkStore.getState());
+      const design = designFor(suite, pieceId);
+      const printed = recordPrint(design.printed, artefacts, partial, new Date().toISOString(), printBasis(design.template, get().room));
+      writeSuite(withDesign(suite, pieceId, { ...design, printed }), { silent: true });
+      // The few went to paper: the next print of that piece is the whole run again.
+      if (get().pieceId === pieceId) set({ printOnly: null });
+    },
 
     setCard: (patch) =>
       commit("the card", (s) => {
@@ -397,7 +408,12 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
 
     setBackground: (hex) => commit("the background", (s) => ({ template: { ...s.template, backgroundHex: hex } })),
 
-    setChairName: (chairName) => commit("how names read", (s) => ({ template: { ...s.template, chairName } })),
+    setChairName: (pattern) =>
+      commit("how names read", (s) => {
+        // Nothing typed is the default, not "say nothing": the field shows the default as its placeholder.
+        const { chairName: _old, ...template } = s.template;
+        return { template: pattern.trim() ? { ...template, chairName: pattern } : template };
+      }),
 
     applyGalleryTemplate: (entry) =>
       commit("a gallery design", (s) => ({
@@ -764,12 +780,15 @@ function follow(wedding: Wedding): void {
     ...live(wedding, design.merged),
     designProblem: problem,
     pieceId,
-    // Another piece now: its cards are not the ones that were picked.
-    printOnly: pieceId === s.pieceId ? s.printOnly : null,
     pieces: summarise(suite, s.pieces),
     // Something undone, or removed elsewhere, is no longer there to select.
     selectedId: present(s.selectedId) ? s.selectedId : null,
     cropId: present(s.cropId) ? s.cropId : null,
+    // Another piece now (the one shown was undone or removed): start it afresh,
+    // and its cards are not the ones that were picked.
+    ...(pieceId === s.pieceId
+      ? {}
+      : { printOnly: null, editingSide: "front" as const, page: 0, previewGuestIndex: 0, selectedId: null, cropId: null }),
   }));
 }
 
@@ -815,7 +834,14 @@ function withChairNudge(s: PlaqueState, el: CardElement): CardElement {
         (c) => c.seat.number === link.seat && (link.table === null || normalise(c.table.label) === normalise(link.table)),
       )
     : undefined;
-  return cell ? { ...el, chair: { ...link, dx: el.x - cell.box.x, dy: el.y - cell.box.y } } : el;
+  if (!cell) return el;
+  const at = centredOn(el, cell.box);
+  return { ...el, chair: { ...link, dx: el.x - at.x, dy: el.y - at.y } };
+}
+
+/** Whether `id` names a piece of this wedding, or a design a piece can be made from. */
+export function canOpenPiece(id: string): boolean {
+  return readSuite(useKnotworkStore.getState()).suite.pieces.some((p) => p.id === id) || GALLERY.some((g) => g.id === id);
 }
 
 /** The chairs a plan's stamped boxes already name, as `table#seat` (table empty for the card's own). */

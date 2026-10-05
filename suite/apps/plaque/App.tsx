@@ -22,7 +22,7 @@ import { loadPrinters } from "./state/printerStore";
 import { loadEveryFont } from "./state/fontLoader";
 import { designOf } from "./state/design";
 import { writeDesign } from "./state/sliceBridge";
-import { usePlaque } from "./state/store";
+import { canOpenPiece, usePlaque } from "./state/store";
 import { useKeyboard } from "./state/useKeyboard";
 import { Announcer } from "./ui/Announcer";
 import { ToolUndo } from "@/components/shell/ToolUndo";
@@ -149,7 +149,8 @@ export function App() {
   // only opened: the piece exists by then.
   const wanted = useSearchParams().get("piece");
   useEffect(() => {
-    if (ready && wanted) usePlaque.getState().openPiece(wanted);
+    // A link to a piece since removed opens the stationery as it is.
+    if (ready && wanted && canOpenPiece(wanted)) usePlaque.getState().openPiece(wanted);
   }, [ready, wanted]);
 
   // Esc leaves crop mode, the way it leaves every other transient mode.

@@ -66,6 +66,38 @@ describe("interpolate", () => {
     });
   });
 
+  describe("a separator belongs to the value it separates", () => {
+    it("goes with an empty value at the end: no dash pointing at nothing", () => {
+      expect(interpolate("{{Last Name}}, {{First Name}} — {{Table}}", { "First Name": "Zainab", "Last Name": "Thistlewood", Table: "" }).text).toBe("Thistlewood, Zainab");
+      expect(interpolate("{{Table}}  ·  {{Name}}  ·  {{Dietary}}", { Table: "Table 1", Name: "Ada", Dietary: "" }).text).toBe("Table 1  ·  Ada");
+    });
+
+    it("goes with an empty value at the start", () => {
+      expect(interpolate("{{Last Name}}, {{First Name}} — {{Table}}", { "First Name": "Prince", "Last Name": "", Table: "Table 3" }).text).toBe("Prince — Table 3");
+    });
+
+    it("goes with an empty value in the middle, leaving one between its neighbours", () => {
+      expect(interpolate("{{A}}, {{B}}, {{C}}", { A: "a", B: "", C: "c" }).text).toBe("a, c");
+      expect(interpolate("{{A}} — {{B}} — {{C}}", { A: "", B: "", C: "c" }).text).toBe("c");
+      expect(interpolate("{{A}} — {{B}} — {{C}}", { A: "a", B: "", C: "" }).text).toBe("a");
+    });
+
+    it("never takes a separator that belongs to a value which is there", () => {
+      expect(interpolate("{{First Name}} {{Last Name}} — {{Table}}", { "First Name": "Ada", "Last Name": "", Table: "Table 5" }).text).toBe("Ada — Table 5");
+      expect(interpolate("{{Table}}  ·  {{First Name}} {{Last Name}}  ·  {{Dietary}}", { Table: "Table 1", "First Name": "Ada", "Last Name": "", Dietary: "Vegan" }).text).toBe("Table 1  ·  Ada  ·  Vegan");
+    });
+
+    it("takes its brackets with it", () => {
+      expect(interpolate("{{Name}} ({{Dietary}})", { Name: "Ada", Dietary: "" }).text).toBe("Ada");
+      expect(interpolate("{{Name}} ({{Dietary}})", { Name: "Ada", Dietary: "Vegan" }).text).toBe("Ada (Vegan)");
+    });
+
+    it("leaves words alone: only punctuation between values is a separator", () => {
+      expect(interpolate("Dear {{First Name}},", { "First Name": "" }).text).toBe("Dear,");
+      expect(interpolate("{{Table}} and {{Seat}}", { Table: "Table 1", Seat: "" }).text).toBe("Table 1 and");
+    });
+  });
+
   it("reports a missing column once however often it appears", () => {
     expect(interpolate("{{X}} {{X}}", row).missing).toEqual(["X"]);
   });

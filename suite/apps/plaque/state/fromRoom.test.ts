@@ -166,4 +166,13 @@ describe("combined cards", () => {
     const room = roomRows(doc);
     expect(withMerges(room, {}).rows).toBe(room.rows);
   });
+
+  it("names everyone on a combined card when one of them is known by a name of their own", () => {
+    const doc = wedding(
+      { g1: { id: "g1", firstName: "Charis", lastName: "Smith", knownAs: "Granny" }, g2: { id: "g2", firstName: "Eleanor", lastName: "Vane" } },
+      {},
+    );
+    const { rows } = withMerges(roomRows(doc), { "merged:x": ["g1", "g2"] });
+    expect(rows.map((row) => row["Known As"])).toEqual(["Granny & Eleanor Vane"]);
+  });
 });

@@ -78,7 +78,8 @@ export function InspectorPanel() {
         template: s.template,
         rowId: artefact?.rowId ?? null,
         rowLabel: artefact?.label ?? "",
-        cardTable: artefact?.row["Table"] ?? "",
+        // A whole-list piece is one card for every table, so it has no table of its own.
+        cardTable: s.template.rowScope?.kind === "document" ? "" : (artefact?.row["Table"] ?? ""),
         previewRow: artefact?.row ?? null,
         room: s.room,
         card: s.card,

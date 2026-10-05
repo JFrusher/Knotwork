@@ -8,7 +8,7 @@ import styles from "./NameFormat.module.css";
 const SUGGESTED = [
   { label: "Ada Byron", pattern: "{{First Name}} {{Last Name}}" },
   { label: "Ada", pattern: "{{First Name}}" },
-  { label: "Ada B.", pattern: "{{First Name}} {{Initial}}." },
+  { label: "Ada B.", pattern: "{{First Name}} {{Last Initial}}" },
   { label: "Byron, Ada", pattern: "{{Last Name}}, {{First Name}}" },
 ] as const;
 

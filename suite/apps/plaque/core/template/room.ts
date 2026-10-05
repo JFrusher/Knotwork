@@ -37,15 +37,43 @@ type Box = { x: Mm; y: Mm; w: Mm; h: Mm };
  * With `show: "table"` it is the one table this artefact is for — a table
  * card's own little map — found by the artefact's `Table`.
  */
+type Drawn = { elements: ResolvedElement[]; warnings: CardWarning[] };
+
+/**
+ * Plans already drawn, by the measurer and the room they were drawn with. A
+ * plan reads nothing of the card's guest but its table, so a hundred escort
+ * cards with the room on them draw it once, not a hundred times.
+ */
+const drawnPlans = new WeakMap<object, WeakMap<RoomScene, Map<string, Drawn>>>();
+
 export function resolveRoom(
   el: RoomElement,
   row: GuestRow,
   card: CardSpec,
   opts: ResolveOptions,
   template: Pick<Template, "chairName">,
-): { elements: ResolvedElement[]; warnings: CardWarning[] } {
-  const warnings: CardWarning[] = [];
+): Drawn {
   const scene = opts.room?.() ?? null;
+  if (!scene) return drawRoom(el, row, card, opts, template, null);
+  const byScene = drawnPlans.get(opts.fitText) ?? new WeakMap<RoomScene, Map<string, Drawn>>();
+  drawnPlans.set(opts.fitText, byScene);
+  const plans = byScene.get(scene) ?? new Map<string, Drawn>();
+  byScene.set(scene, plans);
+  const key = JSON.stringify([el, card, template.chairName ?? null, el.show === "table" ? (row["Table"] ?? "") : null]);
+  const drawn = plans.get(key) ?? drawRoom(el, row, card, opts, template, scene);
+  plans.set(key, drawn);
+  return { elements: [...drawn.elements], warnings: [...drawn.warnings] };
+}
+
+function drawRoom(
+  el: RoomElement,
+  row: GuestRow,
+  card: CardSpec,
+  opts: ResolveOptions,
+  template: Pick<Template, "chairName">,
+  scene: RoomScene | null,
+): Drawn {
+  const warnings: CardWarning[] = [];
   const layout = planLayout(el, scene, row);
   if (typeof layout === "string") {
     warnings.push({ elementId: el.id, kind: scene ? "missing-field" : "empty-text", detail: layout });
@@ -286,9 +314,20 @@ export function placeChairs(template: Template, scene: RoomScene | null, row: Gu
     const cell = cells.find(
       (c) => c.seat.number === link.seat && (link.table === null || normalise(c.table.label) === normalise(link.table)),
     );
-    return cell ? { ...el, x: cell.box.x + link.dx, y: cell.box.y + link.dy } : el;
+    if (!cell) return el;
+    const at = centredOn(el, cell.box);
+    return { ...el, x: at.x + link.dx, y: at.y + link.dy };
   });
   return { ...template, elements };
+}
+
+/**
+ * Where a box of its own size sits centred on a chair's cell: the nudge is
+ * measured from here. By centre, not corner — a table's own map draws each
+ * table at its own scale, so the cells differ in size from card to card.
+ */
+export function centredOn(el: { w: Mm; h: Mm }, cell: Box): { x: Mm; y: Mm } {
+  return { x: cell.x + (cell.w - el.w) / 2, y: cell.y + (cell.h - el.h) / 2 };
 }
 
 /** How far a table reaches above and below its centre, turned as it is. */

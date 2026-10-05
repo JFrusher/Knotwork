@@ -61,7 +61,7 @@
         "w": 120,
         "h": 70,
         "z": 2,
-        "itemTemplate": "{{First Name}} {{Last Name}}",
+        "itemTemplate": "{{Known As}}",
         "bullet": "",
         "skipEmpty": true,
         "fontId": "crimson",
@@ -98,7 +98,6 @@
         "nameGap": 0.3,
         "namesAtChairs": true
       }
-    ],
-    "chairName": "{{First Name}}"
+    ]
   }
 }

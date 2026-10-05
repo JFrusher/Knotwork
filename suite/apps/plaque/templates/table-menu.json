@@ -47,7 +47,7 @@
         "w": 81,
         "h": 155,
         "z": 2,
-        "itemTemplate": "{{First Name}} {{Last Name}} — {{Dietary}}",
+        "itemTemplate": "{{Known As}} — {{Dietary}}",
         "bullet": "",
         "skipEmpty": true,
         "fontId": "crimson",

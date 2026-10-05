@@ -17,7 +17,7 @@
         "w": 69,
         "h": 16,
         "z": 0,
-        "template": "{{First Name}} {{Last Name}}",
+        "template": "{{Known As}}",
         "fontId": "crimson",
         "fontSizePt": 22,
         "align": "center",

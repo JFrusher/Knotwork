@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { ROOM_COLUMNS } from "../../state/fromRoom";
 import { describe, expect, it } from "vitest";
 import { BUNDLED_FONTS } from "../../assets/fonts";
 import { parseCsv } from "@/lib/data/csv";
@@ -60,9 +61,9 @@ describe("the template gallery", () => {
     }
   });
 
-  it("binds only to columns the sample guest list actually has", () => {
+  it("binds only to columns the room gives every card", () => {
     for (const entry of GALLERY) {
-      expect([entry.id, unboundTokens(entry.template, headers)]).toEqual([entry.id, []]);
+      expect([entry.id, unboundTokens(entry.template, [...ROOM_COLUMNS])]).toEqual([entry.id, []]);
     }
   });
 

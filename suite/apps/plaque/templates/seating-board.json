@@ -85,7 +85,7 @@
         "z": 3,
         "groupBy": "Table",
         "headingTemplate": "{{Table}}",
-        "itemTemplate": "{{First Name}} {{Last Name}}",
+        "itemTemplate": "{{Known As}}",
         "columns": 3,
         "gapMm": 14,
         "fontId": "crimson",

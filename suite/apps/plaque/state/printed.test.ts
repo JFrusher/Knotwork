@@ -68,6 +68,15 @@ describe("what has changed since printing", () => {
   });
 });
 
+describe("a design that names guests as they are known", () => {
+  it("has changed when the name it prints changes, though the guest has no name of their own", () => {
+    const known = design("{{Known As}}");
+    const row = (first: string) => ({ ...card("ada", "Table 1"), row: { "First Name": first, "Last Name": "Byron", "Known As": "" }, rows: [{ "First Name": first, "Last Name": "Byron", "Known As": "" }] });
+    const printed = recordPrint(null, [row("Ada")], false, "x", printBasis(known, room));
+    expect(sincePrinted(printed, [row("Augusta")], printBasis(known, room)).changed).toHaveLength(1);
+  });
+});
+
 describe("a design that names chairs", () => {
   it("has changed when someone else sits in a chair it names", () => {
     const sitterRoom = (name: string): RoomScene => ({
@@ -92,3 +101,26 @@ describe("a design that names chairs", () => {
     expect(sincePrinted(printed, [card("t1", "Table 1")], printBasis(chairs, sitterRoom("Grace"))).changed).toHaveLength(1);
   });
 });
+
+describe("a plan of the room", () => {
+  const plan = { ...design(), elements: [{ kind: "room", id: "r", x: 0, y: 0, w: 10, h: 10, z: 0, show: "room" } as never] };
+  const seated = (dietary: string, first = "Ada"): RoomScene => ({
+    ...room,
+    tables: [
+      {
+        label: "Table 1", x: 0, y: 0, rotationDeg: 0, pathD: "", view: { x: 0, y: 0, w: 1, h: 1 }, numbered: true, interior: { x: 0, y: 0, w: 1, h: 1 },
+        seats: [{ x: 0, y: 0, out: { x: 0, y: 1 }, number: 1, row: { "First Name": first, "Last Name": "Byron", "Known As": "", Dietary: dietary } }],
+      },
+    ],
+  });
+  const before = recordPrint(null, [card("doc", "")], false, "x", printBasis(plan, seated("")));
+
+  it("has not changed for what it does not draw: a guest's dietary need", () => {
+    expect(sincePrinted(before, [card("doc", "")], printBasis(plan, seated("Vegan"))).changed).toEqual([]);
+  });
+
+  it("has changed when a name it draws changes", () => {
+    expect(sincePrinted(before, [card("doc", "")], printBasis(plan, seated("", "Augusta"))).changed).toHaveLength(1);
+  });
+});
+

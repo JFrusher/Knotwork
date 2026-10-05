@@ -28,6 +28,7 @@ export const ROOM_COLUMNS = [
   "Name",
   "Known As",
   "Initial",
+  "Last Initial",
   "Table",
   "Table Number",
   "Table Size",
@@ -71,6 +72,8 @@ function build(doc: Knotwork): RoomRows {
       // What a finder groups by: the surname's letter, or the first name's for
       // someone listed by one name.
       Initial: (guest.lastName || guest.firstName).trim().charAt(0).toLocaleUpperCase("en"),
+      // "B." for Ada Byron, and nothing for someone known by one name: never a first name's letter.
+      "Last Initial": guest.lastName.trim() ? `${guest.lastName.trim().charAt(0).toLocaleUpperCase("en")}.` : "",
       Table: at?.table ?? "",
       "Table Number": at ? String(at.tableNumber) : "",
       "Table Size": at ? String(at.tableSize) : "",
@@ -145,6 +148,11 @@ export function withMerges(room: RoomRows, merged: Merged): Pick<RoomRows, "rows
     const combined: GuestRow = {};
     for (const header of room.headers) {
       combined[header] = [...new Set(members.map((row) => row[header]).filter(Boolean))].join(" & ");
+    }
+    // One of them known by a name of their own: name each of them, or the card
+    // would say only that one ("Granny Jo" for Granny Jo and Eleanor).
+    if (members.some((row) => row["Known As"])) {
+      combined["Known As"] = members.map((row) => row["Known As"] || row["Name"]).join(" & ");
     }
     rows.push(combined);
     rowIds.push(cardId);

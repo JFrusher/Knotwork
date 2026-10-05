@@ -76,6 +76,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
     fonts,
     images,
     uploadedIcons,
+    pieceId,
     pieceName,
     printOnly,
     room,
@@ -92,6 +93,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
         fonts: s.fonts,
         images: s.images,
         uploadedIcons: s.uploadedIcons,
+        pieceId: s.pieceId,
         pieceName: s.pieces.find((p) => p.id === s.pieceId)?.name ?? "",
         printOnly: s.printOnly,
         room: s.room,
@@ -196,7 +198,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       save(bytes, `${fileNameFor(pieceName)}${SUFFIX[variant]}.pdf`);
       // The whole run, or the chosen few, went to paper: changes are measured from here.
       if (variant === "all" || tiles) {
-        usePlaque.getState().notePrinted(printing(artefacts, printOnly), printOnly !== null);
+        usePlaque.getState().notePrinted(pieceId, printing(artefacts, printOnly), printOnly !== null);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "The PDF could not be generated.");
@@ -256,7 +258,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
           (artefacts.length === 0
             ? "No guests yet — add them in Seating or Guests"
             : printOnly
-              ? `Just ${printOnly.length} of ${artefacts.length} ${artefacts.length === 1 ? "card" : "cards"} · ${sheetCount} ${sheetCount === 1 ? "sheet" : "sheets"}`
+              ? `Just ${printing(artefacts, printOnly).length} of ${artefacts.length} ${artefacts.length === 1 ? "card" : "cards"} · ${sheetCount} ${sheetCount === 1 ? "sheet" : "sheets"}`
               : `${artefacts.length} ${artefacts.length === 1 ? "card" : "cards"} · ${sheetCount} ${sheetCount === 1 ? "sheet" : "sheets"}`)}
       </span>
       {printer && isNotableDrift(printer.scale) && (

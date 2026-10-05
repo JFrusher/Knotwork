@@ -48,6 +48,19 @@ describe("a guest known by a name of their own", () => {
   });
 });
 
+describe("{{Known As}} on a card", () => {
+  const card = { widthMm: 90, heightMm: 55, fold: "none", foldPositionMm: 0, invertBackPanel: false, bleedMm: 0 } as const;
+  const text = { kind: "text", id: "t", x: 0, y: 0, w: 80, h: 20, z: 0, template: "{{Known As}}", fontId: "crimson", fontSizePt: 12, align: "center", vAlign: "middle", lineHeight: 1.2, colorHex: "#000000", letterSpacingMm: 0, fit: { mode: "shrink", minFontSizePt: 6, maxLines: 1, anchor: "align" } } as TextElement;
+  const say = (row: Record<string, string>, chairName?: string) =>
+    resolveCard({ backgroundHex: null, elements: [text], ...(chairName ? { chairName } : {}) }, row, card, { fitText: noFit, iconPath: () => null }).scene.elements.flatMap((el) => (el.kind === "text" ? el.lines : []));
+
+  it("is the guest's own name, else the design's name format", () => {
+    expect(say({ "First Name": "Josephine", "Last Name": "Clarke", "Known As": "Granny Jo" })).toEqual(["Granny Jo"]);
+    expect(say({ "First Name": "Josephine", "Last Name": "Clarke", "Known As": "" })).toEqual(["Josephine Clarke"]);
+    expect(say({ "First Name": "Josephine", "Last Name": "Clarke", "Known As": "" }, "{{First Name}}")).toEqual(["Josephine"]);
+  });
+});
+
 describe("whoever sits there now", () => {
   const values = (tokens: string[], cardTable: string, chairName?: string) =>
     chairValues(tokens, { Table: cardTable }, scene, chairName === undefined ? {} : { chairName });

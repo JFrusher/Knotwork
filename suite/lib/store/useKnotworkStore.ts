@@ -1,5 +1,6 @@
 import { get as idbGet, set as idbSet } from "idb-keyval";
 import { promoteSources } from "@/lib/model/promote";
+import { carried } from "./unhistoried";
 import { migrateLegacyKeys } from "./migrateKeys";
 import { create } from "zustand";
 import {
@@ -284,14 +285,15 @@ export const useKnotworkStore = create<KnotworkState>()((set, get) => ({
     const previous = state.past[state.past.length - 1];
     if (!previous) return;
     try {
-      const doc = migrate(previous.raw);
+      const raw = carried(state.raw, previous.raw);
+      const doc = migrate(raw);
       set({
-        raw: previous.raw,
+        raw,
         doc,
         past: state.past.slice(0, -1),
         future: [...state.future, { raw: state.raw, label: previous.label, at: Date.now() }],
       });
-      persist(previous.raw);
+      persist(raw);
     } catch {
       // A history entry that no longer parses is dropped rather than restored.
       // It can only happen if a schema changed under a live session, and the
@@ -305,13 +307,14 @@ export const useKnotworkStore = create<KnotworkState>()((set, get) => ({
     const next = state.future[state.future.length - 1];
     if (!next) return;
     try {
+      const raw = carried(state.raw, next.raw);
       set({
-        raw: next.raw,
-        doc: migrate(next.raw),
+        raw,
+        doc: migrate(raw),
         past: pushHistory(state.past, state.raw, next.label),
         future: state.future.slice(0, -1),
       });
-      persist(next.raw);
+      persist(raw);
     } catch {
       set({ future: state.future.slice(0, -1) });
     }
