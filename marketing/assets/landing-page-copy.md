@@ -4,7 +4,7 @@ A section-by-section blueprint for `marketing/landing-page/index.html`. It keeps
 
 **Before using this:**
 
-- `knotwork.app` is a **placeholder domain**. Replace it everywhere once a domain is bought.
+- The site is `knotwork-suite.vercel.app` (decided 2026-10-04: no new domain for the launch).
 - Every claim below was checked against the code or `marketing/STRATEGY.md`'s evidence table. The "claims deliberately left out" list there still applies.
 - Voice: plain, British, first person where a person is speaking. No superlatives.
 
@@ -31,7 +31,7 @@ A section-by-section blueprint for `marketing/landing-page/index.html`. It keeps
 | Meta description (152 chars) | Seating chart, place cards, timeline and more, sharing one guest list. Change it once and everything updates. Free, no sign-up, no adverts, open source. |
 | `og:title` | Knotwork: free wedding planning tools that work together |
 | `og:description` | Seat your guests once, and the place cards, dietary counts and run sheet already know. Free, no sign-up, open source. |
-| `og:image` | `https://knotwork.app/assets/images/og-card.png` — **absolute URL**. The current relative path will not unfurl. |
+| `og:image` | An **absolute URL**. The current relative path will not unfurl. The app already serves one at `https://knotwork-suite.vercel.app/opengraph-image`; where the page's own image lives depends on where the page is hosted (#49). |
 | `og:locale` | `en_GB` |
 
 ---
@@ -342,7 +342,6 @@ npm run dev -w suite
 
 `[ Self-hosting guide ]` · `[ ★ Star on GitHub ]`
 
-*(The clone URL assumes the repo has been renamed. Until then it is `JFrusher/Trousseau.git Knotwork`.)*
 
 ---
 

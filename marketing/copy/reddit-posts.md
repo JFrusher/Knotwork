@@ -85,8 +85,8 @@ Space them at least a day apart.
 
 **Replies to have ready:**
 
-- *"Why Supabase and not plain Postgres?"* Auth by magic link, row-level
-  security and the realtime channel all come from it. The data is plain
+- *"Why Supabase and not plain Postgres?"* Auth (a six-digit email code, or
+  Google or Apple), row-level security and the realtime channel all come from it. The data is plain
   Postgres JSONB, and the migrations are plain SQL.
 - *"Can I run it without Supabase at all?"* Yes. Everything but accounts,
   sync and share links works with no backend. Set nothing, and the account
@@ -199,11 +199,11 @@ discourage recruiting):**
 >
 > - Next.js 16 (App Router), React 19, TypeScript, Zustand, zod 4,
 >   Tailwind 4
-> - Supabase: Postgres JSONB, RLS, magic-link auth, realtime, bounded history
+> - Supabase: Postgres JSONB, RLS, email-code auth, realtime, bounded history
 > - An MIT npm package (`@jfrusher/knotwork`) holding the schemas and file
 >   format, separate from the AGPL app, so third-party tools can read the
 >   file
-> - 1,800+ Vitest cases, RLS tested against PGlite, and Playwright with axe
+> - 2,000+ Vitest cases, RLS tested against PGlite, and Playwright with axe
 >   against the production build
 > - Dated design specs and implementation plans for every subsystem in
 >   `docs/superpowers/`, written before code, including where the plan turned

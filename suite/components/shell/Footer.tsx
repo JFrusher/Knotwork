@@ -13,7 +13,7 @@ export function Footer() {
   return (
     <footer className="mt-16 border-t border-stone px-4 py-6 text-xs text-slate print:hidden">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2">
-        <span>Knotwork — your wedding, on your own device.</span>
+        <span>Knotwork — free and open source. No account needed.</span>
         {/* `min-h-11` is 44px: these are the only controls on the guest page
             besides the search box, and a guest is on a phone at a venue. */}
         <nav className="flex gap-2">

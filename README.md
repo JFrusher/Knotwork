@@ -90,8 +90,8 @@ you add the tool again.
   printed from the wedding as it stands.
 - 🔗 **Guest and supplier links.** A guest sees their own seat and nothing
   else. A supplier sees their part of the day and can confirm it.
-- 🤝 **Plan together.** Two partners and a planner, with sign-in by magic link
-  (no passwords). Real-time sync, version history with restore, and conflicts
+- 🤝 **Plan together.** Two partners and a planner, signing in with a
+  six-digit code by email, or with Google or Apple (no passwords). Real-time sync, version history with restore, and conflicts
   are shown, never silently resolved.
 - 🗂️ **Planner mode.** Many weddings per account, and a library of reusable
   processionals, box sets and bar settings.
@@ -295,7 +295,7 @@ The front page runs its own version and shows what is left to do.
 
 **Next.js 16** (App Router) · **React 19** · **TypeScript** · **Zustand** ·
 **zod 4** · **Tailwind CSS 4** · **Supabase** (Postgres with row-level
-security, magic-link auth) · **pdf-lib / jsPDF** for print · **Vitest**,
+security, email-code auth) · **pdf-lib / jsPDF** for print · **Vitest**,
 **Playwright** and **axe** for tests.
 
 ```text

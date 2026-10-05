@@ -86,7 +86,7 @@ is what an HN reader will want to argue about.
 > sends no analytics at all.
 >
 > **Stack:** Next.js 16, React 19, TypeScript, Zustand, zod 4, Tailwind 4,
-> Supabase, pdf-lib and jsPDF for print. Vitest has 1,800+ cases, including
+> Supabase, pdf-lib and jsPDF for print. Vitest has 2,000+ cases, including
 > RLS policies tested against PGlite. Playwright with axe runs against the
 > production build.
 >

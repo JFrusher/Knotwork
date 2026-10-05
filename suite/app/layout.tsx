@@ -23,7 +23,7 @@ const lato = Lato({
 });
 
 const description =
-  "Seating, stationery, timeline and crew for one wedding. Free, open source, and entirely on your own device.";
+  "Free wedding planning tools that agree with each other: guests, seating, place cards, the day's timeline and more. Open source, no account needed.";
 
 export const metadata: Metadata = {
   // Absolute URLs for canonical links and OpenGraph tags are built from this.
