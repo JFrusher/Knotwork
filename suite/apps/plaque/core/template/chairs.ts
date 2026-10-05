@@ -99,14 +99,14 @@ export function chairValues(
       // every table that leaves its guests to sit where they like.
       problems.push(
         ref.table === null
-          ? `At tables where guests sit where they like there is no seat ${ref.seat}, so it says nothing there.`
+          ? "At tables where guests sit where they like there are no numbered seats, so a seat says nothing there."
           : `${table.label} seats its guests where they like, so it has no seat ${ref.seat}.`,
       );
       continue;
     }
     const seat = table.seats[ref.seat - 1];
     if (!seat) {
-      if (ref.table !== null) problems.push(`${table.label} has ${table.seats.length} seats, so there is no seat ${ref.seat}.`);
+      if (ref.table !== null) problems.push(`${table.label} has ${table.seats.length === 1 ? "one seat" : `${table.seats.length} seats`}, so there is no seat ${ref.seat}.`);
       continue;
     }
     if (seat.row) values[token] = chairName(template, seat.row);

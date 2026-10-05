@@ -245,7 +245,7 @@ test("a chair picked on the map goes into the text, and the card names whoever s
 
   await expect(page.getByRole("textbox", { name: "Text" })).toHaveValue(/ \{\{At seat 1\}\}$/);
   // One line for the design, not one per free-seating table's card.
-  await expect(page.getByText(/there is no seat 1, so it says nothing there/)).toHaveCount(1);
+  await expect(page.getByText(/there are no numbered seats, so a seat says nothing there/)).toHaveCount(1);
   await expect(page.getByRole("region", { name: "Card" }).getByText(sitter, { exact: true }).first()).toBeVisible();
   await expect(chair.locator("..")).toHaveClass(/used/);
   await page.screenshot({ path: process.env.SHOT ?? "test-results/chair-picker.png" });

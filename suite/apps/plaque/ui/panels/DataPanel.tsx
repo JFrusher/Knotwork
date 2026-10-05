@@ -92,7 +92,8 @@ export function DataPanel() {
         </div>
       </SubGroup>
 
-      {rowIssues.length > 0 && (
+      {/* Grouped, the count above says who is on no card; these speak of a guest's own card. */}
+      {rowIssues.length > 0 && rowScope.kind !== "per-group" && (
         <ul className={styles.issues}>
           {rowIssues.map((issue) => (
             <li key={issue.message}>{issue.message}</li>

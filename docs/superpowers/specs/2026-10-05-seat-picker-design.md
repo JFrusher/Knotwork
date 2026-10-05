@@ -122,3 +122,24 @@ its token at the cursor. Chairs already used on the card are marked.
   table, while "Rafferty" shrank.
 - Chairs the plan names with no box yet are listed by table and seat, with a
   chip per chair and "Add all n". New boxes follow if the existing ones do.
+
+## Review (2026-10-05)
+
+A ground-up review of the whole stationery and seat-picker build: three
+reviewers over the core pipeline, the state and the UI, each finding proven by
+a reproducing test before it was fixed, and a scripted pass in the browser.
+
+- `{{Known As}}` is the guest's own name, else the design's name format, read
+  through one `asKnown` by cards, page cuts and reprint checks. Greeting
+  starters use it; the finder keeps "Surname, First" for looking up.
+- An empty value takes the punctuation that only separated it, once a value has
+  been said; otherwise the punctuation after it; and its brackets.
+- A finder letter carried onto a new page is headed again, so each page plans
+  as the whole list did. Before, a guest could be dropped at a page break.
+- Undo and redo keep what was printed (`lib/store/unhistoried.ts`); a print is
+  recorded on the piece it came from; printing the few resets to the whole run.
+- Stamped boxes are placed and nudged by centre; whole-room plans are drawn
+  once per room and cached (225 ms to under 1 ms a card at 300 guests).
+- The chair picker falls back to the room when a card has no table of its own,
+  keeps focus on the map (one tab stop, arrow keys), has a visible focus ring,
+  larger hit targets, and brings one table up close.

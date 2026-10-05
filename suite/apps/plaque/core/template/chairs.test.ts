@@ -81,7 +81,7 @@ describe("whoever sits there now", () => {
   });
 
   it("says so when a named chair is not there", () => {
-    expect(values(["Table 2, seat 5"], "Table 1").problems).toEqual(["Table 2 has 1 seats, so there is no seat 5."]);
+    expect(values(["Table 2, seat 5"], "Table 1").problems).toEqual(["Table 2 has one seat, so there is no seat 5."]);
     expect(values(["Table 9, seat 1"], "Table 1").problems).toEqual(['The plan has no table called "Table 9".']);
   });
 
@@ -89,7 +89,7 @@ describe("whoever sits there now", () => {
     const { values: got, problems } = values(["At seat 1"], "Table 3");
     expect(got).toEqual({ "At seat 1": "" });
     // One message for a design, whichever table's card says it.
-    expect(problems).toEqual(["At tables where guests sit where they like there is no seat 1, so it says nothing there."]);
+    expect(problems).toEqual(["At tables where guests sit where they like there are no numbered seats, so a seat says nothing there."]);
     expect(values(["Table 3, seat 1"], "Table 1").problems).toEqual(["Table 3 seats its guests where they like, so it has no seat 1."]);
   });
 });
