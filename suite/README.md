@@ -147,6 +147,10 @@ it is a project setting. npm walks up to the workspace root from here, so the
 install picks up the contract package's dependencies and `npm run build` can
 compile it before Next runs.
 
+`vercel.json` pins functions to `dub1` (Dublin) because the Supabase project is
+in `eu-west-1` (Ireland). Vercel's default, `iad1`, put every database call
+across the Atlantic. Move both together or neither.
+
 ## Audit trail
 
 Bugs found by auditing this work after it was written, and fixed:
