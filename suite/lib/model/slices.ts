@@ -166,6 +166,7 @@ export function coerceGuests(source: unknown): Record<string, Guest> {
       id: str(raw["id"], id),
       firstName: str(raw["firstName"]),
       lastName: str(raw["lastName"]),
+      knownAs: str(raw["knownAs"]),
       email: str(raw["email"]),
       rsvpStatus: rsvp === "confirmed" || rsvp === "declined" ? rsvp : "pending",
       dietary: diet.dietary,

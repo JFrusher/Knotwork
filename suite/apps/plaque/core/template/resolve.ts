@@ -1,8 +1,8 @@
 import { makeIconLookup } from "../../assets/icons";
-import { fitBlock, fitText } from "../text/fit";
+import { fitBlock, fitGrid, fitText } from "../text/fit";
 import { missingGlyphs, suggestFallback } from "../text/glyphs";
 import type { LoadedFont } from "../text/measure";
-import type { ResolvedImageSource } from "../types";
+import type { ResolvedImageSource, RoomScene } from "../types";
 import type { ResolveOptions } from "./bindings";
 
 /**
@@ -17,12 +17,14 @@ export function makeResolveOptions(
   uploadedIcons: Record<string, string> = {},
   images: Map<string, ResolvedImageSource> = new Map(),
   assetNames: Record<string, string> = {},
+  room: RoomScene | null = null,
 ): ResolveOptions {
   const iconPath = makeIconLookup(uploadedIcons);
   return {
     iconPath,
     image: (id) => images.get(id) ?? null,
     assetName: (id) => assetNames[id] ?? null,
+    room: () => room,
     missingGlyphs: (fontId, text) => {
       const font = fonts.get(fontId);
       if (!font) return { missing: [], fallback: null };
@@ -48,6 +50,21 @@ export function makeResolveOptions(
         boxWMm: el.w,
         boxHMm: el.h,
         fontSizePt: el.fontSizePt,
+        lineHeight: el.lineHeight,
+        letterSpacingMm: el.letterSpacingMm,
+        fit: el.fit,
+      });
+    },
+    fitGrid: (el, blocks, cell) => {
+      const font = fonts.get(el.fontId);
+      const headingFont = fonts.get(el.headingFontId);
+      if (!font || !headingFont) return { fontSizePt: el.fontSizePt, overflowed: false, missingFont: true };
+      return fitGrid(font, headingFont, {
+        blocks,
+        cellWMm: cell.w,
+        cellHMm: cell.h,
+        fontSizePt: el.fontSizePt,
+        headingScale: el.headingScale,
         lineHeight: el.lineHeight,
         letterSpacingMm: el.letterSpacingMm,
         fit: el.fit,

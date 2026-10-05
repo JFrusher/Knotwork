@@ -14,6 +14,7 @@ const card = (over: Partial<CardSpec> = {}): CardSpec => ({
 
 const sheet = (over: Partial<SheetSpec> = {}): SheetSpec => ({
   page: "A4",
+  tilePaper: "A4",
   orientation: "portrait",
   marginTopMm: 10,
   marginRightMm: 10,
@@ -47,6 +48,18 @@ describe("validateGeometry", () => {
 
   it("warns when a margin is inside the printer's dead border", () => {
     expect(ids(card(), sheet({ marginLeftMm: 3, printerMarginMm: 5 }))).toContain("printer-margin");
+  });
+
+  it("does not hold a print shop to a home printer's border", () => {
+    const board = card({ widthMm: 594, heightMm: 841, bleedMm: 3 });
+    const fit = sheet({ page: "FIT", marginTopMm: 3, marginRightMm: 3, marginBottomMm: 3, marginLeftMm: 3, printerMarginMm: 5 });
+    const found = ids(board, fit);
+    expect(found).not.toContain("printer-margin");
+    expect(found).not.toContain("bleed-clipped");
+    expect(found).not.toContain("no-fit");
+    expect(found).not.toContain("card-larger-than-page");
+    // One board, so no neighbour for its bleed to run into.
+    expect(found).not.toContain("bleed-overlap");
   });
 
   it("warns when crop marks would run off the page", () => {

@@ -56,7 +56,8 @@ describe("validateCardPreset", () => {
     );
   });
 
-  it("rejects a card larger than any paper Plaque prints on", () => {
-    expect(validateCardPreset(preset({ heightMm: 400 }))).toBe("widthMm");
+  it("takes a board up to A0, and rejects anything a print shop would not", () => {
+    expect(validateCardPreset(preset({ widthMm: 841, heightMm: 1189, foldPositionMm: 400 }))).toBeNull();
+    expect(validateCardPreset(preset({ heightMm: 1200, foldPositionMm: 400 }))).toBe("widthMm");
   });
 });

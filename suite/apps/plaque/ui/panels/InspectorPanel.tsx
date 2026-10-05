@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { buildArtefacts } from "../../core/data/artefacts";
+import { artefactsOf } from "../../core/data/parts";
 import { panelBounds, panelOf } from "../../core/geometry/fold";
 import { boxAtNaturalSize, boxFittedTo, boxWithAspect, MAX_ZOOM } from "../../core/template/imageFit";
 import { templateForRow, type ElementPatch } from "../../core/template/overrides";
+import { placeChairs } from "../../core/template/room";
 import { DEFAULT_OPTICAL, NOTABLE_FEATURES, availableFeatures } from "../../core/text/optical";
 import type { LoadedFont } from "../../core/text/measure";
 import type {
@@ -11,12 +12,17 @@ import type {
   FitMode,
   HAlign,
   ImageFit,
+  GridElement,
   ListElement,
+  RoomElement,
   ShrinkAnchor,
   TextElement,
   VAlign,
 } from "../../core/types";
 import { usePlaque } from "../../state/store";
+import { NameFormat } from "./NameFormat";
+import { TemplateField } from "./ChairPicker";
+import { StampChairs } from "./StampChairs";
 import {
   CheckboxField,
   ColorField,
@@ -38,7 +44,7 @@ import styles from "./InspectorPanel.module.css";
  */
 export function InspectorPanel() {
   const {
-    element,
+    element: raw,
     headers,
     fonts,
     fontLabels,
@@ -47,14 +53,16 @@ export function InspectorPanel() {
     template,
     rowId,
     rowLabel,
+    cardTable,
+    previewRow,
+    room,
     card,
     images,
     cropId,
     setCropId,
   } = usePlaque(
     useShallow((s) => {
-      const scope = s.template.rowScope ?? { kind: "per-row" as const };
-      const artefacts = buildArtefacts(s.rows, scope, s.headers, s.rowIds);
+      const artefacts = artefactsOf(s.template, s.rows, s.headers, s.rowIds);
       const artefact = artefacts[s.previewGuestIndex] ?? artefacts[0] ?? null;
       return {
         // The effective element: what this artefact actually prints, so the
@@ -70,6 +78,10 @@ export function InspectorPanel() {
         template: s.template,
         rowId: artefact?.rowId ?? null,
         rowLabel: artefact?.label ?? "",
+        // A whole-list piece is one card for every table, so it has no table of its own.
+        cardTable: s.template.rowScope?.kind === "document" ? "" : (artefact?.row["Table"] ?? ""),
+        previewRow: artefact?.row ?? null,
+        room: s.room,
         card: s.card,
         images: s.images,
         cropId: s.cropId,
@@ -78,6 +90,12 @@ export function InspectorPanel() {
     }),
   );
   const [rowOnly, setRowOnly] = useState(false);
+  // A box that follows a chair, shown where it prints on the card on screen.
+  const element = useMemo(() => {
+    if (!raw || raw.kind !== "text" || !raw.chair?.follow) return raw;
+    const own = { ...template, elements: template.elements.map((el) => (el.id === raw.id ? raw : el)) };
+    return placeChairs(own, room, previewRow ?? {}).elements.find((el) => el.id === raw.id);
+  }, [raw, template, room, previewRow]);
 
   if (!element) {
     return <Hint>Click something on the card to edit it.</Hint>;
@@ -143,6 +161,7 @@ export function InspectorPanel() {
         <TextProperties
           element={element}
           headers={headers}
+          cardTable={cardTable}
           fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
           fonts={fonts}
           patch={patch}
@@ -153,8 +172,43 @@ export function InspectorPanel() {
         <ListProperties
           element={element}
           headers={headers}
+          cardTable={cardTable}
           fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
           fonts={fonts}
+          patch={patch}
+        />
+      )}
+
+      {element.kind === "grid" && (
+        <GridProperties
+          element={element}
+          headers={headers}
+          fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
+          patch={patch}
+        />
+      )}
+
+      {element.kind === "qr" && (
+        <SubGroup title="QR code">
+          <TextField
+            label="Points at"
+            value={element.data}
+            placeholder="{{Guest Link}}"
+            onChange={(data) => patch({ data })}
+          />
+          <Hint>
+            {"{{Guest Link}}"} is the wedding's guest link — names and tables only — once it is published from
+            the Data menu. Anything else typed here, a website or a gift list, works as well. Keep it dark on a
+            light card, and at least 2cm across.
+          </Hint>
+          <ColorField label="Colour" value={element.colorHex} onChange={(c) => patch({ colorHex: c ?? "#000000" })} />
+        </SubGroup>
+      )}
+
+      {element.kind === "room" && (
+        <RoomProperties
+          element={element}
+          fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
           patch={patch}
         />
       )}
@@ -323,25 +377,239 @@ export function InspectorPanel() {
  * table, the run-sheet for the whole event. Its typography controls are the
  * text ones; only the binding and the fit differ, so it reuses them.
  */
+/** The room to scale from the seating plan, or one table of it. */
+function RoomProperties({
+  element,
+  fontOptions,
+  patch,
+}: {
+  element: RoomElement;
+  fontOptions: Array<{ value: string; label: string }>;
+  patch: (p: Partial<CardElement>) => void;
+}) {
+  return (
+    <>
+      <SelectField<RoomElement["show"]>
+        label="Show"
+        value={element.show}
+        options={[
+          { value: "room", label: "The whole room" },
+          { value: "table", label: "Just this card's table" },
+        ]}
+        onChange={(show) => patch({ show })}
+      />
+      <NameFormat />
+      <StampChairs element={element} />
+      <Hint>
+        Drawn from Seating as it stands: move a table or a guest there and it moves here. Where a table
+        numbers its seats, each name sits at its chair, every one at the same size; where guests sit
+        where they like, they are named inside the table, as Seating shows them.
+      </Hint>
+      <Row>
+        <CheckboxField label="Table names" checked={element.tableLabels} onChange={(tableLabels) => patch({ tableLabels })} />
+        <CheckboxField label="Walls" checked={element.walls} onChange={(walls) => patch({ walls })} />
+      </Row>
+      <CheckboxField
+        label="Names at chairs"
+        checked={element.namesAtChairs}
+        onChange={(namesAtChairs) => patch({ namesAtChairs })}
+        hint="Off once the names are boxes of their own, so they are not printed twice."
+      />
+
+      <SubGroup title="Typography">
+        <SelectField label="Font" value={element.fontId} options={fontOptions} onChange={(fontId) => patch({ fontId })} />
+        <Row>
+          <NumberField
+            label="Largest name"
+            value={element.fontSizePt}
+            step={0.5}
+            min={1}
+            suffix="pt"
+            onChange={(fontSizePt) => patch({ fontSizePt })}
+          />
+          <NumberField
+            label="Gap from the chair"
+            value={element.nameGap}
+            step={0.1}
+            min={0}
+            suffix="× chair"
+            onChange={(nameGap) => patch({ nameGap: Math.max(0, nameGap) })}
+          />
+        </Row>
+        <ColorField label="Names" value={element.colorHex} onChange={(c) => patch({ colorHex: c ?? "#000000" })} />
+      </SubGroup>
+
+      <SubGroup title="Colours">
+        <ColorField label="Tables" value={element.tableHex} onChange={(c) => patch({ tableHex: c ?? "#e8dfcf" })} />
+        <ColorField label="Chairs" value={element.seatHex} onChange={(c) => patch({ seatHex: c ?? "#c9b48f" })} />
+        <ColorField label="Walls" value={element.wallHex} onChange={(c) => patch({ wallHex: c ?? "#7a6a55" })} />
+      </SubGroup>
+    </>
+  );
+}
+
+/** A block per table, in columns: what makes a seating board. */
+function GridProperties({
+  element,
+  headers,
+  fontOptions,
+  patch,
+}: {
+  element: GridElement;
+  headers: string[];
+  fontOptions: Array<{ value: string; label: string }>;
+  patch: (p: Partial<CardElement>) => void;
+}) {
+  return (
+    <>
+      <SelectField<GridElement["layout"]>
+        label="Lay it out as"
+        value={element.layout}
+        options={[
+          { value: "cells", label: "A block each, all one size — a seating board" },
+          { value: "columns", label: "Columns, onto more pages if need be — a finder" },
+        ]}
+        onChange={(layout) => patch({ layout })}
+      />
+      <SelectField
+        label="A block for each"
+        value={element.groupBy}
+        options={headers.map((h) => ({ value: h, label: h }))}
+        onChange={(groupBy) => patch({ groupBy })}
+      />
+      <SelectField
+        label="Lines in order of"
+        value={element.sortBy}
+        options={[{ value: "", label: "As the room lists them" }, ...headers.map((h) => ({ value: h, label: h }))]}
+        onChange={(sortBy) => patch({ sortBy })}
+      />
+      <TextField
+        label="Heading"
+        value={element.headingTemplate}
+        placeholder="{{Table}}"
+        onChange={(headingTemplate) => patch({ headingTemplate })}
+      />
+      <TextField
+        label="One line per guest"
+        value={element.itemTemplate}
+        placeholder="{{Name}}"
+        onChange={(itemTemplate) => patch({ itemTemplate })}
+      />
+      <Hint>
+        {element.layout === "cells"
+          ? "Every block shares one size, set as large as the fullest block allows."
+          : "Blocks run down each column at the size set below; a list too long for the page carries on onto the next."}{" "}
+        Somebody with no {element.groupBy || "value"} is left off, and the warnings say how many.
+      </Hint>
+
+      <SubGroup title="Layout">
+        <Row>
+          <NumberField
+            label="Columns"
+            value={element.columns}
+            step={1}
+            min={1}
+            onChange={(columns) => patch({ columns: Math.max(1, Math.round(columns)) })}
+          />
+          <NumberField
+            label="Gap"
+            value={element.gapMm}
+            step={1}
+            min={0}
+            suffix="mm"
+            onChange={(gapMm) => patch({ gapMm })}
+          />
+        </Row>
+      </SubGroup>
+
+      <SubGroup title="Typography">
+        <SelectField
+          label="Heading font"
+          value={element.headingFontId}
+          options={fontOptions}
+          onChange={(headingFontId) => patch({ headingFontId })}
+        />
+        <Row>
+          <NumberField
+            label="Heading size"
+            value={element.headingScale}
+            step={0.1}
+            min={0.5}
+            suffix="×"
+            onChange={(headingScale) => patch({ headingScale })}
+          />
+          <ColorField
+            label="Heading colour"
+            value={element.headingColorHex}
+            onChange={(c) => patch({ headingColorHex: c ?? "#000000" })}
+          />
+        </Row>
+        <SelectField label="Font" value={element.fontId} options={fontOptions} onChange={(fontId) => patch({ fontId })} />
+        <Row>
+          <NumberField
+            label="Size"
+            value={element.fontSizePt}
+            step={0.5}
+            min={1}
+            suffix="pt"
+            onChange={(fontSizePt) => patch({ fontSizePt })}
+          />
+          <NumberField
+            label="Smallest"
+            value={element.fit.minFontSizePt}
+            step={0.5}
+            min={1}
+            suffix="pt"
+            onChange={(minFontSizePt) => patch({ fit: { ...element.fit, minFontSizePt } })}
+          />
+        </Row>
+        <Row>
+          <NumberField
+            label="Line height"
+            value={element.lineHeight}
+            step={0.05}
+            min={0.5}
+            onChange={(lineHeight) => patch({ lineHeight })}
+          />
+          <SelectField<HAlign>
+            label="Align"
+            value={element.align}
+            options={[
+              { value: "left", label: "Left" },
+              { value: "center", label: "Centre" },
+              { value: "right", label: "Right" },
+            ]}
+            onChange={(align) => patch({ align })}
+          />
+        </Row>
+        <ColorField label="Colour" value={element.colorHex} onChange={(c) => patch({ colorHex: c ?? "#000000" })} />
+      </SubGroup>
+    </>
+  );
+}
+
 function ListProperties({
   element,
   headers,
+  cardTable,
   fontOptions,
   fonts,
   patch,
 }: {
   element: ListElement;
   headers: string[];
+  cardTable: string;
   fontOptions: Array<{ value: string; label: string }>;
   fonts: Map<string, LoadedFont>;
   patch: (p: Partial<CardElement>) => void;
 }) {
   return (
     <>
-      <TextField
+      <TemplateField
         label="One line per row"
         value={element.itemTemplate}
         placeholder="{{First Name}} — {{Meal}}"
+        cardTable={cardTable}
         onChange={(itemTemplate) => patch({ itemTemplate })}
       />
       <Hint>
@@ -513,22 +781,25 @@ function OpticalProperties({
 function TextProperties({
   element,
   headers,
+  cardTable,
   fontOptions,
   fonts,
   patch,
 }: {
   element: TextElement;
   headers: string[];
+  cardTable: string;
   fontOptions: Array<{ value: string; label: string }>;
   fonts: Map<string, LoadedFont>;
   patch: (p: Partial<CardElement>) => void;
 }) {
   return (
     <>
-      <TextField
+      <TemplateField
         label="Text"
         value={element.template}
         placeholder="{{First Name}}"
+        cardTable={cardTable}
         onChange={(template) => patch({ template })}
       />
       {headers.length > 0 && (

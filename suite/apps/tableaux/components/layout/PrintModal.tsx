@@ -1,77 +1,41 @@
-import { useState } from 'react'
+import Link from 'next/link'
 import { useStore } from '../../store/useStore'
-import { exportFloorPlanPdf, exportCards, type Pages } from '../../utils/exportPdf'
-import type { Plan } from '../../store/types'
-import { CARD_TEMPLATE_LIST } from '../../utils/cardTemplates'
 import Modal from '../ui/Modal'
 import Icon from '../ui/Icon'
 import styles from './ExportModal.module.css'
 
-const SHEET_OPTIONS: Array<{ pages: Pages; label: string; desc: string }> = [
-  {
-    pages: 'single',
-    label: 'Seating chart — one page (PDF)',
-    desc: "Every guest's name printed on their seat, to scale on a single sheet.",
-  },
-  {
-    pages: 'split',
-    label: 'Seating chart — split over two sheets (PDF)',
-    desc: 'Same chart at twice the size, tiled across two overlapping sheets.',
-  },
+/**
+ * Everything printed from this room is made in Place cards, from the room as
+ * it stands: one design for each piece, in the wedding's own fonts, at any
+ * size from a place card to a board for the door. Seating keeps no second way
+ * to print, so a board and its place cards cannot disagree.
+ */
+const PIECES: Array<{ piece: string; label: string; desc: string; icon: 'maximize' | 'layers' }> = [
+  { piece: 'floor-plan', label: 'Floor plan', desc: 'This room to scale, a name at every chair.', icon: 'maximize' },
+  { piece: 'seating-board', label: 'Seating board', desc: 'Every table and who sits at it, for the door.', icon: 'maximize' },
+  { piece: 'finder', label: 'Finder', desc: 'Every guest A to Z, with their table.', icon: 'maximize' },
+  { piece: 'place-cards', label: 'Place cards', desc: 'One for each seat, with its table.', icon: 'layers' },
+  { piece: 'escort-card', label: 'Escort cards', desc: 'One for each guest: where to go.', icon: 'layers' },
+  { piece: 'table-card', label: 'Table cards', desc: 'One for each table: who sits there.', icon: 'layers' },
 ]
 
 export default function PrintModal() {
   const closeModal = useStore((s) => s.closeModal)
-  const addToast = useStore((s) => s.addToast)
-  const [busy, setBusy] = useState(false)
-
-  const run = async (fn: (doc: Plan, name: string) => Promise<void>) => {
-    if (busy) return
-    setBusy(true)
-    const s = useStore.getState()
-    try {
-      await fn(s.serialize(), s.meta.weddingName)
-      closeModal()
-    } catch (err) {
-      addToast({ type: 'error', message: 'Could not generate the PDF. Please try again.' })
-      // eslint-disable-next-line no-console
-      console.error(err)
-    } finally {
-      setBusy(false)
-    }
-  }
 
   return (
-    <Modal title="Print &amp; PDF" size="sm" onClose={closeModal}>
+    <Modal title="Print" size="sm" onClose={closeModal}>
       <div className={styles.options}>
-        {SHEET_OPTIONS.map((o) => (
-          <button
-            key={o.pages}
-            type="button"
+        {PIECES.map((p) => (
+          <Link
+            key={p.piece}
+            href={`/place-cards?piece=${p.piece}`}
             className={styles.option}
-            disabled={busy}
-            onClick={() => run((doc, name) => exportFloorPlanPdf(doc, name, { pages: o.pages }))}
+            onClick={closeModal}
           >
-            <Icon name="maximize" size={20} className={styles.icon} />
-            <span className={styles.label}>{o.label}</span>
-            <span className={styles.desc}>{o.desc}</span>
-          </button>
-        ))}
-
-        {CARD_TEMPLATE_LIST.map((tpl) => (
-          <button
-            key={tpl.id}
-            type="button"
-            className={styles.option}
-            disabled={busy}
-            onClick={() => run((doc, name) => exportCards(doc, name, tpl.id))}
-          >
-            <Icon name="layers" size={20} className={styles.icon} />
-            <span className={styles.label}>
-              {tpl.kind === 'escort' ? 'Escort cards' : 'Place cards'} (PDF)
-            </span>
-            <span className={styles.desc}>{tpl.label}</span>
-          </button>
+            <Icon name={p.icon} size={20} className={styles.icon} />
+            <span className={styles.label}>{p.label}</span>
+            <span className={styles.desc}>{p.desc}</span>
+          </Link>
         ))}
       </div>
     </Modal>

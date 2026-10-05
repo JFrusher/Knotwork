@@ -128,16 +128,10 @@ export function WeddingPack() {
   );
 }
 
+/** The room as Place cards draws it: the wedding's own floor plan, on A4. */
 async function floorPlan(): Promise<Uint8Array | null> {
-  const [{ buildFloorPlanPdf }, { readDoc }] = await Promise.all([
-    import("@/apps/tableaux/utils/exportPdf"),
-    import("@/apps/tableaux/store/sliceBridge"),
-  ]);
-  const doc = readDoc();
-  if (Object.keys(doc.tables ?? {}).length === 0) return null;
-
-  const pdf = await buildFloorPlanPdf(doc, doc.meta?.weddingName ?? "Seating plan", {});
-  return new Uint8Array(pdf.output("arraybuffer") as ArrayBuffer);
+  const { packFloorPlanPdf } = await import("@/apps/plaque/export/packFloorPlan");
+  return packFloorPlanPdf(useKnotworkStore.getState());
 }
 
 async function runSheet(): Promise<Uint8Array | null> {

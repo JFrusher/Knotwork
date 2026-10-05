@@ -6,6 +6,8 @@
  * and the PDF y-flip happens in exactly one function (see render/pdf/renderPdf).
  */
 
+import type { GuestRow } from "./data/rows";
+
 export type Mm = number;
 export type Pt = number;
 /** `#rrggbb`. */
@@ -30,7 +32,13 @@ export type Segment = readonly [Point, Point];
 // Card and sheet
 // ---------------------------------------------------------------------------
 
-export type PageSizeName = "A4" | "LETTER";
+/** Paper a printer is fed. */
+export type PaperName = "A4" | "LETTER" | "A3";
+/**
+ * `FIT` makes the page the card's own size plus its margins: one board or
+ * poster per page, at full size, which is what a print shop wants.
+ */
+export type PageSizeName = PaperName | "FIT";
 export type Orientation = "portrait" | "landscape";
 
 /**
@@ -77,6 +85,8 @@ export interface SheetSpec {
    * property of the printer, not the design — see PrinterProfile.
    */
   duplex: boolean;
+  /** The paper a `FIT` page is tiled onto, for printing a board at home. */
+  tilePaper: PaperName;
   /**
    * PDF only. A strip along the foot of each sheet naming sizes, fold, applied
    * printer scale, card count and build hash, with a printed rule — so a
@@ -141,8 +151,31 @@ export interface OpticalSpec {
   features: string[] | null;
 }
 
+/**
+ * A text box that names whoever sits in one chair of a plan, stamped from a
+ * room element. It says so with a chair token in its text; this says where
+ * the box goes.
+ */
+export interface ChairLink {
+  /** The room element it was stamped from, whose plan it follows. */
+  from: ElementId;
+  /** Seat `seat` of the card's own table (`table: null`), or of the table so named. */
+  table: string | null;
+  seat: number;
+  /**
+   * True: placed at its chair's name on every card, as the plan moves, and
+   * nudged from there by `dx, dy` — restyling the plan. False: left wherever
+   * it was put — names over your own artwork.
+   */
+  follow: boolean;
+  dx: Mm;
+  dy: Mm;
+}
+
 export interface TextElement extends ElementBase {
   kind: "text";
+  /** Present when this box names a chair of a plan. See `ChairLink`. */
+  chair?: ChairLink;
   /** e.g. `"{{First Name}} {{Last Name}}"`. Literal text needs no braces. */
   template: string;
   fontId: string;
@@ -241,13 +274,98 @@ export interface ListElement extends ElementBase {
   optical?: OpticalSpec;
 }
 
+/**
+ * A block per group — per table — laid out in columns: the seating board.
+ *
+ * Each block is a heading from the group's first row and a line per row. One
+ * size serves every block, shrunk together until the fullest one fits its
+ * cell, so no table reads smaller than its neighbours. Like a list, it
+ * resolves into ordinary text, so neither renderer draws it specially.
+ */
+export interface GridElement extends ElementBase {
+  kind: "grid";
+  /** The column whose values make the blocks, e.g. `"Table"`. Rows with none are left off. */
+  groupBy: string;
+  /** e.g. `"{{Table}}"`, from the block's first row. */
+  headingTemplate: string;
+  /** One line per row in the block, e.g. `"{{Name}}"`. */
+  itemTemplate: string;
+  /** Orders the lines within a block, by this column; empty keeps the room's order. */
+  sortBy: string;
+  /**
+   * `cells`: a block per equal cell, one size shrunk until all fit — a seating
+   * board. `columns`: blocks flow down newspaper columns at the size asked
+   * for, and a list too long for one page carries on onto the next — a
+   * finder, A to Z.
+   */
+  layout: "cells" | "columns";
+  columns: number;
+  /** Between blocks, both ways. */
+  gapMm: Mm;
+  fontId: string;
+  /** The lines' size; the heading is `headingScale` times it. */
+  fontSizePt: Pt;
+  headingFontId: string;
+  headingScale: number;
+  headingColorHex: Hex;
+  align: HAlign;
+  lineHeight: number;
+  colorHex: Hex;
+  letterSpacingMm: Mm;
+  /** `minFontSizePt` is the floor; a mode of `none` never shrinks. */
+  fit: FitConfig;
+}
+
+/**
+ * The room drawn to scale from the seating plan — every table, or the one this
+ * card is for — with the guests' names at their seats. It resolves into
+ * shapes, lines and text, so neither renderer draws a floor plan specially.
+ */
+export interface RoomElement extends ElementBase {
+  kind: "room";
+  /** The whole room, or the table this artefact is for (its `{{Table}}`). */
+  show: "room" | "table";
+  fontId: string;
+  /** Names are set at this size or smaller: one size for every name at a chair. */
+  fontSizePt: Pt;
+  /** How far a name sits out from its chair, in chair radii. */
+  nameGap: number;
+  /**
+   * Whether the plan names guests at numbered chairs itself. Off once those
+   * names have been stamped out as boxes of their own (see `ChairLink`).
+   */
+  namesAtChairs: boolean;
+  colorHex: Hex;
+  tableHex: Hex;
+  seatHex: Hex;
+  wallHex: Hex;
+  /** Each table's own name, on it. */
+  tableLabels: boolean;
+  walls: boolean;
+}
+
+/**
+ * A QR code of whatever its template says — the guest link, by default, so a
+ * phone held up to the board finds its table. Vector, so it is sharp at any
+ * size; it resolves to a filled shape.
+ */
+export interface QrElement extends ElementBase {
+  kind: "qr";
+  /** e.g. `"{{Guest Link}}"`. */
+  data: string;
+  colorHex: Hex;
+}
+
 export type CardElement =
   | TextElement
   | IconElement
   | RectElement
   | LineElement
   | ImageElement
-  | ListElement;
+  | ListElement
+  | GridElement
+  | RoomElement
+  | QrElement;
 
 /**
  * Any field of any element kind, except the two that establish identity.
@@ -262,7 +380,10 @@ type PatchableKey = Exclude<
   | keyof RectElement
   | keyof LineElement
   | keyof ImageElement
-  | keyof ListElement,
+  | keyof ListElement
+  | keyof GridElement
+  | keyof RoomElement
+  | keyof QrElement,
   "kind" | "id"
 >;
 
@@ -292,11 +413,60 @@ export interface Template {
   backgroundHex: Hex | null;
   rowScope?: RowScope;
   /**
+   * How a guest is named wherever a design names them by their chair — a plan's
+   * labels, `{{At seat 3}}`, `{{Table 1, seat 3}}` — as tokens of the sitter's
+   * own row: `"{{First Name}}"`, `"{{Last Name}}, {{First Name}}"`. Absent means
+   * the whole name. See core/template/chairs.
+   */
+  chairName?: string;
+  /**
    * Sparse per-row design patches, by row id then element id. See
    * core/template/overrides — design, not data, so it lives here and travels in
    * the project file.
    */
   overrides?: Record<string, Record<ElementId, ElementPatch>>;
+}
+
+/**
+ * The seating plan as a room element needs it: positions in the plan's own
+ * units, which the element scales into its box. Built outside core from the
+ * wedding (state/roomScene) and handed in, as fonts and images are.
+ */
+export interface RoomScene {
+  bounds: { x: number; y: number; w: number; h: number };
+  walls: Segment[];
+  /** A seat's drawn radius. */
+  seatRadius: number;
+  tables: RoomTable[];
+}
+
+export interface RoomTable {
+  label: string;
+  x: number;
+  y: number;
+  rotationDeg: number;
+  /** The table's outline in its own coordinates, centred on 0,0, before rotation. */
+  pathD: string;
+  view: { x: number; y: number; w: number; h: number };
+  /**
+   * True when the table numbers its seats. Where it does not, guests sit where
+   * they like: they are named inside the table, as Seating shows them, never
+   * at a chair.
+   */
+  numbered: boolean;
+  /** The largest box inside the table's outline, in its own coordinates. */
+  interior: { x: number; y: number; w: number; h: number };
+  seats: RoomSeat[];
+}
+
+export interface RoomSeat {
+  x: number;
+  y: number;
+  /** Away from the table, unit length: where the name hangs. */
+  out: Point;
+  number: number;
+  /** The sitter's row, as their own card reads it; null for an empty chair. */
+  row: GuestRow | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -311,6 +481,11 @@ export interface Template {
  */
 export interface ResolvedBase {
   id: ElementId;
+  /**
+   * The design element this came from, when it is one of several pieces of
+   * it — a grid's blocks. Selecting a piece selects the element.
+   */
+  sourceId?: ElementId;
   x: Mm;
   y: Mm;
   w: Mm;

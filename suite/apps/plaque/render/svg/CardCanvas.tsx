@@ -313,7 +313,8 @@ export function CardCanvas({
         <g
           key={el.id}
           style={{ cursor: "move" }}
-          onPointerDown={(e) => beginMove(e, el.id)}
+          // A grid's blocks are pieces of one element: grabbing any moves the grid.
+          onPointerDown={(e) => beginMove(e, el.sourceId ?? el.id)}
           onDoubleClick={() => {
             // Only a cropped image has anything to drag inside its box.
             if (el.kind === "image" && el.fit === "cover") onRequestCrop?.(el.id);

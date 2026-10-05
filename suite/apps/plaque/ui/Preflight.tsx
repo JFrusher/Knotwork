@@ -69,7 +69,7 @@ export function Preflight({
   onChoose,
   onCancel,
 }: PreflightProps) {
-  const { card, sheet, template, fonts, images, uploadedIcons, assetNames, printer } =
+  const { card, sheet, template, fonts, images, uploadedIcons, assetNames, room, printer } =
     usePlaque(
       useShallow((s) => ({
         card: s.card,
@@ -79,13 +79,14 @@ export function Preflight({
         images: s.images,
         uploadedIcons: s.uploadedIcons,
         assetNames: s.assetNames,
+        room: s.room,
         printer: s.printers.find((p) => p.id === s.activePrinterId) ?? null,
       })),
     );
 
   const resolveOptions = useMemo(
-    () => makeResolveOptions(fonts, uploadedIcons, images, assetNames),
-    [fonts, uploadedIcons, images, assetNames],
+    () => makeResolveOptions(fonts, uploadedIcons, images, assetNames, room),
+    [fonts, uploadedIcons, images, assetNames, room],
   );
 
   // Only the sheets shown as thumbnails are imposed.
@@ -198,9 +199,12 @@ export function Preflight({
           <button type="button" className={styles.button} onClick={() => onChoose("first")}>
             Sheet 1 only
           </button>
-          <button type="button" className={styles.button} onClick={() => onChoose("test")}>
-            Two test cards on plain paper
-          </button>
+          {/* A board's proof on plain paper is its tiles, offered beside the download. */}
+          {sheet.page !== "FIT" && (
+            <button type="button" className={styles.button} onClick={() => onChoose("test")}>
+              Two test cards on plain paper
+            </button>
+          )}
           {sheet.duplex && hasBackSide(template) && (
             <button type="button" className={styles.button} onClick={() => onChoose("duplex-test")}>
               Duplex test sheet first

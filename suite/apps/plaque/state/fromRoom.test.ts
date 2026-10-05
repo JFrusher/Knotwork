@@ -1,62 +1,113 @@
-// @vitest-environment jsdom
-import { beforeEach, describe, expect, it } from "vitest";
-import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
-import { rowsFromRoom } from "./fromRoom";
+import { describe, expect, it } from "vitest";
+import { migrate } from "@jfrusher/knotwork";
+import { ROOM_COLUMNS, roomRows, withMerges } from "./fromRoom";
 
 /**
  * The point of this path is that a card cannot disagree with the seating plan,
  * so what is worth holding is the join: that a guest's table comes out as the
- * label printed on the plan rather than an id, and that nobody quietly loses
- * their card for not having a seat yet.
+ * label printed on the plan rather than an id, that a seat is the one the plan
+ * numbers, and that nobody quietly loses their card for not having a seat yet.
+ *
+ * Guests are seated as Seating seats them: on the table's own list, which is
+ * the record that wins (lib/seating/normalise), and mirrored on the guest.
  */
 
-const seat = (guests: Record<string, unknown>, tables: Record<string, unknown>) => {
-  useKnotworkStore.getState().replaceDocument({ guests, seating: { tables } });
-};
+type Raw = Record<string, Record<string, unknown>>;
 
-beforeEach(() => {
-  useKnotworkStore.getState().replaceDocument({});
-});
+const wedding = (guests: Raw, tables: Raw, event: Record<string, unknown> = {}) => {
+  const seated: Raw = { ...guests };
+  for (const table of Object.values(tables)) {
+    for (const id of (table["assignedGuestIds"] as Array<string | null>) ?? []) {
+      if (id) seated[id] = { ...seated[id], assignedTableId: table["id"] };
+    }
+  }
+  return migrate({ guests: seated, seating: { tables }, event });
+};
 
 describe("printing from the room", () => {
   it("prints the table's label, not its id", () => {
-    seat(
-      { g1: { id: "g1", firstName: "Charis", lastName: "Smith", assignedTableId: "t7" } },
-      { t7: { id: "t7", label: "Top Table" } },
+    const doc = wedding(
+      { g1: { id: "g1", firstName: "Charis", lastName: "Smith" } },
+      { t7: { id: "t7", label: "Top Table", assignedGuestIds: ["g1"] } },
     );
 
-    expect(rowsFromRoom().rows[0]).toMatchObject({
+    expect(roomRows(doc).rows[0]).toMatchObject({
       "First Name": "Charis",
       "Last Name": "Smith",
       Name: "Charis Smith",
       Table: "Top Table",
     });
+    expect(roomRows(doc).rowIds).toEqual(["g1"]);
   });
 
-  it("prints a side as the partners call it, not the id it is stored under", () => {
-    useKnotworkStore.getState().replaceDocument({
-      event: { partners: ["Alex", "Sam"] },
-      guests: {
-        g1: { id: "g1", firstName: "Charis", side: "a" },
-        g2: { id: "g2", firstName: "Tobias", side: "both" },
-      },
-      seating: { tables: {} },
-    });
-
-    expect(rowsFromRoom().rows.map((row) => row["Side"])).toEqual(["Alex’s side", "Both sides"]);
-  });
-
-  it("still prints a card for someone with no table, and says so once", () => {
-    seat(
+  it("numbers a seat only where the table numbers its seats, as the plan stores it", () => {
+    const doc = wedding(
       {
-        g1: { id: "g1", firstName: "Charis", assignedTableId: "t1" },
+        g1: { id: "g1", firstName: "Charis" },
         g2: { id: "g2", firstName: "Tobias" },
         g3: { id: "g3", firstName: "Eleanor" },
       },
-      { t1: { id: "t1", label: "Table 1" } },
+      {
+        t1: { id: "t1", label: "Table 1", seatMode: "seat", assignedGuestIds: [null, "g1", null, "g2"] },
+        t2: { id: "t2", label: "Table 2", seatMode: "table", assignedGuestIds: ["g3"] },
+      },
+    );
+    const seat = Object.fromEntries(roomRows(doc).rows.map((row) => [row["First Name"], row["Seat"]]));
+    expect(seat).toEqual({ Charis: "2", Tobias: "4", Eleanor: "" });
+  });
+
+  it("numbers tables as people read their labels, and counts who sits at each", () => {
+    const doc = wedding(
+      { g1: { id: "g1", firstName: "Ann" }, g2: { id: "g2", firstName: "Bo" }, g3: { id: "g3", firstName: "Cy" } },
+      {
+        a: { id: "a", label: "Table 10", assignedGuestIds: ["g1"] },
+        b: { id: "b", label: "Table 2", assignedGuestIds: ["g2", "g3", null] },
+      },
+    );
+    const rows = Object.fromEntries(roomRows(doc).rows.map((row) => [row["First Name"], row]));
+    expect(rows["Ann"]).toMatchObject({ "Table Number": "2", "Table Size": "1" });
+    expect(rows["Bo"]).toMatchObject({ "Table Number": "1", "Table Size": "2" });
+  });
+
+  it("gives each guest the letter a finder files them under", () => {
+    const doc = wedding(
+      { g1: { id: "g1", firstName: "Charis", lastName: "smith" }, g2: { id: "g2", firstName: "Prince", lastName: "" } },
+      {},
+    );
+    expect(roomRows(doc).rows.map((row) => row["Initial"])).toEqual(["S", "P"]);
+  });
+
+  it("carries the name a guest is known by on the stationery, and nothing for one who has none", () => {
+    const doc = wedding(
+      { g1: { id: "g1", firstName: "Josephine", lastName: "Clarke", knownAs: "Granny Jo" }, g2: { id: "g2", firstName: "Ada", lastName: "Byron" } },
+      {},
+    );
+    expect(roomRows(doc).rows.map((row) => row["Known As"])).toEqual(["", "Granny Jo"]);
+  });
+
+  it("prints a side as the partners call it, not the id it is stored under", () => {
+    const doc = wedding(
+      {
+        g1: { id: "g1", firstName: "Charis", side: "a" },
+        g2: { id: "g2", firstName: "Tobias", side: "both" },
+      },
+      {},
+      { partners: ["Alex", "Sam"] },
+    );
+    expect(roomRows(doc).rows.map((row) => row["Side"])).toEqual(["Alex’s side", "Both sides"]);
+  });
+
+  it("still prints a card for someone with no table, and says so once", () => {
+    const doc = wedding(
+      {
+        g1: { id: "g1", firstName: "Charis" },
+        g2: { id: "g2", firstName: "Tobias" },
+        g3: { id: "g3", firstName: "Eleanor" },
+      },
+      { t1: { id: "t1", label: "Table 1", assignedGuestIds: ["g1"] } },
     );
 
-    const { rows, issues } = rowsFromRoom();
+    const { rows, issues } = roomRows(doc);
     // Three cards, not one. An unseated guest is a job still to do; a card that
     // silently went missing is how somebody arrives to no place at all.
     expect(rows).toHaveLength(3);
@@ -66,58 +117,68 @@ describe("printing from the room", () => {
   });
 
   it("prints no card for someone who said they are not coming, nor counts them unseated", () => {
-    seat(
+    const doc = wedding(
       {
-        g1: { id: "g1", firstName: "Charis", assignedTableId: "t1" },
+        g1: { id: "g1", firstName: "Charis" },
         g2: { id: "g2", firstName: "Tobias", rsvpStatus: "declined" },
       },
-      { t1: { id: "t1", label: "Table 1" } },
+      { t1: { id: "t1", label: "Table 1", assignedGuestIds: ["g1"] } },
     );
-    const { rows, issues } = rowsFromRoom();
+    const { rows, issues } = roomRows(doc);
     expect(rows.map((row) => row["First Name"])).toEqual(["Charis"]);
     expect(issues).toEqual([]);
   });
 
-  it("says nothing when everyone is seated", () => {
-    seat(
-      { g1: { id: "g1", firstName: "Charis", assignedTableId: "t1" } },
-      { t1: { id: "t1", label: "Table 1" } },
-    );
-    expect(rowsFromRoom().issues).toEqual([]);
-  });
-
-  it("leaves the table blank when the plan no longer has it", () => {
-    // The table was deleted in the room while the guest still pointed at it.
-    // Better an empty line on the card than the word "t9" printed on the table.
-    seat({ g1: { id: "g1", firstName: "Charis", assignedTableId: "t9" } }, {});
-    expect(rowsFromRoom().rows[0]?.["Table"]).toBe("");
-  });
-
-  it("prints only the chosen guests when reprinting a few", () => {
-    seat(
-      {
-        g1: { id: "g1", firstName: "Charis", assignedTableId: "t1" },
-        g2: { id: "g2", firstName: "Tobias", assignedTableId: "t1" },
-        g3: { id: "g3", firstName: "Eleanor", assignedTableId: "t1" },
-      },
-      { t1: { id: "t1", label: "Table 1" } },
-    );
-
-    const { rows, fileName } = rowsFromRoom(new Set(["g1", "g3"]));
-    expect(rows.map((row) => row["First Name"])).toEqual(["Charis", "Eleanor"]);
-    // Still the room: a reprint must not read as cards from an imported file.
-    expect(fileName).toBe("the room");
+  it("is read once per wedding, so a screen that asks twice gets the same rows", () => {
+    const doc = wedding({ g1: { id: "g1", firstName: "Charis" } }, {});
+    expect(roomRows(doc)).toBe(roomRows(doc));
   });
 
   it("offers the columns a card is actually set from", () => {
-    seat({}, {});
-    expect(rowsFromRoom().headers).toEqual([
-      "First Name",
-      "Last Name",
-      "Name",
-      "Table",
-      "Dietary",
-      "Side",
-    ]);
+    expect(roomRows(wedding({}, {})).headers).toEqual([...ROOM_COLUMNS]);
+  });
+});
+
+describe("combined cards", () => {
+  const doc = wedding(
+    {
+      g1: { id: "g1", firstName: "Ada", lastName: "Byron" },
+      g2: { id: "g2", firstName: "Grace", lastName: "Hopper" },
+      g3: { id: "g3", firstName: "Alan", lastName: "Turing" },
+    },
+    { t4: { id: "t4", label: "Table 4", assignedGuestIds: ["g1", "g2", "g3"] } },
+  );
+
+  it("stands in for its people at the first of them", () => {
+    const { rows, rowIds } = withMerges(roomRows(doc), { "merged:x": ["g2", "g1"] }, {});
+    expect(rowIds).toEqual(["merged:x", "g3"]);
+    expect(rows[0]).toMatchObject({ "First Name": "Grace & Ada", Table: "Table 4" });
+  });
+
+  it("leaves out somebody no longer on the list, and drops a card with nobody left", () => {
+    const { rowIds, rows } = withMerges(roomRows(doc), { "merged:x": ["g1", "gone"], "merged:y": ["gone"] }, {});
+    // In name order, as the room lists them: Alan before Grace.
+    expect(rowIds).toEqual(["merged:x", "g3", "g2"]);
+    expect(rows[0]?.["First Name"]).toBe("Ada");
+  });
+
+  it("is the room itself when nobody is combined", () => {
+    const room = roomRows(doc);
+    expect(withMerges(room, {}, {}).rows).toBe(room.rows);
+  });
+
+  it("names everyone on a combined card when one of them is known by a name of their own", () => {
+    const doc = wedding(
+      { g1: { id: "g1", firstName: "Charis", lastName: "Smith", knownAs: "Granny" }, g2: { id: "g2", firstName: "Eleanor", lastName: "Vane" } },
+      {},
+    );
+    expect(withMerges(roomRows(doc), { "merged:x": ["g1", "g2"] }, {}).rows.map((row) => row["Known As"])).toEqual(["Granny & Eleanor Vane"]);
+    // The others are named as the design names everyone.
+    expect(withMerges(roomRows(doc), { "merged:x": ["g1", "g2"] }, { chairName: "{{First Name}}" }).rows.map((row) => row["Known As"])).toEqual(["Granny & Eleanor"]);
+  });
+
+  it("files someone whose surname is only spaces under their first name", () => {
+    const doc = wedding({ g1: { id: "g1", firstName: "Prince", lastName: " " } }, {});
+    expect(roomRows(doc).rows.map((row) => [row["Initial"], row["Last Initial"]])).toEqual([["P", ""]]);
   });
 });

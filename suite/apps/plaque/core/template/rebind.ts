@@ -1,3 +1,4 @@
+import { chairRef } from "./chairs";
 import { guessMapping, type FieldGuesses } from "../csv/guessMapping";
 import { tokensIn } from "../csv/interpolate";
 import type { CardElement, Template } from "../types";
@@ -63,7 +64,8 @@ export function rebindTemplate(
 
   const rewrite = (text: string): string =>
     text.replace(/\{\{\s*([^{}]*?)\s*\}\}/g, (whole, name: string) => {
-      if (!name) return whole;
+      // A chair is not a column: it means the same whatever the columns are called.
+      if (!name || chairRef(name)) return whole;
       const target = resolve(name);
       if (!target) {
         if (!unmatched.includes(name)) unmatched.push(name);
@@ -76,6 +78,22 @@ export function rebindTemplate(
   const elements: CardElement[] = template.elements.map((el) => {
     if (el.kind === "text") return { ...el, template: rewrite(el.template) };
     if (el.kind === "list") return { ...el, itemTemplate: rewrite(el.itemTemplate) };
+    if (el.kind === "qr") return { ...el, data: rewrite(el.data) };
+    if (el.kind === "grid") {
+      const target = resolve(el.groupBy);
+      if (!target && !unmatched.includes(el.groupBy)) unmatched.push(el.groupBy);
+      if (target && target !== el.groupBy) renamed[el.groupBy] = target;
+      const sortTarget = el.sortBy ? resolve(el.sortBy) : null;
+      if (el.sortBy && !sortTarget && !unmatched.includes(el.sortBy)) unmatched.push(el.sortBy);
+      if (sortTarget && sortTarget !== el.sortBy) renamed[el.sortBy] = sortTarget;
+      return {
+        ...el,
+        groupBy: target ?? el.groupBy,
+        sortBy: sortTarget ?? el.sortBy,
+        headingTemplate: rewrite(el.headingTemplate),
+        itemTemplate: rewrite(el.itemTemplate),
+      };
+    }
     if (el.kind === "icon") {
       const target = el.sourceField ? resolve(el.sourceField) : null;
       if (el.sourceField && !target && !unmatched.includes(el.sourceField)) {
@@ -110,13 +128,41 @@ export function rebindTemplate(
 /** Tokens in a template that name no column in the given headers. */
 export function unboundTokens(template: Template, headers: string[]): string[] {
   const live = new Set(headers);
+  return columnsUsed(template).filter((column) => !live.has(column));
+}
+
+/**
+ * Every column the design reads, in order: its tokens, the column an icon or a
+ * grid is drawn from or sorted by, and the table a table's own map looks for.
+ * What a card prints can change only when one of these does.
+ */
+export function columnsUsed(template: Template): string[] {
   const out = new Set<string>();
   for (const el of template.elements) {
-    const text = el.kind === "text" ? el.template : el.kind === "list" ? el.itemTemplate : "";
+    const text =
+      el.kind === "text"
+        ? el.template
+        : el.kind === "list"
+          ? el.itemTemplate
+          : el.kind === "grid"
+            ? `${el.headingTemplate} ${el.itemTemplate}`
+            : el.kind === "qr"
+              ? el.data
+              : "";
     for (const token of tokensIn(text)) {
-      if (!live.has(token)) out.add(token);
+      const chair = chairRef(token);
+      // A chair is read from the room, not the row; a seat of the card's own
+      // table needs to know which table that is.
+      if (!chair) out.add(token);
+      else if (chair.table === null) out.add("Table");
     }
-    if (el.kind === "icon" && el.sourceField && !live.has(el.sourceField)) out.add(el.sourceField);
+    if (el.kind === "icon" && el.sourceField) out.add(el.sourceField);
+    if (el.kind === "grid") {
+      if (el.groupBy) out.add(el.groupBy);
+      if (el.sortBy) out.add(el.sortBy);
+    }
+    // A table's own map finds its table by the artefact's.
+    if (el.kind === "room" && el.show === "table") out.add("Table");
   }
   return [...out];
 }

@@ -3,6 +3,8 @@ import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
 import { readBar, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline, resolvedDay, timelineDoc } from "./slices";
 import { hiddenToolIds, shownTools } from "./toolbox";
 import { barSum } from "@/lib/bar/sum";
+import { readSeats } from "./seats";
+import { roomRows } from "@/apps/plaque/state/fromRoom";
 
 /**
  * Every slice reader must return the same object for the same document.
@@ -40,6 +42,8 @@ test.each([
   ["resolved day", () => resolvedDay(doc)],
   ["shown tools", () => shownTools(doc)],
   ["hidden tools", () => hiddenToolIds(doc)],
+  ["seats", () => readSeats(doc)],
+  ["the place cards' rows", () => roomRows(doc)],
 ])("reading %s twice returns the same object", (_name, read) => {
   expect(read()).toBe(read());
 });

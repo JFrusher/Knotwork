@@ -83,14 +83,26 @@ export function Announcer() {
 /** "Guest name text, 42.5mm from left, 18pt" — position and size, as S-B.2 asks. */
 function describe(el: CardElement): string {
   const where = `${round(el.x)}mm from left, ${round(el.y)}mm from top`;
-  const size = el.kind === "text" || el.kind === "list" ? `, ${el.fontSizePt}pt` : "";
-  const what =
-    el.kind === "text"
-      ? `${el.template || "empty"} text`
-      : el.kind === "list"
-        ? "list"
-        : el.kind;
+  const size = el.kind === "text" || el.kind === "list" || el.kind === "grid" ? `, ${el.fontSizePt}pt` : "";
+  const what = whatItIs(el);
   return `${what}, ${where}${size}`;
+}
+
+function whatItIs(el: CardElement): string {
+  switch (el.kind) {
+    case "text":
+      return `${el.template || "empty"} text`;
+    case "list":
+      return "list";
+    case "grid":
+      return `grid by ${el.groupBy}`;
+    case "qr":
+      return "QR code";
+    case "room":
+      return el.show === "room" ? "plan of the room" : "plan of this table";
+    default:
+      return el.kind;
+  }
 }
 
 function isTyping(target: EventTarget | null): boolean {

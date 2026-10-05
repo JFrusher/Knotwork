@@ -1,5 +1,6 @@
 import { BUNDLED_FONTS, type BundledFont } from "../assets/fonts";
 import { loadFont, type LoadedFont } from "../core/text/measure";
+import { loadFonts as loadStoredFonts } from "./blobStore";
 
 /**
  * Static files under `public/`, served from this app's own origin — nothing
@@ -54,4 +55,28 @@ export async function loadBundledFonts(): Promise<Map<string, LoadedFont>> {
     }),
   );
   return new Map(entries);
+}
+
+/**
+ * Every face this device has: the bundled ones and any uploaded, with the
+ * names they are shown by. An upload that no longer parses is left out
+ * rather than stopping what wanted the rest.
+ */
+export async function loadEveryFont(): Promise<{
+  fonts: Map<string, LoadedFont>;
+  labels: Record<string, string>;
+  uploadedIds: string[];
+}> {
+  const fonts = await loadBundledFonts();
+  const labels: Record<string, string> = Object.fromEntries(BUNDLED_FONTS.map((f) => [f.id, f.label]));
+  const stored = await loadStoredFonts();
+  for (const f of stored) {
+    try {
+      fonts.set(f.id, await registerFont(f.id, f.family, f.data));
+      labels[f.id] = f.family;
+    } catch {
+      // A font that no longer parses should not stop the rest from loading.
+    }
+  }
+  return { fonts, labels, uploadedIds: stored.map((f) => f.id) };
 }

@@ -1,0 +1,98 @@
+{
+  "format": "plaque-template",
+  "version": 1,
+  "id": "finder",
+  "name": "Finder — every guest A to Z, A2",
+  "description": "Every guest by surname under its letter, with their table: the quickest way to find a seat in a crowd. Carries on onto a second sheet if the list is long.",
+  "card": {
+    "widthMm": 420,
+    "heightMm": 594,
+    "fold": "none",
+    "foldPositionMm": 297,
+    "bleedMm": 3
+  },
+  "sheet": {
+    "page": "FIT",
+    "marginTopMm": 10,
+    "marginRightMm": 10,
+    "marginBottomMm": 10,
+    "marginLeftMm": 10,
+    "gapXMm": 0,
+    "gapYMm": 0,
+    "cardRotationDeg": 0
+  },
+  "template": {
+    "backgroundHex": "#fbf8f2",
+    "rowScope": {
+      "kind": "document"
+    },
+    "elements": [
+      {
+        "kind": "text",
+        "id": "title",
+        "x": 30,
+        "y": 24,
+        "w": 360,
+        "h": 46,
+        "z": 0,
+        "template": "Find your seat",
+        "fontId": "great-vibes",
+        "fontSizePt": 72,
+        "align": "center",
+        "vAlign": "middle",
+        "lineHeight": 1.1,
+        "colorHex": "#3b3127",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 30,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "line",
+        "id": "rule",
+        "x": 150,
+        "y": 76,
+        "w": 120,
+        "h": 1,
+        "z": 1,
+        "strokeHex": "#b49a6a",
+        "strokeWidthMm": 0.5,
+        "dashed": false
+      },
+      {
+        "kind": "grid",
+        "id": "names",
+        "x": 30,
+        "y": 90,
+        "w": 360,
+        "h": 474,
+        "z": 2,
+        "groupBy": "Initial",
+        "headingTemplate": "{{Initial}}",
+        "itemTemplate": "{{Last Name}}, {{First Name}} — {{Table}}",
+        "sortBy": "Last Name",
+        "layout": "columns",
+        "columns": 3,
+        "gapMm": 8,
+        "fontId": "crimson",
+        "fontSizePt": 13,
+        "headingFontId": "marcellus",
+        "headingScale": 1.5,
+        "headingColorHex": "#7a5c3a",
+        "align": "left",
+        "lineHeight": 1.35,
+        "colorHex": "#2b2620",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 8,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      }
+    ]
+  }
+}

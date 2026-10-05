@@ -1,0 +1,68 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.tab,
+.add,
+.actions button {
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: var(--sp-1) var(--sp-3);
+  background: none;
+  color: var(--grey-6);
+  font: inherit;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tab:hover,
+.add:hover,
+.actions button:hover:not(:disabled) {
+  color: var(--grey-8);
+  background: var(--grey-1);
+}
+
+.tabActive {
+  border-color: var(--border);
+  background: var(--canvas-bg);
+  color: var(--grey-8);
+  font-weight: 600;
+}
+
+.add {
+  color: var(--accent);
+}
+
+.rename {
+  width: 14ch;
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: var(--text-xs);
+}
+
+.actions {
+  display: flex;
+  gap: var(--sp-1);
+  margin-left: auto;
+}
+
+.actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

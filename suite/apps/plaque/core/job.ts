@@ -1,4 +1,4 @@
-import { buildArtefacts } from "./data/artefacts";
+import { artefactsOf } from "./data/parts";
 import type { GuestRow } from "./data/rows";
 import {
   hasBackSide,
@@ -10,10 +10,11 @@ import {
   type FlipEdge,
 } from "./imposition/duplex";
 import { paginate, type GuestWarning } from "./imposition/paginate";
+import { tileSheets } from "./imposition/tile";
 import { effectiveScale } from "./print/printerProfile";
 import { SLUG_RULE_MM, buildFingerprint, slugText } from "./print/slug";
 import type { ResolveOptions } from "./template/bindings";
-import type { CardSpec, Sheet, SheetSpec, Template } from "./types";
+import type { CardSpec, PaperName, Sheet, SheetSpec, Template } from "./types";
 
 /**
  * One job, from data to sheets.
@@ -40,6 +41,13 @@ export interface JobInput {
   pages?: { from: number; to: number };
   /** Limit to the first N artefacts — the two-test-cards path. */
   limit?: number;
+  /** Only the artefacts with these keys — a reprint of a few. */
+  only?: ReadonlySet<string>;
+  /**
+   * Cut each sheet into tiles of this paper, for a board printed at home. One
+   * sided: a board has no back.
+   */
+  tile?: PaperName;
 }
 
 export interface JobResult {
@@ -53,13 +61,9 @@ export interface JobResult {
 }
 
 export function buildJob(input: JobInput): JobResult {
-  const all = buildArtefacts(
-    input.rows,
-    input.template.rowScope ?? { kind: "per-row" },
-    input.headers,
-    input.rowIds,
-  );
-  const artefacts = input.limit === undefined ? all : all.slice(0, input.limit);
+  const all = artefactsOf(input.template, input.rows, input.headers, input.rowIds);
+  const chosen = input.only ? all.filter((artefact) => input.only!.has(artefact.key)) : all;
+  const artefacts = input.limit === undefined ? chosen : chosen.slice(0, input.limit);
   const pageRange = input.pages ? { pages: input.pages } : {};
   const scale = effectiveScale(input.scale);
 
@@ -71,6 +75,28 @@ export function buildJob(input: JobInput): JobResult {
     input.resolve,
     pageRange,
   );
+
+  const buildHash = buildFingerprint({
+    card: input.card,
+    sheet: input.sheet,
+    template: input.template,
+    rowCount: artefacts.length,
+    scale,
+  });
+
+  if (input.tile) {
+    if (input.duplex) throw new Error("A board tiled at home is printed one side only.");
+    const tiled = tileSheets(front.sheets, input.tile);
+    return {
+      sheets: tiled.sheets,
+      warnings: front.warnings,
+      artefactCount: artefacts.length,
+      // The tile's label goes where the slug would: it is what a tile needs to say.
+      slugTexts: tiled.labels,
+      slugRuleMm: SLUG_RULE_MM,
+      buildHash,
+    };
+  }
 
   let sheets = front.sheets;
   const wantsDuplex = input.sheet.duplex && hasBackSide(input.template) && input.duplex;
@@ -96,14 +122,6 @@ export function buildJob(input: JobInput): JobResult {
     );
     sheets = interleave(front.sheets, backs);
   }
-
-  const buildHash = buildFingerprint({
-    card: input.card,
-    sheet: input.sheet,
-    template: input.template,
-    rowCount: artefacts.length,
-    scale,
-  });
 
   const slugTexts: string[] = [];
   for (const s of sheets) {

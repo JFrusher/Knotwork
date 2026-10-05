@@ -72,6 +72,70 @@
       "heightMm": 277,
       "fold": "none",
       "foldPositionMm": 138.5
+    },
+    {
+      "id": "table-card-a5",
+      "name": "Table card — A5, 148 × 210mm",
+      "widthMm": 148,
+      "heightMm": 210,
+      "fold": "none",
+      "foldPositionMm": 105
+    },
+    {
+      "id": "board-a3",
+      "name": "Seating board — A3, 297 × 420mm",
+      "widthMm": 297,
+      "heightMm": 420,
+      "fold": "none",
+      "foldPositionMm": 210
+    },
+    {
+      "id": "board-a2",
+      "name": "Seating board — A2, 420 × 594mm",
+      "widthMm": 420,
+      "heightMm": 594,
+      "fold": "none",
+      "foldPositionMm": 297
+    },
+    {
+      "id": "board-a1",
+      "name": "Seating board — A1, 594 × 841mm",
+      "widthMm": 594,
+      "heightMm": 841,
+      "fold": "none",
+      "foldPositionMm": 420.5
+    },
+    {
+      "id": "board-a0",
+      "name": "Seating board — A0, 841 × 1189mm",
+      "widthMm": 841,
+      "heightMm": 1189,
+      "fold": "none",
+      "foldPositionMm": 594.5
+    },
+    {
+      "id": "board-50x70",
+      "name": "Seating board — 50 × 70cm",
+      "widthMm": 500,
+      "heightMm": 700,
+      "fold": "none",
+      "foldPositionMm": 350
+    },
+    {
+      "id": "board-18x24",
+      "name": "Seating board — 18 × 24in",
+      "widthMm": 457.2,
+      "heightMm": 609.6,
+      "fold": "none",
+      "foldPositionMm": 304.8
+    },
+    {
+      "id": "board-24x36",
+      "name": "Seating board — 24 × 36in",
+      "widthMm": 609.6,
+      "heightMm": 914.4,
+      "fold": "none",
+      "foldPositionMm": 457.2
     }
   ]
 }

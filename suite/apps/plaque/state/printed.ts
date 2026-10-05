@@ -1,0 +1,102 @@
+import { fingerprint } from "@/lib/documents/fingerprint";
+import type { Artefact } from "../core/data/artefacts";
+import { normalise } from "../core/data/artefacts";
+import { columnsUsed } from "../core/template/rebind";
+import { asKnown, chairName, chairRef, chairValues } from "../core/template/chairs";
+import { tokensIn } from "../core/csv/interpolate";
+import type { RoomScene, RoomTable, Template } from "../core/types";
+
+/**
+ * What a piece last went to the printer as: when, and each card's data, so a
+ * change to the room afterwards can say which cards it made wrong.
+ *
+ * Only what the design reads is fingerprinted: the columns it binds, and the
+ * part of the room a plan on it draws. A guest moving tables changes the cards
+ * that print the table; it does not change a card that prints only a name —
+ * even though every table's number shifts when one is renamed.
+ */
+export interface Printed {
+  /** ISO time of the export. */
+  at: string;
+  /** Artefact key to its data's fingerprint. */
+  cards: Record<string, string>;
+}
+
+/** What one artefact's paper depends on, for a design: the reader of its fingerprint. */
+export type PrintBasis = (artefact: Artefact) => string;
+
+/** What a print holds: just the chosen few when only a few are chosen, else every card. */
+export function printing(artefacts: Artefact[], printOnly: string[] | null): Artefact[] {
+  return printOnly ? artefacts.filter((artefact) => printOnly.includes(artefact.key)) : artefacts;
+}
+
+export function printBasis(template: Template, room: RoomScene): PrintBasis {
+  const columns = columnsUsed(template);
+  // Whoever is in the chairs the design names, as it names them.
+  const chairs = [
+    ...new Set(
+      template.elements.flatMap((el) =>
+        tokensIn(el.kind === "text" ? el.template : el.kind === "list" ? el.itemTemplate : el.kind === "qr" ? el.data : "").filter((token) => chairRef(token)),
+      ),
+    ),
+  ];
+  const plans = template.elements.flatMap((el) => (el.kind === "room" ? [el.show] : []));
+  // The whole room is the same on every card: drawn once, not once a card.
+  const wholeRoom = plans.includes("room")
+    ? { bounds: room.bounds, walls: room.walls, tables: room.tables.map((table) => drawnTable(template, table)) }
+    : null;
+  return (artefact) => {
+    const drawn = plans.map((show) =>
+      show === "room"
+        ? wholeRoom
+        : room.tables
+            .filter((table) => normalise(table.label) === normalise(artefact.row["Table"] ?? ""))
+            .map((table) => drawnTable(template, table)),
+    );
+    const sitters = chairs.length > 0 ? chairValues(chairs, artefact.row, room, template).values : {};
+    const rows = artefact.rows.map((row) => asKnown(template, row));
+    return fingerprint([rows.map((row) => columns.map((column) => row[column] ?? "")), drawn, sitters]);
+  };
+}
+
+/**
+ * What a plan draws of a table: where it is, its shape and who sits where by
+ * the name the design gives them. Nothing else of a sitter's row — a dietary
+ * need changing does not change the plan.
+ */
+function drawnTable(template: Template, table: RoomTable) {
+  const { seats, interior: _interior, ...shape } = table;
+  return { ...shape, seats: seats.map((seat) => [seat.x, seat.y, seat.number, seat.row ? chairName(template, seat.row) : ""]) };
+}
+
+/**
+ * A record of these artefacts going to print now. A reprint of some adds to
+ * what was printed before; a full run replaces it.
+ */
+export function recordPrint(
+  previous: Printed | null,
+  artefacts: Artefact[],
+  partial: boolean,
+  at: string,
+  basis: PrintBasis,
+): Printed {
+  const cards = Object.fromEntries(artefacts.map((artefact) => [artefact.key, basis(artefact)]));
+  return { at, cards: partial && previous ? { ...previous.cards, ...cards } : cards };
+}
+
+/**
+ * Since the last print: the cards that would come out differently now — a
+ * guest moved, renamed, or new — and the keys of cards printed then that
+ * nothing prints now.
+ */
+export function sincePrinted(
+  printed: Printed,
+  artefacts: Artefact[],
+  basis: PrintBasis,
+): { changed: Artefact[]; gone: string[] } {
+  const now = new Set(artefacts.map((artefact) => artefact.key));
+  return {
+    changed: artefacts.filter((artefact) => printed.cards[artefact.key] !== basis(artefact)),
+    gone: Object.keys(printed.cards).filter((key) => !now.has(key)),
+  };
+}

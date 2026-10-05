@@ -6,10 +6,18 @@ import { suggestLayouts } from "../../core/geometry/suggestLayouts";
 import { STOCK_PRESETS, applyPreset } from "../../core/data/stockPresets";
 import { CARD_PRESETS, applyCardPreset } from "../../core/data/cardPresets";
 import { GALLERY } from "../../core/data/gallery";
-import type { FoldAxis, Orientation, PageSizeName } from "../../core/types";
+import type { FoldAxis, Mm, Orientation, PageSizeName, PaperName } from "../../core/types";
+import { MARK_LENGTH_MM } from "../../core/geometry/cropMarks";
 import { usePlaque } from "../../state/store";
 import { CheckboxField, Hint, NumberField, Row, SelectField, SubGroup } from "../controls";
 import styles from "./GeometryPanel.module.css";
+
+const uniformMargin = (mm: Mm) => ({
+  marginTopMm: mm,
+  marginRightMm: mm,
+  marginBottomMm: mm,
+  marginLeftMm: mm,
+});
 
 /**
  * FR-STA-02, the card half: any size, any fold.
@@ -187,7 +195,7 @@ export function SheetPanel() {
         feeding stock you paid for.
       </Hint>
 
-      {suggestions.length > 0 && (
+      {sheet.page !== "FIT" && suggestions.length > 0 && (
         <SubGroup title="Fits best">
           <div className={styles.suggestions}>
             {suggestions.map((s) => (
@@ -218,19 +226,49 @@ export function SheetPanel() {
           options={[
             { value: "A4", label: "A4" },
             { value: "LETTER", label: "US Letter" },
+            { value: "A3", label: "A3" },
+            { value: "FIT", label: "The card's own size" },
           ]}
-          onChange={(page) => setSheet({ page })}
+          onChange={(page) =>
+            setSheet(
+              page === "FIT"
+                ? // Room round the board for its bleed and crop marks, and nothing
+                  // else: the print shop trims to the marks.
+                  { page, ...uniformMargin(card.bleedMm + MARK_LENGTH_MM + 2), gapXMm: 0, gapYMm: 0, cardRotationDeg: 0 }
+                : { page },
+            )
+          }
         />
-        <SelectField<Orientation>
-          label="Orientation"
-          value={sheet.orientation}
-          options={[
-            { value: "portrait", label: "Portrait" },
-            { value: "landscape", label: "Landscape" },
-          ]}
-          onChange={(orientation) => setSheet({ orientation })}
-        />
+        {sheet.page === "FIT" ? (
+          <SelectField<PaperName>
+            label="Tile at home on"
+            value={sheet.tilePaper}
+            options={[
+              { value: "A4", label: "A4" },
+              { value: "LETTER", label: "US Letter" },
+              { value: "A3", label: "A3" },
+            ]}
+            onChange={(tilePaper) => setSheet({ tilePaper })}
+          />
+        ) : (
+          <SelectField<Orientation>
+            label="Orientation"
+            value={sheet.orientation}
+            options={[
+              { value: "portrait", label: "Portrait" },
+              { value: "landscape", label: "Landscape" },
+            ]}
+            onChange={(orientation) => setSheet({ orientation })}
+          />
+        )}
       </Row>
+      {sheet.page === "FIT" && (
+        <Hint>
+          One per page at full size, with its bleed and crop marks: the PDF a print shop wants. To
+          print it yourself, tile it onto {sheet.tilePaper === "LETTER" ? "Letter" : sheet.tilePaper} from the
+          export bar.
+        </Hint>
+      )}
 
       <CheckboxField
         label="Turn cards 90° on the sheet"

@@ -70,12 +70,8 @@ describe("what is left to do", () => {
       stationery: { version: 1, rows: [{}], template: { elements: [] }, ...extra },
     });
 
-    it("objects when the cards come from a file rather than the room", () => {
-      expect(ids(design({ fileName: "guests.csv" }))).toContain("cards-from-file");
-    });
-
-    it("says nothing when they come from the room", () => {
-      expect(ids(design({ fileName: "the room" }))).not.toContain("cards-from-file");
+    it("never says the cards came from a file: they are read from the room", () => {
+      expect(ids(design({ fileName: "guests.csv" }))).not.toContain("cards-from-file");
     });
 
     it("notices a dietary requirement the card cannot show", () => {

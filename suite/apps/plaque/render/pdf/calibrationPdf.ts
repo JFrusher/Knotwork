@@ -1,10 +1,10 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { REFERENCE_RULE_MM } from "../../core/print/printerProfile";
-import type { Mm, Orientation, PageSizeName } from "../../core/types";
+import type { Mm, Orientation, PaperName } from "../../core/types";
 import { mmToPt, pageSizeMm } from "../../core/units";
 
 export interface CalibrationPdfOptions {
-  page: PageSizeName;
+  page: PaperName;
   orientation: Orientation;
   printerName?: string;
 }

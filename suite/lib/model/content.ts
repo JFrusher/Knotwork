@@ -25,14 +25,11 @@ export interface WeddingSummary {
   boxes: number;
   /** Things chosen on the Bar: a figure changed, a price typed. */
   bar: number;
-  /** Names on a card design that came from a file rather than the room. */
-  cards: number;
 }
 
 export function summarise(raw: unknown): WeddingSummary {
   const doc = migrate(raw);
   const crew = readCrew(doc);
-  const stationery = doc.stationery as { rows?: unknown };
   return {
     names: doc.event.coupleNames.trim(),
     date: doc.event.date,
@@ -46,7 +43,6 @@ export function summarise(raw: unknown): WeddingSummary {
     walking: readCeremony(doc).processional.length,
     boxes: readBoxes(doc).boxes.length,
     bar: choices(readBar(doc)),
-    cards: Array.isArray(stationery.rows) ? stationery.rows.length : 0,
   };
 }
 

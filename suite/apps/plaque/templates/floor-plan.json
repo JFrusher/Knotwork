@@ -1,0 +1,76 @@
+{
+  "format": "plaque-template",
+  "version": 1,
+  "id": "floor-plan",
+  "name": "Floor plan — the room to scale, A1",
+  "description": "The room as it is laid out in Seating, every guest's first name at their chair: the board people stand in front of.",
+  "card": {
+    "widthMm": 841,
+    "heightMm": 594,
+    "fold": "none",
+    "foldPositionMm": 297,
+    "bleedMm": 3
+  },
+  "sheet": {
+    "page": "FIT",
+    "marginTopMm": 10,
+    "marginRightMm": 10,
+    "marginBottomMm": 10,
+    "marginLeftMm": 10,
+    "gapXMm": 0,
+    "gapYMm": 0,
+    "cardRotationDeg": 0
+  },
+  "template": {
+    "backgroundHex": "#fbf8f2",
+    "rowScope": {
+      "kind": "document"
+    },
+    "elements": [
+      {
+        "kind": "text",
+        "id": "title",
+        "x": 40,
+        "y": 22,
+        "w": 761,
+        "h": 56,
+        "z": 0,
+        "template": "Find your seat",
+        "fontId": "great-vibes",
+        "fontSizePt": 96,
+        "align": "center",
+        "vAlign": "middle",
+        "lineHeight": 1.1,
+        "colorHex": "#3b3127",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 30,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "room",
+        "id": "room",
+        "x": 30,
+        "y": 90,
+        "w": 781,
+        "h": 480,
+        "z": 1,
+        "show": "room",
+        "fontId": "crimson",
+        "fontSizePt": 16,
+        "colorHex": "#2b2620",
+        "tableHex": "#e8dfcf",
+        "seatHex": "#c9b48f",
+        "wallHex": "#7a6a55",
+        "tableLabels": true,
+        "walls": true,
+        "nameGap": 0.3,
+        "namesAtChairs": true
+      }
+    ],
+    "chairName": "{{First Name}}"
+  }
+}

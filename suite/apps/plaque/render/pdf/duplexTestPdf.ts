@@ -1,11 +1,11 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import { mirrorAxisFor, type FlipEdge } from "../../core/imposition/duplex";
 import { READABLE_SPAN_MM, SKEW_THRESHOLD_MM } from "../../core/print/printerProfile";
-import type { Mm, Orientation, PageSizeName, Point } from "../../core/types";
+import type { Mm, Orientation, PaperName, Point } from "../../core/types";
 import { mmToPt, pageSizeMm, ptToMm } from "../../core/units";
 
 export interface DuplexTestOptions {
-  page: PageSizeName;
+  page: PaperName;
   orientation: Orientation;
   /** The choice being tested. Page two is mirrored exactly as a real back sheet is. */
   flipEdge: FlipEdge;

@@ -39,3 +39,4 @@ test("a wedding is described by its names and what is in it", () => {
   expect(describe(summarise(raw))).toBe("Alex & Sam — 2 guests");
   expect(describe(summarise(empty))).toBe("A wedding with no names yet");
 });
+

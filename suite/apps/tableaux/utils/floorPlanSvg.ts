@@ -112,7 +112,7 @@ function buildDoorPath(we: WallElement, seg: WallSeg, scale: number): string {
 }
 
 /** Wall segments for a space (absolute canvas coords). */
-function getWallSegs(sp: Space): WallSeg[] {
+export function getWallSegs(sp: Space): WallSeg[] {
   if (sp.shape === 'polygon') {
     return sp.vertices.map((v, i) => {
       const nxt = sp.vertices[(i + 1) % sp.vertices.length]
@@ -350,7 +350,7 @@ const spaceBox = (sp: Space): { minX: number; minY: number; maxX: number; maxY: 
  * out from buildFloorPlanSvg so the PDF exporter can size type against the
  * cells before anything is drawn.
  */
-function layoutFloorPlan(doc: FloorPlanSource, { ppu, padPx }: FloorPlanOptions = {}) {
+export function layoutFloorPlan(doc: FloorPlanSource, { ppu, padPx }: FloorPlanOptions = {}) {
   const settings = doc.settings || {}
   const scale = ppu || settings.pixelsPerUnit || DEFAULT_PPU
   const guests = doc.guests || {}

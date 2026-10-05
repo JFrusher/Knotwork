@@ -74,7 +74,7 @@ describe("validatePreset", () => {
 
   it("names the field that is wrong, so a bad contribution is findable", () => {
     expect(validatePreset(preset({ id: "" }))).toBe("id");
-    expect(validatePreset({ ...preset(), page: "A3" })).toBe("page");
+    expect(validatePreset({ ...preset(), page: "A5" })).toBe("page");
     expect(validatePreset({ ...preset(), widthMm: "63.5" })).toBe("widthMm");
     expect(validatePreset(preset({ columns: 0 }))).toBe("columns");
     expect(validatePreset(preset({ rows: 1.5 }))).toBe("rows");

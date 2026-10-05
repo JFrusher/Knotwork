@@ -7,6 +7,7 @@ import { ceremonyPlace, overrun } from "@/lib/ceremony/checks";
 import { DUE_SOON_DAYS, money } from "@/lib/money/money";
 import { daysUntil, longDate, todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
+import { storedPieces } from "@/apps/plaque/state/suite";
 
 /**
  * What is left to do, across the whole wedding.
@@ -68,10 +69,9 @@ function placeNames(raw: unknown): Set<string> {
   return names;
 }
 
-/** Plaque's saved design, which knows what the printed list was drawn from. */
-export function stationery(raw: unknown): Record<string, unknown> | null {
-  const slice = isRecord(raw) ? raw["stationery"] : null;
-  return isRecord(slice) && "version" in slice ? slice : null;
+/** Place cards' saved pieces, each of which knows what its printed list was drawn from. Empty when nothing is designed. */
+export function stationeryPieces(raw: unknown): Record<string, unknown>[] {
+  return storedPieces(isRecord(raw) ? raw["stationery"] : null);
 }
 
 /**
@@ -79,10 +79,12 @@ export function stationery(raw: unknown): Record<string, unknown> | null {
  * show: the tokens in its text, and the column an icon is drawn from — the
  * same two Plaque's own `unboundTokens` counts.
  */
-function boundTokens(design: Record<string, unknown> | null): Set<string> {
+function boundTokens(pieces: Record<string, unknown>[]): Set<string> {
   const tokens = new Set<string>();
-  const template = design && isRecord(design["template"]) ? design["template"] : null;
-  const elements = template && Array.isArray(template["elements"]) ? template["elements"] : [];
+  const elements = pieces.flatMap((piece) => {
+    const template = isRecord(piece["template"]) ? piece["template"] : null;
+    return template && Array.isArray(template["elements"]) ? template["elements"] : [];
+  });
   for (const element of elements) {
     if (!isRecord(element)) continue;
     if (element["kind"] === "icon" && typeof element["sourceField"] === "string") {
@@ -110,7 +112,7 @@ export function readiness(doc: Knotwork, raw: unknown, today: string = todayIso(
   const seating = readSeating(doc);
   const timeline = readTimeline(doc);
   const crew = readCrew(doc);
-  const design = stationery(raw);
+  const pieces = stationeryPieces(raw);
 
   if (people.length === 0) {
     return [
@@ -140,26 +142,8 @@ export function readiness(doc: Knotwork, raw: unknown, today: string = todayIso(
     });
   }
 
-  /**
-   * The cards were printed from a file rather than from the room.
-   *
-   * This is the failure the suite exists to prevent, and the one that costs
-   * real money: a CSV exported before the last three people moved prints three
-   * wrong tables and looks perfectly correct doing it.
-   */
-  if (design && design["fileName"] !== "the room" && Array.isArray(design["rows"])) {
-    out.push({
-      id: "cards-from-file",
-      severity: "blocking",
-      message:
-        "The place cards come from an imported file, not from the room, so they can disagree with the seating plan.",
-      href: "/place-cards",
-      action: "Use the room",
-    });
-  }
-
   const withDietary = coming.filter((guest) => guest.dietary.trim() !== "");
-  if (design && withDietary.length > 0 && !boundTokens(design).has("dietary")) {
+  if (pieces.length > 0 && withDietary.length > 0 && !boundTokens(pieces).has("dietary")) {
     out.push({
       id: "dietary-unprinted",
       severity: "advisory",

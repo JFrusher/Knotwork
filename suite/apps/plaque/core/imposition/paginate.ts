@@ -1,7 +1,7 @@
 import { cardGuides } from "../geometry/cropMarks";
 import { cardOriginOnSheet, computeLayout, type PageLayout } from "../geometry/pageLayout";
 import { cardToSheet } from "../geometry/transform";
-import { resolveCard, type CardWarning, type ResolveOptions } from "../template/bindings";
+import { GRID_HEADING, resolveCard, type CardWarning, type ResolveOptions } from "../template/bindings";
 import type { Artefact } from "../data/artefacts";
 import { templateForRow } from "../template/overrides";
 import type { CardSpec, ResolvedElement, Sheet, SheetGuides, SheetSpec, Template } from "../types";
@@ -88,9 +88,14 @@ function headroomOf(template: Template, elements: ResolvedElement[]): number {
   for (const el of elements) {
     if (el.kind !== "text") continue;
     if (el.overflowed) return 0;
-    const source = template.elements.find((candidate) => candidate.id === el.id);
+    const source = template.elements.find((candidate) => candidate.id === (el.sourceId ?? el.id));
+    // A grid's headings are a multiple of its lines: measure every piece against the lines' size.
     const requested =
-      source && (source.kind === "text" || source.kind === "list") ? source.fontSizePt : el.fontSizePt;
+      source?.kind === "grid"
+        ? source.fontSizePt * (el.id.startsWith(`${source.id}${GRID_HEADING}`) ? source.headingScale : 1)
+        : source && (source.kind === "text" || source.kind === "list")
+          ? source.fontSizePt
+          : el.fontSizePt;
     if (requested > 0) tightest = Math.min(tightest, el.fontSizePt / requested);
   }
   return tightest;

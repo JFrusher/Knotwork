@@ -1,14 +1,15 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useShallow } from "zustand/react/shallow";
 import styles from "./App.module.css";
-import { BUNDLED_FONTS } from "./assets/fonts";
 import { validateGeometry } from "./core/geometry/validate";
 import { analyseArtefacts, paginate, sheetCountFor } from "./core/imposition/paginate";
-import { buildArtefacts } from "./core/data/artefacts";
+import { artefactsOf } from "./core/data/parts";
 import { hasBackSide, templateForSide } from "./core/imposition/duplex";
 import { templateForRow } from "./core/template/overrides";
+import { placeChairs } from "./core/template/room";
 import { PAPER_WHITE, contrastIssues } from "./core/print/contrast";
 import { missingAssets } from "./core/template/assets";
 import { overflowIssues } from "./core/template/overflow";
@@ -16,13 +17,12 @@ import { unboundTokens } from "./core/template/rebind";
 import { makeResolveOptions } from "./core/template/resolve";
 import { CardCanvas, MAX_VIEW_ZOOM } from "./render/svg/CardCanvas";
 import { SheetPreview } from "./render/svg/SheetPreview";
-import { loadFonts as loadStoredFonts } from "./state/blobStore";
 import { loadImages, toSource } from "./state/imageStore";
 import { loadPrinters } from "./state/printerStore";
-import { loadBundledFonts, registerFont } from "./state/fontLoader";
+import { loadEveryFont } from "./state/fontLoader";
 import { designOf } from "./state/design";
 import { writeDesign } from "./state/sliceBridge";
-import { usePlaque } from "./state/store";
+import { canOpenPiece, usePlaque } from "./state/store";
 import { useKeyboard } from "./state/useKeyboard";
 import { Announcer } from "./ui/Announcer";
 import { ToolUndo } from "@/components/shell/ToolUndo";
@@ -31,14 +31,14 @@ import { ExportBar } from "./ui/ExportBar";
 import { MissingAssets } from "./ui/MissingAssets";
 import { Pagination } from "./ui/Pagination";
 import { PersistenceBar } from "./ui/PersistenceBar";
+import { PiecesBar } from "./ui/PiecesBar";
 import { RowsDrawer } from "./ui/RowsDrawer";
+import { printing } from "./state/printed";
+import { SincePrinted } from "./ui/SincePrinted";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
 
 const PLACEHOLDER_ROW = { "": "" };
-
-/** Absent scope means per-row: what every design written before scope existed meant. */
-const PER_ROW = { kind: "per-row" } as const;
 
 export function App() {
   const [ready, setReady] = useState(false);
@@ -59,12 +59,11 @@ export function App() {
     rows,
     rowIds,
     headers,
+    room,
     fonts,
     images,
     uploadedIcons,
     assetNames,
-    csvIssues,
-    fileName,
     page,
     selectedId,
     cropId,
@@ -75,6 +74,8 @@ export function App() {
     printers,
     activePrinterId,
     designProblem,
+    printed,
+    printOnly,
   } = usePlaque(
     useShallow((s) => ({
       card: s.card,
@@ -83,22 +84,23 @@ export function App() {
       rows: s.rows,
       rowIds: s.rowIds,
       headers: s.headers,
+      room: s.room,
       fonts: s.fonts,
       images: s.images,
       uploadedIcons: s.uploadedIcons,
       assetNames: s.assetNames,
-      csvIssues: s.csvIssues,
-      fileName: s.fileName,
       page: s.page,
       selectedId: s.selectedId,
       cropId: s.cropId,
       snapEnabled: s.snapEnabled,
       sheetCollapsed: s.sheetCollapsed,
+      printOnly: s.printOnly,
       previewGuestIndex: s.previewGuestIndex,
       editingSide: s.editingSide,
       printers: s.printers,
       activePrinterId: s.activePrinterId,
       designProblem: s.designProblem,
+      printed: s.printed,
     })),
   );
 
@@ -122,19 +124,7 @@ export function App() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const bundled = await loadBundledFonts();
-      const labels: Record<string, string> = {};
-      for (const f of BUNDLED_FONTS) labels[f.id] = f.label;
-
-      const stored = await loadStoredFonts();
-      for (const f of stored) {
-        try {
-          bundled.set(f.id, await registerFont(f.id, f.family, f.data));
-          labels[f.id] = f.family;
-        } catch {
-          // A font that no longer parses should not stop the app from opening.
-        }
-      }
+      const { fonts: loaded, labels, uploadedIds } = await loadEveryFont();
       const storedImages = await loadImages();
       const { printers, activeId } = await loadPrinters();
       if (cancelled) return;
@@ -146,13 +136,22 @@ export function App() {
         Object.fromEntries(storedImages.map((i) => [i.id, i.name])),
       );
 
-      usePlaque.getState().setFonts(bundled, labels, stored.map((f) => f.id));
+      usePlaque.getState().setFonts(loaded, labels, uploadedIds);
       setReady(true);
     })().catch(() => setReady(true));
     return () => {
       cancelled = true;
     };
   }, []);
+
+  // Sent here for one piece — Seating's Print does this — open it, making it
+  // from its design if the wedding has none yet. Asked again on a reload, it is
+  // only opened: the piece exists by then.
+  const wanted = useSearchParams().get("piece");
+  useEffect(() => {
+    // A link to a piece since removed opens the stationery as it is.
+    if (ready && wanted && canOpenPiece(wanted)) usePlaque.getState().openPiece(wanted);
+  }, [ready, wanted]);
 
   // Esc leaves crop mode, the way it leaves every other transient mode.
   useEffect(() => {
@@ -165,15 +164,15 @@ export function App() {
   }, [cropId, setCropId]);
 
   const resolveOptions = useMemo(
-    () => makeResolveOptions(fonts, uploadedIcons, images, assetNames),
-    [fonts, uploadedIcons, images, assetNames],
+    () => makeResolveOptions(fonts, uploadedIcons, images, assetNames, room),
+    [fonts, uploadedIcons, images, assetNames, room],
   );
 
   // Rows become artefacts once, here. Everything downstream counts artefacts:
   // 150 guests is 150 place cards, or 19 table menus, or one run-sheet.
   const artefacts = useMemo(
-    () => buildArtefacts(rows, template.rowScope ?? PER_ROW, headers, rowIds),
-    [rows, template.rowScope, headers, rowIds],
+    () => artefactsOf(template, rows, headers, rowIds),
+    [template, rows, headers, rowIds],
   );
 
   const previewArtefact = artefacts[previewGuestIndex] ?? artefacts[0] ?? null;
@@ -187,8 +186,10 @@ export function App() {
     // row's own overrides applied. Editing against anything else would mean the
     // preview and the sheet disagree, which is the one thing Plaque must not do.
     const sided = hasBackSide(template) ? templateForSide(template, editingSide) : template;
-    return previewArtefact ? templateForRow(sided, previewArtefact.rowId) : sided;
-  }, [template, editingSide, previewArtefact]);
+    const own = previewArtefact ? templateForRow(sided, previewArtefact.rowId) : sided;
+    // A box that follows a chair is grabbed where it prints on this card.
+    return placeChairs(own, room, previewRow);
+  }, [template, editingSide, previewArtefact, room, previewRow]);
 
   // Row-independent, so this gates export without resolving a single card.
   const missing = useMemo(
@@ -196,10 +197,13 @@ export function App() {
     [template, images, fonts],
   );
 
+  // The sheets show what will print: just the chosen few, when only a few are.
+  const onPaper = useMemo(() => printing(artefacts, printOnly), [artefacts, printOnly]);
+
   // How many sheets the job needs, without building any of them.
   const sheetCount = useMemo(
-    () => sheetCountFor(artefacts.length, card, sheet),
-    [artefacts.length, card, sheet],
+    () => sheetCountFor(onPaper.length, card, sheet),
+    [onPaper.length, card, sheet],
   );
   const pageIndex = Math.min(page, Math.max(0, sheetCount - 1));
 
@@ -211,8 +215,8 @@ export function App() {
     if (sheetCollapsed) return undefined;
     const range = { from: pageIndex, to: pageIndex };
     const front = templateForSide(template, "front");
-    return paginate(front, artefacts, card, sheet, resolveOptions, { pages: range }).sheets[0];
-  }, [template, artefacts, card, sheet, resolveOptions, pageIndex, sheetCollapsed]);
+    return paginate(front, onPaper, card, sheet, resolveOptions, { pages: range }).sheets[0];
+  }, [template, onPaper, card, sheet, resolveOptions, pageIndex, sheetCollapsed]);
 
   // The "these names do not fit" pass has to look at every guest, so it runs at
   // a lower priority: it may lag a drag by a frame, but it never blocks one.
@@ -275,14 +279,21 @@ export function App() {
       <Sidebar />
 
       <div className={styles.main}>
+        <PiecesBar />
         {saveError && (
           <PersistenceBar
             reason={saveError}
-            onRetry={() => writeDesign(designOf(usePlaque.getState()), { silent: true })}
+            onRetry={() => writeDesign(designOf(usePlaque.getState()), usePlaque.getState().pieceId, { silent: true })}
           />
         )}
 
         {designProblem && <p className={styles.notice}>{designProblem}</p>}
+        <SincePrinted
+          printed={printed}
+          artefacts={artefacts}
+          className={styles.notice}
+          actionClassName={styles.noticeAction}
+        />
 
         <div className={sheetCollapsed ? `${styles.workspace} ${styles.workspaceWide}` : styles.workspace}>
           <section data-tour="placecards.canvas" className={styles.pane} aria-label="Card">

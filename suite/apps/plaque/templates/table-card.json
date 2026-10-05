@@ -1,0 +1,104 @@
+{
+  "format": "plaque-template",
+  "version": 1,
+  "id": "table-card",
+  "name": "Table card — who sits here, A5",
+  "description": "One card per table: its name, its guests, and where each of them sits.",
+  "card": {
+    "widthMm": 148,
+    "heightMm": 210,
+    "fold": "none",
+    "foldPositionMm": 105,
+    "bleedMm": 0
+  },
+  "template": {
+    "backgroundHex": null,
+    "rowScope": {
+      "kind": "per-group",
+      "byColumn": "Table"
+    },
+    "elements": [
+      {
+        "kind": "text",
+        "id": "table",
+        "x": 14,
+        "y": 16,
+        "w": 120,
+        "h": 26,
+        "z": 0,
+        "template": "{{Table}}",
+        "fontId": "marcellus",
+        "fontSizePt": 30,
+        "align": "center",
+        "vAlign": "middle",
+        "lineHeight": 1.2,
+        "colorHex": "#3b3127",
+        "letterSpacingMm": 0.3,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 14,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "line",
+        "id": "rule",
+        "x": 49,
+        "y": 48,
+        "w": 50,
+        "h": 1,
+        "z": 1,
+        "strokeHex": "#b49a6a",
+        "strokeWidthMm": 0.4,
+        "dashed": false
+      },
+      {
+        "kind": "list",
+        "id": "guests",
+        "x": 14,
+        "y": 58,
+        "w": 120,
+        "h": 70,
+        "z": 2,
+        "itemTemplate": "{{Known As}}",
+        "bullet": "",
+        "skipEmpty": true,
+        "fontId": "crimson",
+        "fontSizePt": 14,
+        "align": "center",
+        "vAlign": "top",
+        "lineHeight": 1.5,
+        "colorHex": "#2b2620",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 8,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "room",
+        "id": "seats",
+        "x": 14,
+        "y": 132,
+        "w": 120,
+        "h": 66,
+        "z": 3,
+        "show": "table",
+        "fontId": "crimson",
+        "fontSizePt": 8,
+        "colorHex": "#2b2620",
+        "tableHex": "#e8dfcf",
+        "seatHex": "#c9b48f",
+        "wallHex": "#7a6a55",
+        "tableLabels": false,
+        "walls": false,
+        "nameGap": 0.3,
+        "namesAtChairs": true
+      }
+    ],
+    "chairName": "{{First Name}}"
+  }
+}

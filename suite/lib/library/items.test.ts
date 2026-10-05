@@ -19,7 +19,9 @@ const mentionsAnyGuest = (value: unknown) => {
 describe("keeping a design from one wedding", () => {
   it("keeps the card design without a single guest's name in it", () => {
     const cards = extract("cards", example)!;
-    expect(Object.keys(cards).sort()).toEqual(["assetNames", "card", "sheet", "snapEnabled", "template", "uploadedIcons", "version"]);
+    expect(Object.keys(cards).sort()).toEqual(["assetNames", "pieces", "snapEnabled", "uploadedIcons", "version"]);
+    const [piece] = cards["pieces"] as Array<Record<string, unknown>>;
+    expect(Object.keys(piece!).sort()).toEqual(["card", "id", "name", "sheet", "template"]);
     expect(mentionsAnyGuest(cards)).toEqual([]);
   });
 
@@ -59,11 +61,53 @@ describe("putting it into another wedding", () => {
     crew: { jobs: [{ id: "j1", blockId: null, label: "Book the venue", dueOn: "2028-01-01" }] },
   };
 
-  it("gives a wedding with no cards a design and an empty list to fill from the room", () => {
+  it("gives a wedding with no cards the design, to print from its own room", () => {
     const [[slice, stationery]] = applyTo("cards", extract("cards", example)!, other) as Array<[string, Record<string, unknown>]>;
     expect(slice).toBe("stationery");
-    expect(stationery).toMatchObject({ rows: [], headers: [], version: 2 });
-    expect(stationery["template"]).toBeTruthy();
+    expect(stationery).toMatchObject({ version: 3 });
+    const pieces = stationery["pieces"] as Array<Record<string, unknown>>;
+    expect(pieces[0]).toMatchObject({ id: "place-cards", merged: {} });
+    expect(pieces[0]).not.toHaveProperty("rows");
+    expect(pieces[0]!["template"]).toBeTruthy();
+  });
+
+  it("keeps who shares a card on a piece the wedding already has, and nobody combined on a new one", () => {
+    const kept = extract("cards", example)!;
+    const board = { id: "board", name: "Seating board", card: { widthMm: 594 }, sheet: {}, template: { elements: [] } };
+    const content = { ...kept, pieces: [...(kept["pieces"] as unknown[]), board] };
+    const own = (kept["pieces"] as Array<Record<string, unknown>>)[0]!;
+    const held = {
+      ...other,
+      stationery: { version: 3, pieces: [{ ...own, merged: { "merged:x": ["r1", "r2"] }, printed: null }] },
+    };
+    const [[, stationery]] = applyTo("cards", content, held) as Array<[string, { pieces: Array<Record<string, unknown>> }]>;
+    expect(stationery.pieces.map((p) => p["id"])).toEqual(["place-cards", "board"]);
+    expect(stationery.pieces[0]).toMatchObject({ merged: { "merged:x": ["r1", "r2"] } });
+    expect(stationery.pieces[1]).toMatchObject({ merged: {}, card: { widthMm: 594 } });
+  });
+
+  it("leaves a piece of the wedding's own that the kept design does not have", () => {
+    const held = {
+      ...other,
+      stationery: {
+        ...extract("cards", example)!,
+        pieces: [
+          ...(extract("cards", example)!["pieces"] as unknown[]),
+          { ...(extract("cards", example)!["pieces"] as Array<Record<string, unknown>>)[0]!, id: "menus", name: "Menus", merged: {} },
+        ],
+      },
+    };
+    const [[, stationery]] = applyTo("cards", extract("cards", example)!, held) as Array<[string, { pieces: Array<Record<string, unknown>> }]>;
+    expect(stationery.pieces.map((p) => p["id"])).toContain("menus");
+  });
+
+  it("still puts in a design kept before there were pieces", () => {
+    const old = { version: 2, card: { widthMm: 85 }, sheet: {}, template: { elements: [] } };
+    const [[, stationery]] = applyTo("cards", old, other) as Array<[string, { pieces: Array<Record<string, unknown>> }]>;
+    expect(stationery.pieces).toEqual([
+      expect.objectContaining({ id: "place-cards", name: "Place cards", card: { widthMm: 85 }, merged: {} }),
+    ]);
+    expect(Object.keys(stationery.pieces[0]!)).not.toContain("version");
   });
 
   it("puts the room in, keeps the families, and unseats everyone from the tables that went", () => {

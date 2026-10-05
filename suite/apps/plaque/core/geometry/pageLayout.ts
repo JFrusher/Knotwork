@@ -17,9 +17,25 @@ export interface PageLayout {
   gapYMm: Mm;
 }
 
+/**
+ * The page itself. A `FIT` page is the card plus its margins, so exactly one
+ * fits; any other is the paper it names.
+ */
+export function sheetPageMm(card: CardSpec, sheet: SheetSpec): Size {
+  if (sheet.page !== "FIT") return pageSizeMm(sheet.page, sheet.orientation);
+  const footprint = cardFootprint({ w: card.widthMm, h: card.heightMm }, sheet.cardRotationDeg);
+  return {
+    w: footprint.w + sheet.marginLeftMm + sheet.marginRightMm,
+    h: footprint.h + sheet.marginTopMm + sheet.marginBottomMm,
+  };
+}
+
 /** The rectangle inside the margins that cards may occupy. */
-export function usableSize(sheet: SheetSpec): Size {
-  const page = pageSizeMm(sheet.page, sheet.orientation);
+export function usableSize(card: CardSpec, sheet: SheetSpec): Size {
+  // Exactly the card on a page made to fit it: adding the margins and taking
+  // them away again is not exact in floating point, and a hair short fits none.
+  if (sheet.page === "FIT") return cardFootprint({ w: card.widthMm, h: card.heightMm }, sheet.cardRotationDeg);
+  const page = sheetPageMm(card, sheet);
   return {
     w: page.w - sheet.marginLeftMm - sheet.marginRightMm,
     h: page.h - sheet.marginTopMm - sheet.marginBottomMm,
@@ -38,9 +54,9 @@ export function fitCount(available: Mm, size: Mm, gap: Mm): number {
 }
 
 export function computeLayout(card: CardSpec, sheet: SheetSpec): PageLayout {
-  const page = pageSizeMm(sheet.page, sheet.orientation);
+  const page = sheetPageMm(card, sheet);
   const footprint = cardFootprint({ w: card.widthMm, h: card.heightMm }, sheet.cardRotationDeg);
-  const usable = usableSize(sheet);
+  const usable = usableSize(card, sheet);
 
   const cols = fitCount(usable.w, footprint.w, sheet.gapXMm);
   const rows = fitCount(usable.h, footprint.h, sheet.gapYMm);

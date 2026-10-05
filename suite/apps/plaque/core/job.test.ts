@@ -45,6 +45,28 @@ describe("buildJob", () => {
     expect(buildJob(input({ limit: 2 })).artefactCount).toBe(2);
   });
 
+  it("prints only the chosen artefacts for a reprint of a few", () => {
+    const job = buildJob(input({ only: new Set(["row:r3", "row:r40"]) }));
+    expect(job.artefactCount).toBe(2);
+    expect(job.sheets).toHaveLength(1);
+  });
+
+  it("tiles a board onto home paper, and labels every tile", () => {
+    const board = { ...card, widthMm: 594, heightMm: 841 };
+    const sheet = { ...defaultSheet(), page: "FIT" as const, marginTopMm: 8, marginRightMm: 8, marginBottomMm: 8, marginLeftMm: 8 };
+    const template = { ...defaultTemplate(headers, board), rowScope: { kind: "document" as const } };
+    const job = buildJob(input({ card: board, sheet, template, tile: "A4" }));
+    expect(job.artefactCount).toBe(1);
+    expect(job.sheets.length).toBeGreaterThan(1);
+    expect(job.sheets.every((s) => s.pageWidthMm === 297 || s.pageWidthMm === 210)).toBe(true);
+    expect(job.slugTexts).toHaveLength(job.sheets.length);
+    expect(job.slugTexts[0]).toMatch(/^tile A1/);
+  });
+
+  it("will not tile and print both sides at once", () => {
+    expect(() => buildJob(input({ tile: "A4", duplex: { flipEdge: "long" } }))).toThrow(/one side/);
+  });
+
   it("builds only the requested page range", () => {
     const job = buildJob(input({ pages: { from: 0, to: 0 } }));
     expect(job.sheets).toHaveLength(1);
