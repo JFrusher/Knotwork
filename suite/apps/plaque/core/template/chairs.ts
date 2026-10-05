@@ -86,7 +86,13 @@ export function chairValues(
       continue;
     }
     if (!table.numbered) {
-      problems.push(`${table.label} seats its guests where they like, so it has no seat ${ref.seat}.`);
+      // Said once for a design, not once per table card: the same words for
+      // every table that leaves its guests to sit where they like.
+      problems.push(
+        ref.table === null
+          ? `At tables where guests sit where they like there is no seat ${ref.seat}, so it says nothing there.`
+          : `${table.label} seats its guests where they like, so it has no seat ${ref.seat}.`,
+      );
       continue;
     }
     const seat = table.seats[ref.seat - 1];

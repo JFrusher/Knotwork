@@ -20,6 +20,7 @@ import type {
 } from "../../core/types";
 import { usePlaque } from "../../state/store";
 import { NameFormat } from "./NameFormat";
+import { TemplateField } from "./ChairPicker";
 import {
   CheckboxField,
   ColorField,
@@ -50,6 +51,7 @@ export function InspectorPanel() {
     template,
     rowId,
     rowLabel,
+    cardTable,
     card,
     images,
     cropId,
@@ -72,6 +74,7 @@ export function InspectorPanel() {
         template: s.template,
         rowId: artefact?.rowId ?? null,
         rowLabel: artefact?.label ?? "",
+        cardTable: artefact?.row["Table"] ?? "",
         card: s.card,
         images: s.images,
         cropId: s.cropId,
@@ -145,6 +148,7 @@ export function InspectorPanel() {
         <TextProperties
           element={element}
           headers={headers}
+          cardTable={cardTable}
           fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
           fonts={fonts}
           patch={patch}
@@ -155,6 +159,7 @@ export function InspectorPanel() {
         <ListProperties
           element={element}
           headers={headers}
+          cardTable={cardTable}
           fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
           fonts={fonts}
           patch={patch}
@@ -566,22 +571,25 @@ function GridProperties({
 function ListProperties({
   element,
   headers,
+  cardTable,
   fontOptions,
   fonts,
   patch,
 }: {
   element: ListElement;
   headers: string[];
+  cardTable: string;
   fontOptions: Array<{ value: string; label: string }>;
   fonts: Map<string, LoadedFont>;
   patch: (p: Partial<CardElement>) => void;
 }) {
   return (
     <>
-      <TextField
+      <TemplateField
         label="One line per row"
         value={element.itemTemplate}
         placeholder="{{First Name}} — {{Meal}}"
+        cardTable={cardTable}
         onChange={(itemTemplate) => patch({ itemTemplate })}
       />
       <Hint>
@@ -753,22 +761,25 @@ function OpticalProperties({
 function TextProperties({
   element,
   headers,
+  cardTable,
   fontOptions,
   fonts,
   patch,
 }: {
   element: TextElement;
   headers: string[];
+  cardTable: string;
   fontOptions: Array<{ value: string; label: string }>;
   fonts: Map<string, LoadedFont>;
   patch: (p: Partial<CardElement>) => void;
 }) {
   return (
     <>
-      <TextField
+      <TemplateField
         label="Text"
         value={element.template}
         placeholder="{{First Name}}"
+        cardTable={cardTable}
         onChange={(template) => patch({ template })}
       />
       {headers.length > 0 && (

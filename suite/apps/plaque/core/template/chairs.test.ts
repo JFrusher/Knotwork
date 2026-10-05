@@ -67,7 +67,9 @@ describe("whoever sits there now", () => {
   it("never names a seat at a table where guests sit where they like", () => {
     const { values: got, problems } = values(["At seat 1"], "Table 3");
     expect(got).toEqual({ "At seat 1": "" });
-    expect(problems).toEqual(["Table 3 seats its guests where they like, so it has no seat 1."]);
+    // One message for a design, whichever table's card says it.
+    expect(problems).toEqual(["At tables where guests sit where they like there is no seat 1, so it says nothing there."]);
+    expect(values(["Table 3, seat 1"], "Table 1").problems).toEqual(["Table 3 seats its guests where they like, so it has no seat 1."]);
   });
 });
 

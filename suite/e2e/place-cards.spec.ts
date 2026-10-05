@@ -212,3 +212,30 @@ test("Seating's Print opens Place cards on the floor plan, making it the first t
   await expect(page.getByRole("region", { name: "Card" }).getByText("Top table")).toBeVisible();
   await expect(page.getByRole("button", { name: "Download print-shop PDF" })).toBeVisible();
 });
+
+test("a chair picked on the map goes into the text, and the card names whoever sits there", async ({ page }) => {
+  await seedExampleWedding(page);
+  await openSeating(page);
+  await page.getByRole("button", { name: /^Top table, / }).click();
+  await page.getByRole("button", { name: "Seat-level" }).click();
+
+  await page.getByRole("link", { name: "Place cards" }).click();
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await pieces.getByRole("button", { name: "+ New piece" }).click();
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
+  await page.getByLabel("Start from a design").selectOption({ label: "Table card — who sits here, A5" });
+  await page.getByRole("button", { name: "+ Text" }).click();
+
+  await page.getByRole("button", { name: "Pick a chair" }).click();
+  await expect(page.getByRole("button", { name: "This card's table" })).toHaveAttribute("aria-pressed", "true");
+  const chair = page.getByRole("button", { name: /^Top table, seat 1: / });
+  const sitter = ((await chair.getAttribute("aria-label")) ?? "").replace(/^Top table, seat 1: /, "");
+  await chair.click();
+
+  await expect(page.getByRole("textbox", { name: "Text" })).toHaveValue(/ \{\{At seat 1\}\}$/);
+  // One line for the design, not one per free-seating table's card.
+  await expect(page.getByText(/there is no seat 1, so it says nothing there/)).toHaveCount(1);
+  await expect(page.getByRole("region", { name: "Card" }).getByText(sitter, { exact: true }).first()).toBeVisible();
+  await expect(chair).toHaveClass(/used/);
+  await page.screenshot({ path: process.env.SHOT ?? "test-results/chair-picker.png" });
+});

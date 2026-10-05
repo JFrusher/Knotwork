@@ -1,0 +1,96 @@
+.input {
+  width: 100%;
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--grey-0);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.toggle {
+  align-self: flex-start;
+  padding: 2px var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+
+.modes {
+  display: flex;
+  gap: var(--sp-1);
+}
+
+.modes button {
+  flex: 1;
+  padding: 2px var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--grey-7);
+  cursor: pointer;
+}
+
+.modes button[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--grey-8);
+  font-weight: 600;
+}
+
+.modes button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.map {
+  width: 100%;
+  max-height: 16rem;
+  background: var(--grey-0);
+  border-radius: var(--radius-sm);
+}
+
+.table {
+  fill: var(--grey-2);
+}
+
+.chair {
+  fill: var(--grey-4);
+  stroke: transparent;
+  stroke-width: 4;
+  cursor: pointer;
+}
+
+.chair:hover,
+.chair:focus-visible {
+  fill: var(--accent);
+  outline: none;
+}
+
+.used {
+  stroke: var(--accent);
+  fill: var(--accent-soft);
+}
+
+.idle {
+  fill: var(--grey-3);
+}
+
+.free {
+  opacity: 0.45;
+}
