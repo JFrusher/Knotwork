@@ -66,7 +66,8 @@
         "seatHex": "#c9b48f",
         "wallHex": "#7a6a55",
         "tableLabels": true,
-        "walls": true
+        "walls": true,
+        "nameGap": 0.3
       }
     ],
     "chairName": "{{First Name}}"

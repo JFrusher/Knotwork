@@ -82,6 +82,7 @@ const room = (over: Partial<RoomElement> = {}): RoomElement => ({
   show: "room",
   fontId: "crimson",
   fontSizePt: 12,
+  nameGap: 0,
   colorHex: "#000000",
   tableHex: "#eeeeee",
   seatHex: "#cccccc",
@@ -191,5 +192,30 @@ describe("names inside a long table", () => {
     expect(columns.length).toBeGreaterThan(1);
     expect(new Set(columns.map((el) => el.kind === "text" && el.fontSizePt)).size).toBe(1);
     expect(columns.flatMap((el) => (el.kind === "text" ? el.lines : []))).toEqual(["Alex", "David", "Helen", "Ines", "Lucia", "Mateo"]);
+  });
+});
+
+describe("names at chairs", () => {
+  it("are all one size: a long name does not read smaller than its neighbour", () => {
+    const crowded = {
+      ...scene.tables[0]!,
+      seats: [
+        // Side by side, 20 apart: a name may be about that wide.
+        { x: 90, y: 45, out: { x: 0, y: -1 }, number: 1, row: sitter("Al", "Bo", "1") },
+        { x: 110, y: 45, out: { x: 0, y: -1 }, number: 2, row: sitter("Bartholomew-Fortescue", "Pemberton-Blythe", "2") },
+      ],
+    };
+    const { elements } = draw(room({ tableLabels: false, walls: false }), {}, { ...scene, tables: [crowded] }, "{{First Name}}");
+    const sizes = elements.flatMap((el) => (el.kind === "text" ? [el.fontSizePt] : []));
+    expect(sizes).toHaveLength(2);
+    expect(sizes[0]).toBe(sizes[1]);
+    expect(sizes[0]).toBeLessThan(12);
+  });
+
+  it("sit as far out from their chair as the design says", () => {
+    const name = (nameGap: number) =>
+      draw(room({ tableLabels: false, walls: false, nameGap }), {}, { ...scene, tables: [scene.tables[0]!] }).elements.find((el) => el.kind === "text")!;
+    // Ada's chair faces up the page: further out is higher.
+    expect(name(1).y).toBeLessThan(name(0).y);
   });
 });

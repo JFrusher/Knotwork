@@ -143,6 +143,7 @@ export const ELEMENT_KINDS: ElementKindSpec[] = [
         show: "room",
         fontId: DEFAULT_FONT_ID,
         fontSizePt: 9,
+        nameGap: 0.3,
         colorHex: "#171613",
         tableHex: "#e8dfcf",
         seatHex: "#c9b48f",

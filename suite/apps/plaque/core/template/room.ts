@@ -94,6 +94,7 @@ export function resolveRoom(
   }
 
   const seatR = scene.seatRadius * scale;
+  const atChairs: Array<{ words: string; box: Box }> = [];
   for (const table of tables) {
     const centre = at(table.x, table.y);
     const w = table.view.w * scale;
@@ -138,11 +139,10 @@ export function resolveRoom(
       return words ? [{ seat, words }] : [];
     });
     if (table.numbered) {
-      // Each name at its own chair, hanging outward.
+      // Each name at its own chair, hanging outward — sized below, all together.
       const across = Math.max(seatR * 2, nearestSeat(table, scale) * 0.96);
       for (const { seat, words } of named) {
-        const name = fitted(el, words, nameCell(at(seat.x, seat.y), seat.out, seatR, across), el.fontSizePt, opts, warnings);
-        if (name) elements.push({ ...place(name.box), ...name.text });
+        atChairs.push({ words, box: nameCell(at(seat.x, seat.y), seat.out, seatR, across, el.nameGap) });
       }
     } else if (named.length > 0) {
       // Guests who sit where they like are named inside the table, as Seating
@@ -151,6 +151,15 @@ export function resolveRoom(
         elements.push({ ...place(column.box), ...column.text });
       }
     }
+  }
+
+  // Every name at a chair at one size: the largest the tightest of them allows,
+  // so no guest reads smaller than the one beside them for a longer name.
+  const sizes = atChairs.map(({ words, box }) => fitted(el, words, box, el.fontSizePt, opts, warnings)?.text.fontSizePt ?? el.fontSizePt);
+  const shared = Math.min(el.fontSizePt, ...sizes);
+  for (const { words, box } of atChairs) {
+    const name = fitted(el, words, box, shared, opts, warnings);
+    if (name) elements.push({ ...place(name.box), ...name.text });
   }
 
   return { elements, warnings };
@@ -209,10 +218,13 @@ function nearestSeat(table: RoomTable, scale: number): Mm {
   return Number.isFinite(nearest) ? nearest * scale : 0;
 }
 
-/** A name's cell: hanging off the chair, away from the table, as wide as the gap to the next chair. */
-function nameCell(seat: { x: Mm; y: Mm }, out: { x: number; y: number }, seatR: Mm, across: Mm): Box {
+/**
+ * A name's cell: hanging off the chair, away from the table, `gap` chair radii
+ * clear of it, as wide as the gap to the next chair.
+ */
+function nameCell(seat: { x: Mm; y: Mm }, out: { x: number; y: number }, seatR: Mm, across: Mm, gap: number): Box {
   const depth = seatR * NAME_DEPTH;
-  const reach = seatR + depth / 2;
+  const reach = seatR * (1 + gap) + depth / 2;
   const cx = seat.x + out.x * reach;
   const cy = seat.y + out.y * reach;
   return { x: cx - across / 2, y: cy - depth / 2, w: across, h: depth };

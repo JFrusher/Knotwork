@@ -303,8 +303,10 @@ export interface RoomElement extends ElementBase {
   /** The whole room, or the table this artefact is for (its `{{Table}}`). */
   show: "room" | "table";
   fontId: string;
-  /** Names are set at this size or smaller, each fitted to the room by its seat. */
+  /** Names are set at this size or smaller: one size for every name at a chair. */
   fontSizePt: Pt;
+  /** How far a name sits out from its chair, in chair radii. */
+  nameGap: number;
   colorHex: Hex;
   tableHex: Hex;
   seatHex: Hex;

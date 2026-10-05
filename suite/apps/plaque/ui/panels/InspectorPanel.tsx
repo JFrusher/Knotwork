@@ -383,8 +383,8 @@ function RoomProperties({
       <NameFormat />
       <Hint>
         Drawn from Seating as it stands: move a table or a guest there and it moves here. Where a table
-        numbers its seats, each name sits at its chair; where guests sit where they like, they are named
-        inside the table, as Seating shows them.
+        numbers its seats, each name sits at its chair, every one at the same size; where guests sit
+        where they like, they are named inside the table, as Seating shows them.
       </Hint>
       <Row>
         <CheckboxField label="Table names" checked={element.tableLabels} onChange={(tableLabels) => patch({ tableLabels })} />
@@ -393,14 +393,24 @@ function RoomProperties({
 
       <SubGroup title="Typography">
         <SelectField label="Font" value={element.fontId} options={fontOptions} onChange={(fontId) => patch({ fontId })} />
-        <NumberField
-          label="Largest name"
-          value={element.fontSizePt}
-          step={0.5}
-          min={1}
-          suffix="pt"
-          onChange={(fontSizePt) => patch({ fontSizePt })}
-        />
+        <Row>
+          <NumberField
+            label="Largest name"
+            value={element.fontSizePt}
+            step={0.5}
+            min={1}
+            suffix="pt"
+            onChange={(fontSizePt) => patch({ fontSizePt })}
+          />
+          <NumberField
+            label="Gap from the chair"
+            value={element.nameGap}
+            step={0.1}
+            min={0}
+            suffix="× chair"
+            onChange={(nameGap) => patch({ nameGap: Math.max(0, nameGap) })}
+          />
+        </Row>
         <ColorField label="Names" value={element.colorHex} onChange={(c) => patch({ colorHex: c ?? "#000000" })} />
       </SubGroup>
 
