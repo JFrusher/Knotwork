@@ -26,16 +26,30 @@ a seat by clicking it rather than typing it.
 | 3 | A pinned box, when people move | **Pinned to the chair:** it shows whoever sits there now. |
 | 4 | Where picking happens | **A mini map in the inspector** (click a chair to insert its token) and **stamp all chairs** (an editable, bound box at every chair at once). |
 | 5 | When the room changes under stamped boxes | **Depends on the mode:** restyle-the-plan boxes follow their chair; illustrated-board boxes stay where they were put. Chairs with no box are listed, one click to add. |
-| 6 | What a chair label shows | **The full name**, wrapping to two lines. |
+| 6 | What a chair label shows | ~~The full name~~ — revised the same day: **a name format the user sets**, once per design, built from the guest's own tokens (decision 9). The full name is its default, wrapping to two lines. |
 | 7 | How auto-laid names sit | **Upright, outside the chair**, as the floor plan does now. |
 | 8 | Free-seating tables | **No names at chairs:** the table's guests are listed beside it, so a card never implies a seat that is not real. |
+| 9 | Customising how names appear | **The format**, one per design, from tokens: `{{First Name}}`, `{{First Name}} {{Initial}}.`, `{{Last Name}}, {{First Name}}`. Everyone on that design follows it. |
+| 10 | A guest's own name ("Grandma") | **Not in this build.** If added, it lives **on the guest** — a "name on cards" field used by every piece and the guest link, and a token of its own — not per piece. |
 
 ## The model
 
+### The name format
+
+Each design has one: `template.chairName`, a token pattern evaluated against
+the room row of whoever is in a chair — so anything a card can say about its
+own guest, a chair can say about its sitter: `{{First Name}}`, `{{Name}}`,
+`{{First Name}} {{Initial}}.`, even `{{Name}} · {{Dietary}}`. Default
+`{{First Name}} {{Last Name}}`. Edited once, in the inspector, with a live
+preview of a few real guests; every chair label on the design's plans and
+every chair token follows it. It replaces the `room` element's fixed
+`seatLabels` choice: "seat number" is the pattern `{{Seat}}`, "nothing" an
+empty one.
+
 ### Chair tokens
 
-Two forms, both resolving to the full name of whoever is in that chair now,
-empty for an empty chair:
+Two forms, both resolving to whoever is in that chair now, through the
+design's name format, and empty for an empty chair:
 
 | Form | Means | Chip shows |
 |---|---|---|
@@ -78,7 +92,8 @@ its token at the cursor. Chairs already used on the card are marked.
 
 ## Phases
 
-1. Chair tokens, resolved from the room, with free-seating warnings.
+1. The name format, replacing `seatLabels`, and chair tokens resolved through
+   it from the room, with free-seating warnings.
 2. Chair-label styling and the free-seating guest list on the table map.
 3. The inspector's mini map.
 4. Stamp all chairs, follow or stay, and the uncovered-chairs list.
