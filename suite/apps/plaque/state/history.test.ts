@@ -7,6 +7,7 @@ const { useKnotworkStore } = await import("@/lib/store/useKnotworkStore");
 const { usePlaque } = await import("./store");
 const { initialSuite } = await import("./design");
 const { artefactsOf } = await import("../core/data/parts");
+const { printBasis } = await import("./printed");
 
 /*
  * What was printed is a fact about paper, not an edit: undo does not take it
@@ -16,6 +17,7 @@ type Raw = Record<string, any>;
 const plaque = () => usePlaque.getState();
 const shared = () => useKnotworkStore.getState();
 const cards = () => artefactsOf(plaque().template, plaque().rows, plaque().headers, plaque().rowIds);
+const basis = () => printBasis(plaque().template, plaque().room);
 
 beforeEach(() => {
   const raw = {
@@ -32,7 +34,7 @@ beforeEach(() => {
 describe("a print and the wedding's history", () => {
   test("undoing an edit made before printing keeps the record of what was printed", () => {
     plaque().setBackground("#ff0000");
-    plaque().notePrinted(plaque().pieceId, cards(), false);
+    plaque().notePrinted(plaque().pieceId, cards(), false, basis());
     expect(plaque().printed).not.toBeNull();
     shared().undo();
     expect(plaque().template.backgroundHex).not.toBe("#ff0000");
@@ -45,7 +47,7 @@ describe("a print and the wedding's history", () => {
     const from = plaque().pieceId;
     const printedCards = cards();
     plaque().addPiece("Other");
-    plaque().notePrinted(from, printedCards, false);
+    plaque().notePrinted(from, printedCards, false, basis());
     expect(plaque().printed).toBeNull();
     plaque().switchPiece(from);
     expect(Object.keys(plaque().printed!.cards)).toHaveLength(2);
@@ -70,5 +72,19 @@ describe("a print and the wedding's history", () => {
     shared().undo();
     expect(plaque().pieces.length).toBe(before);
   });
-});
 
+  test("a copy of a printed piece has not been printed", () => {
+    plaque().notePrinted(plaque().pieceId, cards(), false, basis());
+    plaque().duplicatePiece(plaque().pieceId);
+    expect(plaque().printed).toBeNull();
+  });
+
+  test("a print that finishes after its piece was removed is nothing to record, not an error", () => {
+    plaque().addPiece("Gone soon");
+    const gone = plaque().pieceId;
+    const printedCards = cards();
+    const before = basis();
+    plaque().removePiece(gone);
+    expect(() => plaque().notePrinted(gone, printedCards, false, before)).not.toThrow();
+  });
+});

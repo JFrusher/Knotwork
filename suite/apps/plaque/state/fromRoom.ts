@@ -4,6 +4,8 @@ import { readSeats } from "@/lib/model/seats";
 import { dietaryText } from "@/lib/model/dietary";
 import { sideLabel } from "@/lib/model/partners";
 import type { RowIssue, GuestRow } from "../core/data/rows";
+import { chairName } from "../core/template/chairs";
+import type { Template } from "../core/types";
 
 /**
  * The guest list Place cards prints from: the room, and nothing else, read
@@ -71,7 +73,7 @@ function build(doc: Knotwork): RoomRows {
       "Known As": guest.knownAs,
       // What a finder groups by: the surname's letter, or the first name's for
       // someone listed by one name.
-      Initial: (guest.lastName || guest.firstName).trim().charAt(0).toLocaleUpperCase("en"),
+      Initial: (guest.lastName.trim() || guest.firstName.trim()).charAt(0).toLocaleUpperCase("en"),
       // "B." for Ada Byron, and nothing for someone known by one name: never a first name's letter.
       "Last Initial": guest.lastName.trim() ? `${guest.lastName.trim().charAt(0).toLocaleUpperCase("en")}.` : "",
       Table: at?.table ?? "",
@@ -124,7 +126,11 @@ export type Merged = Record<string, string[]>;
  * "Table 4" once for the table they share. A member who has left the list is
  * left out of the card; a card none of whose people remain is dropped.
  */
-export function withMerges(room: RoomRows, merged: Merged): Pick<RoomRows, "rows" | "rowIds"> {
+export function withMerges(
+  room: RoomRows,
+  merged: Merged,
+  design: Pick<Template, "chairName">,
+): Pick<RoomRows, "rows" | "rowIds"> {
   const cardOf = new Map<string, string>();
   for (const [cardId, members] of Object.entries(merged)) {
     for (const member of members) cardOf.set(member, cardId);
@@ -149,10 +155,11 @@ export function withMerges(room: RoomRows, merged: Merged): Pick<RoomRows, "rows
     for (const header of room.headers) {
       combined[header] = [...new Set(members.map((row) => row[header]).filter(Boolean))].join(" & ");
     }
-    // One of them known by a name of their own: name each of them, or the card
-    // would say only that one ("Granny Jo" for Granny Jo and Eleanor).
+    // One of them known by a name of their own: name each of them as the
+    // design names guests, or the card would say only that one ("Granny Jo"
+    // for Granny Jo and Eleanor).
     if (members.some((row) => row["Known As"])) {
-      combined["Known As"] = members.map((row) => row["Known As"] || row["Name"]).join(" & ");
+      combined["Known As"] = members.map((row) => chairName(design, row)).join(" & ");
     }
     rows.push(combined);
     rowIds.push(cardId);

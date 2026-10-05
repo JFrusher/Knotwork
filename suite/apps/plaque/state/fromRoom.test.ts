@@ -150,13 +150,13 @@ describe("combined cards", () => {
   );
 
   it("stands in for its people at the first of them", () => {
-    const { rows, rowIds } = withMerges(roomRows(doc), { "merged:x": ["g2", "g1"] });
+    const { rows, rowIds } = withMerges(roomRows(doc), { "merged:x": ["g2", "g1"] }, {});
     expect(rowIds).toEqual(["merged:x", "g3"]);
     expect(rows[0]).toMatchObject({ "First Name": "Grace & Ada", Table: "Table 4" });
   });
 
   it("leaves out somebody no longer on the list, and drops a card with nobody left", () => {
-    const { rowIds, rows } = withMerges(roomRows(doc), { "merged:x": ["g1", "gone"], "merged:y": ["gone"] });
+    const { rowIds, rows } = withMerges(roomRows(doc), { "merged:x": ["g1", "gone"], "merged:y": ["gone"] }, {});
     // In name order, as the room lists them: Alan before Grace.
     expect(rowIds).toEqual(["merged:x", "g3", "g2"]);
     expect(rows[0]?.["First Name"]).toBe("Ada");
@@ -164,7 +164,7 @@ describe("combined cards", () => {
 
   it("is the room itself when nobody is combined", () => {
     const room = roomRows(doc);
-    expect(withMerges(room, {}).rows).toBe(room.rows);
+    expect(withMerges(room, {}, {}).rows).toBe(room.rows);
   });
 
   it("names everyone on a combined card when one of them is known by a name of their own", () => {
@@ -172,7 +172,13 @@ describe("combined cards", () => {
       { g1: { id: "g1", firstName: "Charis", lastName: "Smith", knownAs: "Granny" }, g2: { id: "g2", firstName: "Eleanor", lastName: "Vane" } },
       {},
     );
-    const { rows } = withMerges(roomRows(doc), { "merged:x": ["g1", "g2"] });
-    expect(rows.map((row) => row["Known As"])).toEqual(["Granny & Eleanor Vane"]);
+    expect(withMerges(roomRows(doc), { "merged:x": ["g1", "g2"] }, {}).rows.map((row) => row["Known As"])).toEqual(["Granny & Eleanor Vane"]);
+    // The others are named as the design names everyone.
+    expect(withMerges(roomRows(doc), { "merged:x": ["g1", "g2"] }, { chairName: "{{First Name}}" }).rows.map((row) => row["Known As"])).toEqual(["Granny & Eleanor"]);
+  });
+
+  it("files someone whose surname is only spaces under their first name", () => {
+    const doc = wedding({ g1: { id: "g1", firstName: "Prince", lastName: " " } }, {});
+    expect(roomRows(doc).rows.map((row) => [row["Initial"], row["Last Initial"]])).toEqual([["P", ""]]);
   });
 });

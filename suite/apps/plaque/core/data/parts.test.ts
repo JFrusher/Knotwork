@@ -139,3 +139,10 @@ describe("a finder over several pages", () => {
     expect(printed(template, rows).flat()).toHaveLength(40);
   });
 });
+
+describe("a flowing grid too short for a heading and a line", () => {
+  it("still finishes, placing what it can and letting the fit report the rest", () => {
+    const runs = flowPlan({ h: 100, columns: 1, gapMm: 4, fontSizePt: 12, headingScale: 1.4, lineHeight: 1.2 }, [1]);
+    expect(runs.reduce((n, run) => n + run.to - run.from, 0)).toBe(1);
+  }, 2000);
+});

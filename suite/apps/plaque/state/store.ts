@@ -39,7 +39,7 @@ import { DESIGN_KEYS, designFor, designOf, initialSuite, newPiece, withDesign, t
 import { readDesign, readSuite, writeDesign, writeSuite } from "./sliceBridge";
 import { roomRows, withMerges, type Merged } from "./fromRoom";
 import { roomScene } from "./roomScene";
-import { printBasis, recordPrint } from "./printed";
+import { printBasis, recordPrint, type PrintBasis } from "./printed";
 import { normalise, type Artefact } from "../core/data/artefacts";
 import { artefactsOf } from "../core/data/parts";
 import { makeResolveOptions } from "../core/template/resolve";
@@ -154,7 +154,7 @@ export interface PlaqueState extends Design, RoomData {
    * changes since are measured from. Named, not assumed: a print can finish
    * after another piece is opened.
    */
-  notePrinted: (pieceId: string, artefacts: Artefact[], partial: boolean) => void;
+  notePrinted: (pieceId: string, artefacts: Artefact[], partial: boolean, basis: PrintBasis) => void;
   setCard: (patch: Partial<CardSpec>) => void;
   setSheet: (patch: Partial<SheetSpec>) => void;
   applySuggestion: (s: LayoutSuggestion) => void;
@@ -232,12 +232,14 @@ type Wedding = { raw: Record<string, unknown>; doc: Knotwork };
 let lastLive: { inputs: unknown[]; data: RoomData } | null = null;
 
 /** The open piece's rows: the room, with its combined cards in place, and the guest link. */
-function live(wedding: Wedding, merged: Merged): RoomData {
+function live(wedding: Wedding, design: Pick<Design, "merged" | "template">): RoomData {
+  const { merged } = design;
+  const chairName = design.template.chairName;
   const link = guestLinkUrl();
-  const inputs = [wedding.raw["guests"], wedding.raw["seating"], wedding.raw["event"], merged, link];
+  const inputs = [wedding.raw["guests"], wedding.raw["seating"], wedding.raw["event"], merged, link, chairName];
   if (lastLive && inputs.every((input, i) => input === lastLive!.inputs[i])) return lastLive.data;
   const room = roomRows(wedding.doc);
-  const merges = withMerges(room, merged);
+  const merges = withMerges(room, merged, { chairName });
   const data = {
     headers: room.headers,
     rowIds: merges.rowIds,
@@ -290,7 +292,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     const design = designFor(suite, id);
     set({
       ...design,
-      ...live(useKnotworkStore.getState(), design.merged),
+      ...live(useKnotworkStore.getState(), design),
       pieceId: id,
       printOnly: null,
       pieces: summarise(suite, get().pieces),
@@ -305,7 +307,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
   const opened = readDesign(useKnotworkStore.getState(), null);
   return {
     ...opened.design,
-    ...live(useKnotworkStore.getState(), opened.design.merged),
+    ...live(useKnotworkStore.getState(), opened.design),
     printOnly: null,
     designProblem: opened.problem,
     pieceId: opened.pieceId,
@@ -351,7 +353,8 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
         const at = suite.pieces.findIndex((p) => p.id === id);
         const source = suite.pieces[at];
         if (!source) throw new Error(`No piece "${id}" in the stationery.`);
-        const copy = { ...source, id: copyId, name: `${source.name} (copy)` };
+        // A copy has not been printed: nothing on paper is out of date.
+        const copy = { ...source, id: copyId, name: `${source.name} (copy)`, printed: null };
         return { ...suite, pieces: [...suite.pieces.slice(0, at + 1), copy, ...suite.pieces.slice(at + 1)] };
       });
       open(readSuite(useKnotworkStore.getState()).suite, copyId);
@@ -382,10 +385,12 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     setPrintOnly: (printOnly) => set({ printOnly }),
 
     // Bookkeeping, not an edit: nobody undoes having printed something.
-    notePrinted: (pieceId, artefacts, partial) => {
+    notePrinted: (pieceId, artefacts, partial, basis) => {
       const { suite } = readSuite(useKnotworkStore.getState());
+      // Removed while it printed: there is no piece left to remember it on.
+      if (!suite.pieces.some((p) => p.id === pieceId)) return;
       const design = designFor(suite, pieceId);
-      const printed = recordPrint(design.printed, artefacts, partial, new Date().toISOString(), printBasis(design.template, get().room));
+      const printed = recordPrint(design.printed, artefacts, partial, new Date().toISOString(), basis);
       writeSuite(withDesign(suite, pieceId, { ...design, printed }), { silent: true });
       // The few went to paper: the next print of that piece is the whole run again.
       if (get().pieceId === pieceId) set({ printOnly: null });
@@ -777,7 +782,7 @@ function follow(wedding: Wedding): void {
   const present = (id: ElementId | null) => id !== null && design.template.elements.some((el) => el.id === id);
   usePlaque.setState((s) => ({
     ...design,
-    ...live(wedding, design.merged),
+    ...live(wedding, design),
     designProblem: problem,
     pieceId,
     pieces: summarise(suite, s.pieces),

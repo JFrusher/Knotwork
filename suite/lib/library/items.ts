@@ -3,6 +3,7 @@ import { choices } from "@/lib/bar/actions";
 import { daysUntil } from "@/lib/dates";
 import { emptyBar, readBar, readCeremony } from "@/lib/model/slices";
 import type { ShotMember } from "@/lib/model/types";
+import { readSuite } from "@/apps/plaque/state/sliceBridge";
 import { SUITE_VERSION, storedPieces } from "@/apps/plaque/state/suite";
 
 /**
@@ -193,22 +194,26 @@ const newId = (prefix: string) => `${prefix}_${Date.now().toString(36)}${(counte
 export function applyTo(kind: Kind, content: Raw, raw: Raw): Array<[SliceName, unknown]> {
   switch (kind) {
     case "cards": {
-      const current = record(raw["stationery"]);
-      const held = new Map(storedPieces(current).map((piece) => [piece["id"], piece]));
+      // The wedding's stationery as it stands, an older one brought up to
+      // pieces first, so its combined cards are moved over rather than lost.
+      const { pieces: held, ...sharedNow } = readSuite({ raw, doc: migrate(raw) }).suite;
       const { version: _version, pieces: _pieces, ...shared } = content;
-      // Every piece prints from this wedding's room. A piece it already has
-      // keeps who shares a card; a new one has nobody combined yet.
-      const pieces = storedPieces(content).map((piece) => ({
-        // Only a wedding already on pieces holds combines by guest; an older one's
-        // are moved over when Place cards first reads it.
-        merged: current["version"] === SUITE_VERSION ? record(held.get(piece["id"])?.["merged"]) : {},
-        ...pick(piece, ["id", "name", "card", "sheet", "template"]),
-      }));
+      const kept = storedPieces(content).map((piece) => pick(piece, ["id", "name", "card", "sheet", "template"]));
+      const keptById = new Map(kept.map((piece) => [piece["id"], piece]));
+      // The kept design replaces the pieces it has; every other piece of this
+      // wedding stays. A piece it already has keeps who shares a card and what
+      // was printed; a new one has nobody combined yet.
+      const pieces = [
+        ...held.map((piece) => ({ ...piece, ...keptById.get(piece.id) })),
+        ...kept
+          .filter((piece) => !held.some((own) => own.id === piece["id"]))
+          .map((piece) => ({ merged: {}, printed: null, ...piece })),
+      ];
       return [
         [
           "stationery",
           {
-            ...pick(current, ["uploadedIcons", "assetNames", "snapEnabled", "sheetCollapsed"]),
+            ...sharedNow,
             ...pick(shared, ["uploadedIcons", "assetNames", "snapEnabled"]),
             version: SUITE_VERSION,
             savedAt: null,

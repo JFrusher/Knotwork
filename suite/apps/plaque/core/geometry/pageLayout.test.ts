@@ -58,6 +58,12 @@ describe("a page the card's own size", () => {
     expect(computeLayout(board, fit)).toMatchObject({ perSheet: 1, origin: { x: 8, y: 8 } });
   });
 
+  it("holds its card however the margins add up in floating point", () => {
+    const fiveInch = card({ widthMm: 127, heightMm: 127 });
+    const half = sheet({ page: "FIT", marginTopMm: 12.7, marginRightMm: 12.7, marginBottomMm: 12.7, marginLeftMm: 12.7 });
+    expect(computeLayout(fiveInch, half).perSheet).toBe(1);
+  });
+
   it("is the named paper otherwise", () => {
     expect(sheetPageMm(card(), sheet({ page: "A3" }))).toEqual({ w: 297, h: 420 });
   });

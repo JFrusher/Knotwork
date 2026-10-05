@@ -83,9 +83,13 @@ export function rebindTemplate(
       const target = resolve(el.groupBy);
       if (!target && !unmatched.includes(el.groupBy)) unmatched.push(el.groupBy);
       if (target && target !== el.groupBy) renamed[el.groupBy] = target;
+      const sortTarget = el.sortBy ? resolve(el.sortBy) : null;
+      if (el.sortBy && !sortTarget && !unmatched.includes(el.sortBy)) unmatched.push(el.sortBy);
+      if (sortTarget && sortTarget !== el.sortBy) renamed[el.sortBy] = sortTarget;
       return {
         ...el,
         groupBy: target ?? el.groupBy,
+        sortBy: sortTarget ?? el.sortBy,
         headingTemplate: rewrite(el.headingTemplate),
         itemTemplate: rewrite(el.itemTemplate),
       };

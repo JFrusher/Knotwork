@@ -152,3 +152,11 @@ describe("unboundTokens", () => {
     expect(unboundTokens(template([text("{{Table}}")]), ["Table"])).toEqual([]);
   });
 });
+
+describe("rebinding a board", () => {
+  it("moves the column its lines are sorted by, as it moves the one they are grouped by", () => {
+    const grid = { kind: "grid", id: "g", x: 0, y: 0, w: 10, h: 10, z: 0, groupBy: "Table", sortBy: "Last Name", headingTemplate: "{{Table}}", itemTemplate: "{{First Name}} {{Last Name}}" } as never;
+    const { template } = rebindTemplate({ backgroundHex: null, elements: [grid] }, ["First Name", "Last Name", "Table"], ["First", "Surname", "Table"]);
+    expect(template.elements[0]).toMatchObject({ sortBy: "Surname", itemTemplate: "{{First}} {{Surname}}" });
+  });
+});

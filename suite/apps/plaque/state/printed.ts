@@ -41,10 +41,14 @@ export function printBasis(template: Template, room: RoomScene): PrintBasis {
     ),
   ];
   const plans = template.elements.flatMap((el) => (el.kind === "room" ? [el.show] : []));
+  // The whole room is the same on every card: drawn once, not once a card.
+  const wholeRoom = plans.includes("room")
+    ? { bounds: room.bounds, walls: room.walls, tables: room.tables.map((table) => drawnTable(template, table)) }
+    : null;
   return (artefact) => {
     const drawn = plans.map((show) =>
       show === "room"
-        ? { bounds: room.bounds, walls: room.walls, tables: room.tables.map((table) => drawnTable(template, table)) }
+        ? wholeRoom
         : room.tables
             .filter((table) => normalise(table.label) === normalise(artefact.row["Table"] ?? ""))
             .map((table) => drawnTable(template, table)),

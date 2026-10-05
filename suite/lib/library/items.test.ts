@@ -75,14 +75,30 @@ describe("putting it into another wedding", () => {
     const kept = extract("cards", example)!;
     const board = { id: "board", name: "Seating board", card: { widthMm: 594 }, sheet: {}, template: { elements: [] } };
     const content = { ...kept, pieces: [...(kept["pieces"] as unknown[]), board] };
+    const own = (kept["pieces"] as Array<Record<string, unknown>>)[0]!;
     const held = {
       ...other,
-      stationery: { version: 3, pieces: [{ id: "place-cards", name: "Place cards", merged: { "merged:x": ["r1", "r2"] } }] },
+      stationery: { version: 3, pieces: [{ ...own, merged: { "merged:x": ["r1", "r2"] }, printed: null }] },
     };
     const [[, stationery]] = applyTo("cards", content, held) as Array<[string, { pieces: Array<Record<string, unknown>> }]>;
     expect(stationery.pieces.map((p) => p["id"])).toEqual(["place-cards", "board"]);
     expect(stationery.pieces[0]).toMatchObject({ merged: { "merged:x": ["r1", "r2"] } });
     expect(stationery.pieces[1]).toMatchObject({ merged: {}, card: { widthMm: 594 } });
+  });
+
+  it("leaves a piece of the wedding's own that the kept design does not have", () => {
+    const held = {
+      ...other,
+      stationery: {
+        ...extract("cards", example)!,
+        pieces: [
+          ...(extract("cards", example)!["pieces"] as unknown[]),
+          { ...(extract("cards", example)!["pieces"] as Array<Record<string, unknown>>)[0]!, id: "menus", name: "Menus", merged: {} },
+        ],
+      },
+    };
+    const [[, stationery]] = applyTo("cards", extract("cards", example)!, held) as Array<[string, { pieces: Array<Record<string, unknown>> }]>;
+    expect(stationery.pieces.map((p) => p["id"])).toContain("menus");
   });
 
   it("still puts in a design kept before there were pieces", () => {

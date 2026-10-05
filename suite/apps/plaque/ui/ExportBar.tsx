@@ -13,7 +13,7 @@ import {
 import type { MissingAsset } from "../core/template/assets";
 import type { Artefact } from "../core/data/artefacts";
 import { makeResolveOptions } from "../core/template/resolve";
-import { printing } from "../state/printed";
+import { printBasis, printing } from "../state/printed";
 import { usePlaque } from "../state/store";
 import styles from "./ExportBar.module.css";
 import { Preflight, type PreflightChoice } from "./Preflight";
@@ -141,6 +141,9 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
 
   async function download(variant: Variant = "all") {
     if (variant === "duplex-test") return downloadDuplexTest();
+    // What these cards are printed from, as it is now: the record is measured
+    // from this, not from whatever the room is by the time the file is made.
+    const basis = printBasis(template, room);
     setBusy(true);
     setError(null);
     setNote(null);
@@ -198,7 +201,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       save(bytes, `${fileNameFor(pieceName)}${SUFFIX[variant]}.pdf`);
       // The whole run, or the chosen few, went to paper: changes are measured from here.
       if (variant === "all" || tiles) {
-        usePlaque.getState().notePrinted(pieceId, printing(artefacts, printOnly), printOnly !== null);
+        usePlaque.getState().notePrinted(pieceId, printing(artefacts, printOnly), printOnly !== null, basis);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "The PDF could not be generated.");

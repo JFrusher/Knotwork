@@ -32,6 +32,9 @@ export function sheetPageMm(card: CardSpec, sheet: SheetSpec): Size {
 
 /** The rectangle inside the margins that cards may occupy. */
 export function usableSize(card: CardSpec, sheet: SheetSpec): Size {
+  // Exactly the card on a page made to fit it: adding the margins and taking
+  // them away again is not exact in floating point, and a hair short fits none.
+  if (sheet.page === "FIT") return cardFootprint({ w: card.widthMm, h: card.heightMm }, sheet.cardRotationDeg);
   const page = sheetPageMm(card, sheet);
   return {
     w: page.w - sheet.marginLeftMm - sheet.marginRightMm,

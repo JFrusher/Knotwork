@@ -139,9 +139,10 @@ function flowInto(el: FlowSpec, counts: number[]): FlowRun[] {
         y += lineH;
         to += 1;
       }
-      // Nothing placed in an empty column means a line taller than the box:
-      // place it anyway rather than looping, and let the fit report it.
-      if (to === from && !heading && top === 0) {
+      // Nothing placed in an empty column means a line (with its heading)
+      // taller than the box: place it anyway rather than looping, and let the
+      // fit report it.
+      if (to === from && from < count && top === 0) {
         y += lineH;
         to += 1;
       }
