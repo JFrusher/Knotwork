@@ -12,7 +12,7 @@ import {
 } from "../core/template/overrides";
 import { rebindTemplate } from "../core/template/rebind";
 import { elementKind } from "../core/template/registry";
-import type { GalleryTemplate } from "../core/data/gallery";
+import { GALLERY, type GalleryTemplate } from "../core/data/gallery";
 
 /**
  * The columns the shipped gallery is written against. Rebinding maps them onto
@@ -130,6 +130,12 @@ export interface PlaqueState extends Design, RoomData {
   previewGuestIndex: number;
 
   switchPiece: (id: string) => void;
+  /**
+   * Opens the piece with this id, making it from the gallery design of the
+   * same id first if the wedding has none: how Seating's Print sends someone
+   * to "the floor plan" whether or not it exists yet.
+   */
+  openPiece: (id: string) => void;
   /** A new, empty piece, opened. */
   addPiece: (name: string) => void;
   /** A copy of a piece — design and data — opened. */
@@ -301,6 +307,18 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     previewGuestIndex: 0,
 
     switchPiece: (id) => open(readSuite(useKnotworkStore.getState()).suite, id),
+
+    openPiece: (id) => {
+      const { suite } = readSuite(useKnotworkStore.getState());
+      if (suite.pieces.some((p) => p.id === id)) return open(suite, id);
+      const entry = GALLERY.find((g) => g.id === id);
+      if (!entry) throw new Error(`No piece or design called "${id}".`);
+      // "Floor plan — the room to scale, A1" is called "Floor plan".
+      const name = entry.name.split(" — ")[0]!;
+      changeSuite(`adding ${name}`, (current) => ({ ...current, pieces: [...current.pieces, newPiece(id, name)] }));
+      open(readSuite(useKnotworkStore.getState()).suite, id);
+      get().applyGalleryTemplate(entry);
+    },
 
     addPiece: (name) => {
       const piece = newPiece(newId(), name);

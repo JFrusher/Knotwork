@@ -1,7 +1,5 @@
 import type { jsPDF as JsPdf } from 'jspdf'
 import { buildFloorPlanSvg, measureFloorPlan, type Bounds, type FloorPlanSource, type Measure } from './floorPlanSvg'
-import { CARD_TEMPLATES, type CardTemplate } from './cardTemplates'
-import { slug } from './download'
 
 // jsPDF + svg2pdf are heavy and only needed on export, so they are dynamically
 // imported (kept out of the main bundle).
@@ -27,25 +25,6 @@ const PLAN_PAD = 8 // clear ground drawn around the plan itself
 const MAX_NAME_PT = 16
 const FONT_FLOOR_PT = 6 // below this the plan is tiled across two sheets
 const TILE_OVERLAP = 0.05
-
-const tableByLabel = (a: { label: string }, b: { label: string }) =>
-  String(a.label).localeCompare(String(b.label), undefined, { numeric: true })
-
-/** Seated guests in table → seat order, with their table label. */
-function seatedGuests(doc: FloorPlanSource): Array<{ name: string; table: string; lastName: string }> {
-  const guests = doc.guests || {}
-  const tables = doc.tables || {}
-  const out: Array<{ name: string; table: string; lastName: string }> = []
-  Object.values(tables)
-    .sort(tableByLabel)
-    .forEach((t) => {
-      for (const gid of (t.assignedGuestIds || []).filter((id): id is string => Boolean(id))) {
-        const g = guests[gid]
-        if (g) out.push({ name: g.fullName, table: t.label, lastName: g.lastName || g.fullName })
-      }
-    })
-  return out
-}
 
 /**
  * Work out how the plan is laid across sheets.
@@ -171,59 +150,4 @@ export async function buildFloorPlanPdf(doc: FloorPlanSource, name: string, opts
   }
 
   return pdf
-}
-
-/** The floor plan, downloaded. */
-export async function exportFloorPlanPdf(doc: FloorPlanSource, name: string, opts: { pages?: Pages } = {}): Promise<void> {
-  const pdf = await buildFloorPlanPdf(doc, name, opts)
-  pdf.save(`${slug(name)}-seating-chart.pdf`)
-}
-
-function renderCards(pdf: JsPdf, items: Array<{ name: string; table: string }>, tpl: CardTemplate): void {
-  const perPage = tpl.cols * tpl.rows
-  items.forEach((item, i) => {
-    const onPage = i % perPage
-    if (i > 0 && onPage === 0) pdf.addPage()
-    const col = onPage % tpl.cols
-    const row = Math.floor(onPage / tpl.cols)
-    const x = tpl.marginX + col * (tpl.cellW + tpl.gapX)
-    const y = tpl.marginY + row * (tpl.cellH + tpl.gapY)
-
-    pdf.setDrawColor(205)
-    pdf.setLineWidth(0.2)
-    pdf.rect(x, y, tpl.cellW, tpl.cellH)
-    if (tpl.fold) {
-      // dashed fold line across the middle for tent cards
-      pdf.setLineDashPattern([2, 2], 0)
-      pdf.line(x, y + tpl.cellH / 2, x + tpl.cellW, y + tpl.cellH / 2)
-      pdf.setLineDashPattern([], 0)
-    }
-
-    const cx = x + tpl.cellW / 2
-    const cy = y + (tpl.fold ? tpl.cellH * 0.75 : tpl.cellH / 2)
-    pdf.setFontSize(tpl.kind === 'escort' ? 13 : 18)
-    pdf.setTextColor(20)
-    pdf.text(String(item.name), cx, cy - 2, { align: 'center' })
-    pdf.setFontSize(tpl.kind === 'escort' ? 9 : 11)
-    pdf.setTextColor(120)
-    pdf.text(String(item.table), cx, cy + (tpl.kind === 'escort' ? 6 : 9), { align: 'center' })
-  })
-}
-
-export async function exportCards(doc: FloorPlanSource, name: string, templateId: string): Promise<void> {
-  const tpl = CARD_TEMPLATES[templateId]
-  if (!tpl) return
-  const { jsPDF } = await loadPdf()
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [tpl.pageW, tpl.pageH] })
-
-  let items = seatedGuests(doc)
-  if (tpl.kind === 'escort') {
-    items = [...items].sort((a, b) => String(a.lastName).localeCompare(String(b.lastName)))
-  }
-  if (!items.length) {
-    items = [{ name: 'No seated guests yet', table: '', lastName: '' }]
-  }
-
-  renderCards(pdf, items, tpl)
-  pdf.save(`${slug(name)}-${tpl.kind}-cards.pdf`)
 }

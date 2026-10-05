@@ -34,7 +34,7 @@ export function PiecesBar() {
 
   return (
     <nav className={styles.bar} aria-label="Pieces">
-      <div className={styles.tabs} role="tablist">
+      <div className={styles.tabs}>
         {pieces.map((piece) =>
           renaming === piece.id ? (
             <input
@@ -58,8 +58,7 @@ export function PiecesBar() {
             <button
               key={piece.id}
               type="button"
-              role="tab"
-              aria-selected={piece.id === pieceId}
+              aria-current={piece.id === pieceId ? "true" : undefined}
               className={piece.id === pieceId ? `${styles.tab} ${styles.tabActive}` : styles.tab}
               onClick={() => switchPiece(piece.id)}
               onDoubleClick={() => setRenaming(piece.id)}

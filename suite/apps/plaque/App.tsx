@@ -1,6 +1,7 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useShallow } from "zustand/react/shallow";
 import styles from "./App.module.css";
 import { BUNDLED_FONTS } from "./assets/fonts";
@@ -152,6 +153,14 @@ export function App() {
       cancelled = true;
     };
   }, []);
+
+  // Sent here for one piece — Seating's Print does this — open it, making it
+  // from its design if the wedding has none yet. Asked again on a reload, it is
+  // only opened: the piece exists by then.
+  const wanted = useSearchParams().get("piece");
+  useEffect(() => {
+    if (ready && wanted) usePlaque.getState().openPiece(wanted);
+  }, [ready, wanted]);
 
   // Esc leaves crop mode, the way it leaves every other transient mode.
   useEffect(() => {

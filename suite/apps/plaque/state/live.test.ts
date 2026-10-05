@@ -190,3 +190,17 @@ test("a guest seated in the room is on the card at once, on any piece", () => {
   shared().setSlice("seating", seating, { label: "the room" });
   expect(plaque().rows.map((row) => row["Table"])).toEqual(["Table 1", "Top table"]);
 });
+
+test("asked for a piece by its design, makes it once from the gallery, and opens it after that", () => {
+  plaque().openPiece("floor-plan");
+  expect(plaque().pieces.map((p) => p.name)).toEqual(["Place cards", "Floor plan"]);
+  expect(plaque().pieceId).toBe("floor-plan");
+  expect(plaque().template.elements.some((el) => el.kind === "room")).toBe(true);
+  expect(plaque().sheet.page).toBe("FIT");
+
+  plaque().switchPiece("place-cards");
+  plaque().openPiece("floor-plan");
+  expect(plaque().pieces).toHaveLength(2);
+  expect(plaque().pieceId).toBe("floor-plan");
+  expect(() => plaque().openPiece("nonsense")).toThrow(/No piece or design/);
+});

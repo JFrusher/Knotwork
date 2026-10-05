@@ -25,14 +25,14 @@ test("a second piece is designed on its own and kept in the wedding beside the f
   await seedExampleWedding(page);
   await page.goto("/place-cards");
   const pieces = page.getByRole("navigation", { name: "Pieces" });
-  await expect(pieces.getByRole("tab", { name: "Place cards" })).toHaveAttribute("aria-selected", "true");
+  await expect(pieces.getByRole("button", { name: "Place cards", exact: true })).toHaveAttribute("aria-current", "true");
   const placeCards = await elementCount(page);
 
   await pieces.getByRole("button", { name: "+ New piece" }).click();
   const name = pieces.getByRole("textbox", { name: "Name of this piece" });
   await name.fill("Table numbers");
   await name.press("Enter");
-  await expect(pieces.getByRole("tab", { name: "Table numbers" })).toHaveAttribute("aria-selected", "true");
+  await expect(pieces.getByRole("button", { name: "Table numbers", exact: true })).toHaveAttribute("aria-current", "true");
 
   await page.getByRole("button", { name: "+ Text" }).click();
   await expect
@@ -42,8 +42,8 @@ test("a second piece is designed on its own and kept in the wedding beside the f
       ["Table numbers", 1],
     ]);
 
-  await pieces.getByRole("tab", { name: "Place cards" }).click();
-  await expect(pieces.getByRole("tab", { name: "Place cards" })).toHaveAttribute("aria-selected", "true");
+  await pieces.getByRole("button", { name: "Place cards", exact: true }).click();
+  await expect(pieces.getByRole("button", { name: "Place cards", exact: true })).toHaveAttribute("aria-current", "true");
   await page.screenshot({ path: process.env.SHOT ?? "test-results/pieces.png" });
 });
 
@@ -193,4 +193,17 @@ test("after printing, a change in the room names the cards it made wrong, and re
   await notice.getByRole("button", { name: "Print just these 8" }).click();
   await expect(page.getByText("Just 8 of 100 cards")).toBeVisible();
   await page.screenshot({ path: process.env.SHOT ?? "test-results/reprint.png" });
+});
+
+test("Seating's Print opens Place cards on the floor plan, making it the first time", async ({ page }) => {
+  await seedExampleWedding(page);
+  await openSeating(page);
+  await page.getByRole("button", { name: "Print & PDF" }).click();
+  await page.getByRole("link", { name: /^Floor plan/ }).click();
+
+  await expect(page).toHaveURL(/\/place-cards\?piece=floor-plan$/);
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await expect(pieces.getByRole("button", { name: "Floor plan", exact: true })).toHaveAttribute("aria-current", "true");
+  await expect(page.getByRole("region", { name: "Card" }).getByText("Top table")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Download print-shop PDF" })).toBeVisible();
 });

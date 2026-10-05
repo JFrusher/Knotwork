@@ -176,6 +176,12 @@ Each phase is one commit, with tests, reviewed before the next.
 8. **Retire Seating's print.** Its Print button opens Place cards on the right
    piece; `exportPdf.ts` card paths and `cardTemplates.ts` removed, floor-plan
    geometry kept where the `room` element uses it.
+   *As built:* Print offers floor plan, board, finder, place, escort and
+   table cards, each a link to `/place-cards?piece=<id>`, which opens that
+   piece or makes it from the starter of the same id. **Still a second
+   renderer:** the wedding PDF pack draws its one-page plan with Seating's
+   `buildFloorPlanPdf`; moving the pack onto a Place cards piece is the
+   follow-up that would make it one way.
 
 ## Open questions, to settle at the start of their phase
 
