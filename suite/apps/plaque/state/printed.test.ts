@@ -67,3 +67,28 @@ describe("what has changed since printing", () => {
     expect(Object.keys(recordPrint(printed, [card("ada", "Table 4")], false, "x", basis).cards)).toEqual(["ada"]);
   });
 });
+
+describe("a design that names chairs", () => {
+  it("has changed when someone else sits in a chair it names", () => {
+    const sitterRoom = (name: string): RoomScene => ({
+      ...room,
+      tables: [
+        {
+          label: "Table 1",
+          x: 0,
+          y: 0,
+          rotationDeg: 0,
+          pathD: "",
+          view: { x: 0, y: 0, w: 1, h: 1 },
+          numbered: true,
+          interior: { x: 0, y: 0, w: 1, h: 1 },
+          seats: [{ x: 0, y: 0, out: { x: 0, y: 1 }, number: 1, row: { "First Name": name, "Last Name": "" } }],
+        },
+      ],
+    });
+    const chairs = design("{{Table}}: {{At seat 1}}");
+    const printed = recordPrint(null, [card("t1", "Table 1")], false, "x", printBasis(chairs, sitterRoom("Ada")));
+    expect(sincePrinted(printed, [card("t1", "Table 1")], printBasis(chairs, sitterRoom("Ada"))).changed).toEqual([]);
+    expect(sincePrinted(printed, [card("t1", "Table 1")], printBasis(chairs, sitterRoom("Grace"))).changed).toHaveLength(1);
+  });
+});

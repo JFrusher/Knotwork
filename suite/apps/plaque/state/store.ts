@@ -151,6 +151,8 @@ export interface PlaqueState extends Design, RoomData {
   setSheet: (patch: Partial<SheetSpec>) => void;
   applySuggestion: (s: LayoutSuggestion) => void;
   setBackground: (hex: string | null) => void;
+  /** How this design names a guest by their chair. See core/template/chairs. */
+  setChairName: (pattern: string) => void;
   /** Changing scope changes how many artefacts exist, so pagination resets. */
   setRowScope: (scope: RowScope) => void;
   /** Applies a gallery design over the current data, rebinding its tokens (F2). */
@@ -383,6 +385,8 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
       commit("a sheet layout", (s) => ({ sheet: { ...s.sheet, ...suggestion.patch }, page: 0 })),
 
     setBackground: (hex) => commit("the background", (s) => ({ template: { ...s.template, backgroundHex: hex } })),
+
+    setChairName: (chairName) => commit("how names read", (s) => ({ template: { ...s.template, chairName } })),
 
     applyGalleryTemplate: (entry) =>
       commit("a gallery design", (s) => ({

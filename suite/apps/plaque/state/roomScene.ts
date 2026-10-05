@@ -3,7 +3,10 @@ import { cached } from "@/lib/model/slices";
 import { planFrom } from "@/apps/tableaux/store/plan";
 import { getWallSegs, layoutFloorPlan } from "@/apps/tableaux/utils/floorPlanSvg";
 import { SEAT_RADIUS, type TableGeometry } from "@/apps/tableaux/utils/seatPositions";
+import { getTableInterior } from "@/apps/tableaux/utils/tableGrid";
+import type { GuestRow } from "../core/data/rows";
 import type { RoomScene, RoomTable } from "../core/types";
+import { roomRows } from "./fromRoom";
 
 /**
  * The seating plan as a room element draws it, once per document.
@@ -19,6 +22,10 @@ export function roomScene(doc: Knotwork): RoomScene {
 
 function build(doc: Knotwork): RoomScene {
   const layout = layoutFloorPlan(planFrom({ guests: doc.guests, seating: doc.seating }, doc.event));
+  // Each sitter as their own card reads them, so a chair can be named with any
+  // token a card can use.
+  const room = roomRows(doc);
+  const rowOf = new Map<string, GuestRow>(room.rowIds.map((id, i) => [id, room.rows[i]!]));
 
   const tables: RoomTable[] = layout.geoms.map(({ t, g }) => ({
     label: t.label,
@@ -26,6 +33,8 @@ function build(doc: Knotwork): RoomScene {
     y: t.y,
     rotationDeg: t.rotation || 0,
     ...outline(g),
+    numbered: t.seatMode === "seat",
+    interior: interiorOf(g),
     seats: layout.seats
       .filter((seat) => seat.table.id === t.id)
       .sort((a, b) => a.index - b.index)
@@ -34,8 +43,7 @@ function build(doc: Knotwork): RoomScene {
         y: seat.y,
         out: { x: seat.nx, y: seat.ny },
         number: seat.index + 1,
-        first: seat.guest?.firstName ?? "",
-        name: seat.guest?.fullName ?? "",
+        row: (seat.guest && rowOf.get(seat.guest.id)) ?? null,
       })),
   }));
 
@@ -48,6 +56,12 @@ function build(doc: Knotwork): RoomScene {
     seatRadius: SEAT_RADIUS,
     tables,
   };
+}
+
+/** The largest box inside a table, about its own centre: where a free-seating table's names go. */
+function interiorOf(g: TableGeometry): RoomTable["interior"] {
+  const inside = getTableInterior(g);
+  return { x: -inside.width / 2, y: inside.offsetY - inside.height / 2, w: inside.width, h: inside.height };
 }
 
 /** A table's shape as a path about its own centre, and the box that path fills. */

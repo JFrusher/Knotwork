@@ -137,7 +137,7 @@ test("the finder starter files every guest A to Z, and carries on to another pag
   await expect(card.getByRole("heading")).toContainText(/All 100 rows — page 1 of [2-9]/);
 });
 
-test("the floor plan starter draws the room from Seating, a first name at every taken chair", async ({ page }) => {
+test("the floor plan starter draws the room from Seating, every guest named at their table", async ({ page }) => {
   await seedExampleWedding(page);
   await page.goto("/place-cards");
   const pieces = page.getByRole("navigation", { name: "Pieces" });
@@ -150,6 +150,11 @@ test("the floor plan starter draws the room from Seating, a first name at every 
   await expect(card.getByText("Top table")).toBeVisible();
   await expect(card.getByText("Alex", { exact: true })).toBeVisible();
   await page.screenshot({ path: process.env.SHOT ?? "test-results/floor-plan.png" });
+
+  // One format for the whole design: pick it, and every name on the plan follows.
+  await page.getByRole("button", { name: /room\s*the whole room/ }).click();
+  await page.getByRole("button", { name: "Ada B." }).click();
+  await expect(card.getByText("Alex M.", { exact: true })).toBeVisible();
 });
 
 test("the table card starter shows its own table, and who sits where at it", async ({ page }) => {

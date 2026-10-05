@@ -59,7 +59,6 @@
         "h": 480,
         "z": 1,
         "show": "room",
-        "seatLabels": "first",
         "fontId": "crimson",
         "fontSizePt": 16,
         "colorHex": "#2b2620",
@@ -69,6 +68,7 @@
         "tableLabels": true,
         "walls": true
       }
-    ]
+    ],
+    "chairName": "{{First Name}}"
   }
 }

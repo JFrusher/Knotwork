@@ -141,7 +141,6 @@ export const ELEMENT_KINDS: ElementKindSpec[] = [
         w: card.widthMm - inset * 2,
         h: card.heightMm - inset * 2,
         show: "room",
-        seatLabels: "first",
         fontId: DEFAULT_FONT_ID,
         fontSizePt: 9,
         colorHex: "#171613",

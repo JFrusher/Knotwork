@@ -2,6 +2,8 @@ import { fingerprint } from "@/lib/documents/fingerprint";
 import type { Artefact } from "../core/data/artefacts";
 import { normalise } from "../core/data/artefacts";
 import { columnsUsed } from "../core/template/rebind";
+import { chairRef, chairValues } from "../core/template/chairs";
+import { tokensIn } from "../core/csv/interpolate";
 import type { RoomScene, Template } from "../core/types";
 
 /**
@@ -25,6 +27,14 @@ export type PrintBasis = (artefact: Artefact) => string;
 
 export function printBasis(template: Template, room: RoomScene): PrintBasis {
   const columns = columnsUsed(template);
+  // Whoever is in the chairs the design names, as it names them.
+  const chairs = [
+    ...new Set(
+      template.elements.flatMap((el) =>
+        tokensIn(el.kind === "text" ? el.template : el.kind === "list" ? el.itemTemplate : el.kind === "qr" ? el.data : "").filter((token) => chairRef(token)),
+      ),
+    ),
+  ];
   const plans = template.elements.flatMap((el) => (el.kind === "room" ? [el.show] : []));
   return (artefact) => {
     const drawn = plans.map((show) =>
@@ -32,7 +42,8 @@ export function printBasis(template: Template, room: RoomScene): PrintBasis {
         ? room
         : room.tables.filter((table) => normalise(table.label) === normalise(artefact.row["Table"] ?? "")),
     );
-    return fingerprint([artefact.rows.map((row) => columns.map((column) => row[column] ?? "")), drawn]);
+    const sitters = chairs.length > 0 ? chairValues(chairs, artefact.row, room, template).values : {};
+    return fingerprint([artefact.rows.map((row) => columns.map((column) => row[column] ?? "")), drawn, sitters]);
   };
 }
 

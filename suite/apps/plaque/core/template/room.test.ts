@@ -14,7 +14,10 @@ const fonts = new Map<string, LoadedFont>(
   BUNDLED_FONTS.map((f) => [f.id, loadFont(f.id, f.family, new Uint8Array(readFileSync(`public/fonts/${f.file}`)))]),
 );
 
-// A room 400 × 200 with two round tables, one turned, each with two chairs.
+const sitter = (first: string, last: string, seat: string) => ({ "First Name": first, "Last Name": last, Name: `${first} ${last}`, Seat: seat });
+
+// A room 400 × 200: a round table and a turned long one, both numbering their
+// seats, and a round table where guests sit where they like.
 const scene: RoomScene = {
   bounds: { x: 0, y: 0, w: 400, h: 200 },
   walls: [
@@ -30,9 +33,11 @@ const scene: RoomScene = {
       rotationDeg: 0,
       pathD: "M -40 0 A 40 40 0 1 0 40 0 A 40 40 0 1 0 -40 0 Z",
       view: { x: -40, y: -40, w: 80, h: 80 },
+      numbered: true,
+      interior: { x: -28, y: -28, w: 56, h: 56 },
       seats: [
-        { x: 100, y: 45, out: { x: 0, y: -1 }, number: 1, first: "Ada", name: "Ada Byron" },
-        { x: 100, y: 155, out: { x: 0, y: 1 }, number: 2, first: "", name: "" },
+        { x: 100, y: 45, out: { x: 0, y: -1 }, number: 1, row: sitter("Ada", "Byron", "1") },
+        { x: 100, y: 155, out: { x: 0, y: 1 }, number: 2, row: null },
       ],
     },
     {
@@ -42,8 +47,25 @@ const scene: RoomScene = {
       rotationDeg: 30,
       pathD: "M -60 -20 H 60 V 20 H -60 Z",
       view: { x: -60, y: -20, w: 120, h: 40 },
-      seats: [{ x: 300, y: 65, out: { x: 0, y: -1 }, number: 1, first: "Grace", name: "Grace Hopper" }],
+      numbered: true,
+      interior: { x: -52, y: -12, w: 104, h: 24 },
+      seats: [{ x: 300, y: 65, out: { x: 0, y: -1 }, number: 1, row: sitter("Grace", "Hopper", "1") }],
     },
+  ],
+};
+
+const freeSeating = {
+  label: "Table 2",
+  x: 200,
+  y: 160,
+  rotationDeg: 0,
+  pathD: "M -30 0 A 30 30 0 1 0 30 0 A 30 30 0 1 0 -30 0 Z",
+  view: { x: -30, y: -30, w: 60, h: 60 },
+  numbered: false,
+  interior: { x: -20, y: -20, w: 40, h: 40 },
+  seats: [
+    { x: 200, y: 120, out: { x: 0, y: -1 }, number: 1, row: sitter("Alan", "Turing", "") },
+    { x: 200, y: 200, out: { x: 0, y: 1 }, number: 2, row: sitter("Joan", "Clarke", "") },
   ],
 };
 
@@ -58,7 +80,6 @@ const room = (over: Partial<RoomElement> = {}): RoomElement => ({
   h: 277,
   z: 1,
   show: "room",
-  seatLabels: "first",
   fontId: "crimson",
   fontSizePt: 12,
   colorHex: "#000000",
@@ -70,9 +91,9 @@ const room = (over: Partial<RoomElement> = {}): RoomElement => ({
   ...over,
 });
 
-const draw = (el: RoomElement, row: Record<string, string> = {}, withRoom: RoomScene | null = scene) => {
+const draw = (el: RoomElement, row: Record<string, string> = {}, withRoom: RoomScene | null = scene, chairName = "{{First Name}}") => {
   const { scene: out, warnings } = resolveCard(
-    { elements: [el], backgroundHex: null },
+    { elements: [el], backgroundHex: null, chairName },
     row,
     card,
     makeResolveOptions(fonts, {}, new Map(), {}, withRoom),
@@ -110,9 +131,24 @@ describe("a floor plan", () => {
     expect(new Set(elements.map((el) => el.id)).size).toBe(elements.length);
   });
 
-  it("can number the seats instead, or say nothing at them", () => {
-    expect(texts(draw(room({ seatLabels: "number", tableLabels: false })).elements).sort()).toEqual(["1", "1", "2"]);
-    expect(texts(draw(room({ seatLabels: "none", tableLabels: false })).elements)).toEqual([]);
+  it("names each sitter as the design's format says, and an empty chair not at all", () => {
+    const names = (format: string) => texts(draw(room({ tableLabels: false }), {}, scene, format).elements).sort();
+    expect(names("{{Last Name}}, {{First Name}}")).toEqual(["Byron, Ada", "Hopper, Grace"]);
+    expect(names("{{First Name}} {{Last Name}}")).toEqual(["Ada Byron", "Grace Hopper"]);
+    expect(names("{{Seat}}")).toEqual(["1", "1"]);
+    expect(names("")).toEqual([]);
+  });
+
+  it("names the guests of a table where they sit where they like inside it, not at chairs", () => {
+    const withFree = { ...scene, tables: [...scene.tables, freeSeating] };
+    const { elements } = draw(room({ walls: false }), {}, withFree);
+    const inside = elements.find((el) => el.kind === "text" && el.lines.includes("Alan"))!;
+    expect(inside.kind === "text" && inside.lines).toEqual(["Alan", "Joan"]);
+    // Upright, within the table's interior: 40 across at scale 1, centred on the table.
+    expect(inside).toMatchObject({ rotationDeg: 0, w: 40, h: 40 });
+    // Its name sits above it, clear of the names inside.
+    const label = elements.find((el) => el.kind === "text" && el.lines.includes("Table 2"))!;
+    expect(label.y + label.h).toBeLessThan(inside.y);
   });
 
   it("draws just this card's table, filling the box, when it is a table's own map", () => {
@@ -128,5 +164,32 @@ describe("a floor plan", () => {
       expect.objectContaining({ kind: "missing-field", detail: expect.stringMatching(/no table called "Table 9"/) }),
     );
     expect(draw(room(), {}, null).warnings).toContainEqual(expect.objectContaining({ detail: expect.stringMatching(/no seating plan/) }));
+  });
+});
+
+describe("names inside a long table", () => {
+  it("spread across columns, all one size, rather than crushed into one", () => {
+    const long = {
+      label: "Top table",
+      x: 200,
+      y: 100,
+      rotationDeg: 0,
+      pathD: "M -150 -15 H 150 V 15 H -150 Z",
+      view: { x: -150, y: -15, w: 300, h: 30 },
+      numbered: false,
+      interior: { x: -142, y: -7, w: 284, h: 14 },
+      seats: ["Alex", "David", "Helen", "Ines", "Lucia", "Mateo"].map((first, i) => ({
+        x: 200,
+        y: 80,
+        out: { x: 0, y: -1 },
+        number: i + 1,
+        row: { "First Name": first, "Last Name": "Morgan" },
+      })),
+    };
+    const { elements } = draw(room({ walls: false, tableLabels: false }), {}, { ...scene, tables: [long] });
+    const columns = elements.filter((el) => el.kind === "text");
+    expect(columns.length).toBeGreaterThan(1);
+    expect(new Set(columns.map((el) => el.kind === "text" && el.fontSizePt)).size).toBe(1);
+    expect(columns.flatMap((el) => (el.kind === "text" ? el.lines : []))).toEqual(["Alex", "David", "Helen", "Ines", "Lucia", "Mateo"]);
   });
 });

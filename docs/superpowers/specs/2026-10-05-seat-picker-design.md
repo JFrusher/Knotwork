@@ -15,6 +15,7 @@ a seat by clicking it rather than typing it.
 |---|---|---|
 | S1 | The `room` element already lays names round a table from Seating's real geometry, upright and outside each chair, and its `show: "table"` mode is a table card's map. Table-wise auto-layout is that, with styling, not a new mechanism. | Traced (`core/template/room.ts`) |
 | S2 | Chair order is `assignedGuestIds`; on a free-seating table (`seatMode: "table"`) the order exists but the seats are not real. | Traced (`lib/model/seats.ts`) |
+| S4 | Found building phase 1: new tables are free-seating by default (`defaultSeatMode \|\| 'table'`), every example table is, and Seating draws a free-seating table's guests as a grid *inside* the table (`TableNode.tsx`, `tableGrid.ts`), never at chairs. Decision 8 is that convention; the floor plan, which named every chair, contradicted it. | Traced |
 | S3 | Tokens resolve from a row; a chair's guest is not a column of the card's own row, so chair tokens need the room, as the `room` element gets it (`ResolveOptions.room`). | Traced |
 
 ## Decisions
@@ -28,7 +29,7 @@ a seat by clicking it rather than typing it.
 | 5 | When the room changes under stamped boxes | **Depends on the mode:** restyle-the-plan boxes follow their chair; illustrated-board boxes stay where they were put. Chairs with no box are listed, one click to add. |
 | 6 | What a chair label shows | ~~The full name~~ — revised the same day: **a name format the user sets**, once per design, built from the guest's own tokens (decision 9). The full name is its default, wrapping to two lines. |
 | 7 | How auto-laid names sit | **Upright, outside the chair**, as the floor plan does now. |
-| 8 | Free-seating tables | **No names at chairs:** the table's guests are listed beside it, so a card never implies a seat that is not real. |
+| 8 | Free-seating tables | **No names at chairs:** the table's guests are listed ~~beside it~~ **inside it**, as Seating shows them (S4) — inside also keeps a whole-room plan clear of neighbouring tables — so a card never implies a seat that is not real. Names spread across as many columns as make them largest; the table's label moves above it. |
 | 9 | Customising how names appear | **The format**, one per design, from tokens: `{{First Name}}`, `{{First Name}} {{Initial}}.`, `{{Last Name}}, {{First Name}}`. Everyone on that design follows it. |
 | 10 | A guest's own name ("Grandma") | **Not in this build.** If added, it lives **on the guest** — a "name on cards" field used by every piece and the guest link, and a token of its own — not per piece. |
 

@@ -1,7 +1,8 @@
 import { normalise } from "../data/artefacts";
 import type { GuestRow } from "../data/rows";
 import { transformForPanel } from "../geometry/fold";
-import type { CardSpec, Mm, ResolvedElement, RoomElement, RoomScene, RoomTable, TextElement } from "../types";
+import type { CardSpec, ListElement, Mm, ResolvedElement, RoomElement, RoomTable, Template, TextElement } from "../types";
+import { chairName } from "./chairs";
 import type { CardWarning, ResolveOptions } from "./bindings";
 
 /** A seat, as a path the icon pipeline can fill: a circle of radius 1 about the origin. */
@@ -30,6 +31,7 @@ export function resolveRoom(
   row: GuestRow,
   card: CardSpec,
   opts: ResolveOptions,
+  template: Pick<Template, "chairName">,
 ): { elements: ResolvedElement[]; warnings: CardWarning[] } {
   const warnings: CardWarning[] = [];
   const scene = opts.room?.() ?? null;
@@ -123,27 +125,69 @@ export function resolveRoom(
 
     if (el.tableLabels && table.label) {
       const size = Math.min(w, h) * 0.8;
-      const label = fitted(el, table.label, { x: centre.x - size / 2, y: centre.y - size / 4, w: size, h: size / 2 }, el.fontSizePt * LABEL_SCALE, opts, warnings);
+      // On the table where the names are round it; above it where they are in it.
+      const box = table.numbered
+        ? { x: centre.x - size / 2, y: centre.y - size / 4, w: size, h: size / 2 }
+        : { x: centre.x - size / 2, y: centre.y - extentY(table) * scale - seatR * 2 - size / 2, w: size, h: size / 2 };
+      const label = fitted(el, table.label, box, el.fontSizePt * LABEL_SCALE, opts, warnings);
       if (label) elements.push({ ...place(label.box), ...label.text });
     }
 
-    if (el.seatLabels !== "none") {
+    const named = table.seats.flatMap((seat) => {
+      const words = seat.row ? chairName(template, seat.row) : "";
+      return words ? [{ seat, words }] : [];
+    });
+    if (table.numbered) {
+      // Each name at its own chair, hanging outward.
       const across = Math.max(seatR * 2, nearestSeat(table, scale) * 0.96);
-      for (const seat of table.seats) {
-        const words = el.seatLabels === "number" ? String(seat.number) : el.seatLabels === "first" ? seat.first : seat.name;
-        if (!words) continue;
-        const c = at(seat.x, seat.y);
-        const box =
-          el.seatLabels === "number"
-            ? { x: c.x - seatR, y: c.y - seatR, w: seatR * 2, h: seatR * 2 }
-            : nameCell(c, seat.out, seatR, across);
-        const name = fitted(el, words, box, el.fontSizePt, opts, warnings);
+      for (const { seat, words } of named) {
+        const name = fitted(el, words, nameCell(at(seat.x, seat.y), seat.out, seatR, across), el.fontSizePt, opts, warnings);
         if (name) elements.push({ ...place(name.box), ...name.text });
+      }
+    } else if (named.length > 0) {
+      // Guests who sit where they like are named inside the table, as Seating
+      // shows them: never at a chair, which would promise a seat that is not theirs.
+      for (const column of listed(el, named.map((n) => n.words), uprightInterior(table, centre, scale), opts, warnings)) {
+        elements.push({ ...place(column.box), ...column.text });
       }
     }
   }
 
   return { elements, warnings };
+}
+
+/** How far a table reaches above and below its centre, turned as it is. */
+function extentY(table: RoomTable): number {
+  const rad = (table.rotationDeg * Math.PI) / 180;
+  return Math.abs((table.view.w / 2) * Math.sin(rad)) + Math.abs((table.view.h / 2) * Math.cos(rad));
+}
+
+/**
+ * The table's interior as an upright box on the page, however the table is
+ * turned: names inside it must still read. Turned square-on, the box turns
+ * with it; turned at an angle, a square that fits inside either way.
+ */
+function uprightInterior(table: RoomTable, centre: { x: Mm; y: Mm }, scale: number): Box {
+  const inside = table.interior;
+  const rad = (table.rotationDeg * Math.PI) / 180;
+  const quarter = Math.round(table.rotationDeg / 90);
+  const square = Math.abs(table.rotationDeg - quarter * 90) < 1;
+  const [w, h] = square
+    ? quarter % 2 === 0
+      ? [inside.w, inside.h]
+      : [inside.h, inside.w]
+    : [Math.min(inside.w, inside.h) * 0.7, Math.min(inside.w, inside.h) * 0.7];
+  // The interior's own centre, turned with the table (a half-circle's is off-centre).
+  const cx = inside.x + inside.w / 2;
+  const cy = inside.y + inside.h / 2;
+  const ox = cx * Math.cos(rad) - cy * Math.sin(rad);
+  const oy = cx * Math.sin(rad) + cy * Math.cos(rad);
+  return {
+    x: centre.x + (ox - w / 2) * scale,
+    y: centre.y + (oy - h / 2) * scale,
+    w: w * scale,
+    h: h * scale,
+  };
 }
 
 /** One table and its chairs, with room round them for the names. */
@@ -172,6 +216,81 @@ function nameCell(seat: { x: Mm; y: Mm }, out: { x: number; y: number }, seatR: 
   const cx = seat.x + out.x * reach;
   const cy = seat.y + out.y * reach;
   return { x: cx - across / 2, y: cy - depth / 2, w: across, h: depth };
+}
+
+/** Most columns a table's names are spread across. */
+const MAX_COLUMNS = 6;
+
+/**
+ * Names fitted inside a box as Seating lays them in a table: in as many
+ * columns as make them largest — one down a round table, several along a long
+ * one — every column at the one size.
+ */
+function listed(
+  el: RoomElement,
+  lines: string[],
+  box: Box,
+  opts: ResolveOptions,
+  warnings: CardWarning[],
+): Array<{ box: Box; text: Omit<Extract<ResolvedElement, { kind: "text" }>, "id" | "sourceId" | "x" | "y" | "w" | "h" | "rotationDeg" | "z"> }> {
+  if (lines.length === 0) return [];
+  const fitColumn = (w: Mm, column: string[]) => {
+    const probe: ListElement = {
+      kind: "list",
+      id: el.id,
+      x: 0,
+      y: 0,
+      w,
+      h: box.h,
+      z: el.z,
+      itemTemplate: "",
+      bullet: "",
+      skipEmpty: true,
+      fontId: el.fontId,
+      fontSizePt: el.fontSizePt,
+      align: "center",
+      vAlign: "middle",
+      lineHeight: 1.15,
+      colorHex: el.colorHex,
+      letterSpacingMm: 0,
+      fit: { mode: "shrink", minFontSizePt: 1, maxLines: 1, anchor: "align" },
+    };
+    return opts.fitBlock?.(probe, column) ?? { lines: column, fontSizePt: el.fontSizePt, overflowed: false, missingFont: true };
+  };
+
+  let best: { columns: string[][]; sizePt: number; missingFont: boolean } | null = null;
+  for (let count = 1; count <= Math.min(lines.length, MAX_COLUMNS); count++) {
+    const per = Math.ceil(lines.length / count);
+    const columns = Array.from({ length: count }, (_, c) => lines.slice(c * per, (c + 1) * per)).filter((c) => c.length > 0);
+    const fits = columns.map((column) => fitColumn(box.w / columns.length, column));
+    const sizePt = Math.min(...fits.map((fit) => fit.fontSizePt));
+    // Fewer columns win a tie: a single list reads most like a list.
+    if (!best || sizePt > best.sizePt) best = { columns, sizePt, missingFont: fits.some((fit) => fit.missingFont) };
+  }
+  if (best!.missingFont && !warnings.some((w) => w.kind === "missing-font")) {
+    warnings.push({
+      elementId: el.id,
+      kind: "missing-font",
+      detail: `The font "${el.fontId}" is not on this device, so the names on the plan cannot be sized correctly.`,
+    });
+  }
+  const w = box.w / best!.columns.length;
+  return best!.columns.map((column, c) => ({
+    box: { x: box.x + c * w, y: box.y, w, h: box.h },
+    text: {
+      kind: "text",
+      lines: column,
+      fontId: el.fontId,
+      fontSizePt: best!.sizePt,
+      align: "center",
+      vAlign: "middle",
+      anchor: "align",
+      lineHeight: 1.15,
+      colorHex: el.colorHex,
+      letterSpacingMm: 0,
+      overflowed: false,
+    },
+  }));
 }
 
 /** Text fitted to a box with the element's face, or nothing when it is empty. */

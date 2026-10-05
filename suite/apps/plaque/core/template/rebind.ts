@@ -1,3 +1,4 @@
+import { chairRef } from "./chairs";
 import { guessMapping, type FieldGuesses } from "../csv/guessMapping";
 import { tokensIn } from "../csv/interpolate";
 import type { CardElement, Template } from "../types";
@@ -63,7 +64,8 @@ export function rebindTemplate(
 
   const rewrite = (text: string): string =>
     text.replace(/\{\{\s*([^{}]*?)\s*\}\}/g, (whole, name: string) => {
-      if (!name) return whole;
+      // A chair is not a column: it means the same whatever the columns are called.
+      if (!name || chairRef(name)) return whole;
       const target = resolve(name);
       if (!target) {
         if (!unmatched.includes(name)) unmatched.push(name);
@@ -143,7 +145,13 @@ export function columnsUsed(template: Template): string[] {
             : el.kind === "qr"
               ? el.data
               : "";
-    for (const token of tokensIn(text)) out.add(token);
+    for (const token of tokensIn(text)) {
+      const chair = chairRef(token);
+      // A chair is read from the room, not the row; a seat of the card's own
+      // table needs to know which table that is.
+      if (!chair) out.add(token);
+      else if (chair.table === null) out.add("Table");
+    }
     if (el.kind === "icon" && el.sourceField) out.add(el.sourceField);
     if (el.kind === "grid") {
       if (el.groupBy) out.add(el.groupBy);

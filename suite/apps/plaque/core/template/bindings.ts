@@ -13,10 +13,11 @@ import type {
 } from "../types";
 import { BUNDLED_VIEW, type IconArt } from "../../assets/icons";
 import type { GuestRow } from "../data/rows";
-import { interpolate } from "../csv/interpolate";
+import { interpolate, tokensIn } from "../csv/interpolate";
 import { flowPlan, gridBlocks } from "./grid";
 import { resolveRoom } from "./room";
 import { qrPath } from "./qr";
+import { chairRef, chairValues } from "./chairs";
 import { transformForPanel } from "../geometry/fold";
 import { ptToMm } from "../units";
 import { resolveIconForRow } from "./icons";
@@ -115,6 +116,18 @@ export function resolveCard(
   const warnings: CardWarning[] = [];
   const elements: ResolvedElement[] = [];
 
+  // Chair tokens name whoever sits in a seat of this card's table, not a column
+  // of its own row: they are read from the room, once per element, and said
+  // nothing for when they cannot be — with the reason.
+  const chairsOf = (elementId: ElementId, text: string): GuestRow => {
+    const tokens = tokensIn(text).filter((token) => chairRef(token));
+    if (tokens.length === 0) return {};
+    const { values, problems } = chairValues(tokens, row, opts.room?.() ?? null, template);
+    for (const detail of problems) warnings.push({ elementId, kind: "missing-field", detail });
+    return values;
+  };
+  const seated = (elementId: ElementId, text: string, base: GuestRow): GuestRow => ({ ...base, ...chairsOf(elementId, text) });
+
   for (const el of [...template.elements].sort((a, b) => a.z - b.z)) {
     const placed = transformForPanel({ x: el.x, y: el.y, w: el.w, h: el.h }, card);
     const base = {
@@ -129,7 +142,7 @@ export function resolveCard(
 
     switch (el.kind) {
       case "text": {
-        const { text, missing } = interpolate(el.template, row);
+        const { text, missing } = interpolate(el.template, seated(el.id, el.template, row));
         for (const name of missing) {
           warnings.push({
             elementId: el.id,
@@ -215,8 +228,9 @@ export function resolveCard(
         // the list element needed no drawing code at all.
         const lines: string[] = [];
         const missingColumns: string[] = [];
+        const listChairs = chairsOf(el.id, el.itemTemplate);
         for (const source of rows) {
-          const { text, missing } = interpolate(el.itemTemplate, source);
+          const { text, missing } = interpolate(el.itemTemplate, { ...source, ...listChairs });
           for (const name of missing) {
             if (!missingColumns.includes(name)) missingColumns.push(name);
           }
@@ -278,7 +292,7 @@ export function resolveCard(
       }
 
       case "qr": {
-        const { text, missing } = interpolate(el.data, row);
+        const { text, missing } = interpolate(el.data, seated(el.id, el.data, row));
         for (const name of missing) {
           warnings.push({ elementId: el.id, kind: "missing-field", detail: `No column named "${name}".` });
         }
@@ -298,7 +312,7 @@ export function resolveCard(
       }
 
       case "room": {
-        const resolved = resolveRoom(el, row, card, opts);
+        const resolved = resolveRoom(el, row, card, opts, template);
         warnings.push(...resolved.warnings);
         elements.push(...resolved.elements);
         break;

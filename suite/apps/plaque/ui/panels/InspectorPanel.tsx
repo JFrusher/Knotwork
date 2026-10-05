@@ -19,6 +19,7 @@ import type {
   VAlign,
 } from "../../core/types";
 import { usePlaque } from "../../state/store";
+import { NameFormat } from "./NameFormat";
 import {
   CheckboxField,
   ColorField,
@@ -379,20 +380,11 @@ function RoomProperties({
         ]}
         onChange={(show) => patch({ show })}
       />
-      <SelectField<RoomElement["seatLabels"]>
-        label="At each seat"
-        value={element.seatLabels}
-        options={[
-          { value: "first", label: "First name" },
-          { value: "name", label: "Whole name" },
-          { value: "number", label: "Seat number" },
-          { value: "none", label: "Nothing" },
-        ]}
-        onChange={(seatLabels) => patch({ seatLabels })}
-      />
+      <NameFormat />
       <Hint>
-        Drawn from Seating as it stands: move a table or a guest there and it moves here. Each name is
-        set as large as the room by its chair allows, up to the size below.
+        Drawn from Seating as it stands: move a table or a guest there and it moves here. Where a table
+        numbers its seats, each name sits at its chair; where guests sit where they like, they are named
+        inside the table, as Seating shows them.
       </Hint>
       <Row>
         <CheckboxField label="Table names" checked={element.tableLabels} onChange={(tableLabels) => patch({ tableLabels })} />

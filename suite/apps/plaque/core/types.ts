@@ -6,6 +6,8 @@
  * and the PDF y-flip happens in exactly one function (see render/pdf/renderPdf).
  */
 
+import type { GuestRow } from "./data/rows";
+
 export type Mm = number;
 export type Pt = number;
 /** `#rrggbb`. */
@@ -300,8 +302,6 @@ export interface RoomElement extends ElementBase {
   kind: "room";
   /** The whole room, or the table this artefact is for (its `{{Table}}`). */
   show: "room" | "table";
-  /** What each seat says: a first name, a whole name, its number, or nothing. */
-  seatLabels: "first" | "name" | "number" | "none";
   fontId: string;
   /** Names are set at this size or smaller, each fitted to the room by its seat. */
   fontSizePt: Pt;
@@ -383,6 +383,13 @@ export interface Template {
   backgroundHex: Hex | null;
   rowScope?: RowScope;
   /**
+   * How a guest is named wherever a design names them by their chair — a plan's
+   * labels, `{{At seat 3}}`, `{{Table 1, seat 3}}` — as tokens of the sitter's
+   * own row: `"{{First Name}}"`, `"{{Last Name}}, {{First Name}}"`. Absent means
+   * the whole name. See core/template/chairs.
+   */
+  chairName?: string;
+  /**
    * Sparse per-row design patches, by row id then element id. See
    * core/template/overrides — design, not data, so it lives here and travels in
    * the project file.
@@ -411,6 +418,14 @@ export interface RoomTable {
   /** The table's outline in its own coordinates, centred on 0,0, before rotation. */
   pathD: string;
   view: { x: number; y: number; w: number; h: number };
+  /**
+   * True when the table numbers its seats. Where it does not, guests sit where
+   * they like: they are named inside the table, as Seating shows them, never
+   * at a chair.
+   */
+  numbered: boolean;
+  /** The largest box inside the table's outline, in its own coordinates. */
+  interior: { x: number; y: number; w: number; h: number };
   seats: RoomSeat[];
 }
 
@@ -420,9 +435,8 @@ export interface RoomSeat {
   /** Away from the table, unit length: where the name hangs. */
   out: Point;
   number: number;
-  /** Empty for an empty chair. */
-  first: string;
-  name: string;
+  /** The sitter's row, as their own card reads it; null for an empty chair. */
+  row: GuestRow | null;
 }
 
 // ---------------------------------------------------------------------------
