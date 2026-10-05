@@ -1085,13 +1085,19 @@ export const dissolveFamily =
     return { type: 'DISSOLVE_FAMILY', label: 'Dissolve family', payload: { families: { [familyId]: null }, guests } }
   }
 
+// The guest's plus-ones who go where they go: anyone they bring who is in no
+// family, or in the same one as them. Someone put in another family on purpose
+// stays where they were put.
+const plusOnesWith = (plan: Plan, guest: Guest): string[] =>
+  Object.values(plan.guests)
+    .filter((g) => g.plusOneOf === guest.id && (g.familyId ?? null) === (guest.familyId ?? null))
+    .map((g) => g.id)
+
 // Adds a guest to a family, re-parenting them into the family's own group/
 // subgroup chain (or clearing group/subgroup entirely for a standalone
 // family) — the same "land on the deepest container, inherit its ancestry"
-// rule addToSubgroup already applies one level up.
-// TODO(family-ux): a guest's plus-one (guest.plusOneOf) never auto-follows
-// into the family when the primary guest joins — undecided whether that's
-// the right default or a gap. See tmp/family-ux-followups.md #13.
+// rule addToSubgroup already applies one level up. Their plus-ones come too,
+// in the same command, so one undo puts everyone back.
 export const addToFamily =
   (familyId: string, guestId: string): Action =>
   (plan) => {
@@ -1102,31 +1108,43 @@ export const addToFamily =
     const families: Record<string, Family> = {}
     const subgroups: Record<string, Subgroup> = {}
     const groups: Record<string, Group> = {}
-
-    const prevFam = guest.familyId && guest.familyId !== familyId ? plan.families[guest.familyId] : undefined
-    if (prevFam) families[prevFam.id] = { ...prevFam, memberIds: withoutMember(prevFam.memberIds, guestId) }
-    families[familyId] = { ...fam, memberIds: withMember(fam.memberIds, guestId) }
+    const guests: Record<string, Guest> = {}
+    // Each move reads what the moves before it wrote.
+    const family = (id: string) => families[id] ?? plan.families[id]
+    const subgroup = (id: string) => subgroups[id] ?? plan.subgroups[id]
+    const group = (id: string) => groups[id] ?? plan.groups[id]
 
     const nextSubgroupId = fam.parentSubgroupId || null
     const nextGroupId = fam.parentGroupId
-    // Out of a subgroup the family is not under.
-    const prevSg = guest.subgroupId && guest.subgroupId !== nextSubgroupId ? plan.subgroups[guest.subgroupId] : undefined
-    if (prevSg) subgroups[prevSg.id] = { ...prevSg, memberIds: withoutMember(prevSg.memberIds, guestId) }
-    // Into the family's own subgroup, if it has one.
-    const targetSg = nextSubgroupId ? plan.subgroups[nextSubgroupId] : undefined
-    if (targetSg) {
-      subgroups[targetSg.id] = {
-        ...targetSg,
-        memberIds: (targetSg.memberIds || []).includes(guestId) ? targetSg.memberIds : [...(targetSg.memberIds || []), guestId],
-      }
-    }
 
-    // Out of the old group and into the family's, or into the family's if not already there.
-    const prevGrp = guest.groupId && guest.groupId !== nextGroupId ? plan.groups[guest.groupId] : undefined
-    if (prevGrp) groups[prevGrp.id] = { ...prevGrp, memberIds: withoutMember(prevGrp.memberIds, guestId) }
-    const nextGrp = nextGroupId ? plan.groups[nextGroupId] : undefined
-    if (nextGrp && !(nextGrp.memberIds || []).includes(guestId)) {
-      groups[nextGrp.id] = { ...nextGrp, memberIds: [...(nextGrp.memberIds || []), guestId] }
+    for (const id of [guestId, ...plusOnesWith(plan, guest)]) {
+      const mover = plan.guests[id]
+
+      const prevFam = mover.familyId && mover.familyId !== familyId ? family(mover.familyId) : undefined
+      if (prevFam) families[prevFam.id] = { ...prevFam, memberIds: withoutMember(prevFam.memberIds, id) }
+      families[familyId] = { ...family(familyId), memberIds: withMember(family(familyId).memberIds, id) }
+
+      // Out of a subgroup the family is not under.
+      const prevSg = mover.subgroupId && mover.subgroupId !== nextSubgroupId ? subgroup(mover.subgroupId) : undefined
+      if (prevSg) subgroups[prevSg.id] = { ...prevSg, memberIds: withoutMember(prevSg.memberIds, id) }
+      // Into the family's own subgroup, if it has one.
+      const targetSg = nextSubgroupId ? subgroup(nextSubgroupId) : undefined
+      if (targetSg) {
+        subgroups[targetSg.id] = {
+          ...targetSg,
+          memberIds: (targetSg.memberIds || []).includes(id) ? targetSg.memberIds : [...(targetSg.memberIds || []), id],
+        }
+      }
+
+      // Out of the old group and into the family's, or into the family's if not already there.
+      const prevGrp = mover.groupId && mover.groupId !== nextGroupId ? group(mover.groupId) : undefined
+      if (prevGrp) groups[prevGrp.id] = { ...prevGrp, memberIds: withoutMember(prevGrp.memberIds, id) }
+      const nextGrp = nextGroupId ? group(nextGroupId) : undefined
+      if (nextGrp && !(nextGrp.memberIds || []).includes(id)) {
+        groups[nextGrp.id] = { ...nextGrp, memberIds: [...(nextGrp.memberIds || []), id] }
+      }
+
+      guests[id] = { ...mover, groupId: nextGroupId, subgroupId: nextSubgroupId, familyId }
     }
 
     return {
@@ -1136,23 +1154,29 @@ export const addToFamily =
         families,
         ...(Object.keys(subgroups).length ? { subgroups } : {}),
         ...(Object.keys(groups).length ? { groups } : {}),
-        guests: { [guestId]: { ...guest, groupId: nextGroupId, subgroupId: nextSubgroupId, familyId } },
+        guests,
       },
     }
   }
 
+// Takes a guest out of their family, and their plus-ones in it with them.
 export const removeFromFamily =
   (guestId: string): Action =>
   (plan) => {
     const guest = plan.guests[guestId]
     if (!guest || !guest.familyId) return null
     const fam = plan.families[guest.familyId]
+    const leaving = [guestId, ...plusOnesWith(plan, guest)]
+    const guests: Record<string, Guest> = {}
+    for (const id of leaving) guests[id] = { ...plan.guests[id], familyId: null }
     return {
       type: 'REMOVE_FROM_FAMILY',
       label: 'Remove from family',
       payload: {
-        guests: { [guestId]: { ...guest, familyId: null } },
-        ...(fam ? { families: { [fam.id]: { ...fam, memberIds: withoutMember(fam.memberIds, guestId) } } } : {}),
+        guests,
+        ...(fam
+          ? { families: { [fam.id]: { ...fam, memberIds: (fam.memberIds || []).filter((id) => !leaving.includes(id)) } } }
+          : {}),
       },
     }
   }
