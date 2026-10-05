@@ -12,6 +12,7 @@ import { useGuestImport } from '@/components/shell/guestImportPanel'
 import { matchesSearch, matchesFilters } from '../../utils/guestFilters'
 import { isComing } from '@/lib/model/slices'
 import type { ShownFamily, ShownGroup, ShownSubgroup } from './tree'
+import type { Guest } from '../../store/types'
 import styles from './GuestPanel.module.css'
 
 /**
@@ -80,18 +81,17 @@ export default function GuestPanel() {
     const subgroupArr = Object.values(subgroups)
     const familyArr = Object.values(families)
     const showEmpty = !search && !filters.length
+    const shown = (g: Guest) => {
+      const names = [groups[g.groupId ?? '']?.name, subgroups[g.subgroupId ?? '']?.name, families[g.familyId ?? '']?.name]
+      return matchesSearch(g, names, search) && matchesFilters(g, filters)
+    }
 
     const vGroups = groupArr
       .map((group): ShownGroup => {
-        // TODO(family-ux): matchesSearch is only ever given the top-level
-        // `group`, so searching a subgroup or family NAME doesn't surface its
-        // members (only a personal-name match does) — a real gap for nested
-        // families, which is how every family in the live plan is set up.
-        // See tmp/family-ux-followups.md #2.
         const allMembers = (group.memberIds || [])
           .map((id) => guests[id])
           .filter(Boolean)
-          .filter((g) => matchesSearch(g, group, search) && matchesFilters(g, filters))
+          .filter(shown)
 
         // Build subgroup sections: each subgroup with its matching members,
         // and any families nested inside that subgroup.
@@ -155,7 +155,7 @@ export default function GuestPanel() {
         members: (f.memberIds || [])
           .map((id) => guests[id])
           .filter(Boolean)
-          .filter((g) => matchesSearch(g, f, search) && matchesFilters(g, filters)),
+          .filter(shown),
       }))
       .filter((vf) => vf.members.length > 0 || showEmpty)
       .sort((a, b) => String(a.family.name).localeCompare(String(b.family.name)))
@@ -163,7 +163,7 @@ export default function GuestPanel() {
     const ung = list
       .filter((g) => !g.groupId || !groups[g.groupId])
       .filter((g) => !g.familyId || !families[g.familyId])
-      .filter((g) => matchesSearch(g, null, search) && matchesFilters(g, filters))
+      .filter(shown)
       .sort((a, b) => String(a.fullName).localeCompare(String(b.fullName)))
 
     return {

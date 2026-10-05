@@ -1,6 +1,6 @@
 import { sideShort } from '@/lib/model/partners'
 import { isComing } from '@/lib/model/slices'
-import type { Group, Guest, Meta } from '../store/types'
+import type { Guest, Meta } from '../store/types'
 
 // TODO(family-ux): no "in a family" (or per-family) filter chip exists —
 // would need an entry here AND in PREDICATES below, and a predicate can't
@@ -65,15 +65,17 @@ export function matchesFilters(guest: Guest, filters: readonly string[] | null |
   return [...byCategory.values()].every((keys) => keys.some((key) => PREDICATES[key](guest)))
 }
 
-export function matchesSearch(guest: Guest, group: Pick<Group, 'name'> | null | undefined, query: string): boolean {
+/**
+ * Does the guest match the search box? Their own names count, and so do the
+ * names of the group, subgroup and family they are in, so searching "The
+ * Engines" finds the Engines.
+ */
+export function matchesSearch(guest: Guest, containerNames: readonly (string | undefined)[], query: string): boolean {
   if (!query) return true
   const q = query.trim().toLowerCase()
   if (!q) return true
-  return (
-    (guest.fullName || '').toLowerCase().includes(q) ||
-    (guest.firstName || '').toLowerCase().includes(q) ||
-    (guest.lastName || '').toLowerCase().includes(q) ||
-    (group?.name || '').toLowerCase().includes(q)
+  return [guest.fullName, guest.firstName, guest.lastName, ...containerNames].some((name) =>
+    (name || '').toLowerCase().includes(q)
   )
 }
 
