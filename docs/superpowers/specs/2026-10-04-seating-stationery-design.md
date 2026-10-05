@@ -140,10 +140,22 @@ rather than a page size, so no custom page dimensions are stored:
 
 ### Reprints
 
-`printed` records, per artefact key, a fingerprint of the row values it printed
-from. On open, the piece lists changed artefacts ("Alex Ng: Table 3 → 7") and
-offers *Export only these*. Boards (one artefact) say "changed since printed"
-and reprint whole.
+As built (phase 7). Each piece's `printed` holds when it was last exported
+and a fingerprint per artefact of **what the design reads**: the columns it
+binds (`columnsUsed`) and the part of the room a plan on it draws. Only what
+the design reads, because renaming one table renumbers every table: a
+whole-row fingerprint flagged 97 name cards for one renamed table, in the
+browser, where 8 had changed. A notice names the changed cards and offers
+*Print just these*; a reprint adds to the record, a full run replaces it.
+
+### QR codes
+
+`qr` elements encode any template, `{{Guest Link}}` by default — a room column
+filled from the published guest link (empty, with a warning that says how to
+publish one, otherwise). Encoded by `qrcode-generator` (MIT, no dependencies)
+from UTF-8 bytes, drawn as one vector path through the icon pipeline. Proved
+by decoding real renders with an independent decoder, accents and CJK
+included.
 
 ## Phases
 

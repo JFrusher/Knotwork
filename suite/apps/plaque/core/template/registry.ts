@@ -154,6 +154,16 @@ export const ELEMENT_KINDS: ElementKindSpec[] = [
     },
   },
   {
+    kind: "qr",
+    label: "QR code",
+    describe: (el) => (el.kind === "qr" ? el.data || "(empty)" : ""),
+    create: ({ id, z, card }) => {
+      const { cx, cy } = centre(card);
+      const side = Math.min(30, card.widthMm * 0.4, card.heightMm * 0.4);
+      return { id, z, kind: "qr", x: cx - side / 2, y: cy - side / 2, w: side, h: side, data: "{{Guest Link}}", colorHex: "#171613" };
+    },
+  },
+  {
     kind: "icon",
     label: "Icon",
     describe: (el) => (el.kind === "icon" ? (el.sourceField ? `by ${el.sourceField}` : "(no column)") : ""),

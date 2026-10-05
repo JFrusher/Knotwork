@@ -76,6 +76,7 @@ export function rebindTemplate(
   const elements: CardElement[] = template.elements.map((el) => {
     if (el.kind === "text") return { ...el, template: rewrite(el.template) };
     if (el.kind === "list") return { ...el, itemTemplate: rewrite(el.itemTemplate) };
+    if (el.kind === "qr") return { ...el, data: rewrite(el.data) };
     if (el.kind === "grid") {
       const target = resolve(el.groupBy);
       if (!target && !unmatched.includes(el.groupBy)) unmatched.push(el.groupBy);
@@ -121,6 +122,15 @@ export function rebindTemplate(
 /** Tokens in a template that name no column in the given headers. */
 export function unboundTokens(template: Template, headers: string[]): string[] {
   const live = new Set(headers);
+  return columnsUsed(template).filter((column) => !live.has(column));
+}
+
+/**
+ * Every column the design reads, in order: its tokens, the column an icon or a
+ * grid is drawn from or sorted by, and the table a table's own map looks for.
+ * What a card prints can change only when one of these does.
+ */
+export function columnsUsed(template: Template): string[] {
   const out = new Set<string>();
   for (const el of template.elements) {
     const text =
@@ -130,14 +140,17 @@ export function unboundTokens(template: Template, headers: string[]): string[] {
           ? el.itemTemplate
           : el.kind === "grid"
             ? `${el.headingTemplate} ${el.itemTemplate}`
-            : "";
-    for (const token of tokensIn(text)) {
-      if (!live.has(token)) out.add(token);
+            : el.kind === "qr"
+              ? el.data
+              : "";
+    for (const token of tokensIn(text)) out.add(token);
+    if (el.kind === "icon" && el.sourceField) out.add(el.sourceField);
+    if (el.kind === "grid") {
+      if (el.groupBy) out.add(el.groupBy);
+      if (el.sortBy) out.add(el.sortBy);
     }
-    if (el.kind === "icon" && el.sourceField && !live.has(el.sourceField)) out.add(el.sourceField);
-    if (el.kind === "grid" && el.groupBy && !live.has(el.groupBy)) out.add(el.groupBy);
     // A table's own map finds its table by the artefact's.
-    if (el.kind === "room" && el.show === "table" && !live.has("Table")) out.add("Table");
+    if (el.kind === "room" && el.show === "table") out.add("Table");
   }
   return [...out];
 }

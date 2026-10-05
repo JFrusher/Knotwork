@@ -89,7 +89,7 @@ export function contrastIssues(
   for (const el of elements) {
     // Only ink that carries meaning: text, lists and icons. A decorative rule
     // that is deliberately faint is not a legibility problem.
-    if (el.kind !== "text" && el.kind !== "list" && el.kind !== "grid" && el.kind !== "room" && el.kind !== "icon") continue;
+    if (el.kind !== "text" && el.kind !== "list" && el.kind !== "grid" && el.kind !== "room" && el.kind !== "qr" && el.kind !== "icon") continue;
     if (!el.colorHex) continue;
     const verdict = verdictFor(el.colorHex, stockHex);
     if (verdict === "fine") continue;

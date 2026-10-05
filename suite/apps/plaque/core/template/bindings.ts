@@ -16,6 +16,7 @@ import type { GuestRow } from "../data/rows";
 import { interpolate } from "../csv/interpolate";
 import { flowPlan, gridBlocks } from "./grid";
 import { resolveRoom } from "./room";
+import { qrPath } from "./qr";
 import { transformForPanel } from "../geometry/fold";
 import { ptToMm } from "../units";
 import { resolveIconForRow } from "./icons";
@@ -273,6 +274,26 @@ export function resolveCard(
           overflowed: fit.overflowed,
           ...(el.optical ? { optical: el.optical } : {}),
         });
+        break;
+      }
+
+      case "qr": {
+        const { text, missing } = interpolate(el.data, row);
+        for (const name of missing) {
+          warnings.push({ elementId: el.id, kind: "missing-field", detail: `No column named "${name}".` });
+        }
+        if (!text.trim()) {
+          warnings.push({
+            elementId: el.id,
+            kind: "empty-text",
+            detail: el.data.includes("Guest Link")
+              ? "There is no guest link to point at yet. Publish one from the Data menu, and the code fills itself in."
+              : "This code has nothing to say.",
+          });
+          break;
+        }
+        const code = qrPath(text);
+        elements.push({ ...base, kind: "icon", pathD: code.pathD, cutD: null, view: code.view, colorHex: el.colorHex, cutHex: el.colorHex });
         break;
       }
 

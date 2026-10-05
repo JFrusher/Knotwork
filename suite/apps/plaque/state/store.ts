@@ -39,6 +39,9 @@ import { DESIGN_KEYS, designFor, designOf, initialSuite, newPiece, type Design, 
 import { readDesign, readSuite, writeDesign, writeSuite } from "./sliceBridge";
 import { roomRows, withMerges, type Merged } from "./fromRoom";
 import { roomScene } from "./roomScene";
+import { printBasis, recordPrint } from "./printed";
+import type { Artefact } from "../core/data/artefacts";
+import { linkUrl, useGuestLink } from "@/lib/share/guestLink";
 
 export interface PieceSummary {
   id: string;
@@ -136,6 +139,8 @@ export interface PlaqueState extends Design, RoomData {
   removePiece: (id: string) => void;
 
   setPrintOnly: (keys: string[] | null) => void;
+  /** These artefacts have gone to the printer: the record changes since are measured from. */
+  notePrinted: (artefacts: Artefact[], partial: boolean) => void;
   setCard: (patch: Partial<CardSpec>) => void;
   setSheet: (patch: Partial<SheetSpec>) => void;
   applySuggestion: (s: LayoutSuggestion) => void;
@@ -203,14 +208,17 @@ type Wedding = { raw: Record<string, unknown>; doc: Knotwork };
 /** The last room read, so a design edit does not rebuild every row. */
 let lastLive: { inputs: unknown[]; data: RoomData } | null = null;
 
-/** The open piece's rows: the room, with its combined cards in place. */
+/** The open piece's rows: the room, with its combined cards in place, and the guest link. */
 function live(wedding: Wedding, merged: Merged): RoomData {
-  const inputs = [wedding.raw["guests"], wedding.raw["seating"], wedding.raw["event"], merged];
+  const link = guestLinkUrl();
+  const inputs = [wedding.raw["guests"], wedding.raw["seating"], wedding.raw["event"], merged, link];
   if (lastLive && inputs.every((input, i) => input === lastLive!.inputs[i])) return lastLive.data;
   const room = roomRows(wedding.doc);
+  const merges = withMerges(room, merged);
   const data = {
     headers: room.headers,
-    ...withMerges(room, merged),
+    rowIds: merges.rowIds,
+    rows: link ? merges.rows.map((row) => ({ ...row, "Guest Link": link })) : merges.rows,
     rowIssues: room.issues,
     room: roomScene(wedding.doc),
   };
@@ -334,6 +342,12 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     },
 
     setPrintOnly: (printOnly) => set({ printOnly }),
+
+    // Bookkeeping, not an edit: nobody undoes having printed something.
+    notePrinted: (artefacts, partial) =>
+      note((s) => ({
+        printed: recordPrint(s.printed, artefacts, partial, new Date().toISOString(), printBasis(s.template, s.room)),
+      })),
 
     setCard: (patch) =>
       commit("the card", (s) => {
@@ -676,6 +690,17 @@ useKnotworkStore.subscribe((state, prev) => {
   const watched = ["stationery", "guests", "seating", "event"] as const;
   if (watched.some((slice) => state.raw[slice] !== prev.raw[slice])) follow(state);
 });
+
+// A guest link published, or taken down, is on the cards at once.
+useGuestLink.subscribe((state, prev) => {
+  if (state.link !== prev.link) follow(useKnotworkStore.getState());
+});
+
+/** The published guest link's address, or empty: what `{{Guest Link}}` says. */
+function guestLinkUrl(): string {
+  const { link } = useGuestLink.getState();
+  return link && typeof window !== "undefined" ? linkUrl(link, window.location.origin) : "";
+}
 
 /** The switcher's list, reusing `previous` when nothing it shows has changed. */
 function summarise(suite: Suite, previous: PieceSummary[]): PieceSummary[] {

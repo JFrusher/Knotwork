@@ -25,11 +25,12 @@ const fonts = new Map<string, LoadedFont>(
 const resolveOptions = makeResolveOptions(fonts);
 const csv = parseCsv(readFileSync("fixtures/guests-150.csv", "utf8"));
 // What the room adds to every guest: the designs are written against it.
-const headers = [...csv.headers, "Name", "Initial"];
+const headers = [...csv.headers, "Name", "Initial", "Place"];
 const rows = csv.rows.map((row) => ({
   ...row,
   Name: `${row["First Name"]} ${row["Last Name"]}`,
   Initial: (row["Last Name"] ?? "").charAt(0).toUpperCase(),
+  Place: row["Table"] ?? "",
 }));
 
 describe("the template gallery", () => {

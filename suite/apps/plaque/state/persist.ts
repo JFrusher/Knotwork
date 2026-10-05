@@ -2,6 +2,7 @@ import type { GuestRow } from "../core/data/rows";
 import type { Template } from "../core/types";
 import type { Piece, Suite } from "./design";
 import type { Merged } from "./fromRoom";
+import type { Printed } from "./printed";
 import { SUITE_VERSION, isRecord, storedPieces } from "./suite";
 
 /**
@@ -118,7 +119,13 @@ function readPiece(
       isRecord(merged) &&
       Object.values(merged).every((ids) => Array.isArray(ids) && ids.every((id) => typeof id === "string"));
     if (!valid) return `The combined cards on "${name}" could not be read, so it was left out.`;
-    return { ...design, merged: merged as Merged };
+    const printed = source["printed"] ?? null;
+    if (printed !== null && !isPrinted(printed)) {
+      // Bookkeeping, not design: losing it costs a list of what to reprint,
+      // which is not worth the piece.
+      notes.push(`What "${name}" was last printed as could not be read, so changes since cannot be shown.`);
+    }
+    return { ...design, merged: merged as Merged, printed: isPrinted(printed) ? printed : null };
   }
   if (!Array.isArray(source["rows"])) {
     return `The saved guest list for "${name}" could not be read, so it was left out.`;
@@ -131,7 +138,16 @@ function readPiece(
         : `${lost} guests' own changes to "${name}" no longer match anybody on the list, so they were dropped.`,
     );
   }
-  return { ...design, ...moved };
+  return { ...design, ...moved, printed: null };
+}
+
+function isPrinted(value: unknown): value is Printed {
+  return (
+    isRecord(value) &&
+    typeof value["at"] === "string" &&
+    isRecord(value["cards"]) &&
+    Object.values(value["cards"]).every((print) => typeof print === "string")
+  );
 }
 
 /**

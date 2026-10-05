@@ -84,19 +84,25 @@ export function Announcer() {
 function describe(el: CardElement): string {
   const where = `${round(el.x)}mm from left, ${round(el.y)}mm from top`;
   const size = el.kind === "text" || el.kind === "list" || el.kind === "grid" ? `, ${el.fontSizePt}pt` : "";
-  const what =
-    el.kind === "text"
-      ? `${el.template || "empty"} text`
-      : el.kind === "list"
-        ? "list"
-        : el.kind === "grid"
-          ? `grid by ${el.groupBy}`
-          : el.kind === "room"
-            ? el.show === "room"
-              ? "plan of the room"
-              : "plan of this table"
-            : el.kind;
+  const what = whatItIs(el);
   return `${what}, ${where}${size}`;
+}
+
+function whatItIs(el: CardElement): string {
+  switch (el.kind) {
+    case "text":
+      return `${el.template || "empty"} text`;
+    case "list":
+      return "list";
+    case "grid":
+      return `grid by ${el.groupBy}`;
+    case "qr":
+      return "QR code";
+    case "room":
+      return el.show === "room" ? "plan of the room" : "plan of this table";
+    default:
+      return el.kind;
+  }
 }
 
 function isTyping(target: EventTarget | null): boolean {

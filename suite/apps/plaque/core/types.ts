@@ -314,6 +314,18 @@ export interface RoomElement extends ElementBase {
   walls: boolean;
 }
 
+/**
+ * A QR code of whatever its template says — the guest link, by default, so a
+ * phone held up to the board finds its table. Vector, so it is sharp at any
+ * size; it resolves to a filled shape.
+ */
+export interface QrElement extends ElementBase {
+  kind: "qr";
+  /** e.g. `"{{Guest Link}}"`. */
+  data: string;
+  colorHex: Hex;
+}
+
 export type CardElement =
   | TextElement
   | IconElement
@@ -322,7 +334,8 @@ export type CardElement =
   | ImageElement
   | ListElement
   | GridElement
-  | RoomElement;
+  | RoomElement
+  | QrElement;
 
 /**
  * Any field of any element kind, except the two that establish identity.
@@ -339,7 +352,8 @@ type PatchableKey = Exclude<
   | keyof ImageElement
   | keyof ListElement
   | keyof GridElement
-  | keyof RoomElement,
+  | keyof RoomElement
+  | keyof QrElement,
   "kind" | "id"
 >;
 

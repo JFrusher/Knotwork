@@ -169,6 +169,23 @@ export function InspectorPanel() {
         />
       )}
 
+      {element.kind === "qr" && (
+        <SubGroup title="QR code">
+          <TextField
+            label="Points at"
+            value={element.data}
+            placeholder="{{Guest Link}}"
+            onChange={(data) => patch({ data })}
+          />
+          <Hint>
+            {"{{Guest Link}}"} is the wedding's guest link — names and tables only — once it is published from
+            the Data menu. Anything else typed here, a website or a gift list, works as well. Keep it dark on a
+            light card, and at least 2cm across.
+          </Hint>
+          <ColorField label="Colour" value={element.colorHex} onChange={(c) => patch({ colorHex: c ?? "#000000" })} />
+        </SubGroup>
+      )}
+
       {element.kind === "room" && (
         <RoomProperties
           element={element}

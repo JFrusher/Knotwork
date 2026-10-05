@@ -1,0 +1,80 @@
+{
+  "format": "plaque-template",
+  "version": 1,
+  "id": "escort-card",
+  "name": "Escort card — name, table and seat",
+  "description": "One per guest, laid out at the door: their name, and where to go — the seat too, wherever the table numbers its seats.",
+  "card": {
+    "widthMm": 90,
+    "heightMm": 50,
+    "fold": "none",
+    "foldPositionMm": 25,
+    "bleedMm": 0
+  },
+  "template": {
+    "backgroundHex": null,
+    "rowScope": {
+      "kind": "per-row"
+    },
+    "elements": [
+      {
+        "kind": "text",
+        "id": "name",
+        "x": 6,
+        "y": 9,
+        "w": 78,
+        "h": 16,
+        "z": 0,
+        "template": "{{First Name}} {{Last Name}}",
+        "fontId": "great-vibes",
+        "fontSizePt": 24,
+        "align": "center",
+        "vAlign": "middle",
+        "lineHeight": 1.1,
+        "colorHex": "#2b2620",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 12,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "line",
+        "id": "rule",
+        "x": 35,
+        "y": 28,
+        "w": 20,
+        "h": 1,
+        "z": 1,
+        "strokeHex": "#b49a6a",
+        "strokeWidthMm": 0.3,
+        "dashed": false
+      },
+      {
+        "kind": "text",
+        "id": "place",
+        "x": 6,
+        "y": 31,
+        "w": 78,
+        "h": 9,
+        "z": 2,
+        "template": "{{Place}}",
+        "fontId": "marcellus",
+        "fontSizePt": 11,
+        "align": "center",
+        "vAlign": "middle",
+        "lineHeight": 1.2,
+        "colorHex": "#7a5c3a",
+        "letterSpacingMm": 0.3,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 7,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      }
+    ]
+  }
+}

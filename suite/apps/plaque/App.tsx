@@ -33,6 +33,7 @@ import { Pagination } from "./ui/Pagination";
 import { PersistenceBar } from "./ui/PersistenceBar";
 import { PiecesBar } from "./ui/PiecesBar";
 import { RowsDrawer } from "./ui/RowsDrawer";
+import { SincePrinted } from "./ui/SincePrinted";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
 
@@ -72,6 +73,7 @@ export function App() {
     printers,
     activePrinterId,
     designProblem,
+    printed,
   } = usePlaque(
     useShallow((s) => ({
       card: s.card,
@@ -95,6 +97,7 @@ export function App() {
       printers: s.printers,
       activePrinterId: s.activePrinterId,
       designProblem: s.designProblem,
+      printed: s.printed,
     })),
   );
 
@@ -280,6 +283,12 @@ export function App() {
         )}
 
         {designProblem && <p className={styles.notice}>{designProblem}</p>}
+        <SincePrinted
+          printed={printed}
+          artefacts={artefacts}
+          className={styles.notice}
+          actionClassName={styles.noticeAction}
+        />
 
         <div className={sheetCollapsed ? `${styles.workspace} ${styles.workspaceWide}` : styles.workspace}>
           <section data-tour="placecards.canvas" className={styles.pane} aria-label="Card">

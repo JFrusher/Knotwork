@@ -44,7 +44,7 @@ describe("load", () => {
     expect(result.data.pieces).toHaveLength(1);
     expect(result.data.pieces[0]).toMatchObject(FIRST_PIECE);
     // The rows it printed are the room's to say now; none are kept.
-    expect(Object.keys(result.data.pieces[0]!).sort()).toEqual(["card", "id", "merged", "name", "sheet", "template"]);
+    expect(Object.keys(result.data.pieces[0]!).sort()).toEqual(["card", "id", "merged", "name", "printed", "sheet", "template"]);
     expect(result.problem).toBeNull();
   });
 
@@ -195,6 +195,16 @@ describe("load, with pieces", () => {
     const result = load(suite([piece("a", "Place cards", { merged: { "merged:x": ["g1", "g2"] } }), piece("b", "Menus", { merged: { m: { rows: [] } } })]));
     expect(result.status === "ok" && result.data.pieces.map((p) => p.merged)).toEqual([{ "merged:x": ["g1", "g2"] }]);
     expect(result.status === "ok" && result.problem).toMatch(/combined cards on "Menus"/);
+  });
+
+  it("reads what a piece was last printed as, and says so when it cannot", () => {
+    const printed = { at: "2026-10-01T10:00:00Z", cards: { "row:g1": "abc:1" } };
+    const ok = load(suite([piece("a", "Place cards", { printed })]));
+    expect(ok.status === "ok" && ok.data.pieces[0]!.printed).toEqual(printed);
+
+    const garbled = load(suite([piece("a", "Place cards", { printed: { at: 3 } })]));
+    expect(garbled.status === "ok" && garbled.data.pieces[0]!.printed).toBeNull();
+    expect(garbled.status === "ok" && garbled.problem).toMatch(/last printed as could not be read/);
   });
 
   it("discards a suite with no readable piece", () => {

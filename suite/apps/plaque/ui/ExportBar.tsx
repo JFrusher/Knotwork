@@ -193,6 +193,13 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
           : null,
       );
       save(bytes, `${fileNameFor(pieceName)}${SUFFIX[variant]}.pdf`);
+      // The whole run, or the chosen few, went to paper: changes are measured from here.
+      if (variant === "all" || tiles) {
+        usePlaque.getState().notePrinted(
+          printOnly ? artefacts.filter((artefact) => printOnly.includes(artefact.key)) : artefacts,
+          printOnly !== null,
+        );
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "The PDF could not be generated.");
     } finally {

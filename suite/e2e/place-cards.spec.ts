@@ -164,3 +164,33 @@ test("the table card starter shows its own table, and who sits where at it", asy
   await expect(page.getByText(/^14 cards · \d+ sheets?$/)).toBeVisible();
   await page.screenshot({ path: process.env.SHOT2 ?? "test-results/table-card.png" });
 });
+
+test("after printing, a change in the room names the cards it made wrong, and reprints just those", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/place-cards");
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await pieces.getByRole("button", { name: "+ New piece" }).click();
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Escort cards");
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
+  await page.getByLabel("Start from a design").selectOption({ label: "Escort card — name, table and seat" });
+  await expect(page.getByRole("region", { name: "Card" }).getByText("Top table", { exact: true })).toBeVisible();
+
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download print-ready PDF" }).click();
+  await page.getByRole("button", { name: /^Download all \d+ sheets$/ }).click();
+  await download;
+  await expect(page.getByRole("status").filter({ hasText: "changed" })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Seating" }).click();
+  await page.getByRole("button", { name: /^Top table, / }).click();
+  await page.getByLabel("Table name").fill("Head table");
+  await page.getByLabel("Table name").press("Enter");
+  await page.getByRole("link", { name: "Place cards" }).click();
+
+  await expect(page.getByRole("region", { name: "Card" }).getByText("Head table", { exact: true })).toBeVisible();
+  const notice = page.getByRole("status").filter({ hasText: "changed" });
+  await expect(notice).toContainText("8 cards have changed: Alex Morgan");
+  await notice.getByRole("button", { name: "Print just these 8" }).click();
+  await expect(page.getByText("Just 8 of 100 cards")).toBeVisible();
+  await page.screenshot({ path: process.env.SHOT ?? "test-results/reprint.png" });
+});

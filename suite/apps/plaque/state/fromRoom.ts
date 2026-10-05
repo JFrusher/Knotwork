@@ -31,8 +31,10 @@ export const ROOM_COLUMNS = [
   "Table Number",
   "Table Size",
   "Seat",
+  "Place",
   "Dietary",
   "Side",
+  "Guest Link",
 ] as const;
 
 export interface RoomRows {
@@ -70,10 +72,14 @@ function build(doc: Knotwork): RoomRows {
       "Table Number": at ? String(at.tableNumber) : "",
       "Table Size": at ? String(at.tableSize) : "",
       Seat: at?.seat ? String(at.seat) : "",
+      // Where to go, in one phrase that reads right whether or not the table numbers its seats.
+      Place: at ? (at.seat ? `${at.table}, seat ${at.seat}` : at.table) : "",
       // What the guest said, so the card reads "Coeliac" rather than "gluten-free".
       Dietary: dietaryText(guest),
       // "Alex’s side", as everywhere else — the stored "a" means nothing on a card.
       Side: sideLabel(guest.side, doc.event),
+      // Not the room's to know: the store fills it in once a link is published.
+      "Guest Link": "",
     };
   });
 

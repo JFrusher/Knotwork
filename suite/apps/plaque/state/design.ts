@@ -2,6 +2,7 @@ import { defaultCard, defaultSheet, defaultTemplate } from "../core/template/def
 import type { CardSpec, SheetSpec, Template } from "../core/types";
 import { ROOM_COLUMNS, type Merged } from "./fromRoom";
 import { FIRST_PIECE } from "./suite";
+import type { Printed } from "./printed";
 
 /**
  * What of Place cards is the wedding's: the stationery slice. Everything
@@ -18,6 +19,8 @@ export interface Design {
   template: Template;
   /** Guests printed together on one card. See `withMerges`. */
   merged: Merged;
+  /** What this piece last went to the printer as, or null if it never has. */
+  printed: Printed | null;
   uploadedIcons: Record<string, string>;
   /** Filenames of uploaded assets, so a lost blob can still be named (S-D1.4). */
   assetNames: Record<string, string>;
@@ -31,6 +34,7 @@ export const DESIGN_KEYS = [
   "sheet",
   "template",
   "merged",
+  "printed",
   "uploadedIcons",
   "assetNames",
   "snapEnabled",
@@ -44,6 +48,7 @@ export function initialDesign(): Design {
     sheet: defaultSheet(),
     template: { elements: [], backgroundHex: null },
     merged: {},
+    printed: null,
     uploadedIcons: {},
     assetNames: {},
     snapEnabled: true,
@@ -57,7 +62,7 @@ export function designOf(source: Design): Design {
 }
 
 /** What each piece has of its own. Everything else in a `Design` is shared by the suite. */
-export const PIECE_KEYS = ["card", "sheet", "template", "merged"] as const satisfies readonly (keyof Design)[];
+export const PIECE_KEYS = ["card", "sheet", "template", "merged", "printed"] as const satisfies readonly (keyof Design)[];
 
 export type PieceDesign = Pick<Design, (typeof PIECE_KEYS)[number]>;
 export type SharedDesign = Omit<Design, (typeof PIECE_KEYS)[number]>;

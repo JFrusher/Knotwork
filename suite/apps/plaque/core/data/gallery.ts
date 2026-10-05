@@ -1,4 +1,5 @@
 import type { CardSpec, SheetSpec, Template } from "../types";
+import escortCard from "../../templates/escort-card.json";
 import finder from "../../templates/finder.json";
 import floorPlan from "../../templates/floor-plan.json";
 import placeCardClassic from "../../templates/place-card-classic.json";
@@ -40,6 +41,7 @@ export interface GalleryTemplate {
  * where a glob cannot.
  */
 const FILES: Record<string, unknown> = {
+  "escort-card.json": escortCard,
   "finder.json": finder,
   "floor-plan.json": floorPlan,
   "place-card-classic.json": placeCardClassic,
