@@ -22,6 +22,12 @@ export interface Guest {
   id: string;
   firstName: string;
   lastName: string;
+  /**
+   * What the guest is called on the stationery, when it is not what the
+   * design's name format would make of them: "Granny Jo", "Dr Okafor". Empty
+   * for none.
+   */
+  knownAs: string;
   email: string;
   rsvpStatus: RsvpStatus;
   /** A key from `lib/model/dietary` — "vegetarian", "other" — or "" for none. */

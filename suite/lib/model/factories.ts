@@ -14,6 +14,7 @@ export function newGuest(partial: Partial<Guest> = {}): Guest {
     id: newId("g"),
     firstName: "",
     lastName: "",
+    knownAs: "",
     email: "",
     rsvpStatus: "pending",
     dietary: "",

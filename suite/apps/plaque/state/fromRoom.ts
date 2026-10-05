@@ -26,6 +26,7 @@ export const ROOM_COLUMNS = [
   "First Name",
   "Last Name",
   "Name",
+  "Known As",
   "Initial",
   "Table",
   "Table Number",
@@ -65,6 +66,8 @@ function build(doc: Knotwork): RoomRows {
       "First Name": guest.firstName,
       "Last Name": guest.lastName,
       Name: guestName(guest),
+      // Their own name for the stationery, which a design's name format gives way to.
+      "Known As": guest.knownAs,
       // What a finder groups by: the surname's letter, or the first name's for
       // someone listed by one name.
       Initial: (guest.lastName || guest.firstName).trim().charAt(0).toLocaleUpperCase("en"),

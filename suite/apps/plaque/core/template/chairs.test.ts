@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RoomScene, RoomTable, TextElement } from "../types";
 import { noFit, resolveCard } from "./bindings";
-import { chairRef, chairToken, chairValues } from "./chairs";
+import { chairName, chairRef, chairToken, chairValues } from "./chairs";
 import { unboundTokens } from "./rebind";
 
 const sitter = (first: string, last: string) => ({ "First Name": first, "Last Name": last });
@@ -37,6 +37,14 @@ describe("naming a chair", () => {
     expect(chairRef("First Name")).toBeNull();
     expect(chairToken({ table: null, seat: 3 })).toBe("At seat 3");
     expect(chairToken({ table: "Table 1", seat: 3 })).toBe("Table 1, seat 3");
+  });
+});
+
+describe("a guest known by a name of their own", () => {
+  it("is called it wherever the design's name format would name them", () => {
+    const format = { chairName: "{{First Name}}" };
+    expect(chairName(format, { "First Name": "Josephine", "Last Name": "Clarke", "Known As": "Granny Jo" })).toBe("Granny Jo");
+    expect(chairName(format, { "First Name": "Josephine", "Last Name": "Clarke", "Known As": "" })).toBe("Josephine");
   });
 });
 

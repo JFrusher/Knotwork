@@ -77,6 +77,14 @@ describe("printing from the room", () => {
     expect(roomRows(doc).rows.map((row) => row["Initial"])).toEqual(["S", "P"]);
   });
 
+  it("carries the name a guest is known by on the stationery, and nothing for one who has none", () => {
+    const doc = wedding(
+      { g1: { id: "g1", firstName: "Josephine", lastName: "Clarke", knownAs: "Granny Jo" }, g2: { id: "g2", firstName: "Ada", lastName: "Byron" } },
+      {},
+    );
+    expect(roomRows(doc).rows.map((row) => row["Known As"])).toEqual(["", "Granny Jo"]);
+  });
+
   it("prints a side as the partners call it, not the id it is stored under", () => {
     const doc = wedding(
       {

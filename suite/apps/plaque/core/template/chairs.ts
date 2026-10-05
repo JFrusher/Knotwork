@@ -41,9 +41,9 @@ export function chairToken(ref: ChairRef): string {
   return ref.table === null ? `At seat ${ref.seat}` : `${ref.table}, seat ${ref.seat}`;
 }
 
-/** How a design names a sitter: its format, applied to their row. */
+/** How a design names a sitter: the name they are known by, else its format applied to their row. */
 export function chairName(template: Pick<Template, "chairName">, row: GuestRow): string {
-  return interpolate(template.chairName ?? DEFAULT_CHAIR_NAME, row).text;
+  return row["Known As"] || interpolate(template.chairName ?? DEFAULT_CHAIR_NAME, row).text;
 }
 
 /** The table a chair is at: the card's own, or the one named. */

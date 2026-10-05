@@ -46,6 +46,8 @@ function run(slices: GuestSlices, actions: Action[]): GuestSlices {
 export type GuestChange =
   | { rsvpStatus: RsvpStatus }
   | { side: Side }
+  /** What the stationery calls them; empty for whatever the design's format makes of their name. */
+  | { knownAs: string }
   /** In the guest's own words; the requirement is read from them, as Seating does. */
   | { dietaryRaw: string }
   | { addTag: string }

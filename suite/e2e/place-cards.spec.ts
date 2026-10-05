@@ -290,3 +290,21 @@ test("the wedding pack's room is the floor plan as Place cards draws it, on A4",
   // A4 landscape, in points.
   expect([Math.round(first.getWidth()), Math.round(first.getHeight())]).toEqual([842, 595]);
 });
+
+test("a guest known by a name of their own is called it on the plan, whatever the design's format", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/guests");
+  const knownAs = page.getByRole("textbox", { name: "What the stationery calls Alex Morgan" });
+  await knownAs.fill("Granny Jo");
+  await knownAs.press("Enter");
+  await expect.poll(async () => Object.values((await storedDocument(page)).guests as Record<string, any>).find((g) => g.firstName === "Alex")?.knownAs).toBe("Granny Jo");
+
+  await page.getByRole("link", { name: "Place cards" }).click();
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await pieces.getByRole("button", { name: "+ New piece" }).click();
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
+  await page.getByLabel("Start from a design").selectOption({ label: "Floor plan — the room to scale, A1" });
+  const card = page.getByRole("region", { name: "Card" });
+  await expect(card.getByText("Granny Jo", { exact: true })).toBeVisible();
+  await expect(card.getByText("Alex", { exact: true })).toHaveCount(0);
+});

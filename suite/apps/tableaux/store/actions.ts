@@ -498,6 +498,7 @@ export const addGuest =
       id,
       firstName: first,
       lastName: last,
+      knownAs: (partial.knownAs || '').trim(),
       fullName,
       email: (partial.email || '').trim(),
       dietary: partial.dietary || '',

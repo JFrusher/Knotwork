@@ -49,6 +49,7 @@ export function NameFormat() {
           Reads: {sample.map((row) => chairName({ chairName: pattern }, row) || "(nothing)").join(" · ")}
         </Hint>
       )}
+      <Hint>A guest given a name of their own in Guests, under Known as, is called that instead.</Hint>
     </div>
   );
 }

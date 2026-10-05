@@ -256,6 +256,9 @@ export function GuestsPage() {
                     />
                   </th>
                   <SortHeader label="Name" by="name" sort={sort} onSort={setSort} />
+                  <th scope="col" className="px-3 py-2 font-normal" title="What the place cards and plans call them, when it is not their name">
+                    Known as
+                  </th>
                   <SortHeader label="Reply" by="reply" sort={sort} onSort={setSort} />
                   <SortHeader label="Side" by="side" sort={sort} onSort={setSort} />
                   <SortHeader label="Food" by="dietary" sort={sort} onSort={setSort} />
@@ -341,6 +344,23 @@ function GuestLine({
         {name}
         {row.plusOne ? <span className="block text-xs text-slate">{row.plusOne}</span> : null}
       </th>
+      <td className="px-3 py-1.5">
+        {/* Keyed on the stored words, so an undo shows through. */}
+        <input
+          key={guest.knownAs}
+          aria-label={`What the stationery calls ${name}`}
+          defaultValue={guest.knownAs}
+          placeholder="—"
+          onBlur={(event) => {
+            const knownAs = event.target.value.trim();
+            if (knownAs !== guest.knownAs) onChange({ knownAs }, "what they are known as");
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.currentTarget.blur();
+          }}
+          className={`${CONTROL} w-32`}
+        />
+      </td>
       <td className="px-3 py-1.5">
         <select aria-label={`Reply from ${name}`} value={guest.rsvpStatus} onChange={(event) => onChange({ rsvpStatus: event.target.value as RsvpStatus }, "a reply")} className={CONTROL}>
           {REPLIES.map((reply) => (
