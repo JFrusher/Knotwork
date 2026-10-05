@@ -37,15 +37,32 @@ const PREDICATES: Record<FilterKey, (guest: Guest) => boolean> = {
   notes: (g) => !!(g.notes && g.notes.trim()),
 }
 
-// TODO(ux-audit): matchesFilters ANDs every active filter (below), which
-// produces silent, misleading results for two real combos: Vegetarian+Vegan
-// ticked together is a guaranteed-empty result (dietary is a single value,
-// can never match both); and both side chips together only matches
-// side==='both', not the union a user would expect from ticking two side
-// chips. See tmp/ux-audit.md #G7.
+/**
+ * Chips in one category widen the list, and chips in different categories
+ * narrow it: Vegetarian + Vegan is everyone on either diet, and Vegan + Alex's
+ * is Alex's vegans. A guest has one diet and one side, so ANDing two chips of
+ * the same category could only ever show nobody, or just the guests on both
+ * sides.
+ */
+const CATEGORY: Record<FilterKey, string> = {
+  unassigned: 'seat',
+  a: 'side',
+  b: 'side',
+  vegetarian: 'diet',
+  vegan: 'diet',
+  'gluten-free': 'diet',
+  notes: 'notes',
+}
+
 export function matchesFilters(guest: Guest, filters: readonly string[] | null | undefined): boolean {
   if (!filters || filters.length === 0) return true
-  return filters.every((f) => (f in PREDICATES ? PREDICATES[f as FilterKey](guest) : true))
+  const byCategory = new Map<string, FilterKey[]>()
+  for (const f of filters) {
+    if (!(f in PREDICATES)) continue
+    const key = f as FilterKey
+    byCategory.set(CATEGORY[key], [...(byCategory.get(CATEGORY[key]) ?? []), key])
+  }
+  return [...byCategory.values()].every((keys) => keys.some((key) => PREDICATES[key](guest)))
 }
 
 export function matchesSearch(guest: Guest, group: Pick<Group, 'name'> | null | undefined, query: string): boolean {
