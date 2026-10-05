@@ -1,7 +1,18 @@
 import { normalise } from "../data/artefacts";
 import type { GuestRow } from "../data/rows";
 import { transformForPanel } from "../geometry/fold";
-import type { CardSpec, ListElement, Mm, ResolvedElement, RoomElement, RoomTable, Template, TextElement } from "../types";
+import type {
+  CardSpec,
+  ListElement,
+  Mm,
+  ResolvedElement,
+  RoomElement,
+  RoomScene,
+  RoomSeat,
+  RoomTable,
+  Template,
+  TextElement,
+} from "../types";
 import { chairName } from "./chairs";
 import type { CardWarning, ResolveOptions } from "./bindings";
 
@@ -35,33 +46,12 @@ export function resolveRoom(
 ): { elements: ResolvedElement[]; warnings: CardWarning[] } {
   const warnings: CardWarning[] = [];
   const scene = opts.room?.() ?? null;
-  if (!scene || scene.tables.length === 0) {
-    warnings.push({ elementId: el.id, kind: "empty-text", detail: "There is no seating plan to draw yet." });
+  const layout = planLayout(el, scene, row);
+  if (typeof layout === "string") {
+    warnings.push({ elementId: el.id, kind: scene ? "missing-field" : "empty-text", detail: layout });
     return { elements: [], warnings };
   }
-
-  let tables = scene.tables;
-  let bounds = scene.bounds;
-  if (el.show === "table") {
-    const wanted = normalise(row["Table"] ?? "");
-    const table = scene.tables.find((t) => normalise(t.label) === wanted);
-    if (!table) {
-      warnings.push({
-        elementId: el.id,
-        kind: "missing-field",
-        detail: wanted ? `The plan has no table called "${row["Table"]}".` : "This card is not for a table.",
-      });
-      return { elements: [], warnings };
-    }
-    tables = [table];
-    bounds = tableBounds(table, scene.seatRadius);
-  }
-
-  // The plan scaled to fit the box, centred, one scale both ways.
-  const scale = Math.min(el.w / bounds.w, el.h / bounds.h);
-  const ox = el.x + (el.w - bounds.w * scale) / 2 - bounds.x * scale;
-  const oy = el.y + (el.h - bounds.h * scale) / 2 - bounds.y * scale;
-  const at = (x: number, y: number) => ({ x: ox + x * scale, y: oy + y * scale });
+  const { tables, scale, at, seatR, walls } = layout;
 
   const elements: ResolvedElement[] = [];
   let n = 0;
@@ -77,7 +67,7 @@ export function resolveRoom(
   };
 
   if (el.walls && el.show === "room") {
-    for (const [a, b] of scene.walls) {
+    for (const [a, b] of walls) {
       const p = at(a.x, a.y);
       const q = at(b.x, b.y);
       const length = Math.hypot(q.x - p.x, q.y - p.y);
@@ -93,8 +83,6 @@ export function resolveRoom(
     }
   }
 
-  const seatR = scene.seatRadius * scale;
-  const atChairs: Array<{ words: string; box: Box }> = [];
   for (const table of tables) {
     const centre = at(table.x, table.y);
     const w = table.view.w * scale;
@@ -138,13 +126,7 @@ export function resolveRoom(
       const words = seat.row ? chairName(template, seat.row) : "";
       return words ? [{ seat, words }] : [];
     });
-    if (table.numbered) {
-      // Each name at its own chair, hanging outward — sized below, all together.
-      const across = Math.max(seatR * 2, nearestSeat(table, scale) * 0.96);
-      for (const { seat, words } of named) {
-        atChairs.push({ words, box: nameCell(at(seat.x, seat.y), seat.out, seatR, across, el.nameGap) });
-      }
-    } else if (named.length > 0) {
+    if (!table.numbered && named.length > 0) {
       // Guests who sit where they like are named inside the table, as Seating
       // shows them: never at a chair, which would promise a seat that is not theirs.
       for (const column of listed(el, named.map((n) => n.words), uprightInterior(table, centre, scale), opts, warnings)) {
@@ -153,16 +135,133 @@ export function resolveRoom(
     }
   }
 
-  // Every name at a chair at one size: the largest the tightest of them allows,
-  // so no guest reads smaller than the one beside them for a longer name.
-  const sizes = atChairs.map(({ words, box }) => fitted(el, words, box, el.fontSizePt, opts, warnings)?.text.fontSizePt ?? el.fontSizePt);
-  const shared = Math.min(el.fontSizePt, ...sizes);
-  for (const { words, box } of atChairs) {
-    const name = fitted(el, words, box, shared, opts, warnings);
-    if (name) elements.push({ ...place(name.box), ...name.text });
+  // Each name at its own chair, hanging outward, all at one size — unless the
+  // names have been stamped out as boxes of their own.
+  if (el.namesAtChairs) {
+    const size = chairNameSize(el, layout, opts, template, warnings);
+    for (const { words, box } of chairNames(el, layout, template)) {
+      const name = fitted(el, words, box, size, opts, warnings);
+      if (name) elements.push({ ...place(name.box), ...name.text });
+    }
   }
 
   return { elements, warnings };
+}
+
+/** Where a plan draws: its tables, scaled and centred in its box. */
+export interface PlanLayout {
+  tables: RoomTable[];
+  scale: number;
+  /** The plan's own coordinates to the card's, in millimetres. */
+  at: (x: number, y: number) => { x: Mm; y: Mm };
+  /** A chair's radius on the card. */
+  seatR: Mm;
+  walls: RoomScene["walls"];
+}
+
+/**
+ * How a room element lays its plan out on a card for `row` — the whole room,
+ * or the card's own table — or why it cannot.
+ */
+export function planLayout(
+  el: Pick<RoomElement, "show" | "x" | "y" | "w" | "h">,
+  scene: RoomScene | null,
+  row: GuestRow,
+): PlanLayout | string {
+  if (!scene || scene.tables.length === 0) return "There is no seating plan to draw yet.";
+  let tables = scene.tables;
+  let bounds = scene.bounds;
+  if (el.show === "table") {
+    const wanted = normalise(row["Table"] ?? "");
+    const table = scene.tables.find((t) => normalise(t.label) === wanted);
+    if (!table) return wanted ? `The plan has no table called "${row["Table"]}".` : "This card is not for a table.";
+    tables = [table];
+    bounds = tableBounds(table, scene.seatRadius);
+  }
+  // The plan scaled to fit the box, centred, one scale both ways.
+  const scale = Math.min(el.w / bounds.w, el.h / bounds.h);
+  const ox = el.x + (el.w - bounds.w * scale) / 2 - bounds.x * scale;
+  const oy = el.y + (el.h - bounds.h * scale) / 2 - bounds.y * scale;
+  return {
+    tables,
+    scale,
+    at: (x, y) => ({ x: ox + x * scale, y: oy + y * scale }),
+    seatR: scene.seatRadius * scale,
+    walls: scene.walls,
+  };
+}
+
+/** Where each chair's name goes at a table that numbers its seats: hanging off the chair, away from the table. */
+export function tableCells(layout: PlanLayout, table: RoomTable, gap: number): Array<{ seat: RoomSeat; box: Box }> {
+  if (!table.numbered) return [];
+  const across = Math.max(layout.seatR * 2, nearestSeat(table, layout.scale) * 0.96);
+  return table.seats.map((seat) => ({
+    seat,
+    box: nameCell(layout.at(seat.x, seat.y), seat.out, layout.seatR, across, gap),
+  }));
+}
+
+/** Every chair a plan names, with where its name goes on the card. */
+export function chairCells(
+  el: Pick<RoomElement, "show" | "x" | "y" | "w" | "h" | "nameGap">,
+  scene: RoomScene | null,
+  row: GuestRow,
+): Array<{ table: RoomTable; seat: RoomSeat; box: Box }> {
+  const layout = planLayout(el, scene, row);
+  if (typeof layout === "string") return [];
+  return layout.tables.flatMap((table) => tableCells(layout, table, el.nameGap).map((cell) => ({ table, ...cell })));
+}
+
+/** Each name at a chair the plan draws, in the cell it is drawn in. */
+function chairNames(el: RoomElement, layout: PlanLayout, template: Pick<Template, "chairName">): Array<{ words: string; box: Box }> {
+  return layout.tables.flatMap((table) =>
+    tableCells(layout, table, el.nameGap).flatMap(({ seat, box }) => {
+      const words = seat.row ? chairName(template, seat.row) : "";
+      return words ? [{ words, box }] : [];
+    }),
+  );
+}
+
+/**
+ * The one size a plan names its chairs at: the largest the tightest of them
+ * allows, so no guest reads smaller than the one beside them for a longer name.
+ */
+export function chairNameSize(
+  el: RoomElement,
+  layout: PlanLayout,
+  opts: Pick<ResolveOptions, "fitText">,
+  template: Pick<Template, "chairName">,
+  warnings: CardWarning[],
+): number {
+  const sizes = chairNames(el, layout, template).map(
+    ({ words, box }) => fitted(el, words, box, el.fontSizePt, opts, warnings)?.text.fontSizePt ?? el.fontSizePt,
+  );
+  return Math.min(el.fontSizePt, ...sizes);
+}
+
+/**
+ * The design with every box that follows a chair moved to that chair's name
+ * on this card, nudged as it was nudged. Every place a design is drawn or
+ * edited goes through this, so what is grabbed on screen is what prints, on
+ * every table's card. A box whose chair this card does not have stays put: it
+ * names nobody here.
+ */
+export function placeChairs(template: Template, scene: RoomScene | null, row: GuestRow): Template {
+  if (!template.elements.some((el) => el.kind === "text" && el.chair?.follow)) return template;
+  const cellsOf = new Map<string, ReturnType<typeof chairCells>>();
+  const elements = template.elements.map((el) => {
+    if (el.kind !== "text" || !el.chair?.follow) return el;
+    const link = el.chair;
+    const plan = template.elements.find((p): p is RoomElement => p.id === link.from && p.kind === "room");
+    if (!plan) return el;
+    const cells = cellsOf.get(plan.id) ?? chairCells(plan, scene, row);
+    cellsOf.set(plan.id, cells);
+    const cell = cells.find(
+      (c) => c.seat.number === link.seat && (link.table === null || normalise(c.table.label) === normalise(link.table)),
+    );
+    return cell ? { ...el, x: cell.box.x + link.dx, y: cell.box.y + link.dy } : el;
+  });
+  return { ...template, elements };
 }
 
 /** How far a table reaches above and below its centre, turned as it is. */
@@ -311,7 +410,7 @@ function fitted(
   words: string,
   box: Box,
   sizePt: number,
-  opts: ResolveOptions,
+  opts: Pick<ResolveOptions, "fitText">,
   warnings: CardWarning[],
 ): { box: Box; text: Omit<Extract<ResolvedElement, { kind: "text" }>, "id" | "sourceId" | "x" | "y" | "w" | "h" | "rotationDeg" | "z"> } | null {
   const probe: TextElement = {

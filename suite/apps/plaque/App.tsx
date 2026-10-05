@@ -10,6 +10,7 @@ import { analyseArtefacts, paginate, sheetCountFor } from "./core/imposition/pag
 import { artefactsOf } from "./core/data/parts";
 import { hasBackSide, templateForSide } from "./core/imposition/duplex";
 import { templateForRow } from "./core/template/overrides";
+import { placeChairs } from "./core/template/room";
 import { PAPER_WHITE, contrastIssues } from "./core/print/contrast";
 import { missingAssets } from "./core/template/assets";
 import { overflowIssues } from "./core/template/overflow";
@@ -195,8 +196,10 @@ export function App() {
     // row's own overrides applied. Editing against anything else would mean the
     // preview and the sheet disagree, which is the one thing Plaque must not do.
     const sided = hasBackSide(template) ? templateForSide(template, editingSide) : template;
-    return previewArtefact ? templateForRow(sided, previewArtefact.rowId) : sided;
-  }, [template, editingSide, previewArtefact]);
+    const own = previewArtefact ? templateForRow(sided, previewArtefact.rowId) : sided;
+    // A box that follows a chair is grabbed where it prints on this card.
+    return placeChairs(own, room, previewRow);
+  }, [template, editingSide, previewArtefact, room, previewRow]);
 
   // Row-independent, so this gates export without resolving a single card.
   const missing = useMemo(

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { artefactsOf } from "../../core/data/parts";
 import { panelBounds, panelOf } from "../../core/geometry/fold";
 import { boxAtNaturalSize, boxFittedTo, boxWithAspect, MAX_ZOOM } from "../../core/template/imageFit";
 import { templateForRow, type ElementPatch } from "../../core/template/overrides";
+import { placeChairs } from "../../core/template/room";
 import { DEFAULT_OPTICAL, NOTABLE_FEATURES, availableFeatures } from "../../core/text/optical";
 import type { LoadedFont } from "../../core/text/measure";
 import type {
@@ -21,6 +22,7 @@ import type {
 import { usePlaque } from "../../state/store";
 import { NameFormat } from "./NameFormat";
 import { TemplateField } from "./ChairPicker";
+import { StampChairs } from "./StampChairs";
 import {
   CheckboxField,
   ColorField,
@@ -42,7 +44,7 @@ import styles from "./InspectorPanel.module.css";
  */
 export function InspectorPanel() {
   const {
-    element,
+    element: raw,
     headers,
     fonts,
     fontLabels,
@@ -52,6 +54,8 @@ export function InspectorPanel() {
     rowId,
     rowLabel,
     cardTable,
+    previewRow,
+    room,
     card,
     images,
     cropId,
@@ -75,6 +79,8 @@ export function InspectorPanel() {
         rowId: artefact?.rowId ?? null,
         rowLabel: artefact?.label ?? "",
         cardTable: artefact?.row["Table"] ?? "",
+        previewRow: artefact?.row ?? null,
+        room: s.room,
         card: s.card,
         images: s.images,
         cropId: s.cropId,
@@ -83,6 +89,12 @@ export function InspectorPanel() {
     }),
   );
   const [rowOnly, setRowOnly] = useState(false);
+  // A box that follows a chair, shown where it prints on the card on screen.
+  const element = useMemo(() => {
+    if (!raw || raw.kind !== "text" || !raw.chair?.follow) return raw;
+    const own = { ...template, elements: template.elements.map((el) => (el.id === raw.id ? raw : el)) };
+    return placeChairs(own, room, previewRow ?? {}).elements.find((el) => el.id === raw.id);
+  }, [raw, template, room, previewRow]);
 
   if (!element) {
     return <Hint>Click something on the card to edit it.</Hint>;
@@ -386,6 +398,7 @@ function RoomProperties({
         onChange={(show) => patch({ show })}
       />
       <NameFormat />
+      <StampChairs element={element} />
       <Hint>
         Drawn from Seating as it stands: move a table or a guest there and it moves here. Where a table
         numbers its seats, each name sits at its chair, every one at the same size; where guests sit
@@ -395,6 +408,12 @@ function RoomProperties({
         <CheckboxField label="Table names" checked={element.tableLabels} onChange={(tableLabels) => patch({ tableLabels })} />
         <CheckboxField label="Walls" checked={element.walls} onChange={(walls) => patch({ walls })} />
       </Row>
+      <CheckboxField
+        label="Names at chairs"
+        checked={element.namesAtChairs}
+        onChange={(namesAtChairs) => patch({ namesAtChairs })}
+        hint="Off once the names are boxes of their own, so they are not printed twice."
+      />
 
       <SubGroup title="Typography">
         <SelectField label="Font" value={element.fontId} options={fontOptions} onChange={(fontId) => patch({ fontId })} />

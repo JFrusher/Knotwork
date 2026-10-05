@@ -239,3 +239,37 @@ test("a chair picked on the map goes into the text, and the card names whoever s
   await expect(chair).toHaveClass(/used/);
   await page.screenshot({ path: process.env.SHOT ?? "test-results/chair-picker.png" });
 });
+
+test("a plan's names stamped out as boxes of their own say the same names, once each", async ({ page }) => {
+  await seedExampleWedding(page);
+  await openSeating(page);
+  await page.getByRole("button", { name: /^Top table, / }).click();
+  await page.getByRole("button", { name: "Seat-level" }).click();
+
+  await page.getByRole("link", { name: "Place cards" }).click();
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await pieces.getByRole("button", { name: "+ New piece" }).click();
+  await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
+  await page.getByLabel("Start from a design").selectOption({ label: "Floor plan — the room to scale, A1" });
+
+  const doc = await storedDocument(page);
+  const top = Object.values(doc.seating.tables as Record<string, any>).find((t) => t.label === "Top table");
+  const sitter = doc.guests[top.assignedGuestIds[0]].firstName as string;
+  const card = page.getByRole("region", { name: "Card" });
+  const named = card.getByText(sitter, { exact: true });
+  const before = await named.count();
+  expect(before).toBeGreaterThan(0);
+
+  await page.getByRole("button", { name: /room\s*the whole room/ }).click();
+  await page.getByRole("button", { name: "Boxes that follow the plan" }).click();
+
+  const all = page.getByText(/^Every chair has its box \(\d+\)\.$/);
+  await expect(all).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "Names at chairs" })).not.toBeChecked();
+  // The plan stops naming its chairs, so each name is printed once, by its box.
+  await expect(named).toHaveCount(before);
+  const boxes = ((await storedDocument(page)).stationery.pieces.at(-1).template.elements as any[]).filter((el) => el.chair);
+  expect(`Every chair has its box (${boxes.length}).`).toBe(await all.textContent());
+  expect(boxes.every((b) => b.chair.follow && /^\{\{Top table, seat \d+\}\}$/.test(b.template))).toBe(true);
+  await page.screenshot({ path: process.env.SHOT ?? "test-results/stamp-chairs.png" });
+});

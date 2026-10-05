@@ -95,7 +95,8 @@
         "wallHex": "#7a6a55",
         "tableLabels": false,
         "walls": false,
-        "nameGap": 0.3
+        "nameGap": 0.3,
+        "namesAtChairs": true
       }
     ],
     "chairName": "{{First Name}}"

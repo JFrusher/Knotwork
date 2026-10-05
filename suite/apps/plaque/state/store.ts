@@ -26,10 +26,12 @@ import type {
   ElementId,
   Rect,
   ResolvedImageSource,
+  RoomElement,
   RoomScene,
   RowScope,
   SheetSpec,
   Template,
+  TextElement,
 } from "../core/types";
 import type { LoadedFont } from "../core/text/measure";
 import type { PrinterProfile } from "../core/print/printerProfile";
@@ -40,7 +42,11 @@ import { readDesign, readSuite, writeDesign, writeSuite } from "./sliceBridge";
 import { roomRows, withMerges, type Merged } from "./fromRoom";
 import { roomScene } from "./roomScene";
 import { printBasis, recordPrint } from "./printed";
-import type { Artefact } from "../core/data/artefacts";
+import { normalise, type Artefact } from "../core/data/artefacts";
+import { artefactsOf } from "../core/data/parts";
+import { makeResolveOptions } from "../core/template/resolve";
+import { chairCells, chairNameSize, placeChairs, planLayout } from "../core/template/room";
+import { chairToken } from "../core/template/chairs";
 import { linkUrl, useGuestLink } from "@/lib/share/guestLink";
 
 export interface PieceSummary {
@@ -175,6 +181,13 @@ export interface PlaqueState extends Design, RoomData {
   /** Pans or zooms the artwork inside an image element: one gesture, one undo, as a drag. */
   setElementCrop: (id: ElementId, patch: { zoom?: number; focusX?: number; focusY?: number }) => void;
   removeElement: (id: ElementId) => void;
+  /**
+   * A text box at every chair a plan names, each bound to its chair: `follow`
+   * keeps them at their chairs as the room moves (always so for a table's own
+   * map); otherwise they stay where they are put. `only` stamps just those
+   * chairs. The plan stops naming those chairs itself.
+   */
+  stampChairs: (roomId: ElementId, follow: boolean, only?: Array<{ table: string | null; seat: number }>) => void;
   duplicateElement: (id: ElementId) => void;
   /** Replaces the back with a copy of the front, for cards read from either side. */
   copyFrontToBack: () => void;
@@ -455,15 +468,70 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
         };
       }),
 
-    updateElement: (id, patch) => commit("changing the card", (s) => ({ template: replaceElement(s, id, patch) })),
+    updateElement: (id, patch) =>
+      commit("changing the card", (s) => {
+        const template = replaceElement(s, id, patch);
+        // A box that follows a chair, moved by its numbers, keeps the move as a nudge.
+        return "x" in patch || "y" in patch
+          ? { template: { ...template, elements: template.elements.map((el) => (el.id === id ? withChairNudge(s, el) : el)) } }
+          : { template };
+      }),
+
+    stampChairs: (roomId, follow, only) =>
+      commit("names at their chairs", (s) => {
+        const plan = s.template.elements.find((el): el is RoomElement => el.id === roomId && el.kind === "room");
+        if (!plan) throw new Error(`No plan "${roomId}" on this design.`);
+        // Each table's card has its own table: those boxes can only follow.
+        const following = plan.show === "table" || follow;
+        const covered = new Set(stampedChairs(s.template, roomId));
+        const key = (table: string | null, seat: number) => `${table === null ? "" : normalise(table)}#${seat}`;
+        const wanted = only ? new Set(only.map((c) => key(c.table, c.seat))) : null;
+        const row = previewRow(s);
+        const layout = planLayout(plan, s.room, row);
+        if (typeof layout === "string") throw new Error(layout);
+        // The names as the plan draws them: all at the one size the tightest allows.
+        const sizePt = chairNameSize(plan, layout, makeResolveOptions(s.fonts), s.template, []);
+        let z = nextZ(s.template);
+        const stamped: TextElement[] = chairCells(plan, s.room, row).flatMap(({ table, seat, box }) => {
+          const ref = { table: plan.show === "table" ? null : table.label, seat: seat.number };
+          const k = key(ref.table, ref.seat);
+          if (covered.has(k) || (wanted && !wanted.has(k))) return [];
+          return [
+            {
+              id: newId(),
+              kind: "text",
+              ...box,
+              z: z++,
+              template: `{{${chairToken(ref)}}}`,
+              fontId: plan.fontId,
+              fontSizePt: sizePt,
+              align: "center",
+              vAlign: "middle",
+              lineHeight: 1.1,
+              colorHex: plan.colorHex,
+              letterSpacingMm: 0,
+              fit: { mode: "shrink-then-wrap", minFontSizePt: 4, maxLines: 2, anchor: "align" },
+              chair: { from: plan.id, ...ref, follow: following, dx: 0, dy: 0 },
+            },
+          ];
+        });
+        return {
+          template: {
+            ...s.template,
+            // The plan stops naming the chairs that now have boxes of their own.
+            elements: [
+              ...s.template.elements.map((el) => (el.id === plan.id ? { ...plan, namesAtChairs: false } : el)),
+              ...stamped,
+            ],
+          },
+        };
+      }),
 
     setElementBox: (id, box) =>
       commit("moving on the card", (s) => ({
         template: {
           ...s.template,
-          elements: s.template.elements.map((el) =>
-            el.id === id ? { ...el, x: box.x, y: box.y, w: box.w, h: box.h } : el,
-          ),
+          elements: s.template.elements.map((el) => (el.id === id ? withChairNudge(s, { ...el, ...box }) : el)),
         },
       })),
 
@@ -471,10 +539,23 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
       commit("cropping an image", (s) => ({ template: replaceElement(s, id, patch as Partial<CardElement>) })),
 
     removeElement: (id) =>
-      commit("removing from the card", (s) => ({
-        template: { ...s.template, elements: s.template.elements.filter((el) => el.id !== id) },
-        selectedId: s.selectedId === id ? null : s.selectedId,
-      })),
+      commit("removing from the card", (s) => {
+        // Boxes that followed a plan stay where they are when it goes.
+        const placed = placeChairs(s.template, s.room, previewRow(s));
+        return {
+          template: {
+            ...s.template,
+            elements: s.template.elements
+              .filter((el) => el.id !== id)
+              .map((el) =>
+                el.kind === "text" && el.chair?.follow && el.chair.from === id
+                  ? { ...(placed.elements.find((p) => p.id === el.id) as TextElement), chair: { ...el.chair, follow: false } }
+                  : el,
+              ),
+          },
+          selectedId: s.selectedId === id ? null : s.selectedId,
+        };
+      }),
 
     duplicateElement: (id) =>
       commit("duplicating on the card", (s) => {
@@ -722,6 +803,38 @@ useGuestLink.subscribe((state, prev) => {
 function guestLinkUrl(): string {
   const { link } = useGuestLink.getState();
   return link && typeof window !== "undefined" ? linkUrl(link, window.location.origin) : "";
+}
+
+/** The row of the card on screen: what a chair's place is worked out for. */
+function previewRow(s: PlaqueState): GuestRow {
+  const artefacts = artefactsOf(s.template, s.rows, s.headers, s.rowIds);
+  return (artefacts[s.previewGuestIndex] ?? artefacts[0])?.row ?? {};
+}
+
+/**
+ * A box that follows a chair, put somewhere on the card on screen: kept as a
+ * nudge from where that chair's name goes, so it moves with the chair and sits
+ * the same way on every table's card.
+ */
+function withChairNudge(s: PlaqueState, el: CardElement): CardElement {
+  if (el.kind !== "text" || !el.chair?.follow) return el;
+  const link = el.chair;
+  const plan = s.template.elements.find((p): p is RoomElement => p.id === link.from && p.kind === "room");
+  const cell = plan
+    ? chairCells(plan, s.room, previewRow(s)).find(
+        (c) => c.seat.number === link.seat && (link.table === null || normalise(c.table.label) === normalise(link.table)),
+      )
+    : undefined;
+  return cell ? { ...el, chair: { ...link, dx: el.x - cell.box.x, dy: el.y - cell.box.y } } : el;
+}
+
+/** The chairs a plan's stamped boxes already name, as `table#seat` (table empty for the card's own). */
+export function stampedChairs(template: Template, roomId: ElementId): string[] {
+  return template.elements.flatMap((el) =>
+    el.kind === "text" && el.chair?.from === roomId
+      ? [`${el.chair.table === null ? "" : normalise(el.chair.table)}#${el.chair.seat}`]
+      : [],
+  );
 }
 
 /** The switcher's list, reusing `previous` when nothing it shows has changed. */

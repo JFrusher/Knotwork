@@ -83,6 +83,7 @@ const room = (over: Partial<RoomElement> = {}): RoomElement => ({
   fontId: "crimson",
   fontSizePt: 12,
   nameGap: 0,
+  namesAtChairs: true,
   colorHex: "#000000",
   tableHex: "#eeeeee",
   seatHex: "#cccccc",

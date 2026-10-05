@@ -1,7 +1,7 @@
 # Place cards — seat by seat: tokens you pick on a map, not type
 
 Date: 2026-10-05
-Status: direction approved by the maintainer (answers below). Not built.
+Status: built, all four phases (as-built notes at the end).
 Builds on: `2026-10-04-seating-stationery-design.md` (all eight phases built).
 
 ## Why
@@ -98,3 +98,27 @@ its token at the cursor. Chairs already used on the card are marked.
 2. Chair-label styling and the free-seating guest list on the table map.
 3. The inspector's mini map.
 4. Stamp all chairs, follow or stay, and the uncovered-chairs list.
+
+## As built (phase 4)
+
+- The link is `chair: { from, table, seat, follow, dx, dy }`: `from` is the
+  plan the box came from, so a design with two plans keeps their boxes apart.
+- `placeChairs` (core/template/room.ts) moves every following box to its
+  chair's cell plus its nudge. `resolveCard`, the editable canvas and the
+  inspector all go through it, so what is dragged on screen is what prints.
+  Dragging or typing a position on a following box records the move as
+  `dx, dy` against the preview card's cell.
+- On a table's own map (`show: "table"`), boxes always follow: each table
+  is shaped differently, so a fixed position would be wrong on every other
+  table's card.
+- Stamping switches the plan's new **Names at chairs** off, so no name prints
+  twice. Free-seating tables keep listing their guests inside the table.
+- Removing the plan turns its following boxes into ones that stay, left where
+  they were drawn.
+- Stamped boxes start at the one size the plan drew its chair names at
+  (`chairNameSize`, shared with the plan's own drawing), not each at the
+  largest it could be. Found in the browser: sized one by one, short names
+  filled their cells and ran into each other ("HelenDavidLucia") along a long
+  table, while "Rafferty" shrank.
+- Chairs the plan names with no box yet are listed by table and seat, with a
+  chip per chair and "Add all n". New boxes follow if the existing ones do.

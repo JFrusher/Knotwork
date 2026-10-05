@@ -15,7 +15,7 @@ import { BUNDLED_VIEW, type IconArt } from "../../assets/icons";
 import type { GuestRow } from "../data/rows";
 import { interpolate, tokensIn } from "../csv/interpolate";
 import { flowPlan, gridBlocks } from "./grid";
-import { resolveRoom } from "./room";
+import { placeChairs, resolveRoom } from "./room";
 import { qrPath } from "./qr";
 import { chairRef, chairValues } from "./chairs";
 import { transformForPanel } from "../geometry/fold";
@@ -115,6 +115,8 @@ export function resolveCard(
 ): ResolvedCard {
   const warnings: CardWarning[] = [];
   const elements: ResolvedElement[] = [];
+  // Boxes that follow a chair go to that chair on this card's plan first.
+  template = placeChairs(template, opts.room?.() ?? null, row);
 
   // Chair tokens name whoever sits in a seat of this card's table, not a column
   // of its own row: they are read from the room, once per element, and said

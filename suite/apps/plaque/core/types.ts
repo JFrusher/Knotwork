@@ -151,8 +151,31 @@ export interface OpticalSpec {
   features: string[] | null;
 }
 
+/**
+ * A text box that names whoever sits in one chair of a plan, stamped from a
+ * room element. It says so with a chair token in its text; this says where
+ * the box goes.
+ */
+export interface ChairLink {
+  /** The room element it was stamped from, whose plan it follows. */
+  from: ElementId;
+  /** Seat `seat` of the card's own table (`table: null`), or of the table so named. */
+  table: string | null;
+  seat: number;
+  /**
+   * True: placed at its chair's name on every card, as the plan moves, and
+   * nudged from there by `dx, dy` — restyling the plan. False: left wherever
+   * it was put — names over your own artwork.
+   */
+  follow: boolean;
+  dx: Mm;
+  dy: Mm;
+}
+
 export interface TextElement extends ElementBase {
   kind: "text";
+  /** Present when this box names a chair of a plan. See `ChairLink`. */
+  chair?: ChairLink;
   /** e.g. `"{{First Name}} {{Last Name}}"`. Literal text needs no braces. */
   template: string;
   fontId: string;
@@ -307,6 +330,11 @@ export interface RoomElement extends ElementBase {
   fontSizePt: Pt;
   /** How far a name sits out from its chair, in chair radii. */
   nameGap: number;
+  /**
+   * Whether the plan names guests at numbered chairs itself. Off once those
+   * names have been stamped out as boxes of their own (see `ChairLink`).
+   */
+  namesAtChairs: boolean;
   colorHex: Hex;
   tableHex: Hex;
   seatHex: Hex;
