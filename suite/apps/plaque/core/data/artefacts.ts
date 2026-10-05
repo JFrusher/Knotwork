@@ -98,6 +98,9 @@ export function buildArtefacts(
  * the user recognises, and re-sorting silently would change which table prints
  * first.
  *
+ * A row with nothing in the column is in no group, as on a board: a guest with
+ * no table yet has no table card. The data panel says how many are left out.
+ *
  * Matching is on the trimmed, case-folded value so "Table 1" and "table 1 " do
  * not split a table — but the ORIGINAL value is what gets printed, because
  * rewriting someone's data is never this function's job (S-I.2).
@@ -115,6 +118,7 @@ function groupBy(
   for (const [index, row] of rows.entries()) {
     const raw = row[column] ?? "";
     const key = normalise(raw);
+    if (!key) continue;
     const existing = groups.get(key);
     if (existing) {
       existing.rows.push(row);
@@ -122,7 +126,7 @@ function groupBy(
       existing.rowIds.push(idAt(index));
     } else {
       groups.set(key, {
-        label: raw || "(blank)",
+        label: raw,
         rows: [row],
         rowIndexes: [index],
         rowIds: [idAt(index)],

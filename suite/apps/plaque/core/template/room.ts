@@ -212,6 +212,33 @@ export function chairCells(
   return layout.tables.flatMap((table) => tableCells(layout, table, el.nameGap).map((cell) => ({ table, ...cell })));
 }
 
+/**
+ * The chairs a plan's names can be stamped from, each with where its box goes
+ * on the card on screen. On the whole room, every numbered chair. On a table's
+ * own map, seat n of every table: the card's own table first, then any seat
+ * only a bigger table has, placed as that table's card would place it.
+ */
+export function stampableChairs(
+  el: RoomElement,
+  scene: RoomScene | null,
+  row: GuestRow,
+): Array<{ table: string | null; seat: number; label: string; box: Box }> {
+  if (el.show === "room") {
+    return chairCells(el, scene, row).map(({ table, seat, box }) => ({ table: table.label, seat: seat.number, label: `${table.label} ${seat.number}`, box }));
+  }
+  const own = normalise(row["Table"] ?? "");
+  const tables = [...(scene?.tables ?? [])].sort((a, b) => Number(normalise(b.label) === own) - Number(normalise(a.label) === own));
+  const seen = new Map<number, Box>();
+  for (const table of tables) {
+    for (const { seat, box } of chairCells(el, scene, { ...row, Table: table.label })) {
+      if (!seen.has(seat.number)) seen.set(seat.number, box);
+    }
+  }
+  return [...seen.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([seat, box]) => ({ table: null, seat, label: `Seat ${seat}`, box }));
+}
+
 /** Each name at a chair the plan draws, in the cell it is drawn in. */
 function chairNames(el: RoomElement, layout: PlanLayout, template: Pick<Template, "chairName">): Array<{ words: string; box: Box }> {
   return layout.tables.flatMap((table) =>
@@ -331,6 +358,8 @@ function nameCell(seat: { x: Mm; y: Mm }, out: { x: number; y: number }, seatR: 
 
 /** Most columns a table's names are spread across. */
 const MAX_COLUMNS = 6;
+/** The gutter between columns of names in a table, as a share of the table's inside: never touching. */
+const COLUMN_GAP = 0.08;
 
 /**
  * Names fitted inside a box as Seating lays them in a table: in as many
@@ -373,7 +402,7 @@ function listed(
   for (let count = 1; count <= Math.min(lines.length, MAX_COLUMNS); count++) {
     const per = Math.ceil(lines.length / count);
     const columns = Array.from({ length: count }, (_, c) => lines.slice(c * per, (c + 1) * per)).filter((c) => c.length > 0);
-    const fits = columns.map((column) => fitColumn(box.w / columns.length, column));
+    const fits = columns.map((column) => fitColumn(columnWidth(box.w, columns.length), column));
     const sizePt = Math.min(...fits.map((fit) => fit.fontSizePt));
     // Fewer columns win a tie: a single list reads most like a list.
     if (!best || sizePt > best.sizePt) best = { columns, sizePt, missingFont: fits.some((fit) => fit.missingFont) };
@@ -385,9 +414,9 @@ function listed(
       detail: `The font "${el.fontId}" is not on this device, so the names on the plan cannot be sized correctly.`,
     });
   }
-  const w = box.w / best!.columns.length;
+  const w = columnWidth(box.w, best!.columns.length);
   return best!.columns.map((column, c) => ({
-    box: { x: box.x + c * w, y: box.y, w, h: box.h },
+    box: { x: box.x + c * (w + box.w * COLUMN_GAP), y: box.y, w, h: box.h },
     text: {
       kind: "text",
       lines: column,
@@ -402,6 +431,11 @@ function listed(
       overflowed: false,
     },
   }));
+}
+
+/** Each of `count` columns across `width`, the gutters between them taken out. */
+function columnWidth(width: Mm, count: number): Mm {
+  return (width - width * COLUMN_GAP * (count - 1)) / count;
 }
 
 /** Text fitted to a box with the element's face, or nothing when it is empty. */

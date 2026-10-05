@@ -129,3 +129,24 @@ describe("fitGrid", () => {
     expect(fontSizePt).toBeLessThan(24);
   });
 });
+
+describe("the order of a board's tables", () => {
+  it("is the room's: the top table first, then 2 before 10", async () => {
+    const { gridBlocks } = await import("./grid");
+    const row = (Name: string, Table: string, number: string) => ({ Name, Table, "Table Number": number });
+    const { blocks } = gridBlocks(
+      { groupBy: "Table", headingTemplate: "{{Table}}", itemTemplate: "{{Name}}", sortBy: "" },
+      [row("Ada", "Table 10", "3"), row("Bo", "Top table", "1"), row("Cy", "Table 2", "2")],
+    );
+    expect(blocks.map((b) => b.heading)).toEqual(["Top table", "Table 2", "Table 10"]);
+  });
+
+  it("is as people read them for anything else a board groups by", async () => {
+    const { gridBlocks } = await import("./grid");
+    const { blocks } = gridBlocks(
+      { groupBy: "Initial", headingTemplate: "{{Initial}}", itemTemplate: "{{Name}}", sortBy: "" },
+      [{ Name: "Zed", Initial: "Z" }, { Name: "Ada", Initial: "A" }],
+    );
+    expect(blocks.map((b) => b.heading)).toEqual(["A", "Z"]);
+  });
+});

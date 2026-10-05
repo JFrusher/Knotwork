@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { normalise } from "../../core/data/artefacts";
 import { artefactsOf } from "../../core/data/parts";
-import { chairCells } from "../../core/template/room";
+import { stampableChairs } from "../../core/template/room";
 import type { RoomElement } from "../../core/types";
 import { stampedChairs, usePlaque } from "../../state/store";
 import { Hint, SubGroup } from "../controls";
@@ -32,9 +32,7 @@ export function StampChairs({ element }: { element: RoomElement }) {
     const artefacts = artefactsOf(template, rows, headers, rowIds);
     const row = (artefacts[previewGuestIndex] ?? artefacts[0])?.row ?? {};
     const covered = new Set(stampedChairs(template, element.id));
-    return chairCells(element, room, row)
-      .map(({ table, seat }) => ({ table: element.show === "table" ? null : table.label, seat: seat.number, label: table.label }))
-      .filter((c) => !covered.has(`${c.table === null ? "" : normalise(c.table)}#${c.seat}`));
+    return stampableChairs(element, room, row).filter((c) => !covered.has(`${c.table === null ? "" : normalise(c.table)}#${c.seat}`));
   }, [template, room, rows, headers, rowIds, previewGuestIndex, element]);
 
   const stamped = stampedChairs(template, element.id).length;
@@ -69,19 +67,19 @@ export function StampChairs({ element }: { element: RoomElement }) {
             {uncovered.length === 1 ? "One chair has" : `${uncovered.length} chairs have`} no box:{" "}
             {uncovered
               .slice(0, NAMED)
-              .map((c) => `${c.label} ${c.seat}`)
+              .map((c) => c.label)
               .join(", ")}
             {uncovered.length > NAMED ? `, and ${uncovered.length - NAMED} more` : ""}.
           </Hint>
           <div className={styles.actions}>
             {uncovered.slice(0, NAMED).map((c) => (
               <button
-                key={`${c.label}#${c.seat}`}
+                key={c.label}
                 type="button"
                 className={styles.chip}
                 onClick={() => stampChairs(element.id, followOf(template, element.id), [c])}
               >
-                + {c.label} {c.seat}
+                + {c.label}
               </button>
             ))}
             <button type="button" className={styles.button} onClick={() => stampChairs(element.id, followOf(template, element.id))}>

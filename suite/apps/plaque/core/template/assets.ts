@@ -1,5 +1,5 @@
 import { BUNDLED_FONTS } from "../../assets/fonts";
-import type { ElementId, Template } from "../types";
+import type { CardElement, ElementId, Template } from "../types";
 
 export interface MissingAsset {
   /** The id the design still references. */
@@ -39,18 +39,28 @@ export function missingAssets(
       note(el.imageId, "image", el.id);
     }
     // A bundled face that has not finished loading is not missing, it is early.
-    if (el.kind === "text" && !BUNDLED_FONT_IDS.has(el.fontId) && !hasFont(el.fontId)) {
-      note(el.fontId, "font", el.id);
-    }
-    if (el.kind === "room" && !BUNDLED_FONT_IDS.has(el.fontId) && !hasFont(el.fontId)) {
-      note(el.fontId, "font", el.id);
-    }
-    if (el.kind === "grid") {
-      for (const fontId of [el.fontId, el.headingFontId]) {
-        if (!BUNDLED_FONT_IDS.has(fontId) && !hasFont(fontId)) note(fontId, "font", el.id);
-      }
+    for (const fontId of new Set(fontsOf(el))) {
+      if (!BUNDLED_FONT_IDS.has(fontId) && !hasFont(fontId)) note(fontId, "font", el.id);
     }
   }
 
   return [...found.values()];
+}
+
+/** Every face an element sets type in. */
+function fontsOf(el: CardElement): string[] {
+  switch (el.kind) {
+    case "text":
+    case "list":
+    case "room":
+      return [el.fontId];
+    case "grid":
+      return [el.fontId, el.headingFontId];
+    case "icon":
+    case "rect":
+    case "line":
+    case "image":
+    case "qr":
+      return [];
+  }
 }

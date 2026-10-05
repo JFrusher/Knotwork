@@ -21,10 +21,13 @@ function parseScope(value: string): RowScope {
 }
 
 /** States the consequence in counts, because that is what the user is deciding. */
-function scopeHint(scope: RowScope, rowCount: number, artefactCount: number): string {
-  if (scope.kind === "per-row") return `${rowCount} rows, ${artefactCount} cards.`;
+function scopeHint(scope: RowScope, rowCount: number, artefacts: Artefact[]): string {
+  if (scope.kind === "per-row") return `${rowCount} rows, ${artefacts.length} cards.`;
   if (scope.kind === "document") return `${rowCount} rows on one document.`;
-  return `${rowCount} rows fall into ${artefactCount} groups by "${scope.byColumn}" — one artefact each.`;
+  const grouped = `${rowCount} rows fall into ${artefacts.length} groups by "${scope.byColumn}" — one artefact each.`;
+  const leftOut = rowCount - artefacts.reduce((n, a) => n + a.rows.length, 0);
+  if (leftOut === 0) return grouped;
+  return `${grouped} ${leftOut === 1 ? "One row has" : `${leftOut} rows have`} no ${scope.byColumn}, so ${leftOut === 1 ? "is" : "are"} on none.`;
 }
 
 /**
@@ -70,7 +73,7 @@ export function DataPanel() {
             ]}
             onChange={(value) => setRowScope(parseScope(value))}
           />
-          <Hint>{scopeHint(rowScope, rows.length, artefacts.length)}</Hint>
+          <Hint>{scopeHint(rowScope, rows.length, artefacts)}</Hint>
         </>
       )}
 

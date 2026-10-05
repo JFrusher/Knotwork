@@ -11,8 +11,9 @@ export interface GridBlock {
 }
 
 /**
- * A grid's blocks: rows grouped by its column, the groups in the order people
- * read their names (Table 2 before Table 10, A before B), the lines in each
+ * A grid's blocks: rows grouped by its column, tables in the room's own order
+ * (the top table first, then Table 2 before Table 10) and anything else in
+ * the order people read it (A before B), the lines in each
  * ordered by `sortBy` and then by the room's own order. A row with nothing in
  * the column is left out and counted; a row whose line comes out empty has
  * nothing to print and is dropped.
@@ -41,8 +42,9 @@ export function gridBlocks(
   const byColumn = (a: GuestRow, b: GuestRow) =>
     el.sortBy ? (a[el.sortBy] ?? "").localeCompare(b[el.sortBy] ?? "", "en", { sensitivity: "base" }) : 0;
 
+  const place = (members: GuestRow[]) => (el.groupBy === "Table" ? Number(members[0]!["Table Number"]) : 0);
   const blocks = [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+    .sort(([a, am], [b, bm]) => place(am) - place(bm) || a.localeCompare(b, undefined, { numeric: true }))
     .map(([, members]) => {
       const printed = [...members]
         .sort(byColumn)

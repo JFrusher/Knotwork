@@ -126,4 +126,14 @@ describe("stamping a plan's names", () => {
     plaque().stampChairs(plan().id, true);
     expect(new Set(boxes().map((b) => b.fontSizePt))).toEqual(new Set([drawn[0]]));
   });
+
+  test("on a table's own map, every seat any table has gets a box, not just the seats of the table on screen", () => {
+    const tables = (shared().raw.seating as Raw).tables;
+    const t2 = { id: "t2", label: "Table 2", type: "round", capacity: 10, x: 700, y: 300, seatMode: "seat", assignedGuestIds: [] };
+    shared().setSlice("seating", { tables: { ...tables, t2 } }, { label: "the room" });
+    expect(plaque().room.tables.map((t) => t.seats.length)).toEqual([8, 10]);
+    plaque().updateElement(plan().id, { show: "table" } as never);
+    plaque().stampChairs(plan().id, true);
+    expect(boxes().map((b) => b.template)).toEqual(Array.from({ length: 10 }, (_, i) => `{{At seat ${i + 1}}}`));
+  });
 });

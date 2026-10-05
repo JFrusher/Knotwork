@@ -9,7 +9,7 @@ export interface SeatAt {
   table: string;
   /** 1-based, in the table's own order. Null where guests choose their own seat. */
   seat: number | null;
-  /** The table's place among all tables, ordered by label as people read them: 2 before 10. */
+  /** The table's place among all tables: the top table first, then by label as people read them, 2 before 10. */
   tableNumber: number;
   /** How many are seated at the table. */
   tableSize: number;
@@ -24,8 +24,8 @@ export interface SeatAt {
  * seats — anywhere else the guests choose their own.
  */
 export function seatsOf(seating: Seating): Map<string, SeatAt> {
-  const tables = Object.values(seating.tables).sort((a, b) =>
-    a.label.localeCompare(b.label, undefined, { numeric: true }),
+  const tables = Object.values(seating.tables).sort(
+    (a, b) => Number(isTop(b)) - Number(isTop(a)) || a.label.localeCompare(b.label, undefined, { numeric: true }),
   );
   const out = new Map<string, SeatAt>();
   tables.forEach((table, index) => {
@@ -47,4 +47,9 @@ export function seatsOf(seating: Seating): Map<string, SeatAt> {
 /** `seatsOf` for a whole wedding, once per document. */
 export function readSeats(doc: Knotwork): Map<string, SeatAt> {
   return cached(doc, "seats", () => seatsOf(readSeating(doc)));
+}
+
+/** A top table by its shape or by what it is for: either way, it comes first. */
+function isTop(table: Seating["tables"][string]): boolean {
+  return table.type === "top-table" || table.designation === "top-table";
 }

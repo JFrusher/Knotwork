@@ -13,6 +13,7 @@ import {
 import type { MissingAsset } from "../core/template/assets";
 import type { Artefact } from "../core/data/artefacts";
 import { makeResolveOptions } from "../core/template/resolve";
+import { printing } from "../state/printed";
 import { usePlaque } from "../state/store";
 import styles from "./ExportBar.module.css";
 import { Preflight, type PreflightChoice } from "./Preflight";
@@ -195,10 +196,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       save(bytes, `${fileNameFor(pieceName)}${SUFFIX[variant]}.pdf`);
       // The whole run, or the chosen few, went to paper: changes are measured from here.
       if (variant === "all" || tiles) {
-        usePlaque.getState().notePrinted(
-          printOnly ? artefacts.filter((artefact) => printOnly.includes(artefact.key)) : artefacts,
-          printOnly !== null,
-        );
+        usePlaque.getState().notePrinted(printing(artefacts, printOnly), printOnly !== null);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "The PDF could not be generated.");
@@ -212,7 +210,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       {preflight && (
         <Preflight
           sheetCount={sheetCount}
-          artefacts={artefacts}
+          artefacts={printing(artefacts, printOnly)}
           issues={issues}
           warnings={warnings}
           missing={missing}
@@ -258,7 +256,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
           (artefacts.length === 0
             ? "No guests yet — add them in Seating or Guests"
             : printOnly
-              ? `Just ${printOnly.length} of ${artefacts.length} ${artefacts.length === 1 ? "card" : "cards"}`
+              ? `Just ${printOnly.length} of ${artefacts.length} ${artefacts.length === 1 ? "card" : "cards"} · ${sheetCount} ${sheetCount === 1 ? "sheet" : "sheets"}`
               : `${artefacts.length} ${artefacts.length === 1 ? "card" : "cards"} · ${sheetCount} ${sheetCount === 1 ? "sheet" : "sheets"}`)}
       </span>
       {printer && isNotableDrift(printer.scale) && (

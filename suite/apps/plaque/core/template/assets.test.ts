@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_FONT_ID } from "../../assets/fonts";
 import type { ImageElement, Template, TextElement } from "../types";
 import { missingAssets } from "./assets";
+import { elementKind } from "./registry";
 
 const text = (over: Partial<TextElement> = {}): TextElement => ({
   id: "t1",
@@ -76,5 +77,16 @@ describe("missingAssets", () => {
 
   it("ignores an image element with no image chosen yet", () => {
     expect(missingAssets(template([image({ imageId: null })]), nothing, nothing)).toEqual([]);
+  });
+});
+
+describe("a font missing from any element that sets type", () => {
+  const card = { widthMm: 90, heightMm: 55, fold: "none", foldPositionMm: 0, invertBackPanel: false, bleedMm: 0 } as const;
+  const made = (kind: "text" | "list" | "grid" | "room") =>
+    ({ ...elementKind(kind)!.create({ id: kind, z: 1, card, headers: [] }), fontId: "gone" }) as Template["elements"][number];
+
+  it.each(["text", "list", "grid", "room"] as const)("is found on a %s", (kind) => {
+    const found = missingAssets(template([made(kind)]), everything, nothing);
+    expect(found).toEqual([{ id: "gone", kind: "font", elementIds: [kind] }]);
   });
 });

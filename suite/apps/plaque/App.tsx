@@ -4,7 +4,6 @@ import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useShallow } from "zustand/react/shallow";
 import styles from "./App.module.css";
-import { BUNDLED_FONTS } from "./assets/fonts";
 import { validateGeometry } from "./core/geometry/validate";
 import { analyseArtefacts, paginate, sheetCountFor } from "./core/imposition/paginate";
 import { artefactsOf } from "./core/data/parts";
@@ -18,10 +17,9 @@ import { unboundTokens } from "./core/template/rebind";
 import { makeResolveOptions } from "./core/template/resolve";
 import { CardCanvas, MAX_VIEW_ZOOM } from "./render/svg/CardCanvas";
 import { SheetPreview } from "./render/svg/SheetPreview";
-import { loadFonts as loadStoredFonts } from "./state/blobStore";
 import { loadImages, toSource } from "./state/imageStore";
 import { loadPrinters } from "./state/printerStore";
-import { loadBundledFonts, registerFont } from "./state/fontLoader";
+import { loadEveryFont } from "./state/fontLoader";
 import { designOf } from "./state/design";
 import { writeDesign } from "./state/sliceBridge";
 import { usePlaque } from "./state/store";
@@ -35,6 +33,7 @@ import { Pagination } from "./ui/Pagination";
 import { PersistenceBar } from "./ui/PersistenceBar";
 import { PiecesBar } from "./ui/PiecesBar";
 import { RowsDrawer } from "./ui/RowsDrawer";
+import { printing } from "./state/printed";
 import { SincePrinted } from "./ui/SincePrinted";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
@@ -76,6 +75,7 @@ export function App() {
     activePrinterId,
     designProblem,
     printed,
+    printOnly,
   } = usePlaque(
     useShallow((s) => ({
       card: s.card,
@@ -94,6 +94,7 @@ export function App() {
       cropId: s.cropId,
       snapEnabled: s.snapEnabled,
       sheetCollapsed: s.sheetCollapsed,
+      printOnly: s.printOnly,
       previewGuestIndex: s.previewGuestIndex,
       editingSide: s.editingSide,
       printers: s.printers,
@@ -123,19 +124,7 @@ export function App() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const bundled = await loadBundledFonts();
-      const labels: Record<string, string> = {};
-      for (const f of BUNDLED_FONTS) labels[f.id] = f.label;
-
-      const stored = await loadStoredFonts();
-      for (const f of stored) {
-        try {
-          bundled.set(f.id, await registerFont(f.id, f.family, f.data));
-          labels[f.id] = f.family;
-        } catch {
-          // A font that no longer parses should not stop the app from opening.
-        }
-      }
+      const { fonts: loaded, labels, uploadedIds } = await loadEveryFont();
       const storedImages = await loadImages();
       const { printers, activeId } = await loadPrinters();
       if (cancelled) return;
@@ -147,7 +136,7 @@ export function App() {
         Object.fromEntries(storedImages.map((i) => [i.id, i.name])),
       );
 
-      usePlaque.getState().setFonts(bundled, labels, stored.map((f) => f.id));
+      usePlaque.getState().setFonts(loaded, labels, uploadedIds);
       setReady(true);
     })().catch(() => setReady(true));
     return () => {
@@ -207,10 +196,13 @@ export function App() {
     [template, images, fonts],
   );
 
+  // The sheets show what will print: just the chosen few, when only a few are.
+  const onPaper = useMemo(() => printing(artefacts, printOnly), [artefacts, printOnly]);
+
   // How many sheets the job needs, without building any of them.
   const sheetCount = useMemo(
-    () => sheetCountFor(artefacts.length, card, sheet),
-    [artefacts.length, card, sheet],
+    () => sheetCountFor(onPaper.length, card, sheet),
+    [onPaper.length, card, sheet],
   );
   const pageIndex = Math.min(page, Math.max(0, sheetCount - 1));
 
@@ -222,8 +214,8 @@ export function App() {
     if (sheetCollapsed) return undefined;
     const range = { from: pageIndex, to: pageIndex };
     const front = templateForSide(template, "front");
-    return paginate(front, artefacts, card, sheet, resolveOptions, { pages: range }).sheets[0];
-  }, [template, artefacts, card, sheet, resolveOptions, pageIndex, sheetCollapsed]);
+    return paginate(front, onPaper, card, sheet, resolveOptions, { pages: range }).sheets[0];
+  }, [template, onPaper, card, sheet, resolveOptions, pageIndex, sheetCollapsed]);
 
   // The "these names do not fit" pass has to look at every guest, so it runs at
   // a lower priority: it may lag a drag by a frame, but it never blocks one.

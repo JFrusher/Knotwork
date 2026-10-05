@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { BUNDLED_FONTS } from "../../assets/fonts";
-import { loadFont, type LoadedFont } from "../text/measure";
+import { loadFont, widestLineMm, type LoadedFont } from "../text/measure";
 import type { CardSpec, ResolvedElement, RoomElement, RoomScene } from "../types";
 import { resolveCard } from "./bindings";
 import { makeResolveOptions } from "./resolve";
@@ -193,6 +193,25 @@ describe("names inside a long table", () => {
     expect(columns.length).toBeGreaterThan(1);
     expect(new Set(columns.map((el) => el.kind === "text" && el.fontSizePt)).size).toBe(1);
     expect(columns.flatMap((el) => (el.kind === "text" ? el.lines : []))).toEqual(["Alex", "David", "Helen", "Ines", "Lucia", "Mateo"]);
+  });
+});
+
+describe("names inside a round table, in columns", () => {
+  it("leave a gap between the columns, however long the longest name", () => {
+    const names = ["Eleanor", "Florence", "Devendra", "Beatrix", "Charis", "Chloé", "Anneliese", "Callum"];
+    const round = {
+      ...freeSeating,
+      seats: names.map((first, i) => ({ ...freeSeating.seats[0]!, number: i + 1, row: { "First Name": first, "Last Name": "" } })),
+    };
+    const { elements } = draw(room({ walls: false, tableLabels: false, fontSizePt: 200 }), {}, { ...scene, tables: [round] });
+    const columns = elements.flatMap((el) => (el.kind === "text" ? [el] : []));
+    expect(columns.length).toBe(2);
+    const font = fonts.get(columns[0]!.fontId)!;
+    const [left, right] = columns.map((c) => {
+      const half = widestLineMm(font, c.lines, c.fontSizePt, 0) / 2;
+      return { from: c.x + c.w / 2 - half, to: c.x + c.w / 2 + half };
+    });
+    expect(right!.from - left!.to).toBeGreaterThan(1);
   });
 });
 

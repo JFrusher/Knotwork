@@ -25,6 +25,11 @@ export interface Printed {
 /** What one artefact's paper depends on, for a design: the reader of its fingerprint. */
 export type PrintBasis = (artefact: Artefact) => string;
 
+/** What a print holds: just the chosen few when only a few are chosen, else every card. */
+export function printing(artefacts: Artefact[], printOnly: string[] | null): Artefact[] {
+  return printOnly ? artefacts.filter((artefact) => printOnly.includes(artefact.key)) : artefacts;
+}
+
 export function printBasis(template: Template, room: RoomScene): PrintBasis {
   const columns = columnsUsed(template);
   // Whoever is in the chairs the design names, as it names them.

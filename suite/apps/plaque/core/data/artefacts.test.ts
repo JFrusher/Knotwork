@@ -60,20 +60,13 @@ describe("buildArtefacts — per group", () => {
     expect(out.map((a) => a.label)).toEqual(["9 (2)", "2 (1)"]);
   });
 
-  it("gathers rows with no value into one named group", () => {
+  it("makes no card for rows with nothing in the column: guests with no table have no table card", () => {
     const out = buildArtefacts(
-      [{ Table: "" }, { Table: "1" }],
+      [{ Table: "" }, { Table: "1" }, { Table: "  " }],
       { kind: "per-group", byColumn: "Table" },
       ["Table"],
     );
-    expect(out).toHaveLength(2);
-    expect(out[0]?.label).toBe("(blank) (1)");
-  });
-
-  it("makes one group when the column does not exist, rather than failing", () => {
-    const out = buildArtefacts(rows, { kind: "per-group", byColumn: "Nope" }, headers);
-    expect(out).toHaveLength(1);
-    expect(out[0]?.rows).toHaveLength(3);
+    expect(out.map((a) => a.label)).toEqual(["1 (1)"]);
   });
 });
 

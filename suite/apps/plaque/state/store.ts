@@ -10,15 +10,13 @@ import {
   withoutOverride,
   type ElementPatch,
 } from "../core/template/overrides";
-import { rebindTemplate } from "../core/template/rebind";
 import { elementKind } from "../core/template/registry";
-import { GALLERY, type GalleryTemplate } from "../core/data/gallery";
+import { fromGallery, GALLERY, type GalleryTemplate } from "../core/data/gallery";
 
 /**
  * The columns the shipped gallery is written against. Rebinding maps them onto
  * whatever the loaded CSV calls the same roles.
  */
-const SAMPLE_HEADERS = ["First Name", "Last Name", "Table", "Dietary"];
 import type {
   CardElement,
   CardSide,
@@ -45,7 +43,7 @@ import { printBasis, recordPrint } from "./printed";
 import { normalise, type Artefact } from "../core/data/artefacts";
 import { artefactsOf } from "../core/data/parts";
 import { makeResolveOptions } from "../core/template/resolve";
-import { chairCells, chairNameSize, placeChairs, planLayout } from "../core/template/room";
+import { chairCells, chairNameSize, placeChairs, planLayout, stampableChairs } from "../core/template/room";
 import { chairToken } from "../core/template/chairs";
 import { linkUrl, useGuestLink } from "@/lib/share/guestLink";
 
@@ -403,15 +401,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
 
     applyGalleryTemplate: (entry) =>
       commit("a gallery design", (s) => ({
-        card: { ...s.card, ...entry.card },
-        sheet: { ...s.sheet, ...entry.sheet },
-        // The gallery is written against the sample column names; rebinding
-        // re-attaches it to whatever this CSV calls them (S-B.1).
-        template: rebindTemplate(
-          { ...entry.template, overrides: {} },
-          SAMPLE_HEADERS,
-          s.headers,
-        ).template,
+        ...fromGallery(entry, s.card, s.sheet, s.headers),
         selectedId: null,
         page: 0,
         previewGuestIndex: 0,
@@ -492,8 +482,8 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
         // The names as the plan draws them: all at the one size the tightest allows.
         const sizePt = chairNameSize(plan, layout, makeResolveOptions(s.fonts), s.template, []);
         let z = nextZ(s.template);
-        const stamped: TextElement[] = chairCells(plan, s.room, row).flatMap(({ table, seat, box }) => {
-          const ref = { table: plan.show === "table" ? null : table.label, seat: seat.number };
+        const stamped: TextElement[] = stampableChairs(plan, s.room, row).flatMap(({ table, seat, box }) => {
+          const ref = { table, seat };
           const k = key(ref.table, ref.seat);
           if (covered.has(k) || (wanted && !wanted.has(k))) return [];
           return [

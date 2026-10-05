@@ -1,3 +1,4 @@
+import { rebindTemplate } from "../template/rebind";
 import type { CardSpec, SheetSpec, Template } from "../types";
 import escortCard from "../../templates/escort-card.json";
 import finder from "../../templates/finder.json";
@@ -98,3 +99,23 @@ export const GALLERY: GalleryTemplate[] = Object.entries(FILES)
     return [value as GalleryTemplate];
   })
   .sort((a, b) => a.name.localeCompare(b.name));
+
+/** The columns gallery designs are written against. */
+const SAMPLE_HEADERS = ["First Name", "Last Name", "Table", "Dietary"];
+
+/**
+ * A gallery design over a piece's card and sheet: its sizes, and its template
+ * rebound to the columns the data has (S-B.1), with no per-guest tweaks.
+ */
+export function fromGallery(
+  entry: GalleryTemplate,
+  card: CardSpec,
+  sheet: SheetSpec,
+  headers: string[],
+): { card: CardSpec; sheet: SheetSpec; template: Template } {
+  return {
+    card: { ...card, ...entry.card },
+    sheet: { ...sheet, ...entry.sheet },
+    template: rebindTemplate({ ...entry.template, overrides: {} }, SAMPLE_HEADERS, headers).template,
+  };
+}

@@ -165,8 +165,9 @@ test("the table card starter shows its own table, and who sits where at it", asy
   await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Table cards");
   await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
   await page.getByLabel("Start from a design").selectOption({ label: "Table card — who sits here, A5" });
-  // Thirteen tables with people at them, and one for the three still to seat.
-  await expect(page.getByText(/^14 cards · \d+ sheets?$/)).toBeVisible();
+  // A card for each of the thirteen tables with people at them; the three still to seat have none.
+  await expect(page.getByText(/^13 cards · \d+ sheets?$/)).toBeVisible();
+  await expect(page.getByText(/3 rows have no Table, so are on none\./)).toBeVisible();
   await page.screenshot({ path: process.env.SHOT2 ?? "test-results/table-card.png" });
 });
 
@@ -197,6 +198,8 @@ test("after printing, a change in the room names the cards it made wrong, and re
   await expect(notice).toContainText("8 cards have changed: Alex Morgan");
   await notice.getByRole("button", { name: "Print just these 8" }).click();
   await expect(page.getByText("Just 8 of 100 cards")).toBeVisible();
+  // The sheets on screen are the ones that will print: the eight, not the hundred.
+  await expect(page.getByText("Sheet 1 of 1", { exact: true })).toBeVisible();
   await page.screenshot({ path: process.env.SHOT ?? "test-results/reprint.png" });
 });
 
@@ -272,4 +275,18 @@ test("a plan's names stamped out as boxes of their own say the same names, once 
   expect(`Every chair has its box (${boxes.length}).`).toBe(await all.textContent());
   expect(boxes.every((b) => b.chair.follow && /^\{\{Top table, seat \d+\}\}$/.test(b.template))).toBe(true);
   await page.screenshot({ path: process.env.SHOT ?? "test-results/stamp-chairs.png" });
+});
+
+test("the wedding pack's room is the floor plan as Place cards draws it, on A4", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/");
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Download the pack" }).click()]);
+  await expect(page.getByText(/^The room \(1\), The day/)).toBeVisible();
+  const { PDFDocument } = await import("pdf-lib");
+  const { readFileSync, copyFileSync } = await import("node:fs");
+  const path = await download.path();
+  copyFileSync(path, process.env.PACK ?? "test-results/pack.pdf");
+  const first = (await PDFDocument.load(readFileSync(path))).getPage(0);
+  // A4 landscape, in points.
+  expect([Math.round(first.getWidth()), Math.round(first.getHeight())]).toEqual([842, 595]);
 });
