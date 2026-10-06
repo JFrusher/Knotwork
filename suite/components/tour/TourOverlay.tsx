@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useTour } from "@/lib/tour/useTour";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 /**
  * The highlight and the card.
@@ -128,7 +129,7 @@ export function TourOverlay() {
             transition={{ duration: 0.18, ease: "easeOut" }}
           >
             <div className="mb-2 flex items-start justify-between gap-3">
-              <p className="text-xs tracking-widest text-slate uppercase">{chapterTitle}</p>
+              <p className={`text-slate ${EYEBROW}`}>{chapterTitle}</p>
               <button
                 type="button"
                 onClick={stop}

@@ -1,8 +1,8 @@
 <div align="center">
 
-# 💍 Knotwork
+# Knotwork
 
-### Plan a whole wedding in one place, without five tools disagreeing about it.
+Plan a whole wedding in one place, without five tools disagreeing about it.
 
 **Free, open source and private. No paid tier, no ads, no upsell, no sign-up to start.**
 
@@ -16,8 +16,8 @@
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-e05d44)](CONTRIBUTING.md)
 
 [**Open Knotwork →**](https://knotwork-suite.vercel.app) &nbsp;·&nbsp;
-[Run your own copy](#-run-your-own-copy) &nbsp;·&nbsp;
-[How it works](#-how-it-works) &nbsp;·&nbsp;
+[Run your own copy](#run-your-own-copy) &nbsp;·&nbsp;
+[How it works](#how-it-works) &nbsp;·&nbsp;
 [Roadmap](ROADMAP.md) &nbsp;·&nbsp;
 [Contribute](CONTRIBUTING.md)
 
@@ -27,7 +27,7 @@
 
 ---
 
-## 💡 Why we built this
+## Why we built this
 
 Wedding software is rarely free. The planning apps are paid for some other
 way: vendor marketplaces, registry commissions, adverts, and upsells to the
@@ -52,7 +52,7 @@ Knotwork is the opposite of that:
 
 ---
 
-## ✨ What it does
+## What it does
 
 Seat your guests, and one click puts every table number on the place cards.
 Move the ceremony by ten minutes and every job hanging off it moves too.
@@ -118,7 +118,7 @@ and the shot list to tick off, on a phone, with or without signal.
 
 ---
 
-## 🚀 Get started in two minutes
+## Get started in two minutes
 
 1. Open **[knotwork-suite.vercel.app](https://knotwork-suite.vercel.app)**.
    There is no sign-up.
@@ -136,7 +136,7 @@ and a full day.
 
 ---
 
-## 🏠 Run your own copy
+## Run your own copy
 
 Self-hosting is a supported path, not a theoretical one. The hosted instance
 is the easy option; your own copy gives you your own domain and, with sync,
@@ -185,7 +185,7 @@ how to check your instance actually works rather than merely starting.
 
 ---
 
-## 🔒 Your data
+## Your data
 
 - **No account, no upload.** The app saves to your browser, and nothing from
   your wedding leaves the device. The hosted site counts visits to its pages,
@@ -215,7 +215,7 @@ how to check your instance actually works rather than merely starting.
 
 ---
 
-## 🧠 How it works
+## How it works
 
 ### One document, one owner per slice
 
@@ -308,7 +308,7 @@ docs/            self-hosting, building a tool, and dated specs and plans
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Issues and pull requests are welcome. **[CONTRIBUTING.md](CONTRIBUTING.md)**
 has the setup, the checks CI runs, and how to report a bug without sharing
@@ -317,13 +317,13 @@ anyone's personal details.
 - **Found a bug?** Open an issue with what you did and what happened.
   **Never paste your guest list.** A screenshot with names blurred is plenty.
 - **Want to change something?** Design decisions are written down in
-  `docs/superpowers/specs/`, so you can tell whether an idea fits before
+  `docs/design/specs/`, so you can tell whether an idea fits before
   writing code.
 - **Want to build a tool?** A job nothing in Knotwork does for you yet is the
   best reason to. **[docs/BUILDING-A-TOOL.md](docs/BUILDING-A-TOOL.md)** walks
   through the whole journey.
 
-## 🗺️ Roadmap
+## Roadmap
 
 Everything in the plan up to now is built: eleven tools, accounts, real-time
 sync, planner mode and the Binder. Next come tools feeding each other. Boxes
@@ -333,7 +333,7 @@ milestones and the issues to pick up.
 
 ---
 
-## 🌱 Where this came from
+## Where this came from
 
 Knotwork was built for one specific wedding. That is the only reason its
 constraints were ever honest: real guest names and dietary requirements,
@@ -346,7 +346,7 @@ The design did not change, because the design was the part that was working.
 
 ---
 
-## 📜 Licence
+## Licence
 
 Two licences, because this repository holds two different things.
 

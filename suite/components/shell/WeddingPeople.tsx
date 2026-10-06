@@ -7,6 +7,7 @@ import { ROLE_CAP } from "@/lib/accounts/store";
 import { closeWedding } from "@/lib/store/openWedding";
 import { Button, TextField } from "@/components/ui/controls";
 import { useConfirm } from "@/components/ui/Confirm";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 const ROLE_NAME: Record<Role, string> = { partner: "One of the couple", planner: "Planner" };
 
@@ -108,7 +109,7 @@ export function WeddingPeople({
   return (
     <>
       <section className="space-y-3 border-t border-charcoal/10 pt-6 first:border-t-0 first:pt-0">
-        <h2 className="text-xs tracking-widest text-slate uppercase">Who has access</h2>
+        <h2 className={`text-slate ${EYEBROW}`}>Who has access</h2>
         <ul className="space-y-2">
           {people.map((person) => (
             <li key={person.userId} className="flex flex-wrap items-center justify-between gap-2 text-sm">
@@ -136,7 +137,7 @@ export function WeddingPeople({
 
       {inviteRole ? (
         <section className="space-y-3 border-t border-charcoal/10 pt-6">
-          <h2 className="text-xs tracking-widest text-slate uppercase">Invite someone</h2>
+          <h2 className={`text-slate ${EYEBROW}`}>Invite someone</h2>
           <form
             onSubmit={(event) => {
               event.preventDefault();

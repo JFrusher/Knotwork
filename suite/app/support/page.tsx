@@ -15,8 +15,7 @@ export const metadata: Metadata = {
 export default function Support() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
-      <h1 className="mt-3 text-3xl">Support Knotwork</h1>
+      <h1 className="text-3xl">Support Knotwork</h1>
 
       <p className="mt-6 text-slate">
         Knotwork is free, and it will stay free. Every tool works in full without an account or a

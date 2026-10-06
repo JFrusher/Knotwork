@@ -11,6 +11,7 @@ import { longDate } from "@/lib/dates";
 import { Button, Empty } from "@/components/ui/controls";
 import { useConfirm } from "@/components/ui/Confirm";
 import { ToolUndo } from "@/components/shell/ToolUndo";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-sm text-charcoal focus:border-gold";
 
@@ -126,7 +127,7 @@ export function LibraryPage() {
       ) : (
         <>
           <section aria-labelledby="keep-title" className="mt-8">
-            <h2 id="keep-title" className="mb-3 text-sm tracking-[0.14em] text-slate uppercase">
+            <h2 id="keep-title" className={`mb-3 text-slate ${EYEBROW}`}>
               Keep from {couple || "this wedding"}
             </h2>
             {status === "ready" ? (
@@ -139,7 +140,7 @@ export function LibraryPage() {
           </section>
 
           <section aria-labelledby="kept-title" className="mt-10">
-            <h2 id="kept-title" className="mb-3 text-sm tracking-[0.14em] text-slate uppercase">
+            <h2 id="kept-title" className={`mb-3 text-slate ${EYEBROW}`}>
               Kept
             </h2>
             {listing.status === "loading" ? (

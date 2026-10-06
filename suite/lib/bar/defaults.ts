@@ -2,7 +2,7 @@ import type { BarKind, BarLine, Crowd, Figure, MixedPart, Mix, Shop } from "@/li
 
 /**
  * Every default the Bar starts from, in one place, as agreed with the
- * maintainer on 2026-09-29 (docs/superpowers/plans/2026-09-29-bar.md). UK
+ * maintainer on 2026-09-29 (docs/design/plans/2026-09-29-bar.md). UK
  * first: 75cl bottles, 70cl spirits, 25ml measures, cases of 6 and 24.
  *
  * For 100 coming they give 42 bottles of fizz, 36 of white and 36 of red,

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { POSTS } from "@/lib/blog/posts";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 export const metadata: Metadata = {
   title: "Guides and stories",
@@ -18,8 +19,7 @@ const dated = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: 
 export default function Blog() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
-      <h1 className="mt-3 text-3xl">Guides and stories</h1>
+      <h1 className="text-3xl">Guides and stories</h1>
       <p className="mt-4 text-slate">
         Plain answers to the questions planning a UK wedding throws up, each checked against its sources — and stories from couples
         who have planned one.
@@ -28,7 +28,7 @@ export default function Blog() {
       <ol aria-label="Posts" className="mt-10 flex flex-col gap-8">
         {POSTS.map((post) => (
           <li key={post.slug}>
-            <p className="text-xs tracking-widest text-slate uppercase">
+            <p className={`text-slate ${EYEBROW}`}>
               {post.kind === "story" ? "A couple's story" : "A guide"} · <time dateTime={post.published}>{dated(post.published)}</time>
             </p>
             <h2 className="mt-1 text-xl">

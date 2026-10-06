@@ -15,7 +15,7 @@ inherited.
 **Tech Stack:** TypeScript, Next.js (suite), Zustand, existing `components/ui/fields`
 primitives. **No new dependencies.**
 
-**Spec:** [docs/superpowers/specs/2026-09-08-brigade-vendors-budget-tasks-design.md](../specs/2026-09-08-brigade-vendors-budget-tasks-design.md)
+**Spec:** [docs/design/specs/2026-09-08-brigade-vendors-budget-tasks-design.md](../specs/2026-09-08-brigade-vendors-budget-tasks-design.md)
 
 ## Status
 

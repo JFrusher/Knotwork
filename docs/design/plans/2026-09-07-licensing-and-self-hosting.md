@@ -15,7 +15,7 @@ MIT. The runbook is one new markdown file under `docs/`.
 
 **Tech Stack:** Markdown and JSON. No dependencies, no code.
 
-**Spec:** [docs/superpowers/specs/2026-09-02-onboarding-billing-legal-design.md](../specs/2026-09-02-onboarding-billing-legal-design.md)
+**Spec:** [docs/design/specs/2026-09-02-onboarding-billing-legal-design.md](../specs/2026-09-02-onboarding-billing-legal-design.md)
 
 ## Status
 

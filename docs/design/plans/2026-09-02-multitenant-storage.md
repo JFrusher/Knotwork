@@ -34,7 +34,7 @@ an online conflict is surfaced — not auto-merged.
 tests), Vitest, Zod, `idb-keyval` (already used by `useKnotworkStore` for
 local persistence), `zustand`.
 
-**Spec:** `docs/superpowers/specs/2026-09-02-multitenant-storage-design.md`
+**Spec:** `docs/design/specs/2026-09-02-multitenant-storage-design.md`
 
 ## Status
 

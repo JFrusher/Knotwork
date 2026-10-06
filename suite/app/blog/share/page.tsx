@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CONTROLLER } from "@/lib/legal";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 export const metadata: Metadata = {
   title: "Share your story",
@@ -31,7 +32,7 @@ const mailto = `mailto:${CONTROLLER.email}?subject=${encodeURIComponent("Our wed
 export default function ShareYourStory() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">
+      <p className={`text-slate ${EYEBROW}`}>
         <Link href="/blog" className="underline-offset-2 hover:underline">
           Guides and stories
         </Link>

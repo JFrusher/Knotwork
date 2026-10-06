@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js (suite/), Zustand, Supabase (Postgres + Storage), Vitest, `@jfrusher/knotwork` contract package.
 
-**Spec:** `docs/superpowers/specs/2026-09-08-account-synced-collaboration-design.md`
+**Spec:** `docs/design/specs/2026-09-08-account-synced-collaboration-design.md`
 
 ## Global Constraints
 

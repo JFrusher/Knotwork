@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript, Next.js (suite), Zustand, Zod (contract package), pdf-lib (via Brigade's existing PDF kit), `@dnd-kit/core` + `@dnd-kit/sortable` (already a dependency, newly used), Vitest.
 
-**Spec:** [docs/superpowers/specs/2026-09-04-ensemble-group-shots.md](../specs/2026-09-04-ensemble-group-shots.md)
+**Spec:** [docs/design/specs/2026-09-04-ensemble-group-shots.md](../specs/2026-09-04-ensemble-group-shots.md)
 
 ## Global Constraints
 

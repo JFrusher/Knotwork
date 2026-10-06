@@ -12,6 +12,7 @@ import { changeBudget, changeTeam, type TeamMoney } from "@/lib/money/edit";
 import { Button, Empty } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 import { NumberInput } from "@/components/ui/NumberInput";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-sm text-charcoal tabular-nums focus:border-gold";
 
@@ -59,7 +60,7 @@ export function MoneyPage() {
 
       <section aria-label="In all" data-tour="money.totals" className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border border-charcoal/10 bg-parchment p-4">
-          <span aria-hidden className="block text-xs tracking-widest text-slate uppercase">
+          <span aria-hidden className={`block text-slate ${EYEBROW}`}>
             Budget
           </span>
           <NumberInput
@@ -109,7 +110,7 @@ export function MoneyPage() {
       ) : (
         <>
           <section aria-labelledby="to-pay" className="mt-10">
-            <h2 id="to-pay" className="mb-3 text-sm tracking-[0.14em] text-slate uppercase">
+            <h2 id="to-pay" className={`mb-3 text-slate ${EYEBROW}`}>
               To pay
             </h2>
             {accounts.toPay.length === 0 ? (
@@ -142,7 +143,7 @@ export function MoneyPage() {
           </section>
 
           <section aria-labelledby="suppliers" className="mt-10">
-            <h2 id="suppliers" className="mb-3 text-sm tracking-[0.14em] text-slate uppercase">
+            <h2 id="suppliers" className={`mb-3 text-slate ${EYEBROW}`}>
               Suppliers
             </h2>
             <div data-tour="money.suppliers" className="overflow-x-auto rounded-lg border border-charcoal/10">
@@ -203,7 +204,7 @@ export function MoneyPage() {
 function Figure({ label, value, children }: { label: string; value: string; children?: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-charcoal/10 bg-parchment p-4">
-      <span className="block text-xs tracking-widest text-slate uppercase">{label}</span>
+      <span className={`block text-slate ${EYEBROW}`}>{label}</span>
       <span className="mt-2 block text-2xl text-charcoal tabular-nums">{value}</span>
       {children ? <span className="mt-1 block text-xs text-slate">{children}</span> : null}
     </div>

@@ -56,6 +56,7 @@ import {
   type WalkGroup,
   type WordsLayout,
 } from "@/lib/model/types";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-sm text-charcoal focus:border-gold";
 
@@ -236,7 +237,7 @@ export function CeremonyBoard() {
 
         <section aria-labelledby="order-heading" className="border-b border-charcoal/10 p-1.5">
           <div className="flex items-baseline justify-between px-2 pt-1">
-            <h2 id="order-heading" className="text-xs tracking-widest text-slate uppercase">
+            <h2 id="order-heading" className={`text-slate ${EYEBROW}`}>
               The order of service
             </h2>
             {minutes > 0 && (
@@ -300,7 +301,7 @@ export function CeremonyBoard() {
         </section>
 
         <section aria-labelledby="processional-heading" className="p-1.5">
-          <h2 id="processional-heading" className="px-2 pt-1 text-xs tracking-widest text-slate uppercase">
+          <h2 id="processional-heading" className={`px-2 pt-1 text-slate ${EYEBROW}`}>
             The processional
           </h2>
           {processional.length === 0 ? (

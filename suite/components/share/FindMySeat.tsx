@@ -7,6 +7,7 @@ import { isEveryone } from "@/lib/ceremony/guestCopy";
 import { findSeat, type ShareSnapshot, type SharedGuest, type SharedPart } from "@/lib/share/snapshot";
 import { getTableGeometry } from "@/apps/tableaux/utils/seatPositions";
 import { newTable } from "@/lib/model/factories";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 /**
  * The guest-facing page.
@@ -177,7 +178,7 @@ function RoomPlan({
 
   return (
     <section className="mt-12">
-      <h2 className="mb-3 text-center text-sm tracking-widest text-slate uppercase">The room</h2>
+      <h2 className={`mb-3 text-center text-slate ${EYEBROW}`}>The room</h2>
       <svg
         viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}
         className="h-auto w-full"
@@ -226,7 +227,7 @@ function RoomPlan({
 function OrderOfService({ parts }: { parts: SharedPart[] }) {
   return (
     <section aria-labelledby="order-of-service" className="mt-14 text-center">
-      <h2 id="order-of-service" className="mb-6 text-sm tracking-widest text-slate uppercase">
+      <h2 id="order-of-service" className={`mb-6 text-slate ${EYEBROW}`}>
         The ceremony
       </h2>
       <ol className="space-y-6">

@@ -166,7 +166,7 @@ sixteen `security definer` functions, and anyone three. That is the design:
 switching to `SECURITY INVOKER`. Done to `is_wedding_member`, either one stops
 every signed-in person reading their own wedding. The hosted project met
 exactly that; see D8 in the
-[database review](superpowers/specs/2026-09-29-database-review.md).
+[database review](design/specs/2026-09-29-database-review.md).
 
 ## 5. Build and start
 
