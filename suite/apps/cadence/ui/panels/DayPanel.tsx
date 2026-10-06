@@ -57,6 +57,7 @@ export function DayPanel() {
           max={90}
           step={0.0001}
           onChange={(latitude) => setDay({ latitude })}
+          onClear={() => setDay({ latitude: null })}
         />
         <NumberField
           label="Longitude"
@@ -65,6 +66,7 @@ export function DayPanel() {
           max={180}
           step={0.0001}
           onChange={(longitude) => setDay({ longitude })}
+          onClear={() => setDay({ longitude: null })}
         />
       </Row>
 

@@ -93,4 +93,10 @@ test("clocks nobody has set say so, and choosing British Summer Time sets it", a
   await page.getByRole("spinbutton", { name: "Longitude" }).fill("-3.1883");
   await page.getByRole("spinbutton", { name: "Longitude" }).press("Tab");
   await expect(page.getByText(/^Sunset \d\d:\d\d/)).toBeVisible();
+
+  // And taken out again: emptied, the place is unset, not put back.
+  await page.getByRole("spinbutton", { name: "Latitude" }).fill("");
+  await page.getByRole("spinbutton", { name: "Latitude" }).press("Tab");
+  await expect(page.getByRole("spinbutton", { name: "Latitude" })).toHaveValue("");
+  await expect(page.getByText("Enter the venue's latitude and longitude to see sunset and golden hour.")).toBeVisible();
 });

@@ -156,6 +156,7 @@ export function NumberField({
   label,
   value,
   onChange,
+  onClear,
   min,
   max,
   step = 1,
@@ -165,6 +166,8 @@ export function NumberField({
   /** Null is not entered yet, and shows empty. */
   value: number | null;
   onChange: (value: number) => void;
+  /** Given, an emptied field goes back to not entered; without it, the value stays. */
+  onClear?: () => void;
   min?: number;
   max?: number;
   step?: number;
@@ -179,6 +182,10 @@ export function NumberField({
   }, [value, id]);
 
   const commit = () => {
+    if (onClear && text.trim() === "") {
+      if (value !== null) onClear();
+      return;
+    }
     const next = commitNumber(text, min, max);
     if (next === null) {
       setText(shown(value));
