@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import type { Instrumentation } from "next";
 import { log, REQUEST_ID_HEADER } from "@/lib/server/log";
 import { sentryBuild } from "@/lib/sentry/build";
+import { dataCollection } from "@/lib/sentry/dataCollection";
 import { scrubEvent } from "@/lib/sentry/scrub";
 
 /**
@@ -31,7 +32,7 @@ export async function register() {
   Sentry.init({
     dsn,
     ...sentryBuild,
-    sendDefaultPii: false,
+    dataCollection,
     tracesSampleRate: 0,
     beforeSend: (event) => scrubEvent(event),
   });
