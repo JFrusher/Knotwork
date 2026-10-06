@@ -39,6 +39,18 @@
   border-color: var(--accent);
   background: var(--surface-raised);
 }
+.invalid,
+.invalid:focus {
+  border-color: var(--danger);
+  background: var(--danger-light);
+}
+/* Under the field it explains; in a row of fields, on a line of its own. */
+.problem {
+  order: 1;
+  flex-basis: 100%;
+  font-size: var(--text-xs);
+  color: var(--danger);
+}
 .textarea {
   min-height: 64px;
   resize: vertical;

@@ -156,30 +156,39 @@ export function NumberField({
   label,
   value,
   onChange,
+  onClear,
   min,
   max,
   step = 1,
   suffix,
 }: {
   label: string;
-  value: number;
+  /** Null is not entered yet, and shows empty. */
+  value: number | null;
   onChange: (value: number) => void;
+  /** Given, an emptied field goes back to not entered; without it, the value stays. */
+  onClear?: () => void;
   min?: number;
   max?: number;
   step?: number;
   suffix?: string;
 }) {
-  const [text, setText] = useState(() => String(value));
+  const shown = (current: number | null) => (current === null ? "" : String(current));
+  const [text, setText] = useState(() => shown(value));
   const id = useId();
 
   useEffect(() => {
-    setText(String(value));
+    setText(shown(value));
   }, [value, id]);
 
   const commit = () => {
+    if (onClear && text.trim() === "") {
+      if (value !== null) onClear();
+      return;
+    }
     const next = commitNumber(text, min, max);
     if (next === null) {
-      setText(String(value));
+      setText(shown(value));
       return;
     }
     if (next !== value) onChange(next);

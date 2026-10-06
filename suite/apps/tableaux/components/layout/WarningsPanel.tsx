@@ -15,12 +15,14 @@ export default function WarningsPanel() {
 
   const navigate = (w: SeatingWarning) => {
     const store = useStore.getState()
-    if (w.tableId && store.tables[w.tableId]) {
-      const t = store.tables[w.tableId]
-      select('table', w.tableId)
+    const [tableId] = w.tableIds
+    const [guestId] = w.guestIds
+    if (tableId && store.tables[tableId]) {
+      const t = store.tables[tableId]
+      select('table', tableId)
       centerCanvasOn(t.x, t.y)
-    } else if (w.guestId) {
-      select('guest', w.guestId)
+    } else if (guestId) {
+      select('guest', guestId)
     }
     closeModal()
   }
@@ -50,13 +52,17 @@ export default function WarningsPanel() {
           {list.map((w) => (
             <li key={w.id}>
               <button type="button" className={styles.row} onClick={() => navigate(w)}>
+                {/* A split family is not a broken rule, and says so in words, not colour. */}
                 <Icon
-                  name={w.level === 'warn' ? 'alert' : 'info'}
+                  name={w.kind === 'family-split' ? 'users' : w.level === 'warn' ? 'alert' : 'info'}
                   size={16}
                   className={w.level === 'warn' ? styles.warn : styles.info}
                 />
-                <span className={styles.message}>{w.message}</span>
-                {(w.tableId || w.guestId) && (
+                <span className={styles.message}>
+                  {w.kind === 'family-split' && <span className={styles.tag}>Family</span>}
+                  {w.message}
+                </span>
+                {(w.tableIds.length > 0 || w.guestIds.length > 0) && (
                   <Icon name="chevron-right" size={14} className={styles.chevron} />
                 )}
               </button>

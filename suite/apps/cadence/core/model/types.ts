@@ -69,8 +69,9 @@ export interface DaySettings {
   date: string;
   coupleNames: string;
   venueName: string;
-  latitude: number;
-  longitude: number;
+  /** Null until entered: a guessed place gives a wrong sunset. */
+  latitude: number | null;
+  longitude: number | null;
   /**
    * The day's offset from UTC in minutes. BST is 60. Entered, never inferred:
    * null until somebody chooses it, and whatever needs it says so meanwhile.

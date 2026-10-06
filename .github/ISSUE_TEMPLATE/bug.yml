@@ -1,0 +1,49 @@
+name: Something is broken
+description: Knotwork did something wrong, or something confused you. Confusion is a bug.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Please do not paste real guest names, emails or dietary requirements here.** This page is public.
+        To reproduce something, use the guided tour's example wedding, or invent people.
+  - type: textarea
+    id: did
+    attributes:
+      label: What you did
+      description: The steps, starting from which page.
+      placeholder: |
+        1. Opened Seating
+        2. Dragged a guest onto Table 4
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+      description: Include the exact error text if there was one. A screenshot helps, with names blurred.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      placeholder: Safari 18 on an iPhone, Firefox 131 on Windows…
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - The hosted site, signed in
+        - The hosted site, not signed in
+        - My own copy
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        "Not sure how to reproduce it; it happened while I was moving tables" is still a useful report. Leave blank what you don't know.

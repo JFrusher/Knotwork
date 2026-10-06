@@ -3,9 +3,12 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { migrate } from "@jfrusher/knotwork";
-import { contacts, dayClock, findGuests, nowAndNext, runningOrder } from "./binder";
+import { formatClock } from "@/lib/minutes";
+import { withTool } from "@/lib/model/toolbox";
+import { contacts, dayClock, findBoxes, findGuests, nowAndNext, runningOrder } from "./binder";
 
-const doc = migrate(JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8")));
+const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
+const doc = migrate(raw);
 const blocks = runningOrder(doc);
 
 describe("the day, in a pocket", () => {
@@ -39,5 +42,21 @@ describe("the day, in a pocket", () => {
     expect(found.map((guest) => guest.name)).toEqual(["Zainab Lindqvist", "Zainab Raghunathan", "Zainab Thistlewood"]);
     expect(found[2]!.table).toBe("No table yet");
     expect(findGuests(doc, "zainab lind")).toHaveLength(1);
+  });
+});
+
+describe("finding a box on the day", () => {
+  it("finds a box by its name or by what is in it, and says where it is going", () => {
+    const ceremony = blocks.find((block) => block.label === "Ceremony")!;
+    const where = `${ceremony.location}, by ${formatClock(ceremony.startMin)}`;
+    expect(findBoxes(doc, "rings")).toEqual([
+      { key: "box-rings", box: "The rings and the paperwork", item: null, where },
+      { key: expect.stringContaining("box-rings:"), box: "The rings and the paperwork", item: "The rings", where },
+    ]);
+    expect(findBoxes(doc, "")).toEqual([]);
+  });
+
+  it("finds nothing in Boxes when the Boxes tool is hidden", () => {
+    expect(findBoxes(migrate({ ...raw, tools: withTool(raw, "boxes", false) }), "rings")).toEqual([]);
   });
 });

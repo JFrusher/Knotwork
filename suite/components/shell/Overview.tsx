@@ -9,9 +9,21 @@ import { overview, type Area, type AreaId } from "@/lib/model/overview";
 import { GUESTS, TOOLS, type Tab } from "@/lib/tools";
 import { SignInFailed } from "./SignInFailed";
 import { TakeTheTour } from "./TourButtons";
+import { useWideScreen } from "./LandscapeGate";
 
 /** Where each area is worked on, and how it is drawn. */
 const PLACES = { guests: GUESTS, ...Object.fromEntries(TOOLS.map((tool) => [tool.id, tool])) } as Record<AreaId, Tab>;
+
+/** Where a link would only say "needs a wider screen" on a phone. */
+const WIDE_ONLY = new Set<string>(TOOLS.filter((tool) => tool.wide).map((tool) => tool.href));
+
+/** Said in place of the action when the screen cannot open where it leads. */
+const ON_A_LAPTOP = "On a laptop or tablet";
+
+/** Whether this item can be done on the screen it is read on. */
+function useDoableHere(item: Readiness): boolean {
+  return useWideScreen() || !WIDE_ONLY.has(item.href);
+}
 
 /**
  * The wedding's state: the one thing to do next, how far along each part is,
@@ -89,18 +101,28 @@ const rank = (item: Readiness) => (item.severity === "blocking" ? 0 : 1);
 
 function NextStep({ item }: { item: Readiness }) {
   const blocking = item.severity === "blocking";
+  const className = `group flex items-center gap-4 rounded-lg border-2 bg-parchment px-5 py-4 transition ${
+    blocking ? "border-danger/60 hover:border-danger" : "border-gold/60 hover:border-gold"
+  }`;
+  const message = (
+    <span className="min-w-0 flex-1">
+      <span className="block text-xs tracking-[0.14em] text-slate uppercase">Next</span>
+      <span className="mt-1 block text-lg text-charcoal">{item.message}</span>
+    </span>
+  );
+  // On a phone, a link to a wide tool opened a page saying it needs a wider
+  // screen: the one loud thing on the overview was a dead end.
+  if (!useDoableHere(item)) {
+    return (
+      <div data-tour="shell.next" className={className}>
+        {message}
+        <span className="shrink-0 text-sm text-slate">{ON_A_LAPTOP}</span>
+      </div>
+    );
+  }
   return (
-    <Link
-      href={item.href}
-      data-tour="shell.next"
-      className={`group flex items-center gap-4 rounded-lg border-2 bg-parchment px-5 py-4 transition ${
-        blocking ? "border-danger/60 hover:border-danger" : "border-gold/60 hover:border-gold"
-      }`}
-    >
-      <span className="min-w-0 flex-1">
-        <span className="block text-xs tracking-[0.14em] text-slate uppercase">Next</span>
-        <span className="mt-1 block text-lg text-charcoal">{item.message}</span>
-      </span>
+    <Link href={item.href} data-tour="shell.next" className={className}>
+      {message}
       <span className="flex shrink-0 items-center gap-1 rounded border border-charcoal/15 px-3 py-1.5 text-sm text-charcoal group-hover:border-charcoal/40">
         {item.action}
         <ArrowRight size={14} aria-hidden />
@@ -123,17 +145,28 @@ function NothingLeft() {
 
 function LeftRow({ item }: { item: Readiness }) {
   const blocking = item.severity === "blocking";
-  return (
-    <Link
-      href={item.href}
-      className={`group flex items-center gap-3 rounded border px-4 py-3 transition ${
-        blocking
-          ? "border-danger/40 bg-danger-soft hover:border-danger"
-          : "border-charcoal/10 bg-stone/50 hover:border-charcoal/25"
-      }`}
-    >
+  const className = `group flex items-center gap-3 rounded border px-4 py-3 transition ${
+    blocking
+      ? "border-danger/40 bg-danger-soft hover:border-danger"
+      : "border-charcoal/10 bg-stone/50 hover:border-charcoal/25"
+  }`;
+  const message = (
+    <>
       <AlertTriangle size={16} aria-hidden className={`shrink-0 ${blocking ? "text-danger" : "text-slate"}`} />
       <span className="min-w-0 flex-1 text-sm text-charcoal">{item.message}</span>
+    </>
+  );
+  if (!useDoableHere(item)) {
+    return (
+      <div className={className}>
+        {message}
+        <span className="shrink-0 text-xs text-slate">{ON_A_LAPTOP}</span>
+      </div>
+    );
+  }
+  return (
+    <Link href={item.href} className={className}>
+      {message}
       <span className="hidden shrink-0 items-center gap-1 text-xs text-slate group-hover:text-charcoal sm:flex">
         {item.action}
         <ArrowRight size={13} aria-hidden />

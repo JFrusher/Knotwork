@@ -1,0 +1,24 @@
+name: An idea
+description: Something you needed that Knotwork doesn't do yet.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before you write it up, check [ROADMAP.md](https://github.com/JFrusher/Knotwork/blob/main/ROADMAP.md). It may already be planned, or ruled out with a reason under **Not planned, on purpose**: a paid tier, RSVP collection and an admin panel that browses weddings will be closed with a pointer there.
+  - type: textarea
+    id: job
+    attributes:
+      label: The job
+      description: Start from what you needed to get done, not the solution. "I needed to know who was bringing the cake stand" beats "add a cake stand field".
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: What you do today instead
+      description: A spreadsheet, a note on your phone, another app, or nothing.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you have in mind, if anything

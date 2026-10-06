@@ -74,3 +74,28 @@ test("Seating opens on the room setup laid out", async ({ page }) => {
   for (const n of [1, 2, 3]) await expect(page.getByRole("button", { name: new RegExp(`^Table ${n}, `) })).toBeVisible();
   await expect(page.getByText("20 guests · 20 unassigned")).toBeVisible();
 });
+
+test("a draft not yet saved is not lost to a closed tab without asking", async ({ page }) => {
+  await page.goto("/setup");
+  await expect(page.getByRole("heading", { name: "The two of you" })).toBeVisible();
+  await page.getByRole("textbox", { name: "One of you", exact: true }).fill("Priya");
+
+  const asked = page.waitForEvent("dialog");
+  await page.close({ runBeforeUnload: true });
+  const dialog = await asked;
+  expect(dialog.type()).toBe("beforeunload");
+  await dialog.dismiss();
+});
+
+test("pasted names say which are on twice, and which may be more than one person", async ({ page }) => {
+  await page.goto("/setup");
+  await page.getByRole("button", { name: "Next" }).click();
+  await page.getByRole("button", { name: "Paste names" }).click();
+  await page.getByLabel("One name per line").fill("Dave Smith\nDave Smith\nMr & Mrs Patel\nAnn Lee");
+  await page.getByRole("button", { name: "Add them" }).click();
+
+  await expect(page.getByText("4 guests so far.")).toBeVisible();
+  const hints = page.getByRole("status").filter({ hasText: "All added as typed." });
+  await expect(hints).toContainText("On the list more than once: “Dave Smith”.");
+  await expect(hints).toContainText("may be more than one person: “Mr & Mrs Patel”.");
+});

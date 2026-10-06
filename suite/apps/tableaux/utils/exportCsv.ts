@@ -26,7 +26,8 @@ const sideLabel = (side: Guest['side'], meta: Plan['meta']): string =>
 
 // TODO(family-ux): headers below have a Group column but no Subgroup or
 // Family column — inconsistent with exportXlsx.js's buildGroupSheetRows,
-// which already has Group/Subgroup/Family. See tmp/family-ux-followups.md #6.
+// which already has Group/Subgroup/Family.
+// https://github.com/JFrusher/Knotwork/issues/64
 /** Caterer-friendly assignment rows, ordered by table then seat. */
 function buildAssignmentTable(state: PlanSource): { headers: string[]; rows: Cell[][] } {
   const { guests = {}, tables = {}, groups = {} } = state

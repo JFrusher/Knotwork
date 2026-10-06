@@ -57,6 +57,7 @@ export function DayPanel() {
           max={90}
           step={0.0001}
           onChange={(latitude) => setDay({ latitude })}
+          onClear={() => setDay({ latitude: null })}
         />
         <NumberField
           label="Longitude"
@@ -65,6 +66,7 @@ export function DayPanel() {
           max={180}
           step={0.0001}
           onChange={(longitude) => setDay({ longitude })}
+          onClear={() => setDay({ longitude: null })}
         />
       </Row>
 
@@ -88,7 +90,9 @@ export function DayPanel() {
       </Field>
 
       <p className={styles.sun}>
-        {doc.day.utcOffsetMin === null
+        {doc.day.latitude === null || doc.day.longitude === null
+          ? "Enter the venue's latitude and longitude to see sunset and golden hour."
+          : doc.day.utcOffsetMin === null
           ? "Set the clocks to see sunset and golden hour."
           : sun?.sunsetMin == null
           ? "The sun does not set at this latitude on this date."

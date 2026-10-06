@@ -105,12 +105,18 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-charcoal/10 bg-parchment/95 backdrop-blur">
-        <div className="mx-auto flex h-[var(--shell-header-h)] max-w-7xl items-center gap-2 px-4 xl:gap-3">
+        {/* As tall as it needs on a phone: the tabs wrap onto rows of their own
+            there. Only the wide tools read --shell-header-h, and none of them
+            is open below 1024px. */}
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-2 sm:h-[var(--shell-header-h)] sm:flex-nowrap sm:py-0 xl:gap-3">
           <WeddingMenu />
 
           {/* Scrolls within the header on a narrow screen, rather than making
-              the whole page wider than it and pushing Data off the edge. */}
-          <nav aria-label="Tools" className="flex min-w-0 items-center gap-1 overflow-x-auto">
+              the whole page wider than it and pushing Data off the edge. On a
+              phone the tabs wrap below instead: sharing the row, they had 94px
+              of 390 and showed two and a half tabs, with nothing to say there
+              were more. */}
+          <nav aria-label="Tools" className="order-last flex w-full min-w-0 flex-wrap items-center gap-1 sm:order-none sm:w-auto sm:flex-nowrap sm:overflow-x-auto">
             {[GUESTS, ...tools].map((tool) => {
               const active = pathname === tool.href;
               return (

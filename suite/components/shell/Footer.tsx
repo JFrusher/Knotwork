@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PRIVACY } from "@/lib/legal";
+import { CONTROLLER, PRIVACY } from "@/lib/legal";
 
 /**
  * The footer, on every page of the application and on the guest page.
@@ -9,6 +9,10 @@ import { PRIVACY } from "@/lib/legal";
  * reachable from somewhere on every page, and a guest looking at their own name
  * is exactly the person entitled to find the privacy policy.
  */
+// Email, because couples don't have GitHub accounts. A subject and nothing
+// else: nothing from the wedding is sent unless they choose to write it.
+const tellMe = `mailto:${CONTROLLER.email}?subject=${encodeURIComponent("Something missing from Knotwork")}`;
+
 export function Footer() {
   return (
     <footer className="mt-16 border-t border-stone px-4 py-6 text-xs text-slate print:hidden">
@@ -16,7 +20,7 @@ export function Footer() {
         <span>Knotwork — free and open source. No account needed.</span>
         {/* `min-h-11` is 44px: these are the only controls on the guest page
             besides the search box, and a guest is on a phone at a venue. */}
-        <nav className="flex gap-2">
+        <nav className="flex flex-wrap gap-2">
           <Link
             href="/blog"
             className="inline-flex min-h-11 items-center px-2 underline underline-offset-2 hover:text-charcoal"
@@ -41,6 +45,12 @@ export function Footer() {
           >
             Support
           </Link>
+          <a
+            href={tellMe}
+            className="inline-flex min-h-11 items-center px-2 underline underline-offset-2 hover:text-charcoal"
+          >
+            Something missing? Tell me.
+          </a>
         </nav>
         <span className="ms-auto">
           Updated{" "}

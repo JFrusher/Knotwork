@@ -7,19 +7,24 @@ export interface SeatingWarning {
   level: 'warn' | 'info'
   kind: 'over-capacity' | 'dietary-check' | 'empty-special' | 'unassigned' | 'apart' | 'together' | 'family-split'
   message: string
-  tableId?: string | null
-  guestId?: string
+  /** Every table and guest the warning is about: each gets its badge, and the panel goes to the first. */
+  tableIds: string[]
+  guestIds: string[]
 }
 
 /**
  * Pure rules engine. Given the document, returns a flat list of warnings:
- *   { id, level: 'warn' | 'info', kind, message, tableId?, guestId? }
+ *   { id, level: 'warn' | 'info', kind, message, tableIds, guestIds }
  * Surfaced as amber badges on tables/cards and in the warnings panel; never
  * blocks the user.
  */
 type WarnedGuest = Pick<Guest, 'id' | 'fullName' | 'dietary' | 'dietaryRaw' | 'assignedTableId' | 'rsvpStatus'>
 type WarnedTable = Pick<Table, 'id' | 'label' | 'type' | 'capacity' | 'designation' | 'assignedGuestIds'>
 type WarnedFamily = Pick<Family, 'id' | 'name' | 'memberIds'>
+
+/** "Table 1", "Table 1 and Table 3", "Table 1, Table 2 and Table 3". */
+const listOf = (names: string[]) =>
+  names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
 
 /** Only what the rules read, so anything holding a plan's shape can be checked. */
 export function computeWarnings(state: {
@@ -42,7 +47,8 @@ export function computeWarnings(state: {
         id: `cap_${t.id}`,
         level: 'warn',
         kind: 'over-capacity',
-        tableId: t.id,
+        tableIds: [t.id],
+        guestIds: [],
         message: `${t.label} is over capacity (${seated}/${t.capacity}).`,
       })
     }
@@ -58,7 +64,8 @@ export function computeWarnings(state: {
         id: `diet_${t.id}`,
         level: 'info',
         kind: 'dietary-check',
-        tableId: t.id,
+        tableIds: [t.id],
+        guestIds: [],
         message: `${t.label}: ${without} ${
           without === 1 ? 'guest has' : 'guests have'
         } no dietary note while others do — worth checking.`,
@@ -72,7 +79,8 @@ export function computeWarnings(state: {
         id: `special_${t.id}`,
         level: 'info',
         kind: 'empty-special',
-        tableId: t.id,
+        tableIds: [t.id],
+        guestIds: [],
         message: `${t.label} (your ${getTableType(t.type).label.toLowerCase()}) has no one seated yet.`,
       })
     }
@@ -85,6 +93,8 @@ export function computeWarnings(state: {
       id: 'unassigned',
       level: 'info',
       kind: 'unassigned',
+      tableIds: [],
+      guestIds: [],
       message: `${unassigned} of ${eligible.length} guests (${Math.round(
         (unassigned / eligible.length) * 100
       )}%) are still unseated.`,
@@ -105,8 +115,8 @@ export function computeWarnings(state: {
         id: `cst_${c.id}`,
         level: 'warn',
         kind: 'apart',
-        tableId: ga.assignedTableId,
-        guestId: a,
+        tableIds: [ga.assignedTableId],
+        guestIds: [a, b],
         message: `${ga.fullName} and ${gb.fullName} shouldn't sit together — both are at ${tables[ga.assignedTableId]?.label}.`,
       })
     }
@@ -120,33 +130,28 @@ export function computeWarnings(state: {
         id: `cst_${c.id}`,
         level: 'warn',
         kind: 'together',
-        guestId: a,
+        tableIds: [ga.assignedTableId, gb.assignedTableId],
+        guestIds: [a, b],
         message: `${ga.fullName} and ${gb.fullName} should sit together, but they're at different tables.`,
       })
     }
   }
 
-  // TODO(family-ux): pushes one warning PER split member, not one per family
-  // — a family of 5 split across 2 tables produces 5 rows in WarningsPanel.
-  // Also: WarningsPanel.jsx renders every warning generically off `level`,
-  // never `kind` — a family-split row looks identical to an `apart`/
-  // `together` constraint violation, no visual cue that it's family-specific.
-  // See tmp/family-ux-followups.md #9.
+  // One warning per family, not per member: five rows for one family of five
+  // read as five problems.
   for (const f of Object.values(families)) {
     const seated = (f.memberIds || [])
       .map((id) => guests[id])
-      .filter((g): g is WarnedGuest => Boolean(g && g.assignedTableId))
-    const tableIds = new Set(seated.map((g) => g.assignedTableId))
-    if (tableIds.size > 1) {
-      seated.forEach((g) => {
-        out.push({
-          id: `fam_${f.id}_${g.id}`,
-          level: 'warn',
-          kind: 'family-split',
-          guestId: g.id,
-          tableId: g.assignedTableId,
-          message: `${g.fullName} is split from the rest of the "${f.name}" family — they're at a different table.`,
-        })
+      .filter((g): g is WarnedGuest & { assignedTableId: string } => Boolean(g && g.assignedTableId))
+    const tableIds = [...new Set(seated.map((g) => g.assignedTableId))]
+    if (tableIds.length > 1) {
+      out.push({
+        id: `fam_${f.id}`,
+        level: 'warn',
+        kind: 'family-split',
+        tableIds,
+        guestIds: seated.map((g) => g.id),
+        message: `The ${f.name} family is split across ${listOf(tableIds.map((id) => tables[id]?.label ?? 'a table'))}.`,
       })
     }
   }
@@ -161,13 +166,13 @@ export function buildWarningIndex(list: SeatingWarning[]): {
   const byTable = new Map<string, SeatingWarning[]>()
   const byGuest = new Map<string, SeatingWarning[]>()
   for (const w of list) {
-    if (w.tableId) {
-      if (!byTable.has(w.tableId)) byTable.set(w.tableId, [])
-      byTable.get(w.tableId)!.push(w)
+    for (const id of w.tableIds) {
+      if (!byTable.has(id)) byTable.set(id, [])
+      byTable.get(id)!.push(w)
     }
-    if (w.guestId) {
-      if (!byGuest.has(w.guestId)) byGuest.set(w.guestId, [])
-      byGuest.get(w.guestId)!.push(w)
+    for (const id of w.guestIds) {
+      if (!byGuest.has(id)) byGuest.set(id, [])
+      byGuest.get(id)!.push(w)
     }
   }
   return { byTable, byGuest }

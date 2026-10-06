@@ -69,3 +69,11 @@
   text-align: center;
   padding: var(--space-4);
 }
+
+.broken {
+  font-size: var(--text-sm);
+  color: var(--warn);
+}
+.broken:empty {
+  display: none;
+}

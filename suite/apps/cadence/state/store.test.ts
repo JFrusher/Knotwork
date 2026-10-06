@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
-import { emptyDoc, sampleDoc } from "../core/model/defaults";
+import { DAY_OPENS_MIN, emptyDoc, sampleDoc } from "../core/model/defaults";
 import { currentDoc, scheduleComputeCount, scheduleFor, useStore, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "./store";
 import { openDay } from "./testing";
 
@@ -55,6 +55,16 @@ describe("document actions", () => {
     expect(blocks[added]?.lane).toBe("Suppliers");
     expect(blocks[added + 1]?.lane).toBe("Transport");
     expect(before.blocks).not.toContainEqual(expect.objectContaining({ id }));
+  });
+
+  it("anchors the first block of an empty lane where the empty day opens, not at midnight", () => {
+    openDay(emptyDoc());
+    const id = state().addBlock("Main day");
+    expect(doc().blocks.find((b) => b.id === id)?.anchorMin).toBe(DAY_OPENS_MIN);
+    expect(schedule().positions.get(id)?.startMin).toBe(DAY_OPENS_MIN);
+
+    const next = state().addBlock("Main day");
+    expect(doc().blocks.find((b) => b.id === next)?.anchorMin).toBeNull();
   });
 
   it("updates a block without touching the previous document", () => {

@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { readCrew } from "@/lib/model/slices";
 import { money, type Payment } from "@/lib/money/money";
+import { drinksEstimate } from "@/lib/money/drinks";
 import { daysUntil, longDate, todayIso } from "@/lib/dates";
 import { changeBudget, changeTeam, type TeamMoney } from "@/lib/money/edit";
 import { Button, Empty } from "@/components/ui/controls";
@@ -38,6 +39,7 @@ export function MoneyPage() {
 
   const crew = readCrew(doc);
   const accounts = useMemo(() => money(crew), [crew]);
+  const drinks = drinksEstimate(doc);
   const today = todayIso();
 
   if (status !== "ready") return <div className="mx-auto mt-10 h-40 max-w-5xl animate-pulse rounded-lg bg-stone" />;
@@ -77,6 +79,22 @@ export function MoneyPage() {
         <Figure label="Paid" value={amount(accounts.paid)} />
         <Figure label="Still to pay" value={amount(accounts.owed)} />
       </section>
+
+      {drinks === null ? null : (
+        // Planned, so it is counted against the budget and nowhere else.
+        <p className="mt-3 text-sm text-slate">
+          Drinks, estimated by the{" "}
+          <Link href="/bar" className="underline">
+            Bar
+          </Link>
+          : about {amount(Math.round(drinks))}, planned rather than committed or paid.
+          {accounts.left === null
+            ? null
+            : accounts.left - drinks < 0
+              ? ` With them, ${amount(Math.round(drinks - accounts.left))} over the budget.`
+              : ` With them, ${amount(Math.round(accounts.left - drinks))} of the budget left.`}
+        </p>
+      )}
 
       {crew.teams.length === 0 ? (
         <div className="mt-10">
