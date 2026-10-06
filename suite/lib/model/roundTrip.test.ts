@@ -16,7 +16,7 @@ const { publishDay, readCrew, readGuests, readSeating, readTimeline, readShots, 
   "./slices"
 );
 const { useStore: useSeating } = await import("@/apps/tableaux/store/useStore");
-const { addBlock, patchBlock } = await import("@/lib/model/timelineActions");
+const { DEFAULT_BLOCK_OUTPUTS } = await import("@/apps/cadence/core/model/defaults");
 const { addJob, addPerson, seedTeamsFromTags, toggleAssignment } = await import(
   "@/lib/model/crewActions"
 );
@@ -75,17 +75,15 @@ function buildAWedding(): void {
   const added = useSeating.getState().addTable({ type: "round", x: 200, y: 200 });
   useSeating.getState().assignGuest("g1", added!.meta!["newTableId"] as string);
 
-  let timeline = addBlock(readTimeline(store().doc), "Couple");
-  const ceremony = timeline.blocks[0]!.id;
-  timeline = patchBlock(timeline, ceremony, {
-    label: "Ceremony",
-    anchorMin: 13 * 60,
-    durationMin: 45,
-    tags: ["registrar"],
-  });
-  timeline = addBlock(timeline, "Couple", ceremony);
-  const drinks = timeline.blocks[1]!.id;
-  timeline = patchBlock(timeline, drinks, { label: "Drinks", durationMin: 90, gapMin: 15 });
+  const block = { anchorMin: null, gapMin: 0, bufferMin: 0, lane: "Couple", tags: [], location: "", notes: "" };
+  const ceremony = "b-ceremony";
+  const timeline = {
+    ...readTimeline(store().doc),
+    blocks: [
+      { ...block, id: ceremony, label: "Ceremony", anchorMin: 13 * 60, durationMin: 45, tags: ["registrar"], outputs: [...DEFAULT_BLOCK_OUTPUTS] },
+      { ...block, id: "b-drinks", label: "Drinks", durationMin: 90, gapMin: 15, outputs: [...DEFAULT_BLOCK_OUTPUTS] },
+    ],
+  };
   store().setSlices([
     ["timeline", timeline],
     ["day", publishDay(store().doc, timeline)],

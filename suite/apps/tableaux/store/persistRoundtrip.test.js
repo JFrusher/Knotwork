@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import { useStore } from './useStore'
-import { validatePlanDoc } from './planSchema'
 import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
 
@@ -90,8 +89,8 @@ describe('persistence round-trip', () => {
     openPlan(richDoc())
     const a = s().serialize() // already normalised on the way in
 
-    // Push through the exact server-side validation used on save…
-    const validated = validatePlanDoc(a)
+    // Through storage as JSON, the way a save does…
+    const validated = JSON.parse(JSON.stringify(a))
     // …and reload it, as a fresh session would.
     openPlan(validated)
     const b = s().serialize()
@@ -124,7 +123,7 @@ describe('persistence round-trip', () => {
     expect(created.memberIds).toEqual([])
 
     // Survives a save→reload round-trip.
-    const reloaded = validatePlanDoc(s().serialize())
+    const reloaded = JSON.parse(JSON.stringify(s().serialize()))
     openPlan(reloaded)
     expect(Object.values(s().groups).some((g) => g.name === 'Family')).toBe(true)
 

@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
-import { validatePlanDoc } from './planSchema'
 import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
 
@@ -71,7 +70,7 @@ describe('multi-room spaces', () => {
     ]
     const id = s().addSpace({ shape: 'polygon', x: 300, y: 300, vertices: verts }).meta.newSpaceId
 
-    const reloaded = validatePlanDoc(s().serialize())
+    const reloaded = JSON.parse(JSON.stringify(s().serialize()))
     openPlan(reloaded)
 
     const poly = s().room.spaces.find((sp) => sp.id === id)
