@@ -67,14 +67,14 @@ describe('computeWarnings', () => {
       tables: { t: table('t', { assignedGuestIds: ['a', 'b'] }) },
       constraints: [{ id: 'c1', kind: 'apart', guestIds: ['a', 'b'] }],
     })
-    expect(apart.some((x) => x.kind === 'apart')).toBe(true)
+    expect(apart.find((x) => x.kind === 'apart')).toMatchObject({ guestIds: ['a', 'b'], tableIds: ['t'] })
 
     const together = computeWarnings({
       guests: { a: guest('a', { assignedTableId: 't1' }), b: guest('b', { assignedTableId: 't2' }) },
       tables: { t1: table('t1', { assignedGuestIds: ['a'] }), t2: table('t2', { assignedGuestIds: ['b'] }) },
       constraints: [{ id: 'c2', kind: 'together', guestIds: ['a', 'b'] }],
     })
-    expect(together.some((x) => x.kind === 'together')).toBe(true)
+    expect(together.find((x) => x.kind === 'together')).toMatchObject({ guestIds: ['a', 'b'], tableIds: ['t1', 't2'] })
   })
 
   it('reports a split family once, naming the family and its tables, and marks every member', () => {

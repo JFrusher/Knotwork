@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { downloadWedding } from '@/lib/data/backup'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import styles from './ErrorBoundary.module.css'
 
 /**
@@ -32,7 +33,11 @@ export default class ErrorBoundary extends Component<{ label?: string; children:
           <p className={styles.title}>{this.props.label || 'Something went wrong'}</p>
           <p className={styles.detail}>{this.state.error.message}</p>
           <p className={styles.detail}>
-            Your wedding is still saved on this device. Nothing has been lost.
+            {/* After a failed save, what is on screen is only in this tab:
+                the download keeps it, a reload would not. */}
+            {useKnotworkStore.getState().saveError
+              ? 'Your latest changes have not been saved on this device. Download your wedding before reloading.'
+              : 'Your wedding is still saved on this device. Nothing has been lost.'}
           </p>
           <div className={styles.actions}>
             <button type="button" className={styles.retry} onClick={downloadWedding}>

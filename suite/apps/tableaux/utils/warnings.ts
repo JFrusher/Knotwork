@@ -116,7 +116,7 @@ export function computeWarnings(state: {
         level: 'warn',
         kind: 'apart',
         tableIds: [ga.assignedTableId],
-        guestIds: [a],
+        guestIds: [a, b],
         message: `${ga.fullName} and ${gb.fullName} shouldn't sit together — both are at ${tables[ga.assignedTableId]?.label}.`,
       })
     }
@@ -130,8 +130,8 @@ export function computeWarnings(state: {
         id: `cst_${c.id}`,
         level: 'warn',
         kind: 'together',
-        tableIds: [],
-        guestIds: [a],
+        tableIds: [ga.assignedTableId, gb.assignedTableId],
+        guestIds: [a, b],
         message: `${ga.fullName} and ${gb.fullName} should sit together, but they're at different tables.`,
       })
     }

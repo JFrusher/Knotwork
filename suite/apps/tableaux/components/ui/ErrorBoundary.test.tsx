@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ErrorBoundary from './ErrorBoundary'
 import { download } from '@/lib/data/file'
+import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 
 vi.mock('@/lib/data/file', () => ({ download: vi.fn() }))
 
@@ -34,5 +35,18 @@ describe('ErrorBoundary', () => {
     // still on offer.
     await user.click(screen.getByRole('button', { name: 'Try again' }))
     expect(screen.getByRole('button', { name: 'Reload the page' })).toBeInTheDocument()
+  })
+
+  it('does not promise work is saved when saving has failed, and says to download first', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    useKnotworkStore.setState({ saveError: 'This browser is out of storage space.' })
+    render(
+      <ErrorBoundary>
+        <AlwaysThrows />
+      </ErrorBoundary>
+    )
+    expect(screen.queryByText(/Nothing has been lost/)).toBeNull()
+    expect(screen.getByText(/not been saved on this device/)).toHaveTextContent(/Download your wedding before reloading/)
+    useKnotworkStore.setState({ saveError: null })
   })
 })

@@ -43,6 +43,8 @@ describe('inspector fields', () => {
     expect(field).toHaveValue('abc')
     expect(field).toHaveAttribute('aria-invalid', 'true')
     expect(messageFor(field)).toMatch(/size/i)
+    // Focus has already moved on, so the message has to announce itself.
+    expect(screen.getByRole('alert')).toHaveTextContent(messageFor(field)!)
     expect(useStore.getState().tables.t1.sizeUnits).toEqual({ shape: 'circle', diameter: 180 })
 
     // Escape is the one way back to the last good value.

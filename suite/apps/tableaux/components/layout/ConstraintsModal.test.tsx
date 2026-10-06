@@ -19,12 +19,13 @@ beforeEach(() => {
 
 async function addRule(kind: 'apart' | 'together') {
   const user = userEvent.setup()
-  render(<ConstraintsModal />)
+  const rendered = render(<ConstraintsModal />)
   if (kind === 'together') await user.click(screen.getByRole('button', { name: 'Should sit together' }))
   const [first, second] = screen.getAllByRole('combobox')
   await user.selectOptions(first, 'g1')
   await user.selectOptions(second, 'g2')
   await user.click(screen.getByRole('button', { name: 'Add' }))
+  return { user, rendered }
 }
 
 describe('ConstraintsModal', () => {
@@ -41,6 +42,18 @@ describe('ConstraintsModal', () => {
     await addRule('together')
 
     expect(useStore.getState().constraints).toHaveLength(1)
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
+  })
+
+  it('stops saying so once that rule is removed', async () => {
+    const { user } = await addRule('apart')
+    await user.click(screen.getByRole('button', { name: 'Remove rule' }))
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
+  })
+
+  it('stops saying so once a different pair is being chosen', async () => {
+    const { user } = await addRule('apart')
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'g2')
     expect(screen.getByRole('status')).toBeEmptyDOMElement()
   })
 })

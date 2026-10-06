@@ -95,8 +95,8 @@ export function parseDisplay(input: unknown, system: UnitSystem = 'metric'): num
     }
   }
 
+  if (!/^\d+(?:\.\d+)?$/.test(str)) return null
   const bare = parseFloat(str)
-  if (Number.isNaN(bare)) return null
   return system === 'imperial' ? round2(bare * CM_PER_INCH) : round2(bare)
 }
 

@@ -49,6 +49,12 @@ describe('parseDisplay', () => {
     expect(parseDisplay(null, 'metric')).toBeNull()
   })
 
+  it('returns null for a number with anything else after it', () => {
+    expect(parseDisplay('150cm extra', 'metric')).toBeNull()
+    expect(parseDisplay('12abc', 'metric')).toBeNull()
+    expect(parseDisplay('Infinity', 'metric')).toBeNull()
+  })
+
   it('round-trips through toDisplay/parseDisplay', () => {
     for (const cm of [80, 150, 244, 305]) {
       expect(parseDisplay(toDisplay(cm, 'metric').label, 'metric')).toBeCloseTo(cm, 0)

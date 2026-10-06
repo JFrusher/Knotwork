@@ -77,7 +77,7 @@ export default function TextField({
     <>
       {as === 'textarea' ? <textarea {...rest} {...field} /> : <input {...rest} {...field} />}
       {problem && (
-        <span id={messageId} className={f.problem}>
+        <span id={messageId} role="alert" className={f.problem}>
           {problem}
         </span>
       )}
