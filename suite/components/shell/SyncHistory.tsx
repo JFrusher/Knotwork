@@ -12,6 +12,7 @@ import type { PartConflict } from "@/lib/documents/mergeCloudDocument";
 import { Button } from "@/components/ui/controls";
 import { useConfirm } from "@/components/ui/Confirm";
 import { SlideOver } from "@/components/ui/SlideOver";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 const when = (iso: string) =>
   new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -64,7 +65,7 @@ function Conflicts() {
   if (conflicts.length === 0) return null;
   return (
     <section aria-labelledby="conflicts-title">
-      <h3 id="conflicts-title" className="text-sm tracking-[0.14em] text-slate uppercase">
+      <h3 id="conflicts-title" className={`text-slate ${EYEBROW}`}>
         Changed on both sides
       </h3>
       <p className="mt-2 text-sm text-slate">
@@ -149,7 +150,7 @@ function Versions({ onRestored }: { onRestored: () => void }) {
   if (cloudStatus === "disabled" || !weddingId) {
     return (
       <section aria-labelledby="versions-title">
-        <h3 id="versions-title" className="text-sm tracking-[0.14em] text-slate uppercase">
+        <h3 id="versions-title" className={`text-slate ${EYEBROW}`}>
           Saved versions
         </h3>
         <p className="mt-2 text-sm text-slate">
@@ -201,7 +202,7 @@ function Versions({ onRestored }: { onRestored: () => void }) {
 
   return (
     <section aria-labelledby="versions-title">
-      <h3 id="versions-title" className="text-sm tracking-[0.14em] text-slate uppercase">
+      <h3 id="versions-title" className={`text-slate ${EYEBROW}`}>
         Saved versions
       </h3>
       {problem ? (

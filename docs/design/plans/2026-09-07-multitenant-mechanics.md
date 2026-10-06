@@ -19,7 +19,7 @@ migration, no new dependency.
 **Tech Stack:** Next.js App Router (`suite/`), TypeScript, Vitest,
 `@jfrusher/knotwork` (for `migrate`, `suggestedFilename`, `KNOTWORK_EXTENSION`).
 
-**Spec:** [docs/superpowers/specs/2026-09-02-multitenant-mechanics-design.md](../specs/2026-09-02-multitenant-mechanics-design.md)
+**Spec:** [docs/design/specs/2026-09-02-multitenant-mechanics-design.md](../specs/2026-09-02-multitenant-mechanics-design.md)
 
 ## Status
 

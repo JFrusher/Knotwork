@@ -11,7 +11,7 @@ there are many tenants instead of one wedding.
 `suite/apps/cadence/` was a hand-ported mirror of the standalone `cadence`
 repo, kept in sync by hand, one fix at a time. This already caused a real
 bug: the printed timeline drift fix (see
-`docs/superpowers/specs/2026-09-02-knotwork-architecture-audit.md`) had to
+`docs/design/specs/2026-09-02-knotwork-architecture-audit.md`) had to
 land twice, and for a period today the two copies silently disagreed with
 no signal anything was wrong. Every future Cadence fix carries the same
 risk as long as two copies exist.

@@ -6,6 +6,7 @@ import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { fortnight } from "@/lib/model/fortnight";
 import { hiddenToolIds } from "@/lib/model/toolbox";
 import { todayIso } from "@/lib/dates";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 /**
  * The last fortnight, when couples come back to print: what to print, the
@@ -27,7 +28,7 @@ export function FortnightCard() {
       </h2>
       <div className="mt-3 grid gap-6 sm:grid-cols-3">
         <div>
-          <h3 className="text-sm tracking-[0.14em] text-slate uppercase">To print</h3>
+          <h3 className={`text-slate ${EYEBROW}`}>To print</h3>
           <ul className="mt-2 flex flex-col">
             {card.print.map((link) => (
               <li key={link.href}>
@@ -40,7 +41,7 @@ export function FortnightCard() {
         </div>
         {binder ? (
           <div>
-            <h3 className="text-sm tracking-[0.14em] text-slate uppercase">On your phone</h3>
+            <h3 className={`text-slate ${EYEBROW}`}>On your phone</h3>
             <p className="mt-2 text-slate">
               The{" "}
               <Link href="/binder" className="underline underline-offset-2 hover:text-charcoal">
@@ -51,7 +52,7 @@ export function FortnightCard() {
           </div>
         ) : null}
         <div>
-          <h3 className="text-sm tracking-[0.14em] text-slate uppercase">Still open</h3>
+          <h3 className={`text-slate ${EYEBROW}`}>Still open</h3>
           {card.open.length === 0 ? (
             <p className="mt-2 text-slate">Nothing that would print wrong.</p>
           ) : (

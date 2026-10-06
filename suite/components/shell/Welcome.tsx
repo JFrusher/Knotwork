@@ -29,8 +29,7 @@ export function Welcome() {
       <SignInFailed />
 
       <section aria-labelledby="welcome-heading" className="max-w-3xl">
-        <p className="text-xs tracking-[0.18em] text-slate uppercase">Free · Open source · Private</p>
-        <h1 id="welcome-heading" className="mt-4 font-display text-4xl leading-[1.1] text-charcoal sm:text-6xl">
+        <h1 id="welcome-heading" className="font-display text-4xl leading-[1.1] text-charcoal sm:text-6xl">
           Plan the whole wedding in one place.
         </h1>
         <p className="mt-5 text-lg leading-relaxed text-slate sm:text-xl">

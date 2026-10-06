@@ -3,7 +3,7 @@
 -- Every accepted save added a full copy of the wedding to its history — and
 -- the app saves 250 ms after each pause in typing — while nothing pruned it,
 -- and the table had no index but its key. See
--- docs/superpowers/specs/2026-09-29-database-review.md, D1 and D2.
+-- docs/design/specs/2026-09-29-database-review.md, D1 and D2.
 --
 -- Now:
 --   * one entry per person per ten minutes: a save brings this person's entry

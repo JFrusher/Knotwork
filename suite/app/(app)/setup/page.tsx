@@ -12,6 +12,7 @@ import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { Button, TextField } from "@/components/ui/controls";
 import { useGuestImport, type ImportTarget } from "@/components/shell/guestImportPanel";
 import { WeddingPeople } from "@/components/shell/WeddingPeople";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 const STEPS = [
   { id: "you", title: "The two of you" },
@@ -67,7 +68,7 @@ function Setup() {
 
   return (
     <div className="mx-auto max-w-xl px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Setting up</p>
+      <p className={`text-slate ${EYEBROW}`}>Setting up</p>
       <ol className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label="Steps">
         {STEPS.map((s, i) => (
           <li key={s.id} aria-current={s.id === step ? "step" : undefined} className={i === at ? "text-charcoal" : "text-slate"}>

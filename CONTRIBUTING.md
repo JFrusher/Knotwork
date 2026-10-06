@@ -50,7 +50,7 @@ field". Then:
 
 - Check [ROADMAP.md](ROADMAP.md). It may already be planned, or explicitly
   ruled out with a reason.
-- Check `docs/superpowers/specs/`. Design decisions are written down there
+- Check `docs/design/specs/`. Design decisions are written down there
   rather than living in anyone's head.
 - If it could be a whole tool, [docs/BUILDING-A-TOOL.md](docs/BUILDING-A-TOOL.md)
   has five questions to answer first. Most ideas turn out to be a feature of
@@ -178,7 +178,7 @@ real error. Next generates that type into `.next/types` during a build. Run
 Add a new, timestamped file to `supabase/migrations/`. Never edit one that
 has already been applied. Every table gets row-level security, and a change to
 a `security definer` function needs a test. Read the
-[database review](docs/superpowers/specs/2026-09-29-database-review.md) first.
+[database review](docs/design/specs/2026-09-29-database-review.md) first.
 Supabase's Security Advisor suggests "fixes" that would lock every couple out
 of their own wedding.
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { siteUrl } from "@/lib/env";
 import { POSTS, postBySlug } from "@/lib/blog/posts";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -43,7 +44,7 @@ export default async function BlogPost({ params }: Props) {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(article).replace(/</g, "\\u003c") }} />
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">
+      <p className={`text-slate ${EYEBROW}`}>
         <Link href="/blog" className="underline-offset-2 hover:underline">
           Guides and stories
         </Link>

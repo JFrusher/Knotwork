@@ -12,8 +12,7 @@ import type { Policy } from "@/lib/legal";
 export function PolicyPage({ policy }: { policy: Policy }) {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
-      <h1 className="mt-3 text-3xl">{policy.title}</h1>
+      <h1 className="text-3xl">{policy.title}</h1>
       <p className="mt-2 text-sm text-slate">
         Last updated{" "}
         <time dateTime={policy.updated}>

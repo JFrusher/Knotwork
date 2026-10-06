@@ -2,6 +2,7 @@
 
 import type { ComponentType, ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 /**
  * The controls every panel is built from.
@@ -20,7 +21,7 @@ export function Panel({ title, children, right }: { title: string; children: Rea
   return (
     <section className="border-t border-charcoal/10 py-4 first:border-t-0 first:pt-0">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="text-xs tracking-widest text-slate uppercase">{title}</h3>
+        <h3 className={`text-slate ${EYEBROW}`}>{title}</h3>
         {right}
       </div>
       {children}

@@ -10,11 +10,11 @@ The three most recent tools were built exactly this way. Their plans are the
 best worked examples, since they record what building each one actually
 found:
 
-- [Ceremony](superpowers/plans/2026-09-29-cast-and-ceremony.md). It shares its
+- [Ceremony](design/plans/2026-09-29-cast-and-ceremony.md). It shares its
   people with Group shots, which moved them to a slice of their own.
-- [Boxes](superpowers/plans/2026-09-29-boxes.md). Each box is tied to a part
+- [Boxes](design/plans/2026-09-29-boxes.md). Each box is tied to a part
   of the day that another tool owns.
-- [The Bar](superpowers/plans/2026-09-29-bar.md). It is worked out live from
+- [The Bar](design/plans/2026-09-29-bar.md). It is worked out live from
   the guest list, and its defaults were agreed before any code was written.
 
 ---
@@ -88,10 +88,10 @@ The spec and the roadmap record why.
 
 Open an issue describing the job the tool does for a couple, in their words.
 The one Boxes began from was "this box has my shoes in it and needs to be at
-the house for 9". Then write two documents, both in `docs/superpowers/`.
+the house for 9". Then write two documents, both in `docs/design/`.
 
 **A spec**, `specs/YYYY-MM-DD-<name>-design.md`. Read
-[the toolbox spec](superpowers/specs/2026-09-29-toolbox-and-new-tools-design.md)
+[the toolbox spec](design/specs/2026-09-29-toolbox-and-new-tools-design.md)
 first. Yours should cover:
 
 - **Findings**: what already exists and what doesn't, each marked as

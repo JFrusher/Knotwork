@@ -23,6 +23,7 @@ import { guestName } from "@/lib/model/slices";
 import type { Guest, RsvpStatus, Side } from "@/lib/model/types";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { useGuestImport } from "./guestImportPanel";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 /**
  * The one way a guest list comes in.
@@ -296,7 +297,7 @@ function Answers<T extends string>({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 text-xs tracking-widest text-slate uppercase">{legend}</legend>
+      <legend className={`mb-2 text-slate ${EYEBROW}`}>{legend}</legend>
       <div className="grid gap-2 sm:grid-cols-2">
         {Object.entries(meaning).map(([answer, value]) => (
           <label key={answer} className="flex items-center gap-2 text-sm">
@@ -325,7 +326,7 @@ function Names({ title, guests }: { title: string; guests: Guest[] }) {
   if (guests.length === 0) return null;
   return (
     <section>
-      <h3 className="mb-1 text-xs tracking-widest text-slate uppercase">
+      <h3 className={`mb-1 text-slate ${EYEBROW}`}>
         {title} ({guests.length})
       </h3>
       <p className="max-h-24 overflow-auto text-sm text-slate">{guests.map(guestName).join(", ")}</p>
@@ -348,7 +349,7 @@ function Choices({
 }) {
   return (
     <fieldset>
-      <legend className="mb-1 text-xs tracking-widest text-slate uppercase">
+      <legend className={`mb-1 text-slate ${EYEBROW}`}>
         {title} ({guests.length})
       </legend>
       <p className="mb-2 text-sm text-slate">{hint}</p>

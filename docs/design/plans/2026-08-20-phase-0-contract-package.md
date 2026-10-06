@@ -14,7 +14,7 @@ slices survive every operation byte-for-byte.
 **Tech Stack:** TypeScript 5.9, zod 4, vitest 3, plain `tsc` for the build. No
 bundler, no framework, no React.
 
-**Spec:** `docs/superpowers/specs/2026-08-20-knotwork-design.md`
+**Spec:** `docs/design/specs/2026-08-20-knotwork-design.md`
 
 ## Global Constraints
 
@@ -1341,7 +1341,7 @@ a write.
 
 ## Design
 
-[The full design](docs/superpowers/specs/2026-08-20-knotwork-design.md), including
+[The full design](docs/design/specs/2026-08-20-knotwork-design.md), including
 why there is no shared UI kit and no monorepo.
 ````
 

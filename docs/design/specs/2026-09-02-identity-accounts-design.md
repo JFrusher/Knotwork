@@ -15,7 +15,7 @@ whether Brigade can ever have a vendor-facing portal — assumes "a wedding
 belongs to an authenticated account" already exists. This is that
 foundation.
 
-See `docs/superpowers/specs/2026-09-02-knotwork-architecture-audit.md` for
+See `docs/design/specs/2026-09-02-knotwork-architecture-audit.md` for
 the state of the repo this builds on, and `docs/PRODUCT-ROADMAP.md` for the
 decisions this design was built from (Supabase Auth, two accounts per
 wedding via invite, couple-only roles, email + magic link, no billing).

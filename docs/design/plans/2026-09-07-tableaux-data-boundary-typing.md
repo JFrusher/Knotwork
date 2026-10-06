@@ -18,7 +18,7 @@ no runtime validation is added to the load path.
 **Tech Stack:** TypeScript (already configured in `suite/tsconfig.json` with
 `allowJs` and `strict`), zod 4, Vitest, `@jfrusher/knotwork`.
 
-**Spec:** [docs/superpowers/specs/2026-09-02-tableaux-migration-design.md](../specs/2026-09-02-tableaux-migration-design.md)
+**Spec:** [docs/design/specs/2026-09-02-tableaux-migration-design.md](../specs/2026-09-02-tableaux-migration-design.md)
 
 ## Status
 

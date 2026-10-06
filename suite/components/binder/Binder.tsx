@@ -9,6 +9,7 @@ import { resolveMembers } from "@/lib/cast/resolve";
 import { readCast, readGuests, readSeating, readShots } from "@/lib/model/slices";
 import { formatClock } from "@/lib/minutes";
 import { longDate } from "@/lib/dates";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 type Part = "now" | "day" | "ring" | "find" | "shots";
 const PARTS: Array<{ id: Part; name: string }> = [
@@ -145,7 +146,7 @@ function BlockList({ title, blocks }: { title: string; blocks: BinderBlock[] }) 
   if (blocks.length === 0) return null;
   return (
     <>
-      <h2 className="mt-6 text-sm tracking-[0.14em] text-slate uppercase">{title}</h2>
+      <h2 className={`mt-6 text-slate ${EYEBROW}`}>{title}</h2>
       <ul className="mt-2 divide-y divide-charcoal/10">
         {blocks.map((block) => (
           <li key={block.id} className="flex gap-3 py-2">
@@ -187,7 +188,7 @@ function Day({ blocks, minute }: { blocks: BinderBlock[]; minute: number | null 
       {walk && walk.blockId === null ? (
         // The ceremony is on no part of the day yet, so the walking order has no block to sit under.
         <div className="mt-4 border-t border-charcoal/10 pt-3">
-          <h2 className="text-sm tracking-[0.14em] text-slate uppercase">The walking order</h2>
+          <h2 className={`text-slate ${EYEBROW}`}>The walking order</h2>
           <WalkingOrder groups={walk.groups} />
         </div>
       ) : null}
@@ -334,7 +335,7 @@ function Shots() {
       </p>
       {sections.map((section) => (
         <div key={section.id} className="mt-4">
-          <h2 className="text-sm tracking-[0.14em] text-slate uppercase">{section.name}</h2>
+          <h2 className={`text-slate ${EYEBROW}`}>{section.name}</h2>
           <ul className="mt-1 divide-y divide-charcoal/10">
             {section.shots.map((shot) => (
               <li key={shot.id}>

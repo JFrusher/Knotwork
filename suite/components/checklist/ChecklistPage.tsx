@@ -12,6 +12,7 @@ import { barErrands, withErrandDone, type Errand } from "@/lib/checklist/barErra
 import { longDate, todayIso } from "@/lib/dates";
 import { Button, Empty } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-sm text-charcoal focus:border-gold";
 
@@ -90,7 +91,7 @@ export function ChecklistPage() {
               <section key={section.title} aria-labelledby={`tasks-${section.title}`}>
                 <h2
                   id={`tasks-${section.title}`}
-                  className={`mb-2 text-sm tracking-[0.14em] uppercase ${section.late ? "text-danger" : "text-slate"}`}
+                  className={`mb-2 ${section.late ? "text-danger" : "text-slate"} ${EYEBROW}`}
                 >
                   {section.title}
                 </h2>
@@ -103,7 +104,7 @@ export function ChecklistPage() {
             ))}
           {list.done.length > 0 ? (
             <details>
-              <summary className="cursor-pointer text-sm tracking-[0.14em] text-slate uppercase">
+              <summary className={`cursor-pointer text-slate ${EYEBROW}`}>
                 Done ({list.done.length})
               </summary>
               <ul className="mt-2 divide-y divide-charcoal/10 rounded-lg border border-charcoal/10 bg-parchment">
@@ -118,7 +119,7 @@ export function ChecklistPage() {
 
       {errands.length > 0 ? (
         <section aria-labelledby="tasks-bar" className="mt-8">
-          <h2 id="tasks-bar" className="mb-2 text-sm tracking-[0.14em] text-slate uppercase">
+          <h2 id="tasks-bar" className={`mb-2 text-slate ${EYEBROW}`}>
             From the Bar
           </h2>
           <ul className="divide-y divide-charcoal/10 rounded-lg border border-charcoal/10 bg-parchment">
