@@ -367,3 +367,23 @@ describe("reprinting a few", () => {
     expect(state().printOnly).toBeNull();
   });
 });
+
+describe("an order of service", () => {
+  it("is a booklet from the first design, and a design applied over it keeps the couple's pictures", async () => {
+    const { GALLERY } = await import("../core/data/gallery");
+    state().openPiece("order-of-service-classic");
+    expect(state().booklet).toEqual({ output: "home", paper: "A4" });
+    expect(state().rows.map((row) => row["Page"])).toEqual(["1", "2", "3", "4"]);
+
+    state().setPreviewGuestIndex(2);
+    state().addElement("image");
+    const picture = state().template.elements.at(-1)!;
+    expect(picture.page).toBe("inside");
+
+    state().applyGalleryTemplate(GALLERY.find((entry) => entry.id === "order-of-service-script")!);
+    const ids = state().template.elements.map((el) => el.id);
+    expect(ids).toContain(picture.id);
+    expect(ids).not.toContain("inside-frame");
+    expect(ids).toContain("inside-rule-top");
+  });
+});

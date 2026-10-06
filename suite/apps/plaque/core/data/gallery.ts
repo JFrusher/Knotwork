@@ -9,6 +9,8 @@ import tableCard from "../../templates/table-card.json";
 import serviceDockets from "../../templates/service-dockets.json";
 import tableMenu from "../../templates/table-menu.json";
 import orderOfServiceClassic from "../../templates/order-of-service-classic.json";
+import orderOfServiceModern from "../../templates/order-of-service-modern.json";
+import orderOfServiceScript from "../../templates/order-of-service-script.json";
 
 /**
  * The starter gallery (F2) — designs as files in `templates/`.
@@ -54,6 +56,8 @@ const FILES: Record<string, unknown> = {
   "service-dockets.json": serviceDockets,
   "table-menu.json": tableMenu,
   "order-of-service-classic.json": orderOfServiceClassic,
+  "order-of-service-modern.json": orderOfServiceModern,
+  "order-of-service-script.json": orderOfServiceScript,
 };
 
 /** Returns the offending field, or null. Named so a bad contribution is findable. */

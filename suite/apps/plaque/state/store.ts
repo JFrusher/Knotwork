@@ -460,12 +460,18 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
       }),
 
     applyGalleryTemplate: (entry) =>
-      commit("a gallery design", (s) => ({
-        ...fromGallery(entry, s.card, s.sheet, s.headers),
-        selectedId: null,
-        page: 0,
-        previewGuestIndex: 0,
-      })),
+      commit("a gallery design", (s) => {
+        const design = fromGallery(entry, s.card, s.sheet, s.headers);
+        // One booklet's design for another: the couple's own pictures stay where they put them.
+        const pictures = s.booklet && design.booklet ? s.template.elements.filter((el) => el.kind === "image") : [];
+        return {
+          ...design,
+          template: { ...design.template, elements: [...design.template.elements, ...pictures] },
+          selectedId: null,
+          page: 0,
+          previewGuestIndex: 0,
+        };
+      }),
 
     setRowScope: (rowScope) =>
       commit("what each card is for", (s) => ({
