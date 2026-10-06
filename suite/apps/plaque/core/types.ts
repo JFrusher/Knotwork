@@ -6,6 +6,7 @@
  * and the PDF y-flip happens in exactly one function (see render/pdf/renderPdf).
  */
 
+import type { GuestBlock } from "@/lib/ceremony/guestCopy";
 import type { GuestRow } from "./data/rows";
 
 export type Mm = number;
@@ -131,6 +132,12 @@ export interface FitConfig {
  */
 export type CardSide = "front" | "back";
 
+/**
+ * Which page of a booklet an element is on: the cover, every inside page, or
+ * the back. Absent means inside — the repeated page design. A card ignores it.
+ */
+export type PageRole = "cover" | "inside" | "back";
+
 interface ElementBase {
   id: ElementId;
   /** Card-local, top-left origin. Which fold panel it belongs to is derived, never stored. */
@@ -141,6 +148,10 @@ interface ElementBase {
   z: number;
   /** Front unless stated. See `sideOf`. */
   side?: CardSide;
+  /** A booklet's page it is on. See `PageRole`. */
+  page?: PageRole;
+  /** Only on these pages of a booklet, by page number; absent or empty is every page of its role. */
+  onPages?: number[];
 }
 
 /** Optical typography, per element. See core/text/optical. */
@@ -356,6 +367,41 @@ export interface QrElement extends ElementBase {
   colorHex: Hex;
 }
 
+/** How one kind of line in the order of service is set. */
+export interface ServiceStyle {
+  fontId: string;
+  fontSizePt: Pt;
+  colorHex: Hex;
+}
+
+/**
+ * The order of service, flowed: each part's title, its details — whose words,
+ * a note for the guests, who leads it, the music — and the words the couple
+ * chose to print. What does not fit carries on in the same box on the next
+ * inside page. It resolves into ordinary text, so neither renderer draws it
+ * specially.
+ */
+export interface ServiceElement extends ElementBase {
+  kind: "service";
+  heading: ServiceStyle;
+  detail: ServiceStyle;
+  words: ServiceStyle;
+  /**
+   * The face everyone's lines in responses are set in, at the words' size:
+   * "All: We will." stands out from what the officiant says.
+   */
+  congregationFontId: string;
+  /** Titles, details and poems. Prose and responses are always set from the left. */
+  align: HAlign;
+  /** Multiple of each line's size. */
+  lineHeight: number;
+  /** Between one part and the next. */
+  gapMm: Mm;
+}
+
+/** The parts of the ceremony a service element sets, as Ceremony tells the guests them. */
+export type ServiceBlock = GuestBlock;
+
 export type CardElement =
   | TextElement
   | IconElement
@@ -365,7 +411,8 @@ export type CardElement =
   | ListElement
   | GridElement
   | RoomElement
-  | QrElement;
+  | QrElement
+  | ServiceElement;
 
 /**
  * Any field of any element kind, except the two that establish identity.
@@ -383,7 +430,8 @@ type PatchableKey = Exclude<
   | keyof ListElement
   | keyof GridElement
   | keyof RoomElement
-  | keyof QrElement,
+  | keyof QrElement
+  | keyof ServiceElement,
   "kind" | "id"
 >;
 

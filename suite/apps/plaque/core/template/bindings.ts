@@ -8,6 +8,8 @@ import type {
   Pt,
   ResolvedElement,
   ResolvedImageSource,
+  ServiceBlock,
+  ServiceElement,
   Template,
   TextElement,
 } from "../types";
@@ -21,6 +23,8 @@ import { asKnown, chairRef, chairValues } from "./chairs";
 import { transformForPanel } from "../geometry/fold";
 import { ptToMm } from "../units";
 import { resolveIconForRow } from "./icons";
+import { INSIDE_PAGE_COLUMN, onThisPage } from "../data/booklet";
+import { paginateService, styleOf, typesetService, type MeasureFn } from "./service";
 
 export interface FitResult {
   lines: string[];
@@ -52,6 +56,10 @@ export interface ResolveOptions {
   fitBlock?: FitBlockFn;
   /** Without it a grid renders at its requested size and says the font is missing. */
   fitGrid?: FitGridFn;
+  /** The order of service a service element sets. Without it, it sets nothing and says so. */
+  service?: () => ServiceBlock[] | null;
+  /** A string's width in a face; null when the face is not loaded. Sets a service element's lines. */
+  measure?: MeasureFn;
   /** The seating plan a room element draws. Without it, it draws nothing and says so. */
   room?: () => RoomScene | null;
   iconPath: IconPathFn;
@@ -134,6 +142,7 @@ export function resolveCard(
   const seated = (elementId: ElementId, text: string, base: GuestRow): GuestRow => ({ ...base, ...chairsOf(elementId, text) });
 
   for (const el of [...template.elements].sort((a, b) => a.z - b.z)) {
+    if (!onThisPage(el, row)) continue;
     const placed = transformForPanel({ x: el.x, y: el.y, w: el.w, h: el.h }, card);
     const base = {
       id: el.id,
@@ -318,6 +327,13 @@ export function resolveCard(
 
       case "room": {
         const resolved = resolveRoom(el, row, card, opts, template);
+        warnings.push(...resolved.warnings);
+        elements.push(...resolved.elements);
+        break;
+      }
+
+      case "service": {
+        const resolved = resolveService(el, row, card, opts);
         warnings.push(...resolved.warnings);
         elements.push(...resolved.elements);
         break;
@@ -538,6 +554,59 @@ function resolveGrid(
       const lines = blocks[run.block]!.lines.slice(run.from, run.to);
       if (lines.length > 0) elements.push(body(n, x, y, lines.length * lineH, lines));
     });
+  return { elements, warnings };
+}
+
+/**
+ * This page's share of the order of service: every line set and paged in the
+ * box, then this inside page's lines placed down it as ordinary text. Off the
+ * inside pages — on a card, or a page padding the booklet — it sets nothing.
+ */
+function resolveService(
+  el: ServiceElement,
+  row: GuestRow,
+  card: CardSpec,
+  opts: ResolveOptions,
+): { elements: ResolvedElement[]; warnings: CardWarning[] } {
+  const warnings: CardWarning[] = [];
+  const blocks = opts.service?.() ?? null;
+  if (blocks === null || !opts.measure) {
+    warnings.push({ elementId: el.id, kind: "empty-text", detail: "There is no order of service here to set." });
+    return { elements: [], warnings };
+  }
+  const { lines, missingFont } = typesetService(blocks, el, opts.measure);
+  if (missingFont) {
+    warnings.push({ elementId: el.id, kind: "missing-font", detail: "A face the order of service is set in is not on this device, so its lines cannot be broken correctly." });
+  }
+  const page = paginateService(lines, el.h)[Number(row[INSIDE_PAGE_COLUMN]) - 1] ?? [];
+  const elements: ResolvedElement[] = [];
+  let y = el.y;
+  page.forEach((line, n) => {
+    if (n > 0) y += line.gapMm;
+    const style = styleOf(el, line.kind);
+    const placed = transformForPanel({ x: el.x, y, w: el.w, h: line.heightMm }, card);
+    if (line.text) {
+      elements.push({
+        id: `${el.id}/${n}`,
+        sourceId: el.id,
+        ...placed.box,
+        rotationDeg: placed.rotationDeg,
+        z: el.z,
+        kind: "text",
+        lines: [line.text],
+        fontId: style.fontId,
+        fontSizePt: style.fontSizePt,
+        align: line.align,
+        vAlign: "top",
+        anchor: "align",
+        lineHeight: el.lineHeight,
+        colorHex: style.colorHex,
+        letterSpacingMm: 0,
+        overflowed: line.heightMm > el.h,
+      });
+    }
+    y += line.heightMm;
+  });
   return { elements, warnings };
 }
 

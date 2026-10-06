@@ -2,7 +2,8 @@ import { makeIconLookup } from "../../assets/icons";
 import { fitBlock, fitGrid, fitText } from "../text/fit";
 import { missingGlyphs, suggestFallback } from "../text/glyphs";
 import type { LoadedFont } from "../text/measure";
-import type { ResolvedImageSource, RoomScene } from "../types";
+import { measureWidth } from "../text/measure";
+import type { ResolvedImageSource, RoomScene, ServiceBlock } from "../types";
 import type { ResolveOptions } from "./bindings";
 
 /**
@@ -18,10 +19,16 @@ export function makeResolveOptions(
   images: Map<string, ResolvedImageSource> = new Map(),
   assetNames: Record<string, string> = {},
   room: RoomScene | null = null,
+  service: ServiceBlock[] | null = null,
 ): ResolveOptions {
   const iconPath = makeIconLookup(uploadedIcons);
   return {
     iconPath,
+    service: () => service,
+    measure: (fontId, text, sizePt) => {
+      const font = fonts.get(fontId);
+      return font ? measureWidth(font, text, sizePt) : null;
+    },
     image: (id) => images.get(id) ?? null,
     assetName: (id) => assetNames[id] ?? null,
     room: () => room,

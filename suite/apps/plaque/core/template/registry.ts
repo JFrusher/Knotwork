@@ -165,6 +165,32 @@ export const ELEMENT_KINDS: ElementKindSpec[] = [
     },
   },
   {
+    kind: "service",
+    label: "Order of service",
+    describe: (el) => (el.kind === "service" ? "the ceremony, flowing page to page" : ""),
+    create: ({ id, z, card }) => {
+      // Inside the page, clear of where a home printer cannot reach.
+      const margin = Math.min(14, card.widthMm * 0.1);
+      return {
+        id,
+        z,
+        kind: "service",
+        page: "inside",
+        x: margin,
+        y: margin,
+        w: card.widthMm - 2 * margin,
+        h: card.heightMm - 2 * margin,
+        heading: { fontId: "crimson-semibold", fontSizePt: 13, colorHex: "#171613" },
+        detail: { fontId: DEFAULT_FONT_ID, fontSizePt: 9.5, colorHex: "#6f6a62" },
+        words: { fontId: DEFAULT_FONT_ID, fontSizePt: 10.5, colorHex: "#171613" },
+        congregationFontId: "crimson-semibold",
+        align: "center",
+        lineHeight: 1.3,
+        gapMm: 5,
+      };
+    },
+  },
+  {
     kind: "icon",
     label: "Icon",
     describe: (el) => (el.kind === "icon" ? (el.sourceField ? `by ${el.sourceField}` : "(no column)") : ""),
