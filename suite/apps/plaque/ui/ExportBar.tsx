@@ -84,6 +84,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
     printer,
     service,
     booklet,
+    blankPages,
   } = usePlaque(
       useShallow((s) => ({
         card: s.card,
@@ -103,6 +104,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
         printer: s.printers.find((p) => p.id === s.activePrinterId) ?? null,
         service: s.service,
         booklet: s.booklet,
+        blankPages: s.blankPages,
       })),
     );
   const [busy, setBusy] = useState(false);
@@ -280,7 +282,7 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
         {missingLabel(missing, assetNames) ??
           (booklet &&
             (folded
-              ? `${artefacts.length} pages on ${sheetCount / 2} ${sheetCount === 2 ? "sheet" : "sheets"} of ${folded.paper === "LETTER" ? "Letter" : folded.paper} — print both sides, turning over on the ${flipEdge} edge, then fold`
+              ? `${artefacts.length} pages${blankPages > 0 ? ` (${blankPages} blank, to fold)` : ""} on ${sheetCount / 2} ${sheetCount === 2 ? "sheet" : "sheets"} of ${folded.paper === "LETTER" ? "Letter" : folded.paper} — print both sides, turning over on the ${flipEdge} edge, then fold`
               : `${artefacts.length} pages, one to a page, with crop marks for the print shop`)) ??
           (artefacts.length === 0
             ? "No guests yet — add them in Seating or Guests"

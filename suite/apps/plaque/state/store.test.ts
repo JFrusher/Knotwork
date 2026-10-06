@@ -374,6 +374,8 @@ describe("an order of service", () => {
     state().openPiece("order-of-service-classic");
     expect(state().booklet).toEqual({ output: "home", paper: "A4" });
     expect(state().rows.map((row) => row["Page"])).toEqual(["1", "2", "3", "4"]);
+    // Nothing in the ceremony yet: both inside pages are there only so it folds.
+    expect(state().blankPages).toBe(2);
 
     state().setPreviewGuestIndex(2);
     state().addElement("image");

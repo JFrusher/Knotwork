@@ -997,7 +997,13 @@ export function emptyCeremony(): Ceremony {
 
 function readGuestCopy(raw: unknown): GuestCopy {
   const copy = isRecord(raw) ? raw : {};
-  return { processionalMusic: bool(copy["processionalMusic"], true) };
+  return {
+    processionalMusic: bool(copy["processionalMusic"], true),
+    welcome: str(copy["welcome"]),
+    weddingParty: bool(copy["weddingParty"], false),
+    dayBlockIds: Array.isArray(copy["dayBlockIds"]) ? copy["dayBlockIds"].filter((id): id is string => typeof id === "string") : [],
+    thanks: str(copy["thanks"]),
+  };
 }
 
 /**

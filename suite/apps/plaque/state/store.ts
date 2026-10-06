@@ -79,6 +79,8 @@ interface RoomData {
   room: RoomScene;
   /** A booklet's order of service, for its service element to set; null on cards. */
   service: ServiceBlock[] | null;
+  /** Inside pages a booklet carries only so it folds: the service ends before them. */
+  blankPages: number;
 }
 
 export interface PlaqueState extends Design, RoomData {
@@ -274,6 +276,7 @@ function live(wedding: Wedding, design: Pick<Design, "merged" | "template" | "bo
     rowIssues: room.issues,
     room: roomScene(wedding.doc),
     service: null,
+    blankPages: 0,
   };
   lastLive = { inputs, data };
   return data;

@@ -510,6 +510,14 @@ export interface Ceremony {
 export interface GuestCopy {
   /** Name the processional's music under it, group by group. */
   processionalMusic: boolean;
+  /** A note from the couple to open with, or "". */
+  welcome: string;
+  /** Who's who: the parents, grandparents and wedding parties, from the cast. */
+  weddingParty: boolean;
+  /** "After the ceremony": the Timeline's blocks the guests are told about, by id. */
+  dayBlockIds: string[];
+  /** A note from the couple to close with, or "". */
+  thanks: string;
 }
 
 // boxes -----------------------------------------------------------------------

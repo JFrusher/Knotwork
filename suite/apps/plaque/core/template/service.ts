@@ -50,11 +50,14 @@ export function typesetService(blocks: ServiceBlock[], el: ServiceElement, measu
 
   blocks.forEach((block, index) => {
     const passages = block.passages.filter((passage) => passage.text.trim() !== "");
-    const details = [block.author, block.note, block.people.join(" and "), ...block.music].filter(Boolean);
-    push(block.title, "heading", el.align, index === 0 ? 0 : el.gapMm, details.length > 0 || passages.length > 0);
-    details.forEach((detail, i) => push(detail, "detail", el.align, 0, i < details.length - 1 || passages.length > 0));
-    passages.forEach((passage) => {
-      const gap = heightOf("words") / 2;
+    const details = [block.author, block.note, block.people.join(" and "), ...block.music, ...block.lines].filter(Boolean);
+    const gap = index === 0 ? 0 : el.gapMm;
+    // The couple's own notes have no heading: their words open the part.
+    if (block.title) push(block.title, "heading", el.align, gap, details.length > 0 || passages.length > 0);
+    details.forEach((detail, i) => push(detail, "detail", el.align, block.title || i > 0 ? 0 : gap, i < details.length - 1 || passages.length > 0));
+    passages.forEach((passage, p) => {
+      const opens = !block.title && details.length === 0 && p === 0;
+      const gap = opens ? (index === 0 ? 0 : el.gapMm) : heightOf("words") / 2;
       passage.text.split("\n").forEach((part, i) => {
         const kind: LineKind = passage.layout === "responses" && /^\s*all\s*:/i.test(part) ? "all" : "words";
         const align = passage.layout === "poem" ? el.align : "left";

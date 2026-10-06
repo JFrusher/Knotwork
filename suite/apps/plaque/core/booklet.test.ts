@@ -76,7 +76,7 @@ describe("the order of service, flowed", () => {
       author: "",
       note: "",
       people: [],
-      music: [],
+      music: [], lines: [],
       passages: [{ text: Array.from({ length: 90 }, (_, i) => `Line ${i + 1}`).join("\n"), layout: "poem" }],
     };
     const { lines } = typesetService([long], service, measure);
@@ -91,7 +91,7 @@ describe("the order of service, flowed", () => {
       author: "",
       note: "",
       people: ["A reader"],
-      music: [],
+      music: [], lines: [],
       passages: [],
     }));
     for (const page of paginateService(typesetService(parts, service, measure).lines, service.h)) {
@@ -100,7 +100,7 @@ describe("the order of service, flowed", () => {
   });
 
   it("sets everyone's lines in responses in the congregation's face, from the left", () => {
-    const responses: ServiceBlock = { title: "The vows", author: "", note: "", people: [], music: [], passages: [{ text: "Will you?\nAll: We will.", layout: "responses" }] };
+    const responses: ServiceBlock = { title: "The vows", author: "", note: "", people: [], music: [], lines: [], passages: [{ text: "Will you?\nAll: We will.", layout: "responses" }] };
     const lines = typesetService([responses], service, measure).lines;
     expect(lines.map((line) => [line.kind, line.align])).toEqual([["heading", "center"], ["words", "left"], ["all", "left"]]);
   });

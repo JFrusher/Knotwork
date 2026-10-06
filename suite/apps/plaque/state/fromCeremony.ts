@@ -34,9 +34,10 @@ export function bookletFacts(doc: Knotwork): GuestRow {
  */
 export function bookletData(doc: Knotwork, template: Template, fonts: Map<string, LoadedFont>) {
   const service = weddingGuestBlocks(doc);
-  const { rows, rowIds } = bookletRows(bookletFacts(doc), insidePages(template, service, fonts));
+  const inside = insidePages(template, service, fonts);
+  const { rows, rowIds } = bookletRows(bookletFacts(doc), inside);
   // Which design a page is and which of the service it carries are for the engine; its number is the couple's.
-  return { headers: [...BOOKLET_COLUMNS, PAGE_COLUMN], rows, rowIds, service };
+  return { headers: [...BOOKLET_COLUMNS, PAGE_COLUMN], rows, rowIds, service, blankPages: rows.length - 2 - inside };
 }
 
 /** The most inside pages any order of service on the design takes; none without one. */

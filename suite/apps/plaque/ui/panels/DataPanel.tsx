@@ -40,9 +40,10 @@ function scopeHint(scope: RowScope, rowCount: number, artefacts: Artefact[]): st
  * it; the room is always current, and the cards are read from it as it changes.
  */
 export function DataPanel() {
-  const { template, headers, rows, rowIds, rowIssues, rowScope, setRowScope, printOnly, setPrintOnly, booklet } = usePlaque(
+  const { template, headers, rows, rowIds, rowIssues, rowScope, setRowScope, printOnly, setPrintOnly, booklet, blankPages } = usePlaque(
     useShallow((s) => ({
       booklet: s.booklet !== null,
+      blankPages: s.blankPages,
       template: s.template,
       headers: s.headers,
       rows: s.rows,
@@ -63,6 +64,13 @@ export function DataPanel() {
           Printing from Ceremony, as it stands: {rows.length} pages, folded. What the guests are told — the parts, the words,
           the music — is written there and is here at once.
         </p>
+        {blankPages > 0 && (
+          <Hint>
+            {blankPages === 1 ? "One inside page is" : `${blankPages} inside pages are`} left for the fold to work: a folded
+            booklet is four pages a sheet. Fill {blankPages === 1 ? "it" : "them"} — a picture, a note in Ceremony — or set the
+            order of service smaller to save a sheet.
+          </Hint>
+        )}
         <Link href="/ceremony" className={styles.button}>
           Change it in Ceremony
         </Link>

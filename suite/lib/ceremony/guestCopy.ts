@@ -1,6 +1,8 @@
 import type { Knotwork } from "@jfrusher/knotwork";
-import { dayPlaces, readCast, readCeremony, readGuests, readSeating } from "@/lib/model/slices";
-import type { GuestCopy, WordsLayout } from "@/lib/model/types";
+import { formatClock } from "@/lib/minutes";
+import { roleLabel } from "@/lib/model/partners";
+import { dayPlaces, guestName, isComing, readCast, readCeremony, readGuests, readSeating } from "@/lib/model/slices";
+import { CAST_ROLES, type CastSlice, type Guest, type GuestCopy, type WordsLayout } from "@/lib/model/types";
 import { ceremonyPlace } from "./checks";
 import { orderRows, type OrderRow } from "./rows";
 
@@ -24,6 +26,8 @@ export interface GuestBlock {
   people: string[];
   /** Each piece of music, by name: one, or the processional's groups' several. */
   music: string[];
+  /** Anything else said under its title: who is who, the day's times. */
+  lines: string[];
   passages: GuestPassage[];
 }
 
@@ -43,6 +47,7 @@ export function guestBlocks(rows: OrderRow[], copy: GuestCopy): GuestBlock[] {
       note: row.guestNote,
       people: row.people,
       music: [...(row.music ? [ownMusic(row)] : []), ...groupsMusic].filter(Boolean),
+      lines: [],
       passages,
     };
   });
@@ -54,9 +59,42 @@ function ownMusic(row: OrderRow): string {
   return row.music.startsWith(`${row.title} — `) ? row.music.slice(row.title.length + 3) : row.music;
 }
 
-/** The wedding's guest copy, as it stands: what the booklet and the guest link are made from. */
+/**
+ * The wedding's guest copy, as it stands: what the booklet and the guest link
+ * are made from. The couple's welcome, the ceremony, who is who, what happens
+ * after, and their thanks — each only where they have written or chosen it.
+ */
 export function weddingGuestBlocks(doc: Knotwork): GuestBlock[] {
   const ceremony = readCeremony(doc);
-  const { place } = ceremonyPlace(ceremony, dayPlaces(doc));
-  return guestBlocks(orderRows(ceremony, readGuests(doc), readSeating(doc), readCast(doc), doc.event, place), ceremony.guestCopy);
+  const places = dayPlaces(doc);
+  const guests = readGuests(doc);
+  const { place } = ceremonyPlace(ceremony, places);
+  const copy = ceremony.guestCopy;
+  const party = copy.weddingParty ? weddingParty(readCast(doc), guests, doc.event) : [];
+  const after = copy.dayBlockIds
+    .flatMap((id) => (places.has(id) ? [places.get(id)!] : []))
+    .sort((a, b) => a.startMin - b.startMin)
+    .map((block) => `${formatClock(block.startMin)}  ${block.label}${block.location ? ` — ${block.location}` : ""}`);
+  return [
+    ...(copy.welcome.trim() ? [note(copy.welcome)] : []),
+    ...guestBlocks(orderRows(ceremony, guests, readSeating(doc), readCast(doc), doc.event, place), copy),
+    ...(party.length > 0 ? [section("The wedding party", party)] : []),
+    ...(after.length > 0 ? [section("After the ceremony", after)] : []),
+    ...(copy.thanks.trim() ? [note(copy.thanks)] : []),
+  ];
 }
+
+/** Each role of the cast with somebody in it, the couple themselves aside: "Sam’s mother: Lucia Reyes". */
+function weddingParty(cast: CastSlice, guests: Record<string, Guest>, event: Knotwork["event"]): string[] {
+  const names = (ids: string[]) =>
+    ids.flatMap((id) => (guests[id] && isComing(guests[id]) ? [guestName(guests[id])] : [])).filter(Boolean).join(", ");
+  const fixed = CAST_ROLES.filter((role) => role !== "a" && role !== "b").map((role) => [roleLabel(role, event), names(cast.roles[role])]);
+  const own = cast.customRoles.map((role) => [role.name, names(role.guestIds)]);
+  return [...fixed, ...own].filter(([, who]) => who).map(([role, who]) => `${role}: ${who}`);
+}
+
+/** A part of the booklet that is not of the ceremony: a heading and its lines. */
+const section = (title: string, lines: string[]): GuestBlock => ({ title, author: "", note: "", people: [], music: [], lines, passages: [] });
+
+/** The couple's own words, with no heading, line by line as they wrote them: a welcome, a thank-you. */
+const note = (text: string): GuestBlock => ({ title: "", author: "", note: "", people: [], music: [], lines: [], passages: [{ text: text.trim(), layout: "poem" }] });

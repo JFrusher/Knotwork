@@ -422,6 +422,8 @@ function CeremonyInspector({
   const blocks = [...places.entries()].sort(([, a], [, b]) => a.startMin - b.startMin);
   const cues = musicCues(ceremony, groupLabel);
   const facts = (patch: Parameters<typeof setFacts>[1], label: string) => onChange(setFacts(ceremony, patch), { label });
+  const copy = ceremony.guestCopy;
+  const guestCopy = (patch: Partial<Ceremony["guestCopy"]>) => facts({ guestCopy: { ...copy, ...patch } }, "the guests' order of service");
   const problems = [
     lost && "The part of the day the ceremony was on is no longer on the Timeline.",
     over > 0 && `The order runs ${over} minutes longer than its part of the day.`,
@@ -485,11 +487,26 @@ function CeremonyInspector({
       </Panel>
 
       <Panel title="The guests' order of service">
-        <Check
-          label="Name the music each group walks to, under the processional"
-          checked={ceremony.guestCopy.processionalMusic}
-          onChange={(processionalMusic) => facts({ guestCopy: { ...ceremony.guestCopy, processionalMusic } }, "the guests' order of service")}
-        />
+        <div className="flex flex-col gap-3">
+          <TextArea label="A note to open with" value={copy.welcome} onChange={(welcome) => guestCopy({ welcome })} rows={3} />
+          <Check label="Name the music each group walks to, under the processional" checked={copy.processionalMusic} onChange={(processionalMusic) => guestCopy({ processionalMusic })} />
+          <Check label="Say who is who in the wedding party, from Who's who" checked={copy.weddingParty} onChange={(weddingParty) => guestCopy({ weddingParty })} />
+          {blocks.length > 0 && (
+            <fieldset className="flex flex-col gap-1">
+              <legend className="mb-1 text-xs text-slate">After the ceremony, tell the guests about</legend>
+              {blocks.map(([id, block]) => (
+                <Check
+                  key={id}
+                  label={`${formatClock(block.startMin)} · ${block.label}${block.location ? ` · ${block.location}` : ""}`}
+                  checked={copy.dayBlockIds.includes(id)}
+                  onChange={(on) => guestCopy({ dayBlockIds: on ? [...copy.dayBlockIds, id] : copy.dayBlockIds.filter((other) => other !== id) })}
+                />
+              ))}
+            </fieldset>
+          )}
+          <TextArea label="A note to close with" value={copy.thanks} onChange={(thanks) => guestCopy({ thanks })} rows={3} />
+          <p className="text-xs text-slate">Designed and printed as a booklet in Place cards: &ldquo;Design the order of service&rdquo;, above.</p>
+        </div>
       </Panel>
 
       <Panel title="The music, in order">
