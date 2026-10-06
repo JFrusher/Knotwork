@@ -12,6 +12,8 @@ test("a balance paid, and a budget cut, show wherever money is counted", async (
 
   const totals = page.getByRole("region", { name: "In all" });
   await expect(totals).toContainText("Paid3,325");
+  // The Bar's estimate is shown beside the totals, and is in none of them.
+  await expect(page.getByRole("main")).toContainText(/Drinks, estimated by the Bar: about 1,206, planned rather than committed or paid\./);
 
   const toPay = page.getByRole("region", { name: "To pay" });
   const caterer = toPay.getByRole("listitem").filter({ hasText: "Smith & Doyle Catering — balance" });
