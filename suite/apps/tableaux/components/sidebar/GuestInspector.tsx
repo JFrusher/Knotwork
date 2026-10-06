@@ -8,6 +8,7 @@ import Icon from '../ui/Icon'
 import IconButton from '../ui/IconButton'
 import Button from '../ui/Button'
 import TextField from './TextField'
+import { tableChoices } from '../../utils/tableChoices'
 import f from './fields.module.css'
 import styles from './GuestInspector.module.css'
 
@@ -43,17 +44,7 @@ export default function GuestInspector({ guestId }: { guestId: string }) {
 
   // Every table, by its label, with how many seats are left. The way to seat
   // someone without dragging — which is the only way from a keyboard.
-  const tableChoices = useMemo(
-    () =>
-      Object.values(tables)
-        .map((t) => ({
-          id: t.id,
-          label: t.label,
-          free: t.capacity - (t.assignedGuestIds || []).filter(Boolean).length,
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })),
-    [tables]
-  )
+  const choices = useMemo(() => tableChoices(tables), [tables])
 
   if (!guest) return null
 
@@ -259,7 +250,7 @@ export default function GuestInspector({ guestId }: { guestId: string }) {
           }}
         >
           <option value="">No table</option>
-          {tableChoices.map((t) => (
+          {choices.map((t) => (
             <option
               key={t.id}
               value={t.id}

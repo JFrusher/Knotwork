@@ -38,6 +38,7 @@ export default function GuestPanel() {
   const selectedGuestIds = useStore((s) => s.selectedGuestIds)
   const select = useStore((s) => s.select)
   const createGroup = useStore((s) => s.createGroup)
+  const familyFrom = useStore((s) => s.familyFrom)
   const createEmptyGroup = useStore((s) => s.createEmptyGroup)
   const createFamily = useStore((s) => s.createFamily)
   const clearSelection = useStore((s) => s.clearSelection)
@@ -210,10 +211,14 @@ export default function GuestPanel() {
           clearSelection()
         },
       },
-      // TODO(family-ux): no equivalent bulk "Family N selected" quick action —
-      // creating a family from a multi-select requires making an empty family
-      // first, then drag-adding each selected guest individually.
-      // https://github.com/JFrusher/Knotwork/issues/66
+      multi && {
+        label: `Family from ${selectedGuestIds.length} selected`,
+        icon: 'users',
+        onClick: () => {
+          familyFrom(selectedGuestIds)
+          clearSelection()
+        },
+      },
       g.familyId && {
         label: 'Remove from family',
         icon: 'x',
@@ -271,6 +276,7 @@ export default function GuestPanel() {
     selectedGuestIds,
     select,
     createGroup,
+    familyFrom,
     clearSelection,
     removeFromGroup,
     removeFromFamily,

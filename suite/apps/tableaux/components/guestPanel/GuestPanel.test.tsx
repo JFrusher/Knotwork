@@ -75,3 +75,14 @@ describe("a family member's menu", () => {
     expect(screen.queryByRole('menuitem', { name: 'Seat on their own…' })).toBeNull()
   })
 })
+
+describe('the menu of a guest in a selection', () => {
+  it('offers to make a family of everyone selected', () => {
+    search('work')
+    useStore.getState().setSelectedGuestIds(['g3', 'g4'])
+    fireEvent.contextMenu(screen.getByText('Alan Turing'))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Family from 2 selected' }))
+    const families = Object.values(useStore.getState().families).filter((f) => f.id !== 'fam')
+    expect(families.map((f) => f.memberIds)).toEqual([['g3', 'g4']])
+  })
+})
