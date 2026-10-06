@@ -8,6 +8,8 @@ interface FromTheDay {
   hours: number | null;
   /** A picked block is no longer on the Timeline, as Boxes says of a box's block. */
   lost: boolean;
+  /** The first block now starts after the last one: moved on the Timeline since they were picked. */
+  outOfOrder: boolean;
 }
 
 /**
@@ -22,11 +24,13 @@ export function hoursFromTheDay(doc: Knotwork): Record<MixedPart, FromTheDay> {
   const places = dayPlaces(doc);
   const read = (part: MixedPart): FromTheDay => {
     const span = spans[part];
-    if (!span || hidden) return { hours: null, lost: false };
+    if (!span || hidden) return { hours: null, lost: false, outOfOrder: false };
     const from = places.get(span.from);
     const to = places.get(span.to);
-    if (!from || !to) return { hours: null, lost: true };
-    return { hours: Math.max(0, to.endMin - from.startMin) / 60, lost: false };
+    if (!from || !to) return { hours: null, lost: true, outOfOrder: false };
+    // Counted as no hours, a reversed span would quietly shrink the shopping list.
+    if (to.startMin < from.startMin) return { hours: null, lost: false, outOfOrder: true };
+    return { hours: (to.endMin - from.startMin) / 60, lost: false, outOfOrder: false };
   };
   return { reception: read("reception"), evening: read("evening") };
 }

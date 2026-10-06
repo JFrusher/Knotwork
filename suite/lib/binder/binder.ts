@@ -170,8 +170,10 @@ export function walkingOrder(doc: Knotwork): { blockId: string | null; groups: W
   const guests = readGuests(doc);
   const seating = readSeating(doc);
   const cast = readCast(doc);
+  // Only a block the day still has can hold it; otherwise it stands on its own.
+  const onTheDay = ceremony.blockId !== null && readTimeline(doc).blocks.some((block) => block.id === ceremony.blockId);
   return {
-    blockId: ceremony.blockId,
+    blockId: onTheDay ? ceremony.blockId : null,
     groups: ceremony.processional.map((group) => {
       const resolved = resolveMembers(group, guests, seating, cast.roles, cast.customRoles, doc.event);
       return {

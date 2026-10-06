@@ -184,6 +184,13 @@ function Day({ blocks, minute }: { blocks: BinderBlock[]; minute: number | null 
           );
         })}
       </ol>
+      {walk && walk.blockId === null ? (
+        // The ceremony is on no part of the day yet, so the walking order has no block to sit under.
+        <div className="mt-4 border-t border-charcoal/10 pt-3">
+          <h2 className="text-sm tracking-[0.14em] text-slate uppercase">The walking order</h2>
+          <WalkingOrder groups={walk.groups} />
+        </div>
+      ) : null}
     </section>
   );
 }

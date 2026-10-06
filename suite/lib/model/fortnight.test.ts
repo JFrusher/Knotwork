@@ -52,3 +52,13 @@ describe("the last fortnight's card", () => {
     expect(open).not.toContain("unconfirmed-teams");
   });
 });
+
+describe("what would print wrong", () => {
+  it("includes a ceremony or a box whose part of the day has gone", () => {
+    const blocks = raw.timeline.blocks.filter((b: { id: string }) => b.id !== "blk-ceremony");
+    const r = { ...raw, timeline: { ...raw.timeline, blocks } };
+    const open = fortnight(migrate(r), r, "2028-05-19")!.open.map((item) => item.id);
+    expect(open).toContain("ceremony-lost");
+    expect(open).toContain("boxes-lost");
+  });
+});

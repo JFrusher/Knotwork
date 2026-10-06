@@ -54,3 +54,20 @@ describe('several guests selected', () => {
     expect(s().groups.grp.memberIds).toEqual(['g1', 'g2', 'g3'])
   })
 })
+
+describe('seating a selection where seats are numbered', () => {
+  it('says so when there are enough free seats but not side by side', async () => {
+    const user = userEvent.setup()
+    openPlan({ guests: { g1: guest('g1'), g2: guest('g2'), x1: guest('x1'), x2: guest('x2') } })
+    const t = s().addTable({ type: 'round', x: 0, y: 0, capacity: 4 })!.meta!.newTableId as string
+    s().setSeatMode(t, 'seat')
+    // Seats 1 and 3 taken: 0 and 2 are free, but not together.
+    s().assignGuest('x1', t, 1)
+    s().assignGuest('x2', t, 3)
+    s().setSelectedGuestIds(['g1', 'g2'])
+    render(<RightSidebar />)
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Seat them at' }), t)
+    expect(screen.getByRole('status')).toHaveTextContent(`${s().tables[t].label} has no 2 free seats side by side.`)
+    expect(s().guests.g1.assignedTableId).toBeNull()
+  })
+})

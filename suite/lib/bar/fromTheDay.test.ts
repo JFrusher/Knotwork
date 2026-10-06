@@ -15,7 +15,7 @@ const picked = (r = raw) => setSpan(readBar(migrate(r)), "reception", { from: "b
 describe("the Bar's hours, read from the Timeline", () => {
   it("are the picked block's own length: the example's drinks reception is 1h 15m", () => {
     const doc = withBar(raw, picked());
-    expect(hoursFromTheDay(doc).reception).toEqual({ hours: 1.25, lost: false });
+    expect(hoursFromTheDay(doc).reception).toEqual({ hours: 1.25, lost: false, outOfOrder: false });
     const listed = barSum(migrate(raw)).heads.listed;
     expect(barSum(doc).each).toEqual(sumBar({ ...readBar(doc), figures: { ...readBar(doc).figures, receptionHours: 1.25 } }, listed).each);
   });
@@ -36,13 +36,25 @@ describe("the Bar's hours, read from the Timeline", () => {
     const blocks = raw.timeline.blocks.filter((b: { id: string }) => b.id !== "blk-drinks");
     const gone = { ...raw, timeline: { ...raw.timeline, blocks } };
     const doc = withBar(gone, picked());
-    expect(hoursFromTheDay(doc).reception).toEqual({ hours: null, lost: true });
+    expect(hoursFromTheDay(doc).reception).toEqual({ hours: null, lost: true, outOfOrder: false });
     expect(barSum(doc).each.reception).toBe(sumBar(readBar(doc), barSum(doc).heads.listed).each.reception);
   });
 
   it("are the typed hours while the Timeline is hidden", () => {
     const hidden = { ...raw, tools: withTool(raw, "timeline", false) };
     const doc = withBar(hidden, picked(hidden));
-    expect(hoursFromTheDay(doc).reception).toEqual({ hours: null, lost: false });
+    expect(hoursFromTheDay(doc).reception).toEqual({ hours: null, lost: false, outOfOrder: false });
+  });
+});
+
+describe("a span whose blocks have changed order", () => {
+  it("uses the typed hours, and says why, rather than counting no hours at all", () => {
+    // The evening picked from first dance to last dance, then the last dance moved before it.
+    const blocks = raw.timeline.blocks.map((b: { id: string }) => (b.id === "blk-lastdance" ? { ...b, anchorMin: 1200 } : b));
+    const moved = { ...raw, timeline: { ...raw.timeline, blocks } };
+    const bar = setSpan(readBar(migrate(moved)), "evening", { from: "blk-firstdance", to: "blk-lastdance" });
+    const doc = withBar(moved, bar);
+    expect(hoursFromTheDay(doc).evening).toEqual({ hours: null, lost: false, outOfOrder: true });
+    expect(barSum(doc).each.evening).toBe(sumBar(readBar(doc), barSum(doc).heads.listed).each.evening);
   });
 });

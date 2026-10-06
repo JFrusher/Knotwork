@@ -7,7 +7,16 @@ import { hiddenToolIds } from "./toolbox";
 export const FORTNIGHT_DAYS = 14;
 
 /** What is still open that would end up wrong on paper. */
-const ON_PAPER = new Set(["unseated", "dietary-unprinted", "blocks-unplaced", "jobs-uncrewed", "shots-dangling", "ceremony-dangling"]);
+const ON_PAPER = new Set([
+  "unseated",
+  "dietary-unprinted",
+  "blocks-unplaced",
+  "jobs-uncrewed",
+  "shots-dangling",
+  "ceremony-dangling",
+  "ceremony-lost",
+  "boxes-lost",
+]);
 
 interface PrintLink {
   label: string;

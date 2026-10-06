@@ -31,8 +31,8 @@ export default function SelectionPanel({ guestIds }: { guestIds: string[] }) {
       setRefused(`${table.label} has ${table.free} free ${table.free === 1 ? 'seat' : 'seats'}, not ${incoming}.`)
       return
     }
-    setRefused('')
-    seatGuests(guestIds, tableId)
+    // Numbered seats take a run of seats side by side, which the free count does not promise.
+    setRefused(seatGuests(guestIds, tableId) ? '' : `${table.label} has no ${guestIds.length} free seats side by side.`)
   }
 
   return (

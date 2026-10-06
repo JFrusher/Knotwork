@@ -292,6 +292,10 @@ function HoursField({
         <p role="status" className="text-xs text-danger">
           Its part of the day is no longer on the Timeline, so the typed hours are used.
         </p>
+      ) : day.outOfOrder ? (
+        <p role="status" className="text-xs text-danger">
+          Its first block now comes after its last, so the typed hours are used until they are picked again.
+        </p>
       ) : null}
     </div>
   );

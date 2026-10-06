@@ -82,3 +82,14 @@ describe("the walking order, on the day", () => {
     expect(walkingOrder(migrate({ ...r, ceremony: { ...r.ceremony, processional: [] } }))).toBeNull();
   });
 });
+
+describe("the walking order with the ceremony on no part of the day", () => {
+  it("is still given, with no block to sit under", () => {
+    const r = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
+    for (const blockId of [null, "blk-gone"]) {
+      const walk = walkingOrder(migrate({ ...r, ceremony: { ...r.ceremony, blockId } }))!;
+      expect(walk.blockId).toBeNull();
+      expect(walk.groups.length).toBeGreaterThan(0);
+    }
+  });
+});
