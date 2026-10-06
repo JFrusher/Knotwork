@@ -27,7 +27,7 @@ describe('computeWarnings', () => {
       constraints: [],
     }
     const w = computeWarnings(state)
-    expect(w.some((x) => x.kind === 'over-capacity' && x.tableId === 't')).toBe(true)
+    expect(w.some((x) => x.kind === 'over-capacity' && x.tableIds.includes('t'))).toBe(true)
   })
 
   it('nudges to check guests with no dietary note among others who have one', () => {
@@ -77,6 +77,21 @@ describe('computeWarnings', () => {
     expect(together.some((x) => x.kind === 'together')).toBe(true)
   })
 
+  it('reports a split family once, naming the family and its tables, and marks every member', () => {
+    const at = (t) => ({ assignedTableId: t })
+    const w = computeWarnings({
+      guests: { a: guest('a', at('t1')), b: guest('b', at('t1')), c: guest('c', at('t1')), d: guest('d', at('t3')), e: guest('e', at('t3')) },
+      tables: { t1: table('t1', { label: 'Table 1' }), t3: table('t3', { label: 'Table 3' }) },
+      constraints: [],
+      families: { f: { id: 'f', name: 'Smith', memberIds: ['a', 'b', 'c', 'd', 'e'] } },
+    }).filter((x) => x.kind === 'family-split')
+
+    expect(w).toHaveLength(1)
+    expect(w[0].message).toBe('The Smith family is split across Table 1 and Table 3.')
+    expect(w[0].guestIds).toEqual(['a', 'b', 'c', 'd', 'e'])
+    expect(w[0].tableIds).toEqual(['t1', 't3'])
+  })
+
   it('reports a clean plan with no warnings', () => {
     const state = {
       guests: { a: guest('a', { assignedTableId: 't', dietary: 'vegan' }) },
@@ -90,10 +105,13 @@ describe('computeWarnings', () => {
 describe('buildWarningIndex', () => {
   it('indexes warnings by table and guest', () => {
     const { byTable, byGuest } = buildWarningIndex([
-      { id: 'w1', tableId: 't', message: 'x' },
-      { id: 'w2', guestId: 'g', message: 'y' },
+      { id: 'w1', tableIds: ['t'], guestIds: [], message: 'x' },
+      { id: 'w2', tableIds: [], guestIds: ['g'], message: 'y' },
+      { id: 'w3', tableIds: ['t', 'u'], guestIds: ['g', 'h'], message: 'z' },
     ])
-    expect(byTable.get('t')).toHaveLength(1)
-    expect(byGuest.get('g')).toHaveLength(1)
+    expect(byTable.get('t')).toHaveLength(2)
+    expect(byTable.get('u')).toHaveLength(1)
+    expect(byGuest.get('g')).toHaveLength(2)
+    expect(byGuest.get('h')).toHaveLength(1)
   })
 })
