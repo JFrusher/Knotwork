@@ -51,8 +51,8 @@ export default function SnapshotsModal() {
   // Fixed 2026-08-08 (ux-audit #M13): was missing danger:true, so this
   // plan-wiping action rendered with the normal button colour instead of the
   // red danger style every other destructive confirm in the app uses.
-  // See tmp/ux-audit.md #M13 / #M15. Restoring is one step on the wedding's
-  // history, so the header's undo takes it back.
+  // Restoring is one step on the wedding's history, so the header's undo
+  // takes it back.
   const restore = (snap: PlanSnapshot) =>
     openModal('confirm', {
       title: 'Restore snapshot?',
@@ -68,7 +68,6 @@ export default function SnapshotsModal() {
 
   // Fixed 2026-08-08 (ux-audit #M14): deleting a snapshot had no confirmation
   // at all — the only destructive action in the app that skipped ConfirmDialog.
-  // See tmp/ux-audit.md #M14.
   const remove = (snap: PlanSnapshot) =>
     openModal('confirm', {
       title: 'Delete snapshot?',

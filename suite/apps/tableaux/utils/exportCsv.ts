@@ -25,8 +25,7 @@ const sideLabel = (side: Guest['side'], meta: Plan['meta']): string =>
   side === 'a' || side === 'b' || side === 'both' ? sideShort(side, meta) : ''
 
 // TODO(family-ux): headers below have a Group column but no Subgroup or
-// Family column — inconsistent with exportXlsx.js's buildGroupSheetRows,
-// which already has Group/Subgroup/Family. See tmp/family-ux-followups.md #6.
+// Family column, and this CSV is now the only list export. Issue #64.
 /** Caterer-friendly assignment rows, ordered by table then seat. */
 function buildAssignmentTable(state: PlanSource): { headers: string[]; rows: Cell[][] } {
   const { guests = {}, tables = {}, groups = {} } = state

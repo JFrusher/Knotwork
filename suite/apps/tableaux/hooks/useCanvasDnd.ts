@@ -153,7 +153,7 @@ export function useCanvasDnd() {
     // also pulls in anyone already seated elsewhere (heals a pre-existing
     // split), which may surprise a user who put someone there deliberately.
     // Needs a product decision (e.g. a modifier key to drag solo) before
-    // building. See tmp/family-ux-followups.md #3.
+    // building. Issue #67.
     if (data.type === 'guest' && overData?.type === 'table') {
       const guest = store.guests[data.guestId]
       if (guest?.familyId) {

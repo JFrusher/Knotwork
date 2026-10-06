@@ -201,8 +201,7 @@ export default function GuestPanel() {
       },
       // TODO(family-ux): no equivalent bulk "Family N selected" quick action —
       // creating a family from a multi-select requires making an empty family
-      // first, then drag-adding each selected guest individually.
-      // See tmp/family-ux-followups.md #12.
+      // first, then drag-adding each selected guest individually. Issue #66.
       g.familyId && {
         label: 'Remove from family',
         icon: 'x',
@@ -221,7 +220,7 @@ export default function GuestPanel() {
       { separator: true },
       // Fixed 2026-08-08 (ux-audit #G18): these fired removeGuest/removeGuests
       // directly with no confirmation, inconsistent with the identical delete
-      // in GuestInspector.jsx which does confirm. See tmp/ux-audit.md #G18.
+      // in GuestInspector.jsx which does confirm.
       multi
         ? {
             label: `Delete ${selectedGuestIds.length} selected`,
@@ -272,7 +271,7 @@ export default function GuestPanel() {
   const hasGuests = total > 0
   // Fixed 2026-08-08 (ux-audit #G1): standaloneFamilies was omitted here, so a
   // search matching only an ungrouped family showed "No guests match" directly
-  // above the actual matching results. See tmp/ux-audit.md #G1.
+  // above the actual matching results.
   const noResults =
     hasGuests &&
     visibleGroups.length === 0 &&

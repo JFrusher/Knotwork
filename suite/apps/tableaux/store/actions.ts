@@ -1020,7 +1020,7 @@ const assignSubgroupToTable =
 // TODO(family-ux): only 8 colours, cycles by index — confirmed real collisions
 // once a plan has >8 families (two families end up sharing a ring colour,
 // which defeats the "spot a family at a glance" goal the ring exists for).
-// See tmp/family-ux-followups.md #1.
+// Issue #58.
 const FAMILY_COLOURS = ['#B3866B', '#6B8FA3', '#8FA36B', '#A36B8F', '#6BA3A0', '#A38F6B', '#7A6BA3', '#A3766B']
 
 export const createFamily =

@@ -6,7 +6,7 @@ import type { Guest, Meta } from '../store/types'
 // would need an entry here AND in PREDICATES below, and a predicate can't
 // just check truthiness of a static key since it'd need the families dict
 // (guest.familyId alone isn't enough context for a per-family filter).
-// See tmp/family-ux-followups.md #8.
+// Part of making families visible outside the guest panel: issue #64.
 /**
  * Filter chips shown beneath the guest search box, and their predicates. The
  * two side chips are named after the partners — "Alex's", "Sam's" — from the

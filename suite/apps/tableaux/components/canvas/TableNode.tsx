@@ -166,7 +166,7 @@ function TableNodeBase({
     // can be dragged fully on top of each other with zero warning, either
     // on-canvas or later in the warnings panel (utils/warnings.js has no
     // 'overlap' kind), and stacked tables can make it to print/export
-    // unnoticed. See tmp/ux-audit.md #C12.
+    // unnoticed. Issue #56.
     const onMove = (ev: PointerEvent) => {
       const p = screenToCanvas(ev.clientX, ev.clientY)
       if (!movedRef.current && Math.abs(p.x - start.x) + Math.abs(p.y - start.y) > 2) {
