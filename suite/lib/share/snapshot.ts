@@ -1,3 +1,4 @@
+import type { GuestBlock } from "@/lib/ceremony/guestCopy";
 import { guestName, isComing } from "@/lib/model/slices";
 import { seatsOf } from "@/lib/model/seats";
 import type { Guest, Seating } from "@/lib/model/types";
@@ -32,6 +33,17 @@ export interface SharedTable {
   rotation: number;
 }
 
+/** One part of the order of service, as the guests' booklet prints it. */
+export interface SharedPart {
+  title: string;
+  author: string;
+  note: string;
+  people: string[];
+  music: string[];
+  lines: string[];
+  passages: Array<{ text: string; layout: "poem" | "prose" | "responses" }>;
+}
+
 export interface ShareSnapshot {
   coupleNames: string;
   venueName: string;
@@ -39,12 +51,20 @@ export interface ShareSnapshot {
   guests: SharedGuest[];
   /** Only when the couple asks for the plan to be shown, not just searched. */
   tables: SharedTable[] | null;
+  /**
+   * The order of service, only when the couple chose to put it here: the same
+   * parts their printed booklet has. Absent from a link published before it
+   * could be, which reads as none.
+   */
+  ceremony?: SharedPart[] | null;
   publishedAt: string;
 }
 
 interface ShareOptions {
   /** Draw the room, rather than only answering "where do I sit?". */
   showPlan: boolean;
+  /** The guests' copy of the ceremony, when the couple chose to share it; null otherwise. */
+  ceremony: GuestBlock[] | null;
 }
 
 /**
@@ -52,7 +72,8 @@ interface ShareOptions {
  *
  * Names and table numbers. No email addresses, no phone numbers, no dietary
  * requirements, no notes, no RSVP status, no groups, no constraints, no crew,
- * no timeline. A guest looking up their table has no business knowing who is
+ * no timeline — except the order of service, when the couple asks for it,
+ * which is exactly what their printed booklet tells every guest. A guest looking up their table has no business knowing who is
  * coeliac, and the couple should not have to trust a redaction they cannot see.
  */
 export function shareSnapshot(
@@ -94,6 +115,17 @@ export function shareSnapshot(
           }))
           .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }))
       : null,
+    // Field by field: a part learning something new is not published by it.
+    ceremony:
+      options.ceremony?.map((part) => ({
+        title: part.title,
+        author: part.author,
+        note: part.note,
+        people: [...part.people],
+        music: [...part.music],
+        lines: [...part.lines],
+        passages: part.passages.map((passage) => ({ text: passage.text, layout: passage.layout })),
+      })) ?? null,
     publishedAt: new Date().toISOString(),
   };
 }

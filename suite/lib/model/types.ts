@@ -518,6 +518,8 @@ export interface GuestCopy {
   dayBlockIds: string[];
   /** A note from the couple to close with, or "". */
   thanks: string;
+  /** Show it on the guest link too, below where a guest finds their seat. */
+  onGuestLink: boolean;
 }
 
 // boxes -----------------------------------------------------------------------

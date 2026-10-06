@@ -1003,6 +1003,7 @@ function readGuestCopy(raw: unknown): GuestCopy {
     weddingParty: bool(copy["weddingParty"], false),
     dayBlockIds: Array.isArray(copy["dayBlockIds"]) ? copy["dayBlockIds"].filter((id): id is string => typeof id === "string") : [],
     thanks: str(copy["thanks"]),
+    onGuestLink: bool(copy["onGuestLink"], false),
   };
 }
 

@@ -1,3 +1,4 @@
+import { isEveryone } from "@/lib/ceremony/guestCopy";
 import { ptToMm } from "../units";
 import type { HAlign, Mm, Pt, ServiceBlock, ServiceElement, ServiceStyle } from "../types";
 
@@ -59,7 +60,7 @@ export function typesetService(blocks: ServiceBlock[], el: ServiceElement, measu
       const opens = !block.title && details.length === 0 && p === 0;
       const gap = opens ? (index === 0 ? 0 : el.gapMm) : heightOf("words") / 2;
       passage.text.split("\n").forEach((part, i) => {
-        const kind: LineKind = passage.layout === "responses" && /^\s*all\s*:/i.test(part) ? "all" : "words";
+        const kind: LineKind = passage.layout === "responses" && isEveryone(part) ? "all" : "words";
         const align = passage.layout === "poem" ? el.align : "left";
         push(part, kind, align, i === 0 ? gap : 0, false);
       });

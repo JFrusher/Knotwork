@@ -505,6 +505,11 @@ function CeremonyInspector({
             </fieldset>
           )}
           <TextArea label="A note to close with" value={copy.thanks} onChange={(thanks) => guestCopy({ thanks })} rows={3} />
+          <Check
+            label="Show it on the guest link too, under where guests find their seat"
+            checked={copy.onGuestLink}
+            onChange={(onGuestLink) => guestCopy({ onGuestLink })}
+          />
           <p className="text-xs text-slate">Designed and printed as a booklet in Place cards: &ldquo;Design the order of service&rdquo;, above.</p>
         </div>
       </Panel>

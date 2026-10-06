@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { importShareKey, unseal } from "@/lib/share/crypto";
-import { findSeat, type ShareSnapshot, type SharedGuest } from "@/lib/share/snapshot";
+import { isEveryone } from "@/lib/ceremony/guestCopy";
+import { findSeat, type ShareSnapshot, type SharedGuest, type SharedPart } from "@/lib/share/snapshot";
 import { getTableGeometry } from "@/apps/tableaux/utils/seatPositions";
 import { newTable } from "@/lib/model/factories";
 
@@ -116,9 +117,12 @@ export function FindMySeat({ token }: { token: string }) {
 
       {snapshot.tables ? <RoomPlan snapshot={snapshot} highlight={matches[0] ?? null} /> : null}
 
+      {/* Absent from a link published before it could carry one. */}
+      {snapshot.ceremony ? <OrderOfService parts={snapshot.ceremony} /> : null}
+
       <footer className="mt-16 text-center text-xs text-slate">
-        This page holds names and table numbers, and nothing else. It was published{" "}
-        {formatDate(snapshot.publishedAt.slice(0, 10))}.
+        This page holds names and table numbers{snapshot.ceremony ? " and the order of service" : ""}, and nothing else. It was
+        published {formatDate(snapshot.publishedAt.slice(0, 10))}.
       </footer>
     </main>
   );
@@ -214,6 +218,40 @@ function RoomPlan({
           );
         })}
       </svg>
+    </section>
+  );
+}
+
+/** The order of service, as the guests' booklet prints it, for a guest following along on their phone. */
+function OrderOfService({ parts }: { parts: SharedPart[] }) {
+  return (
+    <section aria-labelledby="order-of-service" className="mt-14 text-center">
+      <h2 id="order-of-service" className="mb-6 text-sm tracking-widest text-slate uppercase">
+        The ceremony
+      </h2>
+      <ol className="space-y-6">
+        {parts.map((part, index) => (
+          <li key={index}>
+            {part.title && <h3 className="font-display text-xl text-charcoal">{part.title}</h3>}
+            {[part.author, part.note, part.people.join(" and "), ...part.music, ...part.lines].filter(Boolean).map((line, n) => (
+              <p key={n} className="text-sm text-slate">
+                {line}
+              </p>
+            ))}
+            {part.passages.map((passage, n) => (
+              <div key={n} className={`mt-2 whitespace-pre-line text-charcoal ${passage.layout === "poem" ? "" : "text-left"}`}>
+                {passage.layout === "responses"
+                  ? passage.text.split("\n").map((line, l) => (
+                      <p key={l} className={isEveryone(line) ? "font-semibold" : ""}>
+                        {line}
+                      </p>
+                    ))
+                  : passage.text}
+              </div>
+            ))}
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }

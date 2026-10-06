@@ -1,8 +1,8 @@
 # The order of service as a booklet: designed in Place cards, written in Ceremony
 
 Date: 2026-10-06
-Status: direction approved by the maintainer (answers recorded below). Built in
-phases, one commit per phase, each with tests.
+Status: built, 2026-10-06, in six phases as the plan sets out, each a commit
+with its tests.
 Plan: [2026-10-06-order-of-service-booklet.md](../plans/2026-10-06-order-of-service-booklet.md)
 
 ## Why

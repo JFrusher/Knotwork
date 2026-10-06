@@ -98,3 +98,8 @@ const section = (title: string, lines: string[]): GuestBlock => ({ title, author
 
 /** The couple's own words, with no heading, line by line as they wrote them: a welcome, a thank-you. */
 const note = (text: string): GuestBlock => ({ title: "", author: "", note: "", people: [], music: [], lines: [], passages: [{ text: text.trim(), layout: "poem" }] });
+
+/** A line of responses everyone says — "All: We will." — set apart in print and on screen. */
+export function isEveryone(line: string): boolean {
+  return /^\s*all\s*:/i.test(line);
+}
