@@ -9,7 +9,7 @@ import type { CardSide, Mm, Point, Segment, Sheet, Template } from "../types";
  */
 export type FlipEdge = "long" | "short";
 
-export type MirrorAxis = "x" | "y";
+type MirrorAxis = "x" | "y";
 
 /** Elements on one side, in one template, ready for `resolveCard`. */
 export function templateForSide(template: Template, side: CardSide): Template {

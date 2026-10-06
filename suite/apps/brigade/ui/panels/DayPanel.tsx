@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatClock } from "../../core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { useBrigadeDoc } from "../../state/store";
 import { Panel } from "@/components/ui/fields";
 import styles from "./DayPanel.module.css";

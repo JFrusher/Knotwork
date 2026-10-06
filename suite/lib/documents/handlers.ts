@@ -3,7 +3,7 @@ import { checkCrossSlice } from "./crossSliceValidation";
 import { retentionCutoff } from "./retention";
 import type { DocumentStore } from "./store";
 
-export interface Reply {
+interface Reply {
   status: number;
   body: unknown;
 }
@@ -21,7 +21,7 @@ export async function getDocumentHandler(store: DocumentStore, weddingId: string
 }
 
 /** How many saved versions the history shows: weeks of editing, not years. */
-export const HISTORY_LIMIT = 50;
+const HISTORY_LIMIT = 50;
 
 /**
  * The versions saved, newest first, each with who saved it — by email, from
@@ -84,12 +84,12 @@ export async function saveDocumentHandler(
   return ok({ version: result.record.version, warnings: validation.warnings });
 }
 
-export interface ExportFile {
+interface ExportFile {
   filename: string;
   text: string;
 }
 
-export type ExportReply = { status: 200; file: ExportFile } | { status: 404; body: unknown };
+type ExportReply = { status: 200; file: ExportFile } | { status: 404; body: unknown };
 
 /**
  * Hand the caller their own wedding as a file.

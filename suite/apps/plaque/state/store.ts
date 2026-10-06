@@ -39,7 +39,7 @@ import { DESIGN_KEYS, designFor, designOf, initialSuite, newPiece, withDesign, t
 import { readDesign, readSuite, writeDesign, writeSuite } from "./sliceBridge";
 import { roomRows, withMerges, type Merged } from "./fromRoom";
 import { roomScene } from "./roomScene";
-import { printBasis, recordPrint, type PrintBasis } from "./printed";
+import { recordPrint, type PrintBasis } from "./printed";
 import { normalise, type Artefact } from "../core/data/artefacts";
 import { artefactsOf } from "../core/data/parts";
 import { makeResolveOptions } from "../core/template/resolve";
@@ -63,7 +63,7 @@ export type NewElementKind = CardElement["kind"];
  * What the open piece prints from: the room as it stands, with its combined
  * cards in place. Worked out, never stored — see `fromRoom`.
  */
-export interface RoomData {
+interface RoomData {
   headers: string[];
   rows: GuestRow[];
   /** A guest id, or a combined card's id, per row. */

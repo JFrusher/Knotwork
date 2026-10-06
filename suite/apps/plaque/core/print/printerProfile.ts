@@ -75,14 +75,14 @@ export const READABLE_SPAN_MM = MAX_BACK_OFFSET_MM / 2;
 export const SKEW_THRESHOLD_MM = 1;
 
 /** What the user reads off the back of the test sheet. Blank fields are 0. */
-export interface DuplexReadings {
+interface DuplexReadings {
   aAcross: Mm;
   aDown: Mm;
   bAcross: Mm;
   bDown: Mm;
 }
 
-export interface DuplexCorrection {
+interface DuplexCorrection {
   /** The new total to store, existing correction included. */
   dx: Mm;
   dy: Mm;
@@ -137,9 +137,9 @@ export const REFERENCE_RULE_MM = 100;
 const MAX_DRIFT = 0.1;
 
 /** Below this the correction is smaller than anyone can cut to. Discovery: 0.5%. */
-export const NOTABLE_DRIFT = 0.005;
+const NOTABLE_DRIFT = 0.005;
 
-export type ScaleResult =
+type ScaleResult =
   | { ok: true; scale: number }
   | { ok: false; reason: string };
 

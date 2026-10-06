@@ -240,8 +240,6 @@ const PATHS = {
 
 export type IconName = keyof typeof PATHS
 
-export const ICON_NAMES = Object.keys(PATHS) as IconName[]
-
 export default function Icon({
   name,
   size = 18,

@@ -25,7 +25,7 @@ interface Breadcrumb {
   data?: Record<string, unknown> | undefined;
 }
 
-export interface ScrubbableEvent {
+interface ScrubbableEvent {
   request?: { url?: string | undefined; headers?: Record<string, string> | undefined } | undefined;
   breadcrumbs?: Breadcrumb[] | undefined;
   extra?: Record<string, unknown> | undefined;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { nodeFontSource } from "@/apps/brigade/render/pdf/nodeFontSource";
-import { textOf } from "@/apps/brigade/render/pdf/readPdf";
+import { nodeFontSource } from "@/lib/pdf/nodeFontSource";
+import { textOf } from "@/lib/pdf/readPdf";
 import type { Cast, Guest, Seating, ShotSection } from "@/lib/model/types";
 import { renderShotSheet } from "./shotSheet";
 

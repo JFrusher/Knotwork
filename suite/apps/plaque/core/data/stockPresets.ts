@@ -26,7 +26,7 @@ export interface StockPreset {
   gapYMm: number;
 }
 
-export interface StockApplication {
+interface StockApplication {
   card: Pick<CardSpec, "widthMm" | "heightMm" | "bleedMm">;
   sheet: Pick<
     SheetSpec,

@@ -1,5 +1,5 @@
 import type { Knotwork } from "@jfrusher/knotwork";
-import { formatClock } from "@/apps/cadence/core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { money } from "@/lib/money/money";
 import { todayIso } from "@/lib/dates";

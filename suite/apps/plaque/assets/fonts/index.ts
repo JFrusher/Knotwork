@@ -64,6 +64,3 @@ export const BUNDLED_FONTS: BundledFont[] = [
 
 export const DEFAULT_FONT_ID = "crimson";
 
-export function bundledFont(id: string): BundledFont | undefined {
-  return BUNDLED_FONTS.find((f) => f.id === id);
-}

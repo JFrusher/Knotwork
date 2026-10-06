@@ -1,8 +1,8 @@
-import { newId } from "../model/ids";
+import { newId } from "@/lib/readableId";
 import type { BrigadeDoc, ImportedDay, Team } from "../model/types";
 import type { DayTeam } from "./day";
 
-export interface ReconcileReport {
+interface ReconcileReport {
   /** Jobs whose block is no longer in the day. Kept, never dropped. */
   orphanedJobIds: string[];
   /** Blocks that are new since the last import, so nobody has put work on them. */
@@ -11,7 +11,7 @@ export interface ReconcileReport {
   addedTeamIds: string[];
 }
 
-export interface ReconcileResult {
+interface ReconcileResult {
   doc: BrigadeDoc;
   report: ReconcileReport;
 }
@@ -71,13 +71,3 @@ export function reconcile(
   };
 }
 
-/** A one-line account of an import, for the notice bar. */
-export function describe(report: ReconcileReport, doc: BrigadeDoc): string {
-  const parts = [`${doc.day?.blocks.length ?? 0} blocks`];
-  if (report.addedTeamIds.length > 0) parts.push(`${report.addedTeamIds.length} new team(s)`);
-  if (report.newBlockIds.length > 0) parts.push(`${report.newBlockIds.length} new block(s)`);
-  if (report.orphanedJobIds.length > 0) {
-    parts.push(`${report.orphanedJobIds.length} job(s) lost their block and need moving`);
-  }
-  return `Day imported: ${parts.join(", ")}.`;
-}

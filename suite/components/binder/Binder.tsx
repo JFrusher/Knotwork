@@ -7,7 +7,7 @@ import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { contacts, dayClock, findGuests, nowAndNext, runningOrder, takenKey, type BinderBlock } from "@/lib/binder/binder";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { readCast, readGuests, readSeating, readShots } from "@/lib/model/slices";
-import { formatClock } from "@/apps/cadence/core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { longDate } from "@/lib/dates";
 
 type Part = "now" | "day" | "ring" | "find" | "shots";

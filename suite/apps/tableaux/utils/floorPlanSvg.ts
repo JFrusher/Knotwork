@@ -2,22 +2,22 @@ import type { Guest, Join, Pillar, Plan, Space, Table, WallElement, Zone } from 
 import { getTableGeometry, DEFAULT_PPU, type Seat, type TableGeometry } from './seatPositions'
 
 /** What the plan is drawn from: Seating's plan, or as much of it as there is. */
-export type FloorPlanSource = Partial<Pick<Plan, 'guests' | 'tables' | 'zones' | 'wallElements' | 'pillars'>> & {
+type FloorPlanSource = Partial<Pick<Plan, 'guests' | 'tables' | 'zones' | 'wallElements' | 'pillars'>> & {
   settings?: Partial<Plan['settings']>
   room?: Partial<Plan['room']>
 }
 
 /** One cell size and type size for every name on the sheet. */
-export interface Cells {
+interface Cells {
   cellW: number
   cellH: number
   basePx: number
 }
 
 /** Measures `text` at `size`, in the units the drawing is in. */
-export type Measure = (text: string, size: number) => number
+type Measure = (text: string, size: number) => number
 
-export interface FloorPlanOptions {
+interface FloorPlanOptions {
   ppu?: number
   padPx?: number
   measure?: Measure
@@ -31,7 +31,7 @@ export interface FloorPlanOptions {
   window?: Bounds
 }
 
-export interface Bounds {
+interface Bounds {
   minX: number
   minY: number
   width: number
@@ -140,7 +140,7 @@ const LEADING = 1.15 // line pitch as a multiple of the type size
 // How far a cell reaches back over its own chair, so a name still reads as
 // belonging to that seat rather than floating off it.
 const INNER_BITE = 6
-export const MIN_NAME_PX = 4.5 // below this, names get ellipsised rather than shrunk further
+const MIN_NAME_PX = 4.5 // below this, names get ellipsised rather than shrunk further
 
 /** Fallback text metric when no real font metrics are supplied. Linear in size. */
 const estimateWidth: Measure = (text, fontPx) => String(text).length * fontPx * 0.52
@@ -244,7 +244,7 @@ function nameSizeIn(w: number, h: number, tokenW: number): number {
  * whisker of the best, take the shortest: a taller cell that reads no better is
  * just a bigger empty box.
  */
-export function solveCells(seats: PlacedSeat[], tokenW: number, rank = (cell: Cells) => cell.basePx): Cells {
+function solveCells(seats: PlacedSeat[], tokenW: number, rank = (cell: Cells) => cell.basePx): Cells {
   const floor: Cells = { cellW: MIN_CELL_W, cellH: MIN_CELL_H, basePx: MIN_NAME_PX }
   if (!seats.length) return floor
 
@@ -292,7 +292,7 @@ function p90(values: number[]): number {
  * the plan, so one very long surname wraps inside its own cell rather than setting
  * the type size for the whole sheet.
  */
-export function tokenWidthOf(seats: PlacedSeat[], measure: Measure): number {
+function tokenWidthOf(seats: PlacedSeat[], measure: Measure): number {
   const widths: number[] = []
   for (const s of seats) {
     if (!s.guest) continue

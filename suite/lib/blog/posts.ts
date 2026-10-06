@@ -9,12 +9,12 @@
  * tests pin.
  */
 
-export interface PostSection {
+interface PostSection {
   heading?: string;
   paragraphs: string[];
 }
 
-export interface Post {
+interface Post {
   /** The address: /blog/<slug>. Never changed once published — links point at it. */
   slug: string;
   title: string;

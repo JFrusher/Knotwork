@@ -1,10 +1,10 @@
-import { APP_VERSION, SCHEMA_VERSION } from "../model/defaults";
+import { APP_VERSION } from "../model/defaults";
 import type { TimelineDoc } from "../model/types";
 import { migrate, type RawDoc } from "./migrate";
 
-export const FILE_EXTENSION = ".cadence.json";
+const FILE_EXTENSION = ".cadence.json";
 
-export type ParseResult =
+type ParseResult =
   | { doc: TimelineDoc; fromFuture: boolean; error?: undefined }
   | { error: string; doc?: undefined; fromFuture?: undefined };
 
@@ -86,4 +86,3 @@ export function suggestedFilename(doc: TimelineDoc): string {
   return `${slugFor(doc) || "cadence-day"}${FILE_EXTENSION}`;
 }
 
-export { SCHEMA_VERSION };

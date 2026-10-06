@@ -18,13 +18,6 @@ export const PAGE_SIZES_MM: Record<PaperName, Size> = {
   A3: { w: 297, h: 420 },
 };
 
-export const PAGE_LABELS: Record<PageSizeName, string> = {
-  A4: "A4 (210 × 297mm)",
-  LETTER: "US Letter (8.5 × 11in)",
-  A3: "A3 (297 × 420mm)",
-  FIT: "The card's own size — for a print shop",
-};
-
 /**
  * The longest side of anything Plaque makes: A0, the largest sheet a print
  * shop commonly takes.

@@ -1,5 +1,5 @@
 import { MIN_LABEL_PITCH_PX, ticks } from "./ticks";
-import { formatClock } from "../../core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import styles from "./Ruler.module.css";
 
 /** The clock gutter's width. The lane strip starts here. */

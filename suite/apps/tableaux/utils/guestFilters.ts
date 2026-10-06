@@ -24,7 +24,7 @@ export function filterDefs(meta: Pick<Meta, 'partners'>): Array<{ key: FilterKey
   ]
 }
 
-export type FilterKey = 'unassigned' | 'a' | 'b' | 'vegetarian' | 'vegan' | 'gluten-free' | 'notes'
+type FilterKey = 'unassigned' | 'a' | 'b' | 'vegetarian' | 'vegan' | 'gluten-free' | 'notes'
 
 const PREDICATES: Record<FilterKey, (guest: Guest) => boolean> = {
   // Who still needs a seat: someone who declined does not.

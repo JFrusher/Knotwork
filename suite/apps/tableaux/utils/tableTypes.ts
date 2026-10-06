@@ -31,7 +31,7 @@ export interface TableTypeDef {
  *   curved      — seats along the curved edge of a half-circle
  *   none        — no individual seats shown (sweetheart)
  */
-export const TABLE_TYPES: Record<string, TableTypeDef> = {
+const TABLE_TYPES: Record<string, TableTypeDef> = {
   round: {
     id: 'round',
     label: 'Round',
@@ -121,8 +121,6 @@ export const DESIGNATIONS: Array<{ id: Designation; label: string }> = [
 ]
 
 export const getTableType = (type: string): TableTypeDef => TABLE_TYPES[type] || TABLE_TYPES.round
-
-export const defaultCapacityFor = (type: string): number => getTableType(type).defaultCapacity
 
 export const clampCapacity = (type: string, capacity: number): number => {
   const t = getTableType(type)

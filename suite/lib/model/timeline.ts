@@ -18,29 +18,7 @@
  * shape lives.
  */
 
-export type {
-  Block,
-  DaySettings,
-  OutputId,
-  OutputSpec,
-  StyleSpec,
-  TagDetail,
-  TimelineDoc,
-  UploadedFont,
-} from "@/apps/cadence/core/model/types";
-
-export { isMoment, OUTPUT_IDS } from "@/apps/cadence/core/model/types";
-
-export {
-  APP_VERSION,
-  DEFAULT_BLOCK_OUTPUTS,
-  DEFAULT_LANES,
-  DEFAULT_OUTPUTS,
-  SCHEMA_VERSION,
-  defaultDay,
-  defaultStyles,
-  emptyDoc,
-} from "@/apps/cadence/core/model/defaults";
+export type { OutputSpec, TimelineDoc } from "@/apps/cadence/core/model/types";
 
 /**
  * What the rest of the suite calls the timeline.

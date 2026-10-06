@@ -24,7 +24,7 @@ const PREFIX_MOVES: Array<[from: string, to: string]> = [
   ["tableaux.suite.", "knotwork."],
 ];
 
-export interface MigrationResult {
+interface MigrationResult {
   moved: string[];
 }
 

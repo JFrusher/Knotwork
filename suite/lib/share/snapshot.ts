@@ -42,7 +42,7 @@ export interface ShareSnapshot {
   publishedAt: string;
 }
 
-export interface ShareOptions {
+interface ShareOptions {
   /** Draw the room, rather than only answering "where do I sit?". */
   showPlan: boolean;
 }

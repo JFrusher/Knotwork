@@ -1,8 +1,8 @@
-import type { FontSource } from "@/apps/brigade/render/pdf/fontSource";
+import type { FontSource } from "@/lib/pdf/fontSource";
 import { songName, songPlaying, type MusicCue } from "../../music";
 import { renderFlow, type FlowBlock } from "./flow";
 
-export interface MusicSheetOptions {
+interface MusicSheetOptions {
   fontSource: FontSource;
   coupleNames: string;
   generatedOn?: string;

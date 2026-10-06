@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { blocking } from "../core/jobs/coverage";
-import { browserFontSource } from "../render/pdf/fontSource";
+import { browserFontSource } from "@/lib/pdf/fontSource";
 import { download } from "../state/projectIO";
 import { useBrigadeDoc, useCover, useStore } from "../state/store";
 import { Button } from "@/components/ui/fields";

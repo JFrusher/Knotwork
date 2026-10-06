@@ -11,7 +11,7 @@ import { assetId } from "./assetId";
  * would have to be re-encoded, and silently re-encoding someone's artwork is a
  * worse outcome than telling them to convert it.
  */
-export interface StoredImage {
+interface StoredImage {
   id: string;
   name: string;
   mime: "image/png" | "image/jpeg";
@@ -23,9 +23,9 @@ export interface StoredImage {
 const INDEX_KEY = "plaque.images";
 const imageKey = (id: string) => `plaque.image.${id}`;
 
-export const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg"] as const;
+const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg"] as const;
 
-export function isAcceptedImage(file: File): boolean {
+function isAcceptedImage(file: File): boolean {
   return (ACCEPTED_IMAGE_TYPES as readonly string[]).includes(file.type);
 }
 
@@ -36,7 +36,7 @@ export async function saveImage(image: StoredImage): Promise<void> {
   await set(INDEX_KEY, [...ids]);
 }
 
-export async function listImageIds(): Promise<string[]> {
+async function listImageIds(): Promise<string[]> {
   return (await get<string[]>(INDEX_KEY)) ?? [];
 }
 

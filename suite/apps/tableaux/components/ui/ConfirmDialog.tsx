@@ -2,7 +2,7 @@ import Modal from './Modal'
 import Button from './Button'
 import styles from './ConfirmDialog.module.css'
 
-export interface ConfirmProps {
+interface ConfirmProps {
   title?: string
   message?: string
   confirmLabel?: string

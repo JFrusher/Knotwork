@@ -5,7 +5,7 @@ import { create } from "zustand";
  * `?panel=<name>` opens it, and opening it puts that in the address, so a link
  * to it — or a reload — lands with it open.
  */
-export interface AddressablePanel {
+interface AddressablePanel {
   open: boolean;
   show: () => void;
   hide: () => void;

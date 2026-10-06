@@ -1,9 +1,9 @@
 import { panelBounds, panelOf } from "../geometry/fold";
 import type { CardElement, CardSpec, ElementId, Mm, Rect } from "../types";
 
-export type OverflowKind = "off-card" | "crosses-fold";
+type OverflowKind = "off-card" | "crosses-fold";
 
-export interface OverflowIssue {
+interface OverflowIssue {
   elementId: ElementId;
   kind: OverflowKind;
   detail: string;

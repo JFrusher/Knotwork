@@ -131,7 +131,7 @@ export interface FitConfig {
  */
 export type CardSide = "front" | "back";
 
-export interface ElementBase {
+interface ElementBase {
   id: ElementId;
   /** Card-local, top-left origin. Which fold panel it belongs to is derived, never stored. */
   x: Mm;
@@ -479,7 +479,7 @@ export interface RoomSeat {
  * That single convention covers both fold inversion (180) and on-sheet card
  * rotation (90), so neither renderer needs to know why it is rotating.
  */
-export interface ResolvedBase {
+interface ResolvedBase {
   id: ElementId;
   /**
    * The design element this came from, when it is one of several pieces of

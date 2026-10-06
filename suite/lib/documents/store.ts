@@ -1,6 +1,6 @@
 /**
  * Where a wedding's cloud document lives, behind an interface — the same
- * `lib/sync/store.ts` / `lib/accounts/store.ts` pattern: one real
+ * pattern as `lib/accounts/store.ts`: one real
  * implementation (Postgres, via save_wedding_document()) and one in-memory
  * fake, so the CAS and validation rules in handlers.ts can be tested without
  * a database.

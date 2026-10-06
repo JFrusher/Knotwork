@@ -13,7 +13,7 @@ import { resolve } from "../../core/schedule/resolve";
  * is the one everybody there on the day is reading.
  */
 
-export interface CalendarOptions {
+interface CalendarOptions {
   /** The wedding's date, `YYYY-MM-DD`: the wedding's own, never the timeline's placeholder. */
   date: string;
   /** One tag's blocks; every block when absent. */

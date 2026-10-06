@@ -30,7 +30,7 @@ export interface Canvas {
 }
 
 /** A question put before a change that cannot be taken back with a click. */
-export interface ConfirmRequest {
+interface ConfirmRequest {
   title: string
   message: string
   confirmLabel: string

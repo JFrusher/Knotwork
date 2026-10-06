@@ -45,7 +45,7 @@ export async function registerFont(
   return font;
 }
 
-export async function loadBundledFonts(): Promise<Map<string, LoadedFont>> {
+async function loadBundledFonts(): Promise<Map<string, LoadedFont>> {
   const entries = await Promise.all(
     BUNDLED_FONTS.map(async (f) => {
       const response = await fetch(urlFor(f));

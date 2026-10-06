@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { browserFontSource } from "@/apps/brigade/render/pdf/fontSource";
+import { browserFontSource } from "@/lib/pdf/fontSource";
 import { Button, Empty, Panel, Segmented } from "@/components/ui/controls";
 import { download } from "@/lib/data/file";
 import { shotListCsv } from "@/lib/ensemble/exports";

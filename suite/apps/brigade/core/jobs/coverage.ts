@@ -1,5 +1,5 @@
 import { blockFor, isOrphan, type BrigadeDoc, type Job } from "../model/types";
-import { formatClock } from "../time/minutes";
+import { formatClock } from "@/lib/minutes";
 
 export type WarningKind = "double-booked" | "nobody" | "team-only" | "orphaned";
 

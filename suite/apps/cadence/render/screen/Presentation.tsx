@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { formatClock } from "../../core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import { Timeline } from "./Timeline";
 import styles from "./Presentation.module.css";

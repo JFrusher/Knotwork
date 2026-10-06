@@ -14,7 +14,7 @@ export type DragData =
   | { type: 'family'; familyId: string; parentGroupId: string | null; parentSubgroupId: string | null }
 
 /** What it is dropped on. */
-export type DropData =
+type DropData =
   | { type: 'table'; tableId: string }
   | { type: 'seat'; tableId: string; index: number }
   | { type: 'group'; groupId: string }

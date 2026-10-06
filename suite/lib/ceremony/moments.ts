@@ -20,7 +20,7 @@ export function newMoment(kind: MomentKind, patch: Partial<Omit<Moment, "id" | "
 }
 
 /** What each kind of moment is called until the couple says otherwise. */
-export const MOMENT_TITLES: Record<MomentKind, string> = {
+const MOMENT_TITLES: Record<MomentKind, string> = {
   music: "Music as guests arrive",
   processional: "The processional",
   welcome: "Welcome",
@@ -41,7 +41,7 @@ export const MOMENT_TITLES: Record<MomentKind, string> = {
  * one is changed on the page. Music as guests arrive is before the ceremony
  * starts, so it has none, and does not count towards its length.
  */
-export const MOMENT_MINUTES: Record<MomentKind, number | null> = {
+const MOMENT_MINUTES: Record<MomentKind, number | null> = {
   music: null,
   processional: 3,
   welcome: 3,

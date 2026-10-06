@@ -7,7 +7,7 @@ import { importShareKey, newShareKey, seal } from "./crypto";
 import { shareSnapshot, type ShareSnapshot } from "./snapshot";
 import type { GuestLinkRecord } from "./store";
 
-export type GuestLink = GuestLinkRecord;
+type GuestLink = GuestLinkRecord;
 
 /**
  * What guests would see, fingerprinted — without `publishedAt`, which is

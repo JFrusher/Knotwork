@@ -9,7 +9,7 @@ import type { Crew, Team } from "@/lib/model/types";
  * it cannot disagree with them.
  */
 
-export interface SupplierMoney {
+interface SupplierMoney {
   team: Team;
   /** What is left after the deposit, or null when no cost is agreed. */
   balance: number | null;
@@ -27,7 +27,7 @@ export interface Payment {
   dueOn: string;
 }
 
-export interface Money {
+interface Money {
   budget: number | null;
   committed: number;
   paid: number;

@@ -20,7 +20,7 @@ export const TILE_MARGIN_MM = 10;
 /** How far each tile runs under the next. */
 export const TILE_OVERLAP_MM = 10;
 
-export interface Tiled {
+interface Tiled {
   sheets: Sheet[];
   /** One per tile, in order: which tile it is and how it goes together. */
   labels: string[];

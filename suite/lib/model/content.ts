@@ -10,7 +10,7 @@ import { readBar, readBoxes, readCeremony, readCrew, readGuests, readSeating, re
  * without anyone typing a thing, so "a slice is there" says nothing about
  * whether there is work in it to lose.
  */
-export interface WeddingSummary {
+interface WeddingSummary {
   names: string;
   date: string;
   venue: string;

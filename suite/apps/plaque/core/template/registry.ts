@@ -19,7 +19,7 @@ import { DEFAULT_FIT, defaultIconRules } from "./defaults";
  * out-of-tree element type ever turns up: add `measure`, `toSvg` and `toPdf` to
  * these entries and have the renderers look them up instead of switching.
  */
-export interface ElementKindSpec {
+interface ElementKindSpec {
   kind: CardElement["kind"];
   /** Shown on the "add" button. */
   label: string;

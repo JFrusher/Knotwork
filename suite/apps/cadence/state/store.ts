@@ -3,7 +3,7 @@ import type { Knotwork } from "@jfrusher/knotwork";
 import { readTimeline } from "@/lib/model/slices";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { DEFAULT_BLOCK_OUTPUTS } from "../core/model/defaults";
-import { newId } from "../core/model/ids";
+import { newId } from "@/lib/readableId";
 import type { Block, DaySettings, OutputId, StyleSpec, TagDetail, TimelineDoc, UploadedFont } from "../core/model/types";
 import { writeSlice } from "./sliceBridge";
 
@@ -26,7 +26,7 @@ import { slack as computeSlack, type SlackReport } from "../core/schedule/slack"
 import { whatIf, type Change, type WhatIf } from "../core/schedule/whatIf";
 import { sunForDay, type SunTimes } from "../core/sun/solar";
 
-export interface Schedule {
+interface Schedule {
   resolved: ResolvedBlock[];
   positions: Map<string, ResolvedBlock>;
   conflicts: Conflict[];
@@ -74,7 +74,7 @@ export function scheduleComputeCount(): number {
   return computeCount;
 }
 
-export interface UiState {
+interface UiState {
   pxPerMin: number;
   presentation: boolean;
   sheetOutput: OutputId;
@@ -85,7 +85,7 @@ export interface UiState {
  * notice. The day itself is the wedding's — every edit below goes straight
  * into it, on the one history the header's undo drives.
  */
-export interface StoreState {
+interface StoreState {
   selectedId: string | null;
   /** The live drag preview. Never committed until the drag ends. */
   preview: WhatIf | null;
@@ -128,7 +128,7 @@ let view: { doc: Knotwork; timeline: TimelineDoc } | null = null;
  * wedding's identity: every edit anywhere replaces it, so a stale view is
  * impossible, and React sees the same object until something changed.
  */
-export function timelineDoc(doc: Knotwork): TimelineDoc {
+function timelineDoc(doc: Knotwork): TimelineDoc {
   if (view?.doc === doc) return view.timeline;
   view = { doc, timeline: readTimeline(doc) };
   return view.timeline;

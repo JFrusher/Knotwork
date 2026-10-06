@@ -14,8 +14,7 @@ import { describe, expect, it } from "vitest";
  *
  * So the rule is drawn where it now belongs. Everything under `apps/` is a
  * tool, and a tool that can make a request is a tool that can leak a guest
- * list. The one place allowed to talk is `lib/sync`, which encrypts before it
- * does — and which has its own tests proving the server never sees plaintext.
+ * list. Network code lives in `lib/`, behind the account, and never in a tool.
  *
  * A grep-shaped test, deliberately. The alternative is a lint rule nobody
  * installs, and what is being protected is the shape of the code rather than

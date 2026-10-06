@@ -1,4 +1,4 @@
-import { clear as idbClear, del, get, set } from "idb-keyval";
+import { del, get, set } from "idb-keyval";
 
 /**
  * Uploaded font binaries.
@@ -7,7 +7,7 @@ import { clear as idbClear, del, get, set } from "idb-keyval";
  * can be larger than the entire localStorage quota. Everything else about the
  * design lives in localStorage — see persist.
  */
-export interface StoredFont {
+interface StoredFont {
   id: string;
   family: string;
   fileName: string;
@@ -24,7 +24,7 @@ export async function saveFont(font: StoredFont): Promise<void> {
   await set(INDEX_KEY, [...ids]);
 }
 
-export async function listFontIds(): Promise<string[]> {
+async function listFontIds(): Promise<string[]> {
   return (await get<string[]>(INDEX_KEY)) ?? [];
 }
 
@@ -39,7 +39,3 @@ export async function deleteFont(id: string): Promise<void> {
   await set(INDEX_KEY, (await listFontIds()).filter((existing) => existing !== id));
 }
 
-/** Part of "clear all data" — the other half is persist.clear(). */
-export async function clearBlobs(): Promise<void> {
-  await idbClear();
-}

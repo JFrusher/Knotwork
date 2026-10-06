@@ -91,7 +91,7 @@ function shown(value: unknown): string {
   return "changed";
 }
 
-export interface FieldChange {
+interface FieldChange {
   field: string;
   mine: string;
   theirs: string;

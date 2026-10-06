@@ -3,7 +3,7 @@ import { ptToMm } from "../units";
 import { blockHeightMm, lineHeightMm, measureWidth, type LoadedFont } from "./measure";
 import { DEFAULT_OPTICAL, hangMm, opticalShiftMm, type OpticalConfig } from "./optical";
 
-export interface LaidOutLine {
+interface LaidOutLine {
   text: string;
   /**
    * Start of the baseline, in element-local millimetres where (0,0) is the box's

@@ -162,7 +162,7 @@ export function guessSideMeaning(
 }
 
 /** What the couple has said the file's answers mean. */
-export interface Meanings {
+interface Meanings {
   rsvp: Record<string, RsvpStatus>;
   side: Record<string, Side>;
 }
@@ -174,7 +174,7 @@ function splitFullName(full: string): { firstName: string; lastName: string } {
   return { firstName: parts.slice(0, -1).join(" "), lastName: parts[parts.length - 1]! };
 }
 
-export interface ImportPlan {
+interface ImportPlan {
   /** The whole guest list once imported — before anything in `missing` is removed. */
   guests: Record<string, Guest>;
   added: Guest[];

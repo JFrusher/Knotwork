@@ -39,10 +39,10 @@ export interface Artefact {
 }
 
 /** An artefact with no data at all — what the editor shows before a CSV lands. */
-export const EMPTY_ROW: GuestRow = { "": "" };
+const EMPTY_ROW: GuestRow = { "": "" };
 
 /** Identity for a dataset that has none yet. Positional, and only a fallback. */
-export function defaultRowIds(count: number): string[] {
+function defaultRowIds(count: number): string[] {
   return Array.from({ length: count }, (_, i) => `r${i}`);
 }
 

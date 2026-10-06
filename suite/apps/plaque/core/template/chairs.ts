@@ -56,7 +56,7 @@ export function asKnown(template: Pick<Template, "chairName">, row: GuestRow): G
 }
 
 /** The table a chair is at: the card's own, or the one named. */
-export function chairTable(ref: ChairRef, scene: RoomScene, cardTable: string): RoomTable | null {
+function chairTable(ref: ChairRef, scene: RoomScene, cardTable: string): RoomTable | null {
   const wanted = normalise(ref.table ?? cardTable);
   return scene.tables.find((t) => normalise(t.label) === wanted) ?? null;
 }

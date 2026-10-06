@@ -4,7 +4,7 @@ import { fitIcon } from "./iconFit";
 /** Past this the artwork is a texture, not a picture. */
 export const MAX_ZOOM = 8;
 
-export interface ImageCrop {
+interface ImageCrop {
   fit: ImageFit;
   /** 1 exactly fills the box. Clamped to 1..MAX_ZOOM. */
   zoom?: number;
@@ -13,7 +13,7 @@ export interface ImageCrop {
   focusY?: number;
 }
 
-export interface ImagePlacement {
+interface ImagePlacement {
   x: Mm;
   y: Mm;
   drawnW: Mm;
@@ -71,7 +71,7 @@ export function fitImage(
 }
 
 /** 300 dots per inch, the resolution the whole app assumes for artwork. */
-export const PRINT_DPI = 300;
+const PRINT_DPI = 300;
 
 /**
  * The largest box of the given shape that fits inside `bounds`, centred.

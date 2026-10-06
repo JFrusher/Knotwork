@@ -16,7 +16,7 @@
  * listed "None" as a diet. One importer now, and this is the one definition.
  */
 
-export interface DietaryMeta {
+interface DietaryMeta {
   key: string;
   label: string;
   /** A letter or two for a badge. */

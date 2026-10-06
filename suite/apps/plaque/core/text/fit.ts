@@ -14,7 +14,7 @@ export interface FitInput {
   fit: FitConfig;
 }
 
-export interface FitOutcome {
+interface FitOutcome {
   lines: string[];
   fontSizePt: Pt;
   /** True when the text still does not fit at the smallest size allowed. */
@@ -72,7 +72,7 @@ export function fitText(font: LoadedFont, input: FitInput): FitOutcome {
   return { lines: atFloor.lines, fontSizePt: round(floor), overflowed: !atFloor.fits };
 }
 
-export interface FitBlockInput {
+interface FitBlockInput {
   lines: string[];
   boxWMm: Mm;
   boxHMm: Mm;
@@ -120,7 +120,7 @@ export function fitBlock(font: LoadedFont, input: FitBlockInput): FitOutcome {
   return { lines: input.lines, fontSizePt: round(floor), overflowed: !fits(floor) };
 }
 
-export interface FitGridInput {
+interface FitGridInput {
   blocks: Array<{ heading: string; items: string[] }>;
   cellWMm: Mm;
   cellHMm: Mm;

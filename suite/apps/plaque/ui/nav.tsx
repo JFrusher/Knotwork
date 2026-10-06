@@ -27,7 +27,7 @@ import { PrintSetupPanel } from "./panels/PrintSetupPanel";
  */
 
 /** Everything the sidebar chrome needs from the store, and nothing else. */
-export interface NavCounts {
+interface NavCounts {
   rows: number;
   elements: number;
   icons: number;
@@ -55,7 +55,7 @@ export function navCounts(s: PlaqueState): NavCounts {
   };
 }
 
-export interface NavItem {
+interface NavItem {
   id: string;
   title: string;
   Component: ComponentType;
@@ -67,7 +67,7 @@ export interface NavItem {
   active?: (c: NavCounts) => boolean;
 }
 
-export interface NavSection {
+interface NavSection {
   id: string;
   title: string;
   icon: ReactNode;

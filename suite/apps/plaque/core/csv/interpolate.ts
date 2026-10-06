@@ -13,7 +13,7 @@ export function tokensIn(template: string): string[] {
   return out;
 }
 
-export interface Interpolated {
+interface Interpolated {
   text: string;
   /** Tokens that named a column this CSV does not have. */
   missing: string[];

@@ -44,7 +44,7 @@ function save(bytes: Uint8Array, fileName: string): void {
   }
 }
 
-export interface ExportBarProps {
+interface ExportBarProps {
   sheetCount: number;
   /**
    * Every blocking problem App knows about — geometry, ink-on-stock contrast and

@@ -11,9 +11,9 @@ import { daysUntil } from "@/lib/dates";
 export const isTask = (job: Job) => job.blockId === null;
 
 /** How far ahead a task counts as coming up. */
-export const COMING_UP_DAYS = 30;
+const COMING_UP_DAYS = 30;
 
-export interface Checklist {
+interface Checklist {
   overdue: Job[];
   comingUp: Job[];
   later: Job[];

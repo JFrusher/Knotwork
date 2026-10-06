@@ -13,7 +13,7 @@ const HANDLES: Array<{ mode: DragMode; fx: number; fy: number; cursor: string }>
   { mode: "w", fx: 0, fy: 0.5, cursor: "ew-resize" },
 ];
 
-export interface SelectionHandlesProps {
+interface SelectionHandlesProps {
   id: ElementId;
   box: Rect;
   /** Millimetres per screen pixel, so handles stay a constant size on screen. */

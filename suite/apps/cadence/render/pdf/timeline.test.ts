@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { sampleDoc } from "../../core/model/defaults";
-import { nodeFontSource } from "./nodeFontSource";
-import { textOf } from "./readPdf";
+import { nodeFontSource } from "@/lib/pdf/nodeFontSource";
+import { textOf } from "@/lib/pdf/readPdf";
 import { boxesFor, paginateLanes, renderTimeline, type Body, type Lane, type Placed } from "./timeline";
 
 const options = { fontSource: nodeFontSource, generatedOn: "Generated for the test" };

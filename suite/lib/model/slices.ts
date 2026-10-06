@@ -24,14 +24,7 @@ type _EventFieldsExist = Assert<
 >;
 import { resolve } from "@/apps/cadence/core/schedule/resolve";
 import { resolvedDay as resolveDaySlice } from "@/apps/cadence/core/project/day";
-import {
-  DEFAULT_BLOCK_OUTPUTS,
-  DEFAULT_LANES,
-  DEFAULT_OUTPUTS,
-  defaultDay,
-  defaultStyles,
-  emptyDoc,
-} from "@/apps/cadence/core/model/defaults";
+import { DEFAULT_LANES, DEFAULT_OUTPUTS, defaultDay, defaultStyles, emptyDoc } from "@/apps/cadence/core/model/defaults";
 import { newMoment } from "@/lib/ceremony/moments";
 import { BAR_KINDS, BAR_LINES, CAST_ROLES, CEREMONY_KINDS, CROWDS, FIGURES, MIXED_PARTS, MOMENT_KINDS, POURS, SHOPS } from "./types";
 import type {
@@ -255,15 +248,15 @@ export function isComing(guest: Pick<Guest, "rsvpStatus">): boolean {
  * Pixels per centimetre. Locked: changing it would rescale every stored layout,
  * so a plan authored at this scale must always be read back at it.
  */
-export const DEFAULT_PPU = 0.7;
+const DEFAULT_PPU = 0.7;
 
 /** Standard banquet chair footprint, in centimetres. */
-export const DEFAULT_CHAIR_CM = 45;
+const DEFAULT_CHAIR_CM = 45;
 
 /** What a table can be marked as. Anything else read from a file becomes null. */
 const DESIGNATIONS = new Set(["top-table", "vip", "kids", "band-bar"]);
 
-export function emptyRoom(): RoomSpec {
+function emptyRoom(): RoomSpec {
   return {
     widthUnits: Math.round(1200 / DEFAULT_PPU),
     heightUnits: Math.round(900 / DEFAULT_PPU),
@@ -285,7 +278,7 @@ export function emptyRoom(): RoomSpec {
   };
 }
 
-export function emptySeatingSettings(): SeatingSettings {
+function emptySeatingSettings(): SeatingSettings {
   return {
     defaultSeatMode: "table",
     pixelsPerUnit: DEFAULT_PPU,
@@ -539,8 +532,6 @@ function namedGroups(raw: unknown): Record<string, NamedGroup> {
 
 // timeline -------------------------------------------------------------------
 
-export { DEFAULT_LANES };
-
 /**
  * The timeline, as Cadence's own document.
  *
@@ -634,8 +625,6 @@ export function readTimeline(doc: Knotwork): Timeline {
     };
   });
 }
-
-export { DEFAULT_BLOCK_OUTPUTS };
 
 /**
  * The printed pieces a document asks for.
@@ -884,10 +873,6 @@ function readSection(raw: unknown): ShotSection | null {
     name: str(raw["name"], "Section"),
     shots: list(raw["shots"], readShot),
   };
-}
-
-export function emptyShots(): Shots {
-  return { sections: [] };
 }
 
 export function readShots(doc: Knotwork): Shots {

@@ -315,8 +315,8 @@ exactly what it does to the shopping list.
 - **One set of rows for everything printed.** Write one function that turns
   the slice into rows. The page, the PDF and the CSV all use it, so they
   can't disagree. See `lib/bar/rows.ts` and `lib/boxes/rows.ts`.
-- **PDFs** use Brigade's page, text and font kit in
-  `suite/apps/brigade/render/pdf/`, as the shot sheet, the processional,
+- **PDFs** use the shared page, text and font kit in
+  `suite/lib/pdf/`, as the shot sheet, the processional,
   the box labels and the shopping list do. Test them in Node with
   `nodeFontSource` and `textOf`, which reads the words back out of the PDF.
   **CSV** goes through `toCsv` in `lib/data/csv.ts`.

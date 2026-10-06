@@ -6,7 +6,7 @@
  * A module of its own, importing nothing: tools register from modules the
  * store itself reaches while it is still loading.
  */
-export type Unhistoried = (now: Record<string, unknown>, restored: Record<string, unknown>) => Record<string, unknown>;
+type Unhistoried = (now: Record<string, unknown>, restored: Record<string, unknown>) => Record<string, unknown>;
 
 const carries: Unhistoried[] = [];
 

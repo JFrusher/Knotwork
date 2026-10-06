@@ -1,5 +1,5 @@
 import { tagLabel } from "../model/tags";
-import { formatClock } from "../time/minutes";
+import { formatClock } from "@/lib/minutes";
 import type { Journey, TimelineDoc } from "../model/types";
 import type { Conflict } from "./conflicts";
 import { blocksById, byId, type ResolvedBlock } from "./resolve";
@@ -15,14 +15,14 @@ import { blocksById, byId, type ResolvedBlock } from "./resolve";
  */
 
 /** A place as the couple would match it: trimmed, whatever the case. */
-export const placeKey = (place: string): string => place.trim().toLowerCase();
+const placeKey = (place: string): string => place.trim().toLowerCase();
 
 /** Two places, either way round, as one key. */
 export function pairKey(a: string, b: string): string {
   return [placeKey(a), placeKey(b)].sort().join("\u0000");
 }
 
-export interface Move {
+interface Move {
   tag: string;
   from: ResolvedBlock;
   to: ResolvedBlock;
@@ -68,7 +68,7 @@ export function journeyMinutes(doc: TimelineDoc, a: string, b: string): number |
   return doc.travel.find((journey) => pairKey(...journey.between) === key)?.minutes ?? null;
 }
 
-export interface TravelPair {
+interface TravelPair {
   between: [string, string];
   /** The typed time, or null: not checked. */
   minutes: number | null;

@@ -9,8 +9,8 @@ import {
   renderJobList,
   renderPersonSheet,
 } from "./jobSheets";
-import { nodeFontSource } from "./nodeFontSource";
-import { textOf } from "./readPdf";
+import { nodeFontSource } from "@/lib/pdf/nodeFontSource";
+import { textOf } from "@/lib/pdf/readPdf";
 
 const options = { fontSource: nodeFontSource, generatedOn: "Generated for the test" };
 

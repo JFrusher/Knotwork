@@ -43,17 +43,6 @@ test("a half-configured pair is still caught when the other half is empty", () =
   );
 });
 
-test("the in-memory shim is refused in production", () => {
-  expect(() => parseEnv({ ...supabase, SYNC_IN_MEMORY: "1", NODE_ENV: "production" })).toThrow(
-    /SYNC_IN_MEMORY/,
-  );
-});
-
-test("the in-memory shim is allowed in development", () => {
-  const env = parseEnv({ SYNC_IN_MEMORY: "1", NODE_ENV: "development" });
-  expect(env.SYNC_IN_MEMORY).toBe("1");
-});
-
 test("a malformed Supabase URL is rejected", () => {
   expect(() => parseEnv({ ...supabase, SUPABASE_URL: "project.supabase.co" })).toThrow(
     /SUPABASE_URL/,

@@ -36,7 +36,7 @@ export interface IconArt {
   view: IconViewBox;
 }
 
-export interface BundledIcon {
+interface BundledIcon {
   d: string;
   cut?: string;
   id: string;
@@ -111,7 +111,7 @@ export const BUNDLED_ICONS: BundledIcon[] = [
 export const ICON_VIEWBOX = 24;
 export const BUNDLED_VIEW: IconViewBox = { x: 0, y: 0, w: ICON_VIEWBOX, h: ICON_VIEWBOX };
 
-export function bundledIcon(id: string): BundledIcon | undefined {
+function bundledIcon(id: string): BundledIcon | undefined {
   return BUNDLED_ICONS.find((i) => i.id === id);
 }
 

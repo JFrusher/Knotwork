@@ -3,7 +3,7 @@ import type { Sheet } from "../../core/types";
 import { ElementView } from "./ElementView";
 import { GuidesLayer } from "./GuidesLayer";
 
-export interface SheetPreviewProps {
+interface SheetPreviewProps {
   sheet: Sheet;
   fonts: Map<string, LoadedFont>;
   className?: string;

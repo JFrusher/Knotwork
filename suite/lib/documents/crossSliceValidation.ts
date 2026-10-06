@@ -1,23 +1,13 @@
 /**
- * The cross-slice invariant gate — a faithful port of `check()` from
- * `scripts/validate-wedding.mjs`. That script validates the file on disk
- * before a DVC commit; this validates a document before it is accepted into
- * `wedding_documents`. The logic itself does not change: an error blocks the
- * write outright, a warning does not.
- *
- * Kept as a deliberate duplication rather than an import across the
- * suite/scripts boundary — `scripts/validate-wedding.mjs` is plain ESM
- * outside the `suite` Next.js app's module root, and importing it directly
- * would tie this app's build to a sibling directory's bundling behavior for
- * no real benefit. If `scripts/validate-wedding.mjs` changes, this file needs
- * the same change made twice; subsystem C (suite de-duplication) is the
- * place a shared package for this would belong, not this plan.
+ * The cross-slice invariant gate: validates a document before it is accepted
+ * into `wedding_documents`. An error blocks the write outright, a warning does
+ * not.
  */
 
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === "object" && v !== null && !Array.isArray(v);
 
-export interface CrossSliceResult {
+interface CrossSliceResult {
   errors: string[];
   warnings: string[];
   facts: string[];

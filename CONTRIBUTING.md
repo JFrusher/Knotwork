@@ -91,9 +91,7 @@ Module not found: Can't resolve '@jfrusher/knotwork'
 If you see that, run `npm run build` at the root and try again.
 
 To work on accounts, sync or guest links you need a Supabase project. See
-[docs/SELF-HOSTING.md](docs/SELF-HOSTING.md). For sync work alone,
-`SYNC_IN_MEMORY=1` in `suite/.env.local` runs the sync endpoints against an
-in-process map (development only).
+[docs/SELF-HOSTING.md](docs/SELF-HOSTING.md).
 
 ### Where things live
 
@@ -108,7 +106,6 @@ suite/                   the Next.js application (AGPL-3.0-or-later)
   e2e/                   Playwright specs, run against a production build
 supabase/migrations/     database migrations, applied in filename order
 docs/                    self-hosting, building a tool, specs and plans
-scripts/                 bundle, sync and cross-slice validation utilities
 ```
 
 The first four tools keep their original code names (Tableaux, Plaque,

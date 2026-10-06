@@ -1,4 +1,4 @@
-import { formatClock, formatDuration } from "../time/minutes";
+import { formatClock, formatDuration } from "@/lib/minutes";
 import { isMoment, type TimelineDoc } from "../model/types";
 import { blocksById, byId, byLane, type ResolvedBlock } from "./resolve";
 import { travelShortfalls } from "./travel";

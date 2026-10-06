@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { sampleDoc } from "../../core/model/defaults";
 import type { Block } from "../../core/model/types";
-import { nodeFontSource } from "./nodeFontSource";
+import { nodeFontSource } from "@/lib/pdf/nodeFontSource";
 import { renderRunSheet } from "./runSheet";
-import { textOf } from "./readPdf";
+import { textOf } from "@/lib/pdf/readPdf";
 
 describe("export performance", () => {
   it("renders a 200 block run-sheet inside three seconds", async () => {

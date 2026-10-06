@@ -26,7 +26,7 @@ export function artefactsOf(template: Template, rows: GuestRow[], headers: strin
  * artefact's identity in its key, so a reprint of one page is a choice of one
  * part.
  */
-export function withParts(template: Template, artefacts: Artefact[]): Artefact[] {
+function withParts(template: Template, artefacts: Artefact[]): Artefact[] {
   const flow = template.elements.find(
     (el): el is GridElement => el.kind === "grid" && el.layout === "columns",
   );

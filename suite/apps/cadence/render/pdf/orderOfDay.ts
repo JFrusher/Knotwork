@@ -1,14 +1,14 @@
 import { PDFDocument } from "pdf-lib";
 import { resolve } from "../../core/schedule/resolve";
 import type { TimelineDoc } from "../../core/model/types";
-import { formatClock } from "../../core/time/minutes";
-import { embedFamily } from "./embedFonts";
-import type { FontSource } from "./fontSource";
-import { addSheet, hexColour } from "./page";
-import { measureMm } from "./text";
-import { contentBox, PAGE_SIZES, ptToMm } from "./units";
+import { formatClock } from "@/lib/minutes";
+import { embedFamily } from "@/lib/pdf/embedFonts";
+import type { FontSource } from "@/lib/pdf/fontSource";
+import { addSheet, hexColour } from "@/lib/pdf/page";
+import { measureMm } from "@/lib/pdf/text";
+import { contentBox, PAGE_SIZES, ptToMm } from "@/lib/pdf/units";
 
-export interface OrderOfDayOptions {
+interface OrderOfDayOptions {
   fontSource: FontSource;
 }
 

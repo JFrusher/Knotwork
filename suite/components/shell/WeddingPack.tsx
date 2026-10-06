@@ -137,7 +137,7 @@ async function floorPlan(): Promise<Uint8Array | null> {
 async function runSheet(): Promise<Uint8Array | null> {
   const [{ renderRunSheet }, { browserFontSource }, { getBlob }] = await Promise.all([
     import("@/apps/cadence/render/pdf/runSheet"),
-    import("@/apps/cadence/render/pdf/fontSource"),
+    import("@/lib/pdf/fontSource"),
     import("@/apps/cadence/state/blobStore"),
   ]);
   const doc = readTimeline(useKnotworkStore.getState().doc);
@@ -161,7 +161,7 @@ async function runSheet(): Promise<Uint8Array | null> {
 async function jobList(): Promise<Uint8Array | null> {
   const [{ renderJobList }, { browserFontSource }, { readSlice }] = await Promise.all([
     import("@/apps/brigade/render/pdf/jobSheets"),
-    import("@/apps/brigade/render/pdf/fontSource"),
+    import("@/lib/pdf/fontSource"),
     import("@/apps/brigade/state/sliceBridge"),
   ]);
   const doc = readSlice(useKnotworkStore.getState().doc);
@@ -181,7 +181,7 @@ async function runningOrder(): Promise<Uint8Array | null> {
 
   const [{ renderRunningOrder }, { browserFontSource }, { orderRows }, { ceremonyPlace }] = await Promise.all([
     import("@/lib/ceremony/render/pdf/runningOrder"),
-    import("@/apps/brigade/render/pdf/fontSource"),
+    import("@/lib/pdf/fontSource"),
     import("@/lib/ceremony/rows"),
     import("@/lib/ceremony/checks"),
   ]);
@@ -203,7 +203,7 @@ async function drinksList(): Promise<Uint8Array | null> {
 
   const [{ renderShoppingList }, { browserFontSource }, { forWords, shoppingList, spendWords }, { barSum }] = await Promise.all([
     import("@/lib/bar/render/pdf/shoppingList"),
-    import("@/apps/brigade/render/pdf/fontSource"),
+    import("@/lib/pdf/fontSource"),
     import("@/lib/bar/rows"),
     import("@/lib/bar/sum"),
   ]);
@@ -227,7 +227,7 @@ async function packingList(): Promise<Uint8Array | null> {
 
   const [{ renderPackingList }, { browserFontSource }, { boxRows }] = await Promise.all([
     import("@/lib/boxes/render/pdf/packingList"),
-    import("@/apps/brigade/render/pdf/fontSource"),
+    import("@/lib/pdf/fontSource"),
     import("@/lib/boxes/rows"),
   ]);
 
@@ -247,7 +247,7 @@ async function shotSheet(): Promise<Uint8Array | null> {
 
   const [{ renderShotSheet }, { browserFontSource }] = await Promise.all([
     import("@/lib/ensemble/render/pdf/shotSheet"),
-    import("@/apps/brigade/render/pdf/fontSource"),
+    import("@/lib/pdf/fontSource"),
   ]);
 
   return renderShotSheet(

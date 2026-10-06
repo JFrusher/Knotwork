@@ -44,7 +44,7 @@ export function nearest(value: Mm, targets: Mm[], thresholdMm: Mm): Mm | null {
   return best;
 }
 
-export interface SnapResult {
+interface SnapResult {
   box: Rect;
   /** Lines that actually caught, for drawing snap indicators. */
   hitXs: Mm[];

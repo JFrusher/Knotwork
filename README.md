@@ -21,7 +21,7 @@
 [Roadmap](ROADMAP.md) &nbsp;·&nbsp;
 [Contribute](CONTRIBUTING.md)
 
-![Knotwork: the whole wedding in one place, with the front page showing where things stand](marketing/assets/images/hero-overview.png)
+![Knotwork: the whole wedding in one place, with the front page showing where things stand](docs/images/hero-overview.png)
 
 </div>
 
@@ -98,26 +98,23 @@ you add the tool again.
 - 🧭 **A guided tour** with a complete example wedding, and a ⌘/Ctrl-K command
   palette.
 
-![Every tool, one wedding: the front page, the guest list and every desktop tool](marketing/assets/images/tools-grid.png)
+![Every tool, one wedding: the front page, the guest list and every desktop tool](docs/images/tools-grid.png)
 
 **Seat a guest, and her place card has her table.** Drag Zainab onto Table 13,
 press *Use the room* in Place cards, and her card reads "Table 13".
 
-![Seating a guest, then opening her place card with the table filled in](marketing/assets/motion/seat-to-card.gif)
+![Seating a guest, then opening her place card with the table filled in](docs/images/seat-to-card.gif)
 
 **Move the ceremony, and the day follows.** Pinned at 13:30, moved to 14:00:
 drinks, photos and dinner all move with it. Later still, and it tells you what
 no longer fits.
 
-![Moving the ceremony in Timeline: every block after it moves, then a collision is flagged](marketing/assets/motion/ceremony-moves.gif)
+![Moving the ceremony in Timeline: every block after it moves, then a collision is flagged](docs/images/ceremony-moves.gif)
 
 **The Binder, on the day.** What is on now, who to ring, where a guest sits,
 and the shot list to tick off, on a phone, with or without signal.
 
-<p align="center"><img src="marketing/assets/motion/binder.gif" width="420" alt="The Binder on a phone: now, the running order, who to ring, find a guest, the shot list"></p>
-
-More screenshots, framed images and clips for sharing are in
-[`marketing/assets/`](marketing/assets/).
+<p align="center"><img src="docs/images/binder.gif" width="420" alt="The Binder on a phone: now, the running order, who to ring, find a guest, the shot list"></p>
 
 ---
 

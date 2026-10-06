@@ -1,7 +1,7 @@
 import type { CardSpec, Point, Rect, Segment } from "../types";
 import { centreOf, rotateBox, rotatePoint } from "./transform";
 
-export type Panel = "single" | "front" | "back";
+type Panel = "single" | "front" | "back";
 
 /**
  * Panel naming follows how the finished card stands up.
@@ -32,7 +32,7 @@ export function panelBounds(panel: Panel, card: CardSpec): Rect {
 }
 
 /** Which panel a box belongs to, decided by its centre. Never stored on the element. */
-export function panelOfPoint(p: Point, card: CardSpec): Panel {
+function panelOfPoint(p: Point, card: CardSpec): Panel {
   if (card.fold === "none") return "single";
   if (card.fold === "horizontal") return p.y < card.foldPositionMm ? "back" : "front";
   return p.x < card.foldPositionMm ? "front" : "back";

@@ -35,9 +35,9 @@ export function runningOrder(doc: Knotwork): BinderBlock[] {
     .sort((a, b) => a.startMin - b.startMin || a.lane.localeCompare(b.lane));
 }
 
-export type Phase = "before" | "on" | "after";
+type Phase = "before" | "on" | "after";
 
-export interface DayClock {
+interface DayClock {
   phase: Phase;
   /** Minutes from the wedding day's midnight at the venue; past midnight runs on (1500 is 01:00 +1). */
   minute: number;
@@ -70,7 +70,7 @@ export function nowAndNext(blocks: readonly BinderBlock[], minute: number, next 
   };
 }
 
-export interface Contact {
+interface Contact {
   name: string;
   /** What they are on the day: a supplier's trade, a crew member's team. */
   role: string;
@@ -103,7 +103,7 @@ export function contacts(doc: Knotwork): Contact[] {
   });
 }
 
-export interface FoundGuest {
+interface FoundGuest {
   id: string;
   name: string;
   table: string;

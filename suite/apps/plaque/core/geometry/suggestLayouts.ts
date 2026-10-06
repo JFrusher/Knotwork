@@ -2,7 +2,7 @@ import { pageSizeMm } from "../units";
 import type { CardRotation, CardSpec, Mm, Orientation, PaperName, SheetSpec } from "../types";
 import { computeLayout } from "./pageLayout";
 
-export interface SuggestOptions {
+interface SuggestOptions {
   pages?: PaperName[];
   /** Floor for the gap between cards. Raised automatically when bleed demands it. */
   minGapMm?: Mm;

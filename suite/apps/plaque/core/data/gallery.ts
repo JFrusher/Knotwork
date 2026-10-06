@@ -22,7 +22,7 @@ import tableMenu from "../../templates/table-menu.json";
  * tokens to that data's columns.
  */
 export const GALLERY_FORMAT = "plaque-template";
-export const GALLERY_VERSION = 1;
+const GALLERY_VERSION = 1;
 
 export interface GalleryTemplate {
   format: typeof GALLERY_FORMAT;

@@ -1,6 +1,6 @@
 import styles from "./Pagination.module.css";
 
-export interface PaginationProps {
+interface PaginationProps {
   index: number;
   count: number;
   onChange: (index: number) => void;

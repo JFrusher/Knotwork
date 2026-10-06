@@ -40,7 +40,7 @@ export async function forgetLink(): Promise<void> {
   await idbDel(LINK_KEY);
 }
 
-export type WeddingsResult =
+type WeddingsResult =
   | { ok: true; weddings: WeddingListing[] }
   | { ok: false; reason: "unreachable" | "unavailable" };
 
@@ -57,7 +57,7 @@ export async function fetchWeddings(): Promise<WeddingsResult> {
   return { ok: true, weddings: body.weddings };
 }
 
-export type FetchResult =
+type FetchResult =
   | { ok: true; weddingId: string; document: unknown; version: number }
   | { ok: false; reason: "unreachable" | "unavailable" };
 

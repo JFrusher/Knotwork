@@ -30,7 +30,7 @@ import { storedPieces } from "@/apps/plaque/state/suite";
 export type Severity = "blocking" | "advisory";
 
 /** How close to the day unpacked boxes are worth saying so. */
-export const PACKING_DAYS = 7;
+const PACKING_DAYS = 7;
 
 export interface Readiness {
   id: string;

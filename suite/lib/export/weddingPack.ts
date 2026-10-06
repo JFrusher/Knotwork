@@ -30,7 +30,7 @@ export interface PackSection {
   bytes: Uint8Array;
 }
 
-export interface Pack {
+interface Pack {
   bytes: Uint8Array;
   /** What went in, in order, with page counts — so the caller can say. */
   contents: Array<{ title: string; pages: number }>;

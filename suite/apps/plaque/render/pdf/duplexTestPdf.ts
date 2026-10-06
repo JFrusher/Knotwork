@@ -4,7 +4,7 @@ import { READABLE_SPAN_MM, SKEW_THRESHOLD_MM } from "../../core/print/printerPro
 import type { Mm, Orientation, PaperName, Point } from "../../core/types";
 import { mmToPt, pageSizeMm, ptToMm } from "../../core/units";
 
-export interface DuplexTestOptions {
+interface DuplexTestOptions {
   page: PaperName;
   orientation: Orientation;
   /** The choice being tested. Page two is mirrored exactly as a real back sheet is. */

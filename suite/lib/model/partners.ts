@@ -1,23 +1,6 @@
 import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import type { CastRole, Side } from "./types";
 
-/**
- * The two people getting married, and everything named after them.
- *
- * The suite used to say "bride" and "groom" — on every guest's side, in the
- * Seating filters, in the exports, and in every group shot from "the bride with
- * her parents" down. The example wedding is Alex and Sam, and neither word fits
- * them. Sides and shots are named after the partners now, and this is the one
- * place those names are turned into words.
- *
- * Stored values say which partner, not what they are called: a side is `a`,
- * `b` or `both`, and a role is `a-mother` rather than "Alex's mother", so
- * correcting a spelling changes every label at once and no stored text goes
- * stale.
- */
-
-export type Partner = "a" | "b";
-
 /** Each partner's name as the guests know it, or who they are while it is unset. */
 export function partnerNames(event: Pick<WeddingEvent, "partners">): [string, string] {
   const [a, b] = event.partners ?? ["", ""];

@@ -2,9 +2,9 @@ import { PDFDict, PDFDocument, PDFName } from "pdf-lib";
 import { describe, expect, it } from "vitest";
 import { sampleDoc } from "../../core/model/defaults";
 import { callSheetTags, renderAllCallSheets, renderCallSheet } from "./callSheet";
-import { nodeFontSource } from "./nodeFontSource";
+import { nodeFontSource } from "@/lib/pdf/nodeFontSource";
 import { renderRunSheet } from "./runSheet";
-import { textOf } from "./readPdf";
+import { textOf } from "@/lib/pdf/readPdf";
 
 const options = { fontSource: nodeFontSource, generatedOn: "Generated for the test" };
 

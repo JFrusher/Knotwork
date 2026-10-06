@@ -3,8 +3,8 @@ import { parseDay } from "../import/day";
 import { reconcile } from "../import/reconcile";
 import type { BrigadeDoc } from "./types";
 
-export const SCHEMA_VERSION = 1;
-export const APP_VERSION = "0.1.0";
+const SCHEMA_VERSION = 1;
+const APP_VERSION = "0.1.0";
 
 export function emptyDoc(): BrigadeDoc {
   return {

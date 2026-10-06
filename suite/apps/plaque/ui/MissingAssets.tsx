@@ -7,7 +7,7 @@ import { readImageFile, saveImage, toSource } from "../state/imageStore";
 import { usePlaque } from "../state/store";
 import styles from "./MissingAssets.module.css";
 
-export interface MissingAssetsProps {
+interface MissingAssetsProps {
   missing: MissingAsset[];
 }
 

@@ -1,5 +1,5 @@
 import { assigneeNames, blockFor, isOrphan } from "../../core/model/types";
-import { formatClock } from "../../core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { useBrigadeDoc, useStore } from "../../state/store";
 import { Button, Panel, SelectField, TextArea, TextField } from "@/components/ui/fields";
 import styles from "./JobPanel.module.css";

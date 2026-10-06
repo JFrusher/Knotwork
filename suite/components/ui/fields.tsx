@@ -20,7 +20,7 @@
  */
 
 import { useEffect, useId, useState, type ReactNode } from "react";
-import { formatClock, parseClock } from "@/apps/cadence/core/time/minutes";
+import { formatClock, parseClock } from "@/lib/minutes";
 import styles from "./fields.module.css";
 
 export function Panel({

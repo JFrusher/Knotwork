@@ -24,7 +24,7 @@ export function changedSinceConfirmed(link: SupplierLink): boolean {
  * Only ever later: a date typed in by hand that is newer stays. Null when
  * nothing changes, so nothing is written.
  */
-export function withConfirmations(crew: Raw, links: SupplierLink[]): Raw | null {
+function withConfirmations(crew: Raw, links: SupplierLink[]): Raw | null {
   const teams = Array.isArray(crew["teams"]) ? (crew["teams"] as Raw[]) : [];
   let changed = false;
   const next = teams.map((team) => {

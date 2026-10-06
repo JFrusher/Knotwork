@@ -4,15 +4,15 @@ import { resolve } from "../../core/schedule/resolve";
 import { sunForDay } from "../../core/sun/solar";
 import { tagLabel } from "../../core/model/tags";
 import { isMoment, type Block, type TimelineDoc } from "../../core/model/types";
-import { formatClock, formatDuration } from "../../core/time/minutes";
-import { embedFamily } from "./embedFonts";
-import type { FontSource } from "./fontSource";
-import { addSheet, hexColour, type Sheet } from "./page";
-import { columnOffsets, fitColumns, type Column } from "./table";
-import { measureMm, truncate, wrap } from "./text";
-import { contentBox, PAGE_SIZES, ptToMm } from "./units";
+import { formatClock, formatDuration } from "@/lib/minutes";
+import { embedFamily } from "@/lib/pdf/embedFonts";
+import type { FontSource } from "@/lib/pdf/fontSource";
+import { addSheet, hexColour, type Sheet } from "@/lib/pdf/page";
+import { columnOffsets, fitColumns, type Column } from "@/lib/pdf/table";
+import { truncate, wrap } from "@/lib/pdf/text";
+import { contentBox, PAGE_SIZES, ptToMm } from "@/lib/pdf/units";
 
-export interface SheetOptions {
+interface SheetOptions {
   fontSource: FontSource;
   /** Only blocks carrying this tag. Absent means every block on the piece. */
   tag?: string;
@@ -352,4 +352,3 @@ function formatDate(iso: string): string {
   return `${Number(match[3])} ${months[Number(match[2]) - 1]} ${match[1]}`;
 }
 
-export { measureMm };

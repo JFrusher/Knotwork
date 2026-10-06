@@ -5,7 +5,7 @@ import { hasOverrides } from "../core/template/overrides";
 import { usePlaque } from "../state/store";
 import styles from "./RowsDrawer.module.css";
 
-export interface RowsDrawerProps {
+interface RowsDrawerProps {
   artefacts: Artefact[];
   /** 0..1 per artefact, from the analysis pass. Empty until it has run. */
   headroom: number[];

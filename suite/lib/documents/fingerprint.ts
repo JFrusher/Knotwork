@@ -2,10 +2,6 @@
  * A short, stable content hash — not cryptographic, just cheap and collision-
  * unlikely enough to tell "this slice changed" from "this slice didn't,"
  * which is all the merge in mergeCloudDocument.ts needs it for.
- *
- * Same algorithm as the (soon-to-be-retired) lib/sync/crypto.ts's
- * fingerprint() — duplicated rather than imported, so this module has no
- * dependency on the passphrase system being deleted out from under it.
  */
 export function fingerprint(value: unknown): string {
   const text = JSON.stringify(value ?? null);

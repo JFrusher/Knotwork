@@ -10,7 +10,7 @@ export function minutesFromDelta(dPx: number, pxPerMin: number, snapMin = SNAP_M
   return Math.round(dPx / pxPerMin / snapMin) * snapMin;
 }
 
-export interface DragState {
+interface DragState {
   blockId: string;
   deltaMin: number;
 }

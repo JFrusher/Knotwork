@@ -12,7 +12,7 @@ type Step = (raw: RawDoc) => RawDoc;
  */
 const STEPS: Record<number, Step> = {};
 
-export interface MigrateResult {
+interface MigrateResult {
   raw: RawDoc;
   /** True when the file came from a newer Cadence than this one. */
   fromFuture: boolean;

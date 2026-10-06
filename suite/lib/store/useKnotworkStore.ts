@@ -590,8 +590,6 @@ function pushHistory(
 
 /** Guests are a record keyed by id, so the badge is a key count. */
 export const selectGuestCount = (s: KnotworkState): number => Object.keys(s.doc.guests).length;
-export const selectTableCount = (s: KnotworkState): number => Object.keys(s.doc.seating).length;
-export const selectBlockCount = (s: KnotworkState): number => s.doc.day?.blocks.length ?? 0;
 
 /**
  * Write the document to IndexedDB now, then push it to the cloud shortly after.

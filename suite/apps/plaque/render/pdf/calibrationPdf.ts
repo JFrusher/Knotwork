@@ -3,7 +3,7 @@ import { REFERENCE_RULE_MM } from "../../core/print/printerProfile";
 import type { Mm, Orientation, PaperName } from "../../core/types";
 import { mmToPt, pageSizeMm } from "../../core/units";
 
-export interface CalibrationPdfOptions {
+interface CalibrationPdfOptions {
   page: PaperName;
   orientation: Orientation;
   printerName?: string;

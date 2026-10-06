@@ -1,12 +1,12 @@
 import type { Event as WeddingEvent } from "@jfrusher/knotwork";
-import type { FontSource } from "@/apps/brigade/render/pdf/fontSource";
+import type { FontSource } from "@/lib/pdf/fontSource";
 import { longDate } from "@/lib/dates";
 import { coupleTitle } from "@/lib/model/partners";
 import type { Place } from "@/lib/model/slices";
 import type { OrderRow } from "../../rows";
 import { renderFlow, type FlowBlock, type FlowLine } from "./flow";
 
-export interface OrderOfServiceOptions {
+interface OrderOfServiceOptions {
   fontSource: FontSource;
   event: Pick<WeddingEvent, "partners" | "date" | "venueName">;
   where: Place | null;

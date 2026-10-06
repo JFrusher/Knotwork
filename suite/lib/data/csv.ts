@@ -25,7 +25,7 @@ export interface CsvTable {
  * previews as plausible-looking but silently wrong data — far worse than a
  * message naming the line to fix.
  */
-export function parseRecords(text: string): string[][] {
+function parseRecords(text: string): string[][] {
   const clean = String(text).replace(/^﻿/, "");
   const delimiter = sniffDelimiter(clean);
   const records: string[][] = [];

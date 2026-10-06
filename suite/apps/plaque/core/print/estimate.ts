@@ -9,7 +9,7 @@
  * enough to answer "is this 2MB or 40MB". Upgrade path if that stops being
  * enough: build the document, then report the real length.
  */
-export interface EstimateInput {
+interface EstimateInput {
   pageCount: number;
   /** Byte length of each font that will be embedded. */
   fontBytes: number[];

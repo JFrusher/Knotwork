@@ -7,7 +7,7 @@ import { browserClient } from "@/lib/accounts/browserClient";
  * bytes under stable ids.
  */
 
-export interface AssetSyncResult {
+interface AssetSyncResult {
   uploaded: number;
   downloaded: number;
 }

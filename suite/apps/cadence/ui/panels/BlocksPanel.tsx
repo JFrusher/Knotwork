@@ -1,5 +1,5 @@
 import { isMoment } from "../../core/model/types";
-import { formatClock } from "../../core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { currentDoc, useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import { Button, Panel } from "@/components/ui/fields";
 import styles from "./BlocksPanel.module.css";
