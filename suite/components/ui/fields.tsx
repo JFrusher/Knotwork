@@ -162,24 +162,26 @@ export function NumberField({
   suffix,
 }: {
   label: string;
-  value: number;
+  /** Null is not entered yet, and shows empty. */
+  value: number | null;
   onChange: (value: number) => void;
   min?: number;
   max?: number;
   step?: number;
   suffix?: string;
 }) {
-  const [text, setText] = useState(() => String(value));
+  const shown = (current: number | null) => (current === null ? "" : String(current));
+  const [text, setText] = useState(() => shown(value));
   const id = useId();
 
   useEffect(() => {
-    setText(String(value));
+    setText(shown(value));
   }, [value, id]);
 
   const commit = () => {
     const next = commitNumber(text, min, max);
     if (next === null) {
-      setText(String(value));
+      setText(shown(value));
       return;
     }
     if (next !== value) onChange(next);
