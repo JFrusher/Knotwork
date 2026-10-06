@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import type { ConstraintKind } from '@/lib/model/types'
 import { ruleFor } from '../../store/actions'
 import { useStore } from '../../store/useStore'
+import { computeWarnings } from '../../utils/warnings'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import IconButton from '../ui/IconButton'
@@ -11,6 +12,7 @@ import styles from './ConstraintsModal.module.css'
 
 export default function ConstraintsModal() {
   const guests = useStore((s) => s.guests)
+  const tables = useStore((s) => s.tables)
   const constraints = useStore((s) => s.constraints)
   const addConstraint = useStore((s) => s.addConstraint)
   const removeConstraint = useStore((s) => s.removeConstraint)
@@ -24,18 +26,19 @@ export default function ConstraintsModal() {
   const [kind, setKind] = useState<ConstraintKind>('apart')
   const [a, setA] = useState('')
   const [b, setB] = useState('')
+  const [broken, setBroken] = useState('')
 
-  // TODO(ux-audit): no feedback if the new rule is already violated by the
-  // current plan — if A and B are already seated together and the user adds
-  // an "apart" rule, this just clears the form; the only way to learn it's
-  // already broken is closing the modal and separately noticing the warning
-  // badge. See tmp/ux-audit.md #G22.
   const paired = a && b ? ruleFor(constraints, a, b) : undefined
   const ready = Boolean(a && b && a !== b && !paired)
 
   const add = () => {
     if (!ready) return
     addConstraint({ kind, guestIds: [a, b] })
+    // Allowed, since a rule is often set just before fixing the plan, but said
+    // here rather than left for the warning badge behind the dialog.
+    const rule = { id: 'new', kind, guestIds: [a, b] as [string, string], note: '' }
+    const warning = computeWarnings({ guests, tables, constraints: [rule] }).find((w) => w.id === `cst_${rule.id}`)
+    setBroken(warning ? `Already broken: ${warning.message}` : '')
     setA('')
     setB('')
   }
@@ -95,6 +98,9 @@ export default function ConstraintsModal() {
             Add
           </Button>
         </div>
+        <p role="status" className={styles.broken}>
+          {broken}
+        </p>
         {paired && (
           <p className={styles.none}>
             These two already have a rule. Remove it below to change it.
