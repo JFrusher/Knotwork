@@ -1,5 +1,6 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { newId } from "./ids";
+import { newId } from "./readableId";
 
 describe("newId", () => {
   it("is unique across a thousand calls and keeps its prefix", () => {

@@ -1,8 +1,8 @@
 import { PDFDocument } from "pdf-lib";
 import { detailFor, tagLabel, usedTags } from "../../core/model/tags";
 import type { TimelineDoc } from "../../core/model/types";
-import { formatClock } from "../../core/time/minutes";
-import type { FontSource } from "./fontSource";
+import { formatClock } from "@/lib/minutes";
+import type { FontSource } from "@/lib/pdf/fontSource";
 import { renderRunSheet } from "./runSheet";
 
 interface CallSheetOptions {

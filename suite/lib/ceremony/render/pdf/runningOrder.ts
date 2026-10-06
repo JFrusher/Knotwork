@@ -1,5 +1,5 @@
-import { formatClock } from "@/apps/cadence/core/time/minutes";
-import type { FontSource } from "@/apps/brigade/render/pdf/fontSource";
+import { formatClock } from "@/lib/minutes";
+import type { FontSource } from "@/lib/pdf/fontSource";
 import type { Place } from "@/lib/model/slices";
 import type { OrderRow } from "../../rows";
 import { renderFlow, type FlowBlock, type FlowLine } from "./flow";

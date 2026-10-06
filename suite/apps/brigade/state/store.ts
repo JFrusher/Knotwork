@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { Knotwork } from "@jfrusher/knotwork";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { coverage, warningsByJob, type Warning } from "../core/jobs/coverage";
-import { newId } from "../core/model/ids";
+import { newId } from "@/lib/readableId";
 import type { BrigadeDoc, Job, Person, Team } from "../core/model/types";
 import { crewSlice, readSlice } from "./sliceBridge";
 

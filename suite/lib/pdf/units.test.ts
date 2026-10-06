@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { PDFDocument } from "pdf-lib";
 import { describe, expect, it } from "vitest";
 import { addSheet, hexColour } from "./page";

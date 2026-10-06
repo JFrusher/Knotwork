@@ -1,5 +1,5 @@
 import type { Knotwork } from "@jfrusher/knotwork";
-import { formatClock } from "@/apps/cadence/core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { guestName, readCrew, readGuests, readSeating, readTimeline, resolvedDay } from "@/lib/model/slices";
 import { longDate } from "@/lib/dates";
 import { GUESTS, WEDDING_PAGES } from "@/lib/tools";

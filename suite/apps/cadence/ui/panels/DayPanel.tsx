@@ -1,4 +1,4 @@
-import { formatClock } from "../../core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import { Button, Field, NumberField, Panel, Row, TimeField } from "@/components/ui/fields";
 import { useDataPanel } from "@/components/shell/dataPanel";

@@ -2,13 +2,13 @@ import { PDFDocument } from "pdf-lib";
 import { usedTags } from "../../core/model/tags";
 import type { TimelineDoc } from "../../core/model/types";
 import { PHOTO_TAG } from "../../core/schedule/conflicts";
-import { formatClock } from "../../core/time/minutes";
-import { embedFamily } from "./embedFonts";
-import type { FontSource } from "./fontSource";
-import { addSheet, hexColour, type Sheet } from "./page";
-import { columnOffsets, fitColumns, type Column } from "./table";
-import { truncate, wrap } from "./text";
-import { contentBox, PAGE_SIZES, ptToMm } from "./units";
+import { formatClock } from "@/lib/minutes";
+import { embedFamily } from "@/lib/pdf/embedFonts";
+import type { FontSource } from "@/lib/pdf/fontSource";
+import { addSheet, hexColour, type Sheet } from "@/lib/pdf/page";
+import { columnOffsets, fitColumns, type Column } from "@/lib/pdf/table";
+import { truncate, wrap } from "@/lib/pdf/text";
+import { contentBox, PAGE_SIZES, ptToMm } from "@/lib/pdf/units";
 
 interface ContactSheetOptions {
   fontSource: FontSource;

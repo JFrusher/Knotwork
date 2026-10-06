@@ -3,7 +3,7 @@ import type { Knotwork } from "@jfrusher/knotwork";
 import { readTimeline } from "@/lib/model/slices";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { DEFAULT_BLOCK_OUTPUTS } from "../core/model/defaults";
-import { newId } from "../core/model/ids";
+import { newId } from "@/lib/readableId";
 import type { Block, DaySettings, OutputId, StyleSpec, TagDetail, TimelineDoc, UploadedFont } from "../core/model/types";
 import { writeSlice } from "./sliceBridge";
 

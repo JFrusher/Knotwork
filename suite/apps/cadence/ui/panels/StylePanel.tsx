@@ -1,4 +1,4 @@
-import { BUNDLED_FONTS } from "../../assets/fonts";
+import { BUNDLED_FONTS } from "@/lib/pdf/fonts";
 import type { OutputId } from "../../core/model/types";
 import { useStore, useTimelineDoc } from "../../state/store";
 import { CheckField, ColourField, NumberField, Panel, SelectField } from "@/components/ui/fields";

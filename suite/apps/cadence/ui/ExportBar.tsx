@@ -3,7 +3,7 @@ import type { OutputId } from "../core/model/types";
 import { tagLabel, usedTags } from "../core/model/tags";
 import { blockingConflicts } from "../core/schedule/conflicts";
 import { calendar } from "../render/ics/calendar";
-import { browserFontSource } from "../render/pdf/fontSource";
+import { browserFontSource } from "@/lib/pdf/fontSource";
 import { getBlob } from "../state/blobStore";
 import { useSchedule, useStore, useTimelineDoc } from "../state/store";
 import { Button } from "@/components/ui/fields";

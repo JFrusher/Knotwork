@@ -1,5 +1,5 @@
 import { tagLabel } from "../model/tags";
-import { formatClock } from "../time/minutes";
+import { formatClock } from "@/lib/minutes";
 import type { Journey, TimelineDoc } from "../model/types";
 import type { Conflict } from "./conflicts";
 import { blocksById, byId, type ResolvedBlock } from "./resolve";

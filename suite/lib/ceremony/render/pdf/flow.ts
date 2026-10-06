@@ -1,12 +1,12 @@
 // Brigade's page, table, text and font kit, as the other ceremony pages use
 // it: see the note at the top of lib/ensemble/render/pdf/shotSheet.ts.
 import { PDFDocument, type PDFFont } from "pdf-lib";
-import { embedFamily } from "@/apps/brigade/render/pdf/embedFonts";
-import type { FontSource } from "@/apps/brigade/render/pdf/fontSource";
-import { addSheet, hexColour, type Colour } from "@/apps/brigade/render/pdf/page";
-import { paginate } from "@/apps/brigade/render/pdf/table";
-import { wrap } from "@/apps/brigade/render/pdf/text";
-import { contentBox, PAGE_SIZES, ptToMm } from "@/apps/brigade/render/pdf/units";
+import { embedFamily } from "@/lib/pdf/embedFonts";
+import type { FontSource } from "@/lib/pdf/fontSource";
+import { addSheet, hexColour, type Colour } from "@/lib/pdf/page";
+import { paginate } from "@/lib/pdf/table";
+import { wrap } from "@/lib/pdf/text";
+import { contentBox, PAGE_SIZES, ptToMm } from "@/lib/pdf/units";
 
 /** One line of a block, before wrapping. */
 export interface FlowLine {

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useSelectFromAddress } from "@/components/shell/useSelectFromAddress";
 import { Presentation } from "./render/screen/Presentation";
 import { Timeline } from "./render/screen/Timeline";
-import { formatDuration } from "./core/time/minutes";
+import { formatDuration } from "@/lib/minutes";
 import { restoreFonts } from "./state/fontLoader";
 import { spanOf } from "./render/screen/ticks";
 import { ZOOM_STEP, currentDoc, useSchedule, useStore, useTimelineDoc } from "./state/store";

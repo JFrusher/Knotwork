@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { PDFDocument, StandardFonts, type PDFFont } from "pdf-lib";
 import { beforeAll, describe, expect, it } from "vitest";
 import { measureMm, truncate, wrap } from "./text";

@@ -1,11 +1,11 @@
 // Brigade's page, text and font kit, as the shot sheet uses it: see the note
 // at the top of lib/ensemble/render/pdf/shotSheet.ts.
 import { PDFDocument } from "pdf-lib";
-import { embedFamily } from "@/apps/brigade/render/pdf/embedFonts";
-import type { FontSource } from "@/apps/brigade/render/pdf/fontSource";
-import { addSheet, type Colour } from "@/apps/brigade/render/pdf/page";
-import { wrap } from "@/apps/brigade/render/pdf/text";
-import { PAGE_SIZES, ptToMm } from "@/apps/brigade/render/pdf/units";
+import { embedFamily } from "@/lib/pdf/embedFonts";
+import type { FontSource } from "@/lib/pdf/fontSource";
+import { addSheet, type Colour } from "@/lib/pdf/page";
+import { wrap } from "@/lib/pdf/text";
+import { PAGE_SIZES, ptToMm } from "@/lib/pdf/units";
 import { itemText, type BoxRow } from "../../rows";
 
 interface LabelOptions {

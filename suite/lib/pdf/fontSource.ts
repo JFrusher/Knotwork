@@ -1,4 +1,4 @@
-import { BUNDLED_FONTS } from "../../assets/fonts";
+import { BUNDLED_FONTS } from "./fonts";
 import type { FontBytes } from "./embedFonts";
 
 /**

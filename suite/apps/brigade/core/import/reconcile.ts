@@ -1,4 +1,4 @@
-import { newId } from "../model/ids";
+import { newId } from "@/lib/readableId";
 import type { BrigadeDoc, ImportedDay, Team } from "../model/types";
 import type { DayTeam } from "./day";
 

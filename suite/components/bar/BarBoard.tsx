@@ -57,7 +57,7 @@ export function BarBoard() {
     try {
       const [{ renderShoppingList }, { browserFontSource }] = await Promise.all([
         import("@/lib/bar/render/pdf/shoppingList"),
-        import("@/apps/brigade/render/pdf/fontSource"),
+        import("@/lib/pdf/fontSource"),
       ]);
       const bytes = await renderShoppingList(shoppingList(bar, sum), {
         fontSource: browserFontSource(),

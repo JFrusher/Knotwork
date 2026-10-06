@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { isMoment, OUTPUT_IDS, type OutputId } from "../../core/model/types";
-import { formatClock, formatDuration } from "../../core/time/minutes";
+import { formatClock, formatDuration } from "@/lib/minutes";
 import { useSchedule, useStore, useTimelineDoc } from "../../state/store";
 import {
   Button,

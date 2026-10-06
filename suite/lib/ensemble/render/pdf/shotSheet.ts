@@ -2,12 +2,12 @@
 // a third near-copy of it (Cadence already carries a second). Promote the
 // shared parts to lib/pdf/ if a fourth tool ever needs this kit.
 import { PDFDocument, type PDFFont } from "pdf-lib";
-import { embedFamily } from "@/apps/brigade/render/pdf/embedFonts";
-import type { FontSource } from "@/apps/brigade/render/pdf/fontSource";
-import { addSheet, hexColour, type Colour, type Sheet } from "@/apps/brigade/render/pdf/page";
-import { paginate } from "@/apps/brigade/render/pdf/table";
-import { wrap } from "@/apps/brigade/render/pdf/text";
-import { contentBox, PAGE_SIZES, ptToMm } from "@/apps/brigade/render/pdf/units";
+import { embedFamily } from "@/lib/pdf/embedFonts";
+import type { FontSource } from "@/lib/pdf/fontSource";
+import { addSheet, hexColour, type Colour, type Sheet } from "@/lib/pdf/page";
+import { paginate } from "@/lib/pdf/table";
+import { wrap } from "@/lib/pdf/text";
+import { contentBox, PAGE_SIZES, ptToMm } from "@/lib/pdf/units";
 import type { Cast, CustomRole, Guest, Seating, ShotSection } from "@/lib/model/types";
 import { resolveMembers } from "@/lib/cast/resolve";
 

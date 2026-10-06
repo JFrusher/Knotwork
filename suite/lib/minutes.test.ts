@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { formatClock, formatDuration, parseClock, MIN_PER_DAY } from "./minutes";
 

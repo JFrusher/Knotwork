@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { allTags } from "../../core/model/tags";
-import { formatClock, parseClock } from "../../core/time/minutes";
+import { formatClock, parseClock } from "@/lib/minutes";
 import { useStore, useTimelineDoc } from "../../state/store";
 import { Button, Panel, TextArea, TextField } from "@/components/ui/fields";
 import styles from "./TagsPanel.module.css";

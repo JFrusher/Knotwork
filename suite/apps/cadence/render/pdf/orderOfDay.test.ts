@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { sampleDoc } from "../../core/model/defaults";
 import { renderContactSheet } from "./contactSheet";
-import { nodeFontSource } from "./nodeFontSource";
+import { nodeFontSource } from "@/lib/pdf/nodeFontSource";
 import { renderOrderOfDay } from "./orderOfDay";
-import { textOf } from "./readPdf";
-import { mmToPt, PAGE_SIZES } from "./units";
+import { textOf } from "@/lib/pdf/readPdf";
+import { mmToPt, PAGE_SIZES } from "@/lib/pdf/units";
 import { PDFDocument } from "pdf-lib";
 
 const options = { fontSource: nodeFontSource };

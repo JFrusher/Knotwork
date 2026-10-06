@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { BUNDLED_FONTS } from "../../assets/fonts";
+import { BUNDLED_FONTS } from "./fonts";
 import type { FontBytes } from "./embedFonts";
 import type { FontSource } from "./fontSource";
 

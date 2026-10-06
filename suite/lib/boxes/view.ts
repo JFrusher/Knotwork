@@ -1,4 +1,4 @@
-import { formatClock } from "@/apps/cadence/core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import type { Place } from "@/lib/model/slices";
 import type { Box, BoxItem, Boxes } from "@/lib/model/types";
 

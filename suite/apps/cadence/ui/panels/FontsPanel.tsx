@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { BUNDLED_FONTS } from "../../assets/fonts";
+import { BUNDLED_FONTS } from "@/lib/pdf/fonts";
 import { addFont } from "../../state/fontLoader";
 import { useStore, useTimelineDoc } from "../../state/store";
 import { Button, Panel } from "@/components/ui/fields";

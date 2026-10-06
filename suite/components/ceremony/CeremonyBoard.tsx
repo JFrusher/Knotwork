@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowDown, ArrowUp, BookOpen, Copy, ListOrdered, Music, Plus, Printer, Trash2, Wand2 } from "lucide-react";
 import type { Event as WeddingEvent } from "@jfrusher/knotwork";
-import { formatClock } from "@/apps/cadence/core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { Button, Check, Empty, IconButton, Panel, Segmented, SelectField, TextArea, TextField } from "@/components/ui/controls";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { ToolUndo } from "@/components/shell/ToolUndo";
@@ -121,7 +121,7 @@ export function CeremonyBoard() {
   const print = async (what: "running-order" | "music" | "order-of-service" | "processional") => {
     setNote(null);
     try {
-      const { browserFontSource } = await import("@/apps/brigade/render/pdf/fontSource");
+      const { browserFontSource } = await import("@/lib/pdf/fontSource");
       const fontSource = browserFontSource();
       const generatedOn = `Made with Knotwork, ${new Date().toLocaleDateString()}`;
       let bytes: Uint8Array;

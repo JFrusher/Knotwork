@@ -2,12 +2,12 @@ import { PDFDocument, type PDFFont } from "pdf-lib";
 import { tagLabel } from "../../core/model/tags";
 import { isMoment, type Block, type TimelineDoc } from "../../core/model/types";
 import { resolve } from "../../core/schedule/resolve";
-import { formatClock, formatDuration } from "../../core/time/minutes";
-import { embedFamily } from "./embedFonts";
-import type { FontSource } from "./fontSource";
-import { addSheet, hexColour, type Colour, type Sheet } from "./page";
-import { measureMm, truncate } from "./text";
-import { contentBox, mmToPt, PAGE_SIZES, ptToMm } from "./units";
+import { formatClock, formatDuration } from "@/lib/minutes";
+import { embedFamily } from "@/lib/pdf/embedFonts";
+import type { FontSource } from "@/lib/pdf/fontSource";
+import { addSheet, hexColour, type Colour, type Sheet } from "@/lib/pdf/page";
+import { measureMm, truncate } from "@/lib/pdf/text";
+import { contentBox, mmToPt, PAGE_SIZES, ptToMm } from "@/lib/pdf/units";
 
 interface TimelineOptions {
   fontSource: FontSource;

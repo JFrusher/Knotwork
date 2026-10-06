@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { FileSpreadsheet, ListChecks, PackagePlus, Plus, Tag, Trash2, X } from "lucide-react";
-import { formatClock } from "@/apps/cadence/core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { Button, Empty, IconButton, NumberField, Panel, SelectField, TextArea, TextField } from "@/components/ui/controls";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { ToolUndo } from "@/components/shell/ToolUndo";
@@ -48,7 +48,7 @@ export function BoxesBoard() {
   const print = async (what: "labels" | "list") => {
     setNote(null);
     try {
-      const { browserFontSource } = await import("@/apps/brigade/render/pdf/fontSource");
+      const { browserFontSource } = await import("@/lib/pdf/fontSource");
       const fontSource = browserFontSource();
       const bytes =
         what === "labels"

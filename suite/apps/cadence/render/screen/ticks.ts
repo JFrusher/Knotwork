@@ -1,4 +1,4 @@
-import { formatClock } from "../../core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 
 interface Tick {
   min: number;

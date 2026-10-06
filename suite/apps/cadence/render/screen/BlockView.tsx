@@ -2,7 +2,7 @@ import type { PointerEvent } from "react";
 import type { Conflict } from "../../core/schedule/conflicts";
 import type { ResolvedBlock } from "../../core/schedule/resolve";
 import { isMoment, type Block } from "../../core/model/types";
-import { formatClock, formatDuration } from "../../core/time/minutes";
+import { formatClock, formatDuration } from "@/lib/minutes";
 import { LABEL_PX, type BlockDetail } from "./labelPlacement";
 import styles from "./BlockView.module.css";
 

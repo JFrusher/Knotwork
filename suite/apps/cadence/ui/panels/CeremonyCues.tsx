@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatClock } from "../../core/time/minutes";
+import { formatClock } from "@/lib/minutes";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { startTimes } from "@/lib/ceremony/checks";
 import { musicCues, songName, songPlaying } from "@/lib/ceremony/music";
