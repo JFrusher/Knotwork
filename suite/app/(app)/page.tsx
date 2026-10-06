@@ -4,6 +4,7 @@ import { Countdown } from "@/components/shell/Countdown";
 import { WeddingPack } from "@/components/shell/WeddingPack";
 import { ExampleBanner } from "@/components/shell/ExampleBanner";
 import { FrontPage } from "@/components/shell/FrontPage";
+import { FortnightCard } from "@/components/shell/FortnightCard";
 
 export const metadata: Metadata = {
   // `absolute` so the root template does not append the suffix to the name it
@@ -28,10 +29,11 @@ export default function Home() {
         <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
           <ExampleBanner />
           <Countdown />
+          <FortnightCard />
 
           <Overview />
 
-          <section className="mt-12">
+          <section id="wedding-pack" className="mt-12">
             <WeddingPack />
           </section>
         </div>

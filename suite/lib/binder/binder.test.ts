@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { migrate } from "@jfrusher/knotwork";
 import { formatClock } from "@/lib/minutes";
 import { withTool } from "@/lib/model/toolbox";
-import { contacts, dayClock, findBoxes, findGuests, nowAndNext, runningOrder } from "./binder";
+import { contacts, dayClock, findBoxes, findGuests, nowAndNext, runningOrder, walkingOrder } from "./binder";
 
 const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 const doc = migrate(raw);
@@ -58,5 +58,38 @@ describe("finding a box on the day", () => {
 
   it("finds nothing in Boxes when the Boxes tool is hidden", () => {
     expect(findBoxes(migrate({ ...raw, tools: withTool(raw, "boxes", false) }), "rings")).toEqual([]);
+  });
+});
+
+describe("the walking order, on the day", () => {
+  const raw = () => JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
+
+  it("is the processional in order, under the ceremony's block, with names and music", () => {
+    const walk = walkingOrder(doc)!;
+    expect(walk.blockId).toBe("blk-ceremony");
+    expect(walk.groups[0]).toMatchObject({ cue: "In place before the music starts", song: null });
+    expect(walk.groups[1]!.song).toBe("Air on the G String — J. S. Bach");
+    expect(walk.groups[1]!.names.length).toBeGreaterThan(0);
+  });
+
+  it("is nothing while Ceremony is hidden", () => {
+    const r = raw();
+    expect(walkingOrder(migrate({ ...r, tools: withTool(r, "ceremony", false) }))).toBeNull();
+  });
+
+  it("is nothing with no processional", () => {
+    const r = raw();
+    expect(walkingOrder(migrate({ ...r, ceremony: { ...r.ceremony, processional: [] } }))).toBeNull();
+  });
+});
+
+describe("the walking order with the ceremony on no part of the day", () => {
+  it("is still given, with no block to sit under", () => {
+    const r = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
+    for (const blockId of [null, "blk-gone"]) {
+      const walk = walkingOrder(migrate({ ...r, ceremony: { ...r.ceremony, blockId } }))!;
+      expect(walk.blockId).toBeNull();
+      expect(walk.groups.length).toBeGreaterThan(0);
+    }
   });
 });

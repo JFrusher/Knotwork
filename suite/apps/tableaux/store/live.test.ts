@@ -16,7 +16,8 @@ const { useStore } = await import('./useStore')
 const example = JSON.parse(readFileSync(join(process.cwd(), 'public', 'fixtures', 'example-wedding.knotwork.json'), 'utf8'))
 const shared = () => useKnotworkStore.getState()
 const seating = () => useStore.getState()
-const stored = () => shared().raw
+// The wedding as stored, shaped like the example it was opened from.
+const stored = () => shared().raw as typeof example
 const tableIds = Object.keys(example.seating.tables)
 const [t1, t2] = tableIds
 

@@ -67,7 +67,7 @@ export const USUAL_TASKS: ReadonlyArray<{ label: string; daysBefore: number }> =
 ];
 
 /** An ISO date so many days before another. */
-function daysBefore(iso: string, days: number): string {
+export function daysBefore(iso: string, days: number): string {
   const when = new Date(`${iso}T12:00:00Z`);
   when.setUTCDate(when.getUTCDate() - days);
   return when.toISOString().slice(0, 10);

@@ -5,6 +5,7 @@ import {
   rectSeatsFromSides,
   deriveSizeUnits,
   DEFAULT_PPU,
+  type TableShapeSource,
 } from './seatPositions'
 
 describe('getTableGeometry', () => {
@@ -106,8 +107,8 @@ describe('real-world units (sizeUnits + ppu)', () => {
   })
 
   it('ignores rotation — local seat coordinates are rotation-free', () => {
-    const a = getTableGeometry({ type: 'round', capacity: 8, rotation: 0 })
-    const b = getTableGeometry({ type: 'round', capacity: 8, rotation: 137 })
+    const a = getTableGeometry({ type: 'round', capacity: 8, rotation: 0 } as TableShapeSource)
+    const b = getTableGeometry({ type: 'round', capacity: 8, rotation: 137 } as TableShapeSource)
     expect(b.seats).toEqual(a.seats)
   })
 })

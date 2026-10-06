@@ -14,13 +14,16 @@ import type { SeatMode } from '@/lib/model/types'
 import { makeId, seatId } from '../utils/ids'
 import { getTableType, clampCapacity, clampPerSide, seatCountFromPerSide } from '../utils/tableTypes'
 import { deriveSizeUnits, DEFAULT_PPU, sidesFromLayout, remapSeatsForSides } from '../utils/seatPositions'
+import { applyPatch } from './patch'
 import type {
   Action,
+  Command,
   Constraint,
   Designation,
   Family,
   Group,
   Guest,
+  Patch,
   PerSideSeats,
   Plan,
   Settings,
@@ -1199,6 +1202,64 @@ const assignFamilyToTable =
     return fam ? seatBlock(plan, fam.memberIds || [], tableId, seatIndex, 'ASSIGN_FAMILY', 'Seat family') : null
   }
 
+// ── several guests at once ──────────────────────────────────────────────────
+
+/**
+ * Several actions as one command, so a bulk edit is one step on the undo
+ * history. Each action reads the plan as the ones before it left it, so the
+ * per-guest rules (who leaves which family, which group follows) stay in one
+ * place rather than being rewritten here.
+ */
+const inSequence =
+  (type: string, label: string, steps: Action[]): Action =>
+  (plan) => {
+    let working = plan
+    const payload: Patch = {}
+    let meta: Command['meta']
+    for (const step of steps) {
+      const cmd = step(working)
+      if (!cmd) continue
+      for (const [key, value] of Object.entries(cmd.payload) as [keyof Patch, unknown][]) {
+        const before = payload[key]
+        ;(payload as Record<string, unknown>)[key] =
+          before && !Array.isArray(value) && typeof value === 'object' ? { ...before, ...(value as object) } : value
+      }
+      working = { ...working, ...applyPatch(working, cmd.payload) }
+      meta = { ...meta, ...cmd.meta }
+    }
+    return Object.keys(payload).length ? { type, label, payload, meta } : null
+  }
+
+const seatGuests =
+  (guestIds: string[], tableId: string): Action =>
+  (plan) =>
+    seatBlock(plan, guestIds, tableId, null, 'SEAT_GUESTS', 'Seat guests')
+
+/**
+ * A family of the selected guests, in the subgroup (or else the group) they
+ * all share, named for the surname they all share.
+ */
+const familyFrom =
+  (guestIds: string[]): Action =>
+  (plan) => {
+    const members = guestIds.map((id) => plan.guests[id]).filter(Boolean)
+    if (!members.length) return null
+    const shared = <K extends keyof Guest>(key: K) =>
+      members.every((g) => g[key] && g[key] === members[0][key]) ? members[0][key] : null
+    const lastName = String(shared('lastName') ?? '').trim()
+    const created = createFamily({
+      parentSubgroupId: (shared('subgroupId') as string | null) ?? null,
+      parentGroupId: (shared('groupId') as string | null) ?? null,
+      ...(lastName ? { name: lastName } : {}),
+    })(plan)
+    if (!created) return null
+    const id = created.meta!.newFamilyId
+    return inSequence('FAMILY_FROM', 'Make a family', [() => created, ...members.map((g) => addToFamily(id, g.id))])(plan)
+  }
+
+const addGuestsToGroup = (groupId: string, guestIds: string[]): Action =>
+  inSequence('ADD_GUESTS_TO_GROUP', 'Add to group', guestIds.map((id) => addToGroup(groupId, id)))
+
 // ── zones ───────────────────────────────────────────────────────────────────
 
 const addZone =
@@ -1529,6 +1590,9 @@ export const actionCreators = {
   addToFamily,
   removeFromFamily,
   assignFamilyToTable,
+  seatGuests,
+  familyFrom,
+  addGuestsToGroup,
   addZone,
   removeZone,
   moveZone,

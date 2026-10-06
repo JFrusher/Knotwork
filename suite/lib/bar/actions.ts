@@ -1,4 +1,4 @@
-import type { Bar, BarKind, BarLine, Crowd, Figure, LineChoice, MixedPart, Pour, Shop } from "@/lib/model/types";
+import type { Bar, BarKind, BarLine, BlockSpan, Crowd, Figure, LineChoice, MixedPart, Pour, Shop } from "@/lib/model/types";
 import { POURS } from "@/lib/model/types";
 import { FIGURE_DEFAULTS, LINES, MIXES } from "./defaults";
 import { mixOf } from "./sum";
@@ -69,11 +69,18 @@ export function setWholeCases(bar: Bar, wholeCases: boolean): Bar {
 }
 
 /** How many things the couple chose, for knowing whether a wedding holds any of it. */
+/** Which blocks of the day a part of the bar is, or null to go back to typed hours. */
+export function setSpan(bar: Bar, part: MixedPart, span: BlockSpan | null): Bar {
+  const { [part]: _, ...others } = bar.spans;
+  return { ...bar, spans: span ? { ...others, [part]: span } : others };
+}
+
 export function choices(bar: Bar): number {
   return (
     Object.keys(bar.figures).length +
     Object.keys(bar.mix).length +
     Object.keys(bar.lines).length +
+    Object.keys(bar.spans).length +
     (bar.people !== null ? 1 : 0) +
     (bar.kind !== "full" ? 1 : 0) +
     (bar.crowd !== "usual" ? 1 : 0) +

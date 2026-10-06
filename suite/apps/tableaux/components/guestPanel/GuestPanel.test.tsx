@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import GuestPanel from './GuestPanel'
 import { useStore } from '../../store/useStore'
 import { openPlan } from '../../test/openPlan'
@@ -58,5 +58,31 @@ describe('GuestPanel search', () => {
     search('turing')
     expect(screen.getByText('Alan Turing')).toBeInTheDocument()
     expect(screen.queryByText('Ada Lovelace')).toBeNull()
+  })
+})
+
+describe("a family member's menu", () => {
+  it('offers to seat them on their own, opening them in the inspector', () => {
+    search('lovelace')
+    fireEvent.contextMenu(screen.getByText('Ada Lovelace'))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Seat on their own…' }))
+    expect(useStore.getState().selection).toEqual({ type: 'guest', id: 'g1' })
+  })
+
+  it('is not offered to someone in no family', () => {
+    search('turing')
+    fireEvent.contextMenu(screen.getByText('Alan Turing'))
+    expect(screen.queryByRole('menuitem', { name: 'Seat on their own…' })).toBeNull()
+  })
+})
+
+describe('the menu of a guest in a selection', () => {
+  it('offers to make a family of everyone selected', () => {
+    search('work')
+    useStore.getState().setSelectedGuestIds(['g3', 'g4'])
+    fireEvent.contextMenu(screen.getByText('Alan Turing'))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Family from 2 selected' }))
+    const families = Object.values(useStore.getState().families).filter((f) => f.id !== 'fam')
+    expect(families.map((f) => f.memberIds)).toEqual([['g3', 'g4']])
   })
 })

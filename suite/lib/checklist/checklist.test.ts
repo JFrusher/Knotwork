@@ -14,7 +14,7 @@ const task = (label: string, over: Partial<Job> = {}): Job => ({
   dueOn: "",
   ...over,
 });
-const crew = (jobs: Job[]): Crew => ({ teams: [], people: [], jobs, budget: null });
+const crew = (jobs: Job[]): Crew => ({ teams: [], people: [], jobs, budget: null, errandsDone: [] });
 
 describe("the checklist", () => {
   it("sorts open tasks by when they are due, and keeps the day's jobs out of it", () => {

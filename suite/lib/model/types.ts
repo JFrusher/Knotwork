@@ -292,6 +292,8 @@ export interface Crew {
   jobs: Job[];
   /** What the couple intends to spend in total, or null if they have not said. */
   budget: number | null;
+  /** The ids of errands the Checklist works out from other tools (the Bar's shopping) that are ticked off. */
+  errandsDone: string[];
 }
 
 // group shots ------------------------------------------------------------------
@@ -646,4 +648,15 @@ export interface Bar {
   lines: Partial<Record<BarLine, LineChoice>>;
   /** Round up to whole cases, for buying on sale or return. */
   wholeCases: boolean;
+  /**
+   * Which Timeline blocks the reception and the evening are, first to last.
+   * The Bar keeps which blocks, never their hours, so it follows the day.
+   */
+  spans: Partial<Record<MixedPart, BlockSpan>>;
+}
+
+/** A run of the day's blocks, from the start of one to the end of another (the same one for a single block). */
+export interface BlockSpan {
+  from: string;
+  to: string;
 }

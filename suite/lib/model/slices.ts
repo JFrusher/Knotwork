@@ -766,6 +766,7 @@ export function readCrew(doc: Knotwork): Crew {
         };
       }),
       budget: typeof raw["budget"] === "number" ? raw["budget"] : null,
+      errandsDone: Array.isArray(raw["errandsDone"]) ? raw["errandsDone"].filter((id): id is string => typeof id === "string") : [],
     };
   });
 }
@@ -1097,7 +1098,7 @@ function readLineChoice(raw: unknown): LineChoice | null {
 }
 
 export function emptyBar(): Bar {
-  return { kind: "full", crowd: "usual", people: null, figures: {}, mix: {}, lines: {}, wholeCases: true };
+  return { kind: "full", crowd: "usual", people: null, figures: {}, mix: {}, lines: {}, wholeCases: true, spans: {} };
 }
 
 /** The bar as the couple left it: only their choices, each checked; the rest is the defaults'. */
@@ -1123,6 +1124,12 @@ export function readBar(doc: Knotwork): Bar {
       const read = readLineChoice(storedLines[line]);
       if (read) lines[line] = read;
     }
+    const spans: Bar["spans"] = {};
+    const storedSpans = isRecord(raw["spans"]) ? raw["spans"] : {};
+    for (const part of MIXED_PARTS) {
+      const span = storedSpans[part];
+      if (isRecord(span) && typeof span["from"] === "string" && typeof span["to"] === "string") spans[part] = { from: span["from"], to: span["to"] };
+    }
     const people = amount(raw["people"]);
     return {
       kind: BAR_KINDS.includes(raw["kind"] as BarKind) ? (raw["kind"] as BarKind) : "full",
@@ -1132,6 +1139,7 @@ export function readBar(doc: Knotwork): Bar {
       mix,
       lines,
       wholeCases: bool(raw["wholeCases"], true),
+      spans,
     };
   });
 }

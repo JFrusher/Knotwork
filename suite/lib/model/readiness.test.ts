@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
 import { readiness } from "./readiness";
@@ -41,8 +43,9 @@ describe("what is left to do", () => {
 
   it("does not mention unseated guests before there are any tables", () => {
     // Nobody is seated on the day the guest list arrives, and saying so then is
-    // just restating that the work has not been done yet.
-    expect(ids({ guests: { g1: { id: "g1", firstName: "Charis" } } })).toEqual([]);
+    // just restating that the work has not been done yet. What is said instead
+    // is the next step: draw the room.
+    expect(ids({ guests: { g1: { id: "g1", firstName: "Charis" } } })).toEqual(["room-undrawn"]);
   });
 
   it("says nothing of money or tasks to a wedding that has never added Money or the Checklist", () => {
@@ -358,5 +361,57 @@ describe("the boxes", () => {
     expect(onDay("2028-05-28", boxesNeededAt(null))).toContain("boxes-unpacked");
     expect(onDay("2028-05-28", boxesNeededAt(null, true))).not.toContain("boxes-unpacked");
     expect(onDay("2028-06-02", boxesNeededAt(null))).not.toContain("boxes-unpacked");
+  });
+});
+
+describe("the first steps, from what the wedding contains", () => {
+  const at = (today: string, raw: Record<string, unknown>) => {
+    const full = { ...emptyKnotwork(), ...EVERY_TOOL, event: { ...emptyKnotwork().event, date: "2028-06-01" }, ...raw };
+    return readiness(migrate(full), full, today).map((item) => item.id);
+  };
+  const seatedGuests = (n: number) =>
+    Object.fromEntries(Array.from({ length: n }, (_, i) => [`g${i}`, { id: `g${i}`, firstName: `Guest ${i}`, assignedTableId: "t1" }]));
+  const room = (n: number) => ({ seating: { tables: { t1: { id: "t1", label: "Table 1", capacity: 20, assignedGuestIds: Object.keys(seatedGuests(n)) } } } });
+  const BEFORE = "2028-01-01";
+
+  it("B1: with no guests, asks for the guest list", () => {
+    expect(at(BEFORE, {})).toEqual(["no-guests"]);
+  });
+
+  it("B2: with guests and no tables, asks for the room to be drawn", () => {
+    expect(at(BEFORE, { guests: GUESTS })).toContain("room-undrawn");
+    expect(at(BEFORE, { guests: GUESTS, ...TABLES })).not.toContain("room-undrawn");
+  });
+
+  it("B3: with ten seated and nothing designed, points at the place cards", () => {
+    expect(at(BEFORE, { guests: seatedGuests(10), ...room(10) })).toContain("cards-undesigned");
+    expect(at(BEFORE, { guests: seatedGuests(9), ...room(9) })).not.toContain("cards-undesigned");
+  });
+
+  it("B4: with a timeline, asks for the ceremony to be pinned to its part of the day", () => {
+    const timeline = { timeline: { blocks: [{ id: "b1", label: "Ceremony", location: "" }] } };
+    expect(at(BEFORE, { guests: GUESTS, ...TABLES, ...timeline })).toContain("ceremony-unpinned");
+    expect(at(BEFORE, { guests: GUESTS, ...TABLES, ...timeline, ceremony: { blockId: "b1" } })).not.toContain("ceremony-unpinned");
+    expect(at(BEFORE, { guests: GUESTS, ...TABLES })).not.toContain("ceremony-unpinned");
+  });
+
+  it("says none of them once the day has passed", () => {
+    const after = "2028-06-02";
+    expect(at(after, {})).toEqual([]);
+    expect(at(after, { guests: GUESTS })).not.toContain("room-undrawn");
+    expect(at(after, { guests: seatedGuests(10), ...room(10) })).not.toContain("cards-undesigned");
+    expect(at(after, { guests: GUESTS, ...TABLES, timeline: { blocks: [{ id: "b1", label: "Ceremony" }] } })).not.toContain("ceremony-unpinned");
+  });
+
+  it("are past for the example wedding, which is set up: room drawn, cards designed, ceremony pinned", () => {
+    const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
+    const shown = readiness(migrate(raw), raw, BEFORE).map((item) => item.id);
+    for (const step of ["no-guests", "room-undrawn", "cards-undesigned", "ceremony-unpinned"]) expect(shown).not.toContain(step);
+  });
+
+  it("never points at a tool the wedding has hidden", () => {
+    const hidden = (id: string) => ({ tools: { shown: TOOLS.map((tool) => tool.id).filter((t) => t !== id) } });
+    expect(at(BEFORE, { guests: GUESTS, ...hidden("seating") })).not.toContain("room-undrawn");
+    expect(at(BEFORE, { guests: seatedGuests(10), ...room(10), ...hidden("place-cards") })).not.toContain("cards-undesigned");
   });
 });

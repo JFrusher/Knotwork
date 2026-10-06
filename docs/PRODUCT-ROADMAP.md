@@ -40,7 +40,7 @@ instead (see subsystem F).
 | A | Identity & accounts | none | ✅ [spec written](design/specs/2026-09-02-identity-accounts-design.md) |
 | B | Multi-tenant data & storage | A | ✅ **built**: [spec](design/specs/2026-09-02-multitenant-storage-design.md), [plan](design/plans/2026-09-02-multitenant-storage.md) complete 2026-09-07 |
 | C | Cadence/suite de-duplication | none | ✅ specced and verified safe; **archiving the four standalone repos is four clicks in GitHub's Settings → Archive**, left to the maintainer rather than installing a CLI to do it |
-| D | Tableaux's future | none | 🟡 **pass one built**: data boundary typed ([plan](design/plans/2026-09-07-tableaux-data-boundary-typing.md), 2026-09-07); 108 files still JS |
+| D | Tableaux's future | none | 🟡 **pass one built**: data boundary typed ([plan](design/plans/2026-09-07-tableaux-data-boundary-typing.md), 2026-09-07); every file, tests included, is now TypeScript, and `allowJs` is off |
 | E | Brigade's expanded scope | (loosely) A, B | ✅ **built**: [spec](design/specs/2026-09-08-brigade-vendors-budget-tasks-design.md), [plan](design/plans/2026-09-08-brigade-vendors-budget-tasks.md) complete 2026-09-08. E4 is a confirmation date, not a portal |
 | F | Onboarding, billing & legal at product scale | A | ✅ **built**: [spec](design/specs/2026-09-02-onboarding-billing-legal-design.md), [plan](design/plans/2026-09-07-licensing-and-self-hosting.md) complete 2026-09-07; privacy/terms rewritten 2026-09-08 |
 | H | Guided tour & example wedding | none | ✅ **built**: [spec](design/specs/2026-09-07-guided-tour-design.md), [plan](design/plans/2026-09-07-guided-tour.md) complete 2026-09-07 |
@@ -283,7 +283,10 @@ reconsidered in favor of keeping current function and workings intact.
 **Pass one built.** [`2026-09-07-tableaux-data-boundary-typing.md`](design/plans/2026-09-07-tableaux-data-boundary-typing.md)
 converted `store/planSchema` and `store/sliceBridge` to TypeScript and replaced
 `planDocSchema`'s `.passthrough()` with real guest/table/room shapes.
-`store/useStore.js` and the other 108 JS files are the obvious next pass.
+The rest followed: Seating's source, then its last test files, are
+TypeScript, and `suite/tsconfig.json` sets `"allowJs": false`. It says
+`false` rather than leaving the key out, because `next build` adds
+`"allowJs": true` to a tsconfig that has no `allowJs` at all.
 
 Two corrections to the spec, both checked first: `checkJs` was deliberately
 **not** enabled (it would type-check all 110 JS files at once, the flag day the

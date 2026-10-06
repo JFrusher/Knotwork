@@ -17,11 +17,12 @@ export function WarningsProvider({ children }: { children: ReactNode }) {
   const tables = useStore((s) => s.tables)
   const constraints = useStore((s) => s.constraints)
   const families = useStore((s) => s.families)
+  const settings = useStore((s) => s.settings)
 
   const value = useMemo(() => {
-    const list = computeWarnings({ guests, tables, constraints, families })
+    const list = computeWarnings({ guests, tables, constraints, families, settings })
     return { list, ...buildWarningIndex(list) }
-  }, [guests, tables, constraints, families])
+  }, [guests, tables, constraints, families, settings])
 
   return <WarningsContext.Provider value={value}>{children}</WarningsContext.Provider>
 }

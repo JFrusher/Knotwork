@@ -2,8 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
 import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
+import type { Plan } from './types'
 
-const emptyDoc = () => ({
+const emptyDoc = () =>
+  ({
   meta: { weddingName: 'Test', venue: '', date: '', createdAt: '', updatedAt: '' },
   guests: {},
   groups: {},
@@ -20,7 +22,7 @@ const emptyDoc = () => ({
     gridSnap: true,
     gridSize: 20,
   },
-})
+  }) as unknown as Partial<Plan>
 
 const s = () => useStore.getState()
 
@@ -31,7 +33,7 @@ beforeEach(() => {
 describe('addGuest', () => {
   it('creates a confirmed, unseated guest and is undoable', () => {
     const cmd = s().addGuest({ firstName: 'Sam', lastName: 'Lee', dietaryRaw: 'Vegan' })
-    const id = cmd.meta.newGuestId
+    const id = cmd!.meta!.newGuestId as string
     const g = s().guests[id]
     expect(g.fullName).toBe('Sam Lee')
     expect(g.rsvpStatus).toBe('confirmed')
@@ -43,7 +45,7 @@ describe('addGuest', () => {
   })
 
   it('falls back to a placeholder name when called with no details', () => {
-    const id = s().addGuest().meta.newGuestId
+    const id = s().addGuest()!.meta!.newGuestId as string
     expect(s().guests[id].fullName).toBe('New guest')
   })
 })

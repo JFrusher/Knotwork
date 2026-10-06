@@ -8,6 +8,7 @@ import Icon from '../ui/Icon'
 import IconButton from '../ui/IconButton'
 import Button from '../ui/Button'
 import TextField from './TextField'
+import { tableChoices } from '../../utils/tableChoices'
 import f from './fields.module.css'
 import styles from './GuestInspector.module.css'
 
@@ -16,6 +17,8 @@ const RSVPS: RsvpStatus[] = ['confirmed', 'pending', 'declined']
 export default function GuestInspector({ guestId }: { guestId: string }) {
   const guest = useStore((s) => s.guests[guestId])
   const groups = useStore((s) => s.groups)
+  const subgroup = useStore((s) => (guest?.subgroupId ? s.subgroups[guest.subgroupId] : null))
+  const family = useStore((s) => (guest?.familyId ? s.families[guest.familyId] : null))
   const table = useStore((s) => (guest?.assignedTableId ? s.tables[guest.assignedTableId] : null))
   const updateGuest = useStore((s) => s.updateGuest)
   const addToGroup = useStore((s) => s.addToGroup)
@@ -41,17 +44,7 @@ export default function GuestInspector({ guestId }: { guestId: string }) {
 
   // Every table, by its label, with how many seats are left. The way to seat
   // someone without dragging — which is the only way from a keyboard.
-  const tableChoices = useMemo(
-    () =>
-      Object.values(tables)
-        .map((t) => ({
-          id: t.id,
-          label: t.label,
-          free: t.capacity - (t.assignedGuestIds || []).filter(Boolean).length,
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })),
-    [tables]
-  )
+  const choices = useMemo(() => tableChoices(tables), [tables])
 
   if (!guest) return null
 
@@ -200,11 +193,21 @@ export default function GuestInspector({ guestId }: { guestId: string }) {
             <option value="__new__">+ New group…</option>
           </select>
         </div>
+
+        {/* Shown, not edited: a guest joins a subgroup or family in the guest panel's tree. */}
+        {subgroup && (
+          <div className={f.field} role="group" aria-label="Subgroup">
+            <span className={f.label}>Subgroup</span>
+            <span>{subgroup.name}</span>
+          </div>
+        )}
+        {family && (
+          <div className={f.field} role="group" aria-label="Family">
+            <span className={f.label}>Family</span>
+            <span>{family.name}</span>
+          </div>
+        )}
       </div>
-      {/* TODO(family-ux): subgroup/family membership is invisible here — the
-          store has guest.subgroupId/guest.familyId but neither is read or
-          shown anywhere in this panel, only the sidebar tree shows them.
-          https://github.com/JFrusher/Knotwork/issues/64 */}
 
       <div className={f.group}>
         <span className={f.label}>Seating</span>
@@ -230,9 +233,16 @@ export default function GuestInspector({ guestId }: { guestId: string }) {
         ) : (
           <p className={styles.unassigned}>Not seated. Drag onto a table, or choose one below.</p>
         )}
+        {family && (
+          <p id={`alone-${guestId}`} className={styles.unassigned}>
+            Moves {guest.fullName} alone. Dragging moves the whole {family.name} family.
+          </p>
+        )}
         <select
+          id={`seat-choice-${guestId}`}
           className={f.select}
-          aria-label="Seat at table"
+          aria-label={family ? 'Seat on their own' : 'Seat at table'}
+          aria-describedby={family ? `alone-${guestId}` : undefined}
           value={guest.assignedTableId || ''}
           onChange={(e) => {
             if (e.target.value) assignGuest(guestId, e.target.value)
@@ -240,7 +250,7 @@ export default function GuestInspector({ guestId }: { guestId: string }) {
           }}
         >
           <option value="">No table</option>
-          {tableChoices.map((t) => (
+          {choices.map((t) => (
             <option
               key={t.id}
               value={t.id}

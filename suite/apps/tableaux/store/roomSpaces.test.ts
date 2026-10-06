@@ -2,13 +2,14 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
 import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
+import type { Plan, Space } from './types'
 
 const s = () => useStore.getState()
 
 describe('multi-room spaces', () => {
   beforeEach(() => {
     // A legacy single-rect room (no `spaces`) — exercises the migration.
-    openPlan({ room: { width: 1000, height: 800, backgroundColour: '#FAF8F5' } })
+    openPlan({ room: { width: 1000, height: 800, backgroundColour: '#FAF8F5' } as unknown as Plan['room'] })
   })
 
   it('migrates a legacy rectangle room into one rect space', () => {
@@ -16,13 +17,13 @@ describe('multi-room spaces', () => {
     expect(Array.isArray(spaces)).toBe(true)
     expect(spaces).toHaveLength(1)
     expect(spaces[0].shape).toBe('rect')
-    expect(spaces[0].width).toBeGreaterThan(0)
+    expect((spaces[0] as Extract<Space, { shape: 'rect' }>).width).toBeGreaterThan(0)
     expect(s().room.joins).toEqual([])
   })
 
   it('adds and removes spaces, keeping at least one', () => {
     const cmd = s().addSpace({ x: 80, y: 80, width: 300, height: 200 })
-    const id = cmd.meta.newSpaceId
+    const id = cmd!.meta!.newSpaceId
     expect(s().room.spaces).toHaveLength(2)
     const added = s().room.spaces.find((sp) => sp.id === id)
     expect(added).toMatchObject({ x: 80, y: 80, width: 300, height: 200, shape: 'rect' })
@@ -38,7 +39,7 @@ describe('multi-room spaces', () => {
 
   it('toggles a join between two spaces and cleans it up on removal', () => {
     const a = s().room.spaces[0].id
-    const b = s().addSpace({ x: 500, y: 0, width: 300, height: 200 }).meta.newSpaceId
+    const b = s().addSpace({ x: 500, y: 0, width: 300, height: 200 })!.meta!.newSpaceId as string
 
     s().joinSpaces(a, b)
     expect(s().room.joins).toHaveLength(1)
@@ -52,7 +53,7 @@ describe('multi-room spaces', () => {
   })
 
   it('resizes a rectangle space and undoes', () => {
-    const id = s().addSpace({ x: 0, y: 0, width: 300, height: 200 }).meta.newSpaceId
+    const id = s().addSpace({ x: 0, y: 0, width: 300, height: 200 })!.meta!.newSpaceId as string
     s().resizeSpace(id, { width: 500, height: 350 })
     let sp = s().room.spaces.find((x) => x.id === id)
     expect(sp).toMatchObject({ width: 500, height: 350 })
@@ -68,12 +69,12 @@ describe('multi-room spaces', () => {
       { x: 200, y: 150 },
       { x: 100, y: 220 },
     ]
-    const id = s().addSpace({ shape: 'polygon', x: 300, y: 300, vertices: verts }).meta.newSpaceId
+    const id = s().addSpace({ shape: 'polygon', x: 300, y: 300, vertices: verts })!.meta!.newSpaceId as string
 
     const reloaded = JSON.parse(JSON.stringify(s().serialize()))
     openPlan(reloaded)
 
-    const poly = s().room.spaces.find((sp) => sp.id === id)
+    const poly = s().room.spaces.find((sp) => sp.id === id) as Extract<Space, { shape: 'polygon' }>
     expect(poly).toBeTruthy()
     expect(poly.shape).toBe('polygon')
     expect(poly.vertices).toEqual(verts)

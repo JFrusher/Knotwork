@@ -1,5 +1,7 @@
 import type { Knotwork } from "@jfrusher/knotwork";
-import { dayPlaces, guestName, isComing, readBoxes, readCrew, readGuests, readSeating, readTimeline, resolvedDay } from "@/lib/model/slices";
+import { dayPlaces, guestName, isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readTimeline, resolvedDay } from "@/lib/model/slices";
+import { resolveMembers } from "@/lib/cast/resolve";
+import { songName } from "@/lib/ceremony/music";
 import { hiddenToolIds } from "@/lib/model/toolbox";
 import { find, neededAt, whereBy } from "@/lib/boxes/view";
 
@@ -145,6 +147,44 @@ export function findBoxes(doc: Knotwork, query: string): FoundBox[] {
     const { place, lost } = neededAt(box, known);
     return { key: item ? `${box.id}:${item.id}` : box.id, box: box.name, item: item?.label ?? null, where: whereBy(place, lost) };
   });
+}
+
+interface WalkingGroup {
+  id: string;
+  label: string;
+  names: string[];
+  /** When they set off: "As the quartet begins". */
+  cue: string;
+  /** The piece that starts as they walk, or null when the one playing carries on. */
+  song: string | null;
+}
+
+/**
+ * Who walks, in order, with their music, for whoever is lining people up: the
+ * processional as Ceremony plans it, read-only, under the ceremony's block in
+ * the day. Nothing while Ceremony is hidden or the processional is empty.
+ */
+export function walkingOrder(doc: Knotwork): { blockId: string | null; groups: WalkingGroup[] } | null {
+  const ceremony = readCeremony(doc);
+  if (hiddenToolIds(doc).has("ceremony") || ceremony.processional.length === 0) return null;
+  const guests = readGuests(doc);
+  const seating = readSeating(doc);
+  const cast = readCast(doc);
+  // Only a block the day still has can hold it; otherwise it stands on its own.
+  const onTheDay = ceremony.blockId !== null && readTimeline(doc).blocks.some((block) => block.id === ceremony.blockId);
+  return {
+    blockId: onTheDay ? ceremony.blockId : null,
+    groups: ceremony.processional.map((group) => {
+      const resolved = resolveMembers(group, guests, seating, cast.roles, cast.customRoles, doc.event);
+      return {
+        id: group.id,
+        label: resolved.label,
+        names: resolved.people.map((person) => person.name),
+        cue: group.cue.trim(),
+        song: group.song ? songName(group.song) : null,
+      };
+    }),
+  };
 }
 
 /** Where a phone keeps which shots it has ticked off, one wedding per key. */

@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { buildDietaryTotals, buildPerTableSummary, buildReportCsv } from './exportReports'
+import type { PlanSource } from './exportCsv'
 
-const state = () => ({
+const state = () =>
+  ({
   guests: {
     g1: { id: 'g1', fullName: 'A', dietary: 'vegan', side: 'a', rsvpStatus: 'confirmed' },
     g2: { id: 'g2', fullName: 'B', dietary: 'vegan', side: 'b', rsvpStatus: 'confirmed' },
@@ -13,7 +15,7 @@ const state = () => ({
   },
   groups: {},
   meta: { partners: ['Alex', 'Sam'] },
-})
+  }) as unknown as PlanSource
 
 describe('buildDietaryTotals', () => {
   it('counts requirements, excludes declined, totals attendees', () => {
@@ -44,7 +46,7 @@ describe('buildPerTableSummary', () => {
 describe('buildReportCsv', () => {
   it('neutralises formula-injection in labels', () => {
     const s = state()
-    s.tables.t1.label = '=cmd()'
+    s.tables!.t1.label = '=cmd()'
     const csv = buildReportCsv(s)
     expect(csv).toContain("'=cmd()")
   })

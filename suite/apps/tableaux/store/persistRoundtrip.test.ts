@@ -2,12 +2,14 @@ import { describe, it, expect } from 'vitest'
 import { useStore } from './useStore'
 import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
+import type { Plan } from './types'
 
 // A deliberately rich document touching every field that has been suspected of
 // "not persisting": table rotation, seat-level assignments (incl. gaps), seat
 // mode, resized dimensions, per-side seat distribution, zones, groups (colour +
 // membership) and room sizing/background.
-const richDoc = () => ({
+const richDoc = () =>
+  ({
   meta: { weddingName: 'Round Trip', venue: 'Barn', date: '2026-09-01' },
   guests: {
     g1: {
@@ -80,7 +82,7 @@ const richDoc = () => ({
     gridSize: 20,
     pixelsPerUnit: 0.7,
   },
-})
+  }) as unknown as Partial<Plan>
 
 const s = () => useStore.getState()
 
@@ -108,7 +110,7 @@ describe('persistence round-trip', () => {
     expect(b.groups.grp1.memberIds).toEqual(['g1'])
     expect(b.zones.z1.label).toBe('Dance floor')
     // Where the canvas was looking is the window's own, not the plan's.
-    expect(b.canvas).toBeUndefined()
+    expect((b as { canvas?: unknown }).canvas).toBeUndefined()
     expect(b.room.backgroundColour).toBe('#FAF8F5')
   })
 
@@ -120,7 +122,7 @@ describe('persistence round-trip', () => {
     expect(ids.length).toBe(before + 1)
     const created = Object.values(s().groups).find((g) => g.name === 'Family')
     expect(created).toBeTruthy()
-    expect(created.memberIds).toEqual([])
+    expect(created!.memberIds).toEqual([])
 
     // Survives a save→reload round-trip.
     const reloaded = JSON.parse(JSON.stringify(s().serialize()))

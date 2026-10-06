@@ -15,8 +15,13 @@ import {
   setPrice,
   setShare,
   setShop,
+  setSpan,
   setWholeCases,
 } from "@/lib/bar/actions";
+import { hoursFromTheDay } from "@/lib/bar/fromTheDay";
+import { dayPlaces } from "@/lib/model/slices";
+import { hiddenToolIds } from "@/lib/model/toolbox";
+import { formatClock } from "@/lib/minutes";
 import { CROWD_NAMES, FIGURE_DEFAULTS, KIND_NAMES, LINES, MIXES, SHOP_NAMES } from "@/lib/bar/defaults";
 import { buyWords, forWords, shoppingCsv, shoppingList, spendWords } from "@/lib/bar/rows";
 import { barSum, figure, mixOf, type LineSum } from "@/lib/bar/sum";
@@ -45,6 +50,7 @@ export function BarBoard() {
   const status = useStatus();
   const bar = useBar();
   const sum = useKnotworkStore((s) => barSum(s.doc));
+  const doc = useKnotworkStore((s) => s.doc);
   const event = useEvent();
   const { setBar } = useWriters();
   const [note, setNote] = useState<string | null>(null);
@@ -135,12 +141,12 @@ export function BarBoard() {
         <Panel title="The day">
           <p className="mb-2 text-xs text-slate">Drinks each, for those drinking. Set a part to nothing if you are not buying for it — a venue&rsquo;s own bar.</p>
           <div className="flex flex-col gap-2">
-            {field("receptionHours")}
+            <HoursField part="reception" bar={bar} doc={doc} typed={field("receptionHours")} onChange={write} />
             {field("receptionPerHour")}
             <Each>{number(each.reception)} each at the reception</Each>
             {field("toastGlasses")}
             {field("mealGlasses")}
-            {field("eveningHours")}
+            <HoursField part="evening" bar={bar} doc={doc} typed={field("eveningHours")} onChange={write} />
             {field("eveningPerHour")}
             <Each>{number(each.evening)} each in the evening</Each>
           </div>
@@ -215,6 +221,82 @@ export function BarBoard() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+const hm = (hours: number) => {
+  const minutes = Math.round(hours * 60);
+  return minutes % 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes / 60}h`;
+};
+
+/**
+ * A part's hours: typed, or read from the Timeline's blocks, first to last.
+ * The Bar keeps which blocks, so moving them on the Timeline changes this.
+ */
+function HoursField({
+  part,
+  bar,
+  doc,
+  typed,
+  onChange,
+}: {
+  part: MixedPart;
+  bar: Bar;
+  doc: Parameters<typeof dayPlaces>[0];
+  typed: React.ReactNode;
+  onChange: (next: Bar, label: string) => void;
+}) {
+  if (hiddenToolIds(doc).has("timeline")) return <>{typed}</>;
+  const blocks = [...dayPlaces(doc).entries()].sort(([, a], [, b]) => a.startMin - b.startMin);
+  if (blocks.length === 0) return <>{typed}</>;
+  const span = bar.spans[part];
+  const day = hoursFromTheDay(doc)[part];
+  const startOf = (id: string) => dayPlaces(doc).get(id)?.startMin ?? -1;
+  const pick = (from: string, to: string) => onChange(setSpan(bar, part, from ? { from, to: to && startOf(to) >= startOf(from) ? to : from } : null), "the hours from the day");
+  const words = PART_WORDS[part].replace(/^(at|in) /, "");
+
+  return (
+    <div className="flex flex-col gap-1">
+      {day.hours === null ? typed : null}
+      <div className="flex flex-wrap items-center gap-2 text-xs text-slate">
+        <span>From the Timeline</span>
+        <select aria-label={`Hours of ${words} from`} value={span?.from ?? ""} onChange={(e) => pick(e.target.value, span?.to ?? "")} className={CONTROL}>
+          <option value="">No, type the hours</option>
+          {blocks.map(([id, place]) => (
+            <option key={id} value={id}>
+              {formatClock(place.startMin)} {place.label}
+            </option>
+          ))}
+        </select>
+        {span ? (
+          <>
+            <span>to the end of</span>
+            <select aria-label={`Hours of ${words} to`} value={span.to} onChange={(e) => pick(span.from, e.target.value)} className={CONTROL}>
+              {blocks
+                .filter(([id]) => startOf(id) >= startOf(span.from))
+                .map(([id, place]) => (
+                  <option key={id} value={id}>
+                    {place.label}
+                  </option>
+                ))}
+            </select>
+          </>
+        ) : null}
+      </div>
+      {day.hours !== null ? (
+        <p role="status" className="text-xs text-slate">
+          {hm(day.hours)} {PART_WORDS[part]}, from the Timeline.
+        </p>
+      ) : day.lost ? (
+        <p role="status" className="text-xs text-danger">
+          Its part of the day is no longer on the Timeline, so the typed hours are used.
+        </p>
+      ) : day.outOfOrder ? (
+        <p role="status" className="text-xs text-danger">
+          Its first block now comes after its last, so the typed hours are used until they are picked again.
+        </p>
+      ) : null}
     </div>
   );
 }

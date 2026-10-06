@@ -22,6 +22,13 @@ test("on the day: what is on now, a guest's table, a number to ring, a shot tick
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 
   const binder = page.getByRole("navigation", { name: "The Binder" });
+  // Who walks, in order, under the ceremony in the day.
+  await binder.getByRole("button", { name: "Day" }).click();
+  const walk = page.getByRole("list", { name: "The walking order" });
+  await expect(walk.getByRole("listitem").first()).toContainText("In place before the music starts");
+  await expect(walk).toContainText("♪ Air on the G String — J. S. Bach");
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+
   await binder.getByRole("button", { name: "Find" }).click();
   await page.getByRole("searchbox", { name: "A guest, a box, or what is in one" }).fill("zainab lind");
   await expect(page.getByRole("list", { name: "Guests" }).getByRole("listitem")).toHaveText([/Zainab Lindqvist\s*Table \d+/]);
@@ -57,7 +64,8 @@ test("with no signal, it opens from the copy on the phone", async ({ page, conte
   await expect(page.getByRole("heading", { name: "Alex & Sam" })).toBeVisible();
   await expect(page.getByRole("status").first()).toContainText("No signal");
   await page.getByRole("navigation", { name: "The Binder" }).getByRole("button", { name: "Day" }).click();
-  await expect(page.getByRole("region", { name: "The day" }).getByRole("listitem")).toHaveCount(27);
+  // The day's own blocks, not the walking order listed under the ceremony.
+  await expect(page.getByRole("region", { name: "The day" }).locator(":scope > ol > li")).toHaveCount(27);
 });
 
 // An error answered while there was signal once replaced the kept page, and

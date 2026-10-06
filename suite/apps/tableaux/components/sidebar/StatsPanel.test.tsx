@@ -3,15 +3,20 @@ import { render, screen } from '@testing-library/react'
 import StatsPanel from './StatsPanel'
 import { useStore } from '../../store/useStore'
 import { openPlan } from '../../test/openPlan'
+import type { Guest, Table } from '../../store/types'
+
+// Only the fields the panel counts.
+const guest = (g: Partial<Guest>) => g as Guest
+const table = (t: Partial<Table>) => t as Table
 
 beforeEach(() => {
   openPlan({
     guests: {
-      g1: { id: 'g1', fullName: 'Ada Lovelace', assignedTableId: 't1', dietary: 'vegan', rsvpStatus: 'confirmed' },
-      g2: { id: 'g2', fullName: 'Alan Turing', assignedTableId: null, dietary: '', rsvpStatus: 'confirmed' },
+      g1: guest({ id: 'g1', fullName: 'Ada Lovelace', assignedTableId: 't1', dietary: 'vegan', rsvpStatus: 'confirmed' }),
+      g2: guest({ id: 'g2', fullName: 'Alan Turing', assignedTableId: null, dietary: '', rsvpStatus: 'confirmed' }),
     },
     tables: {
-      t1: { id: 't1', label: 'Table 1', capacity: 8, assignedGuestIds: ['g1'], seatMode: 'table' },
+      t1: table({ id: 't1', label: 'Table 1', capacity: 8, assignedGuestIds: ['g1'], seatMode: 'table' }),
     },
   })
 })
@@ -35,11 +40,11 @@ describe('StatsPanel', () => {
   it('counts someone who declined as neither unseated nor a meal', () => {
     openPlan({
       guests: {
-        g1: { id: 'g1', fullName: 'Ada Lovelace', assignedTableId: 't1', dietary: 'vegan', rsvpStatus: 'confirmed' },
-        g2: { id: 'g2', fullName: 'Alan Turing', assignedTableId: null, dietary: 'kosher', rsvpStatus: 'declined' },
+        g1: guest({ id: 'g1', fullName: 'Ada Lovelace', assignedTableId: 't1', dietary: 'vegan', rsvpStatus: 'confirmed' }),
+        g2: guest({ id: 'g2', fullName: 'Alan Turing', assignedTableId: null, dietary: 'kosher', rsvpStatus: 'declined' }),
       },
       tables: {
-        t1: { id: 't1', label: 'Table 1', capacity: 8, assignedGuestIds: ['g1'], seatMode: 'table' },
+        t1: table({ id: 't1', label: 'Table 1', capacity: 8, assignedGuestIds: ['g1'], seatMode: 'table' }),
       },
     })
     render(<StatsPanel />)
