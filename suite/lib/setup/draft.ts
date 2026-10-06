@@ -53,13 +53,39 @@ export function startingRoom(seating: Record<string, unknown>, type: StartingTab
   return { ...seating, tables: plan.tables, room: { ...ROOM, height } };
 }
 
-/** One name per line, as a one-column file, so pasting runs the importer's own rules. */
-function pastedList(text: string): CsvTable {
-  const names = text
+/** One name per line: blank lines dropped, spaces trimmed. */
+function pastedNames(text: string): string[] {
+  return text
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
-  return { headers: ["Name"], rows: names.map((Name) => ({ Name })) };
+}
+
+/** One name per line, as a one-column file, so pasting runs the importer's own rules. */
+function pastedList(text: string): CsvTable {
+  return { headers: ["Name"], rows: pastedNames(text).map((Name) => ({ Name })) };
+}
+
+/** "&", "and", a comma or a "+1": a line that is probably two people. */
+const SEVERAL = /&|\band\b|,|\+\s*\d/i;
+
+/**
+ * What a couple should look at after pasting: names on it more than once, and
+ * lines that look like more than one person. Both still go in as typed — one
+ * guest, one seat each — since two guests can share a name, and splitting
+ * "Mr & Mrs Patel" would be a guess at two names.
+ */
+export function pastedHints(text: string): { repeated: string[]; several: string[] } {
+  const names = pastedNames(text);
+  const first = new Map<string, string>();
+  const count = new Map<string, number>();
+  for (const name of names) {
+    const key = name.toLowerCase().replace(/\s+/g, " ");
+    if (!first.has(key)) first.set(key, name);
+    count.set(key, (count.get(key) ?? 0) + 1);
+  }
+  const repeated = [...first].filter(([key]) => count.get(key)! > 1).map(([, name]) => name);
+  return { repeated, several: names.filter((name) => SEVERAL.test(name)) };
 }
 
 /** The pasted names added to a list: nobody duplicated, nobody removed. */

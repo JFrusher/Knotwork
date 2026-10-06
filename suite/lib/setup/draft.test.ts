@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { readSeating } from "@/lib/model/slices";
 import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
-import { startingRoom, tablesFor, withPasted } from "./draft";
+import { pastedHints, startingRoom, tablesFor, withPasted } from "./draft";
 
 test("enough tables for everyone", () => {
   expect(tablesFor(100, "round")).toBe(13);
@@ -29,4 +29,13 @@ test("pasted names become guests, and a name already on the list is not added tw
   expect(Object.values(once).map((g) => (g as { firstName: string }).firstName).sort()).toEqual(["Ann", "Bo"]);
   const twice = withPasted("Ann Lee\nCy Dent", once as never, {});
   expect(Object.keys(twice)).toHaveLength(3);
+});
+
+test("a paste says which names are on it twice, and which look like more than one person", () => {
+  const text = ["Dave Smith", " dave smith ", "Mr & Mrs Patel", "Ben Jones +1", "Lucy, Mark", "Ann and Bo Lee", "Andrew Sanderson", ""].join("\n");
+  expect(pastedHints(text)).toEqual({
+    repeated: ["Dave Smith"],
+    several: ["Mr & Mrs Patel", "Ben Jones +1", "Lucy, Mark", "Ann and Bo Lee"],
+  });
+  expect(pastedHints("Ann Lee\nBo Chen")).toEqual({ repeated: [], several: [] });
 });

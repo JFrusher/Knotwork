@@ -7,7 +7,7 @@ import { browserClient } from "@/lib/accounts/browserClient";
 import { eventChange } from "@/lib/model/useSuite";
 import { readGuests } from "@/lib/model/slices";
 import type { Guest } from "@/lib/model/types";
-import { startingRoom, SEATS, tablesFor, withPasted, type StartingTable } from "@/lib/setup/draft";
+import { pastedHints, startingRoom, SEATS, tablesFor, withPasted, type StartingTable } from "@/lib/setup/draft";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { Button, TextField } from "@/components/ui/controls";
 import { useGuestImport, type ImportTarget } from "@/components/shell/guestImportPanel";
@@ -60,6 +60,10 @@ function Setup() {
   const [step, setStep] = useState<Step>("you");
   const at = STEPS.findIndex((s) => s.id === step);
   const next = () => setStep(STEPS[at + 1]!.id);
+  // The draft is written only at the room step: until then a reload or a
+  // closed tab loses it, so the browser asks first.
+  const started = useRef(draft);
+  useWarnBeforeLeaving(step !== "together" && draft !== started.current);
 
   return (
     <div className="mx-auto max-w-xl px-6 py-12 sm:py-16">
@@ -81,6 +85,16 @@ function Setup() {
       </div>
     </div>
   );
+}
+
+/** The browser's own "Leave site?" question, while `unsaved` holds. */
+function useWarnBeforeLeaving(unsaved: boolean) {
+  useEffect(() => {
+    if (!unsaved) return;
+    const ask = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", ask);
+    return () => window.removeEventListener("beforeunload", ask);
+  }, [unsaved]);
 }
 
 interface StepProps {
@@ -117,6 +131,7 @@ function You({ draft, setDraft, onNext }: StepProps) {
 function Guests({ draft, setDraft, onNext }: StepProps) {
   const [pasting, setPasting] = useState(false);
   const [text, setText] = useState("");
+  const [hints, setHints] = useState<ReturnType<typeof pastedHints> | null>(null);
   const showImport = useGuestImport((s) => s.showInto);
   const count = Object.keys(draft.guests).length;
   // Read at the moment the importer asks, so it always sees the draft as it is.
@@ -164,6 +179,7 @@ function Guests({ draft, setDraft, onNext }: StepProps) {
             disabled={!text.trim()}
             onClick={() => {
               setDraft((d) => ({ ...d, guests: withPasted(text, d.guests, d.seating) as Record<string, Guest> }));
+              setHints(pastedHints(text));
               setText("");
               setPasting(false);
             }}
@@ -172,9 +188,25 @@ function Guests({ draft, setDraft, onNext }: StepProps) {
           </Button>
         </div>
       ) : null}
+      {hints ? <PasteHints {...hints} /> : null}
       <Button tone="primary" icon={ArrowRight} onClick={onNext}>
         {count > 0 ? "Next" : "Later — next"}
       </Button>
+    </div>
+  );
+}
+
+/** Worth a look after a paste; everything went in as typed. Fix them in Guests. */
+function PasteHints({ repeated, several }: { repeated: string[]; several: string[] }) {
+  if (repeated.length === 0 && several.length === 0) return null;
+  const quoted = (names: string[]) => names.map((name) => `“${name}”`).join(" ");
+  return (
+    <div role="status" className="space-y-1 rounded border border-gold/40 bg-gold/10 px-3 py-2 text-sm text-charcoal">
+      {repeated.length > 0 ? <p>On the list more than once: {quoted(repeated)}.</p> : null}
+      {several.length > 0 ? (
+        <p>One guest and one seat each, though they may be more than one person: {quoted(several)}.</p>
+      ) : null}
+      <p className="text-slate">All added as typed. Change them in Guests.</p>
     </div>
   );
 }
