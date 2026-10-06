@@ -49,7 +49,7 @@ test("Seating finds nothing wrong: families sit together, and each group lists i
   const named = Object.fromEntries(
     Object.entries(readGuests(doc)).map(([id, g]) => [id, { ...g, fullName: `${g.firstName} ${g.lastName}` }]),
   );
-  const warnings = computeWarnings({ guests: named, tables: seating.tables, families: seating.families, constraints: [] });
+  const warnings = computeWarnings({ guests: named, tables: seating.tables, families: seating.families, constraints: [], settings: seating.settings });
   expect(warnings.filter((w: { level: string }) => w.level === "warn")).toEqual([]);
   // Tableaux shows a group from its member list, the rest of the suite from the guest.
   const groups = raw.seating.groups as Record<string, { memberIds: string[] }>;

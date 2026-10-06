@@ -1,11 +1,12 @@
 import { isComing } from '@/lib/model/slices'
 import type { Constraint, Family, Guest, Table } from '../store/types'
 import { getTableType } from './tableTypes'
+import { overlappingTables, type PlacedTable } from './tableOverlap'
 
 export interface SeatingWarning {
   id: string
   level: 'warn' | 'info'
-  kind: 'over-capacity' | 'dietary-check' | 'empty-special' | 'unassigned' | 'apart' | 'together' | 'family-split'
+  kind: 'over-capacity' | 'dietary-check' | 'empty-special' | 'unassigned' | 'apart' | 'together' | 'family-split' | 'overlap'
   message: string
   /** Every table and guest the warning is about: each gets its badge, and the panel goes to the first. */
   tableIds: string[]
@@ -19,7 +20,8 @@ export interface SeatingWarning {
  * blocks the user.
  */
 type WarnedGuest = Pick<Guest, 'id' | 'fullName' | 'dietary' | 'dietaryRaw' | 'assignedTableId' | 'rsvpStatus'>
-type WarnedTable = Pick<Table, 'id' | 'label' | 'type' | 'capacity' | 'designation' | 'assignedGuestIds'>
+type WarnedTable = Pick<Table, 'id' | 'label' | 'type' | 'capacity' | 'designation' | 'assignedGuestIds'> &
+  Partial<PlacedTable>
 type WarnedFamily = Pick<Family, 'id' | 'name' | 'memberIds'>
 
 /** "Table 1", "Table 1 and Table 3", "Table 1, Table 2 and Table 3". */
@@ -32,8 +34,10 @@ export function computeWarnings(state: {
   tables?: Record<string, WarnedTable>
   constraints?: Constraint[]
   families?: Record<string, WarnedFamily>
+  /** How the room is drawn: what a centimetre is in pixels, and how big a chair is. */
+  settings?: { pixelsPerUnit?: number; chairSizeUnits?: number }
 }): SeatingWarning[] {
-  const { guests = {}, tables = {}, constraints = [], families = {} } = state
+  const { guests = {}, tables = {}, constraints = [], families = {}, settings = {} } = state
   const guestList = Object.values(guests)
   const tableList = Object.values(tables)
   const out: SeatingWarning[] = []
@@ -154,6 +158,20 @@ export function computeWarnings(state: {
         message: `The ${f.name} family is split across ${listOf(tableIds.map((id) => tables[id]?.label ?? 'a table'))}.`,
       })
     }
+  }
+
+  // Stacked tables go to print as they are, so say so: by their real shapes,
+  // chairs included. Only tables placed in the room can be checked.
+  const placed = tableList.filter((t): t is WarnedTable & PlacedTable => Number.isFinite(t.x) && Number.isFinite(t.y))
+  for (const [a, b] of overlappingTables(placed, settings)) {
+    out.push({
+      id: `overlap_${a.id}_${b.id}`,
+      level: 'warn',
+      kind: 'overlap',
+      tableIds: [a.id, b.id],
+      guestIds: [],
+      message: `${a.label} and ${b.label} overlap. Move one so the chairs clear.`,
+    })
   }
 
   return out

@@ -122,3 +122,37 @@ describe('buildWarningIndex', () => {
     expect(byGuest.get('h')).toHaveLength(1)
   })
 })
+
+describe('tables on top of each other', () => {
+  // At one pixel per centimetre, so the sizes below are the distances.
+  const settings = { pixelsPerUnit: 1, chairSizeUnits: 28 }
+  const round = (id: string, x: number, y: number) =>
+    table(id, { id, label: id, type: 'round', capacity: 8, x, y, rotation: 0, sizeUnits: { shape: 'circle', diameter: 150 } })
+  const long = (id: string, x: number, y: number, rotation: number) =>
+    table(id, { id, label: id, type: 'rect', capacity: 8, x, y, rotation, sizeUnits: { shape: 'rect', width: 300, height: 80 } })
+  const overlaps = (tables: Record<string, Table>) =>
+    computeWarnings({ tables, settings }).filter((w) => w.kind === 'overlap')
+
+  it('are one warning naming both, when the tables themselves overlap', () => {
+    const w = overlaps({ a: round('Table 1', 0, 0), b: round('Table 2', 140, 0) })
+    expect(w).toHaveLength(1)
+    expect(w[0].message).toBe('Table 1 and Table 2 overlap. Move one so the chairs clear.')
+    expect(w[0].tableIds).toEqual(['Table 1', 'Table 2'])
+  })
+
+  it('count the chairs, not only the tables', () => {
+    // 200 apart the tables clear by 50, but the chairs facing each other do not.
+    expect(overlaps({ a: round('Table 1', 0, 0), b: round('Table 2', 200, 0) })).toHaveLength(1)
+  })
+
+  it('say nothing when the tables and their chairs are clear', () => {
+    expect(overlaps({ a: round('Table 1', 0, 0), b: round('Table 2', 300, 0) })).toHaveLength(0)
+  })
+
+  it('turn a rectangle with its rotation', () => {
+    // Two long tables 200 apart: side by side they clear, but turned across
+    // the gap the second one reaches into the first.
+    expect(overlaps({ a: long('Table 1', 0, 0, 0), b: long('Table 2', 0, 200, 0) })).toHaveLength(0)
+    expect(overlaps({ a: long('Table 1', 0, 0, 0), b: long('Table 2', 0, 200, 90) })).toHaveLength(1)
+  })
+})
