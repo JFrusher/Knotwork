@@ -18,7 +18,7 @@ attributes, which are the only change made inside the five tools.
 (already used by `DataManager`), Tailwind with the project's existing design
 tokens, Vitest. **No new dependencies.**
 
-**Spec:** [docs/superpowers/specs/2026-09-07-guided-tour-design.md](../specs/2026-09-07-guided-tour-design.md)
+**Spec:** [docs/design/specs/2026-09-07-guided-tour-design.md](../specs/2026-09-07-guided-tour-design.md)
 
 ## Status
 

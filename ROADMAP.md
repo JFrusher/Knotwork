@@ -3,7 +3,7 @@
 Where Knotwork is, and where it could go next. This page is the short
 version for contributors. The full record of every decision, and why it was
 made, is in **[docs/PRODUCT-ROADMAP.md](docs/PRODUCT-ROADMAP.md)** and the
-dated specs in `docs/superpowers/specs/`.
+dated specs in `docs/design/specs/`.
 
 **How to read this:** ✅ is built and in the app. 🔜 is proposed, and a good
 thing to pick up, but each proposal needs the maintainer's yes before code is
@@ -77,7 +77,7 @@ for a first substantial contribution.
 | **Bar → Boxes** | Crates as boxes, attached to the bar's block. |
 | **Timeline → Supplier links** | Each supplier's calendar file on their own call sheet. |
 
-Source: [toolbox and new tools design](docs/superpowers/specs/2026-09-29-toolbox-and-new-tools-design.md),
+Source: [toolbox and new tools design](docs/design/specs/2026-09-29-toolbox-and-new-tools-design.md),
 "Tools feeding each other".
 
 ---

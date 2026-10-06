@@ -17,10 +17,10 @@ device can reach, with the same cross-tool guarantees the old pipeline
 provided by hand — most importantly the cross-slice validation that already
 caught a real bug (two tools disagreeing on the wedding date).
 
-See `docs/superpowers/specs/2026-09-02-knotwork-architecture-audit.md` for
+See `docs/design/specs/2026-09-02-knotwork-architecture-audit.md` for
 the current state (including the existing E2E-encrypted `suite/lib/sync/`
 backend this design deliberately leaves alone) and
-`docs/superpowers/specs/2026-09-02-identity-accounts-design.md` for the
+`docs/design/specs/2026-09-02-identity-accounts-design.md` for the
 `weddings`/`wedding_members` tables this builds on.
 
 ## Data model

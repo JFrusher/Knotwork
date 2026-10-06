@@ -317,7 +317,7 @@ anyone's personal details.
 - **Found a bug?** Open an issue with what you did and what happened.
   **Never paste your guest list.** A screenshot with names blurred is plenty.
 - **Want to change something?** Design decisions are written down in
-  `docs/superpowers/specs/`, so you can tell whether an idea fits before
+  `docs/design/specs/`, so you can tell whether an idea fits before
   writing code.
 - **Want to build a tool?** A job nothing in Knotwork does for you yet is the
   best reason to. **[docs/BUILDING-A-TOOL.md](docs/BUILDING-A-TOOL.md)** walks

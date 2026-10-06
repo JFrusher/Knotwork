@@ -7,10 +7,10 @@ This is the record of turning Knotwork from a tool built for one wedding into
 a real product other couples can use. It captures the vision, the
 decomposition into independent subsystems, decisions already made, and open
 questions per subsystem. Each subsystem gets its own dated design spec in
-`docs/superpowers/specs/` once it's actually designed. This document links
+`docs/design/specs/` once it's actually designed. This document links
 out to those rather than duplicating them.
 
-Baseline: `docs/superpowers/specs/2026-09-02-knotwork-architecture-audit.md`,
+Baseline: `docs/design/specs/2026-09-02-knotwork-architecture-audit.md`,
 the architecture audit that preceded this pivot decision.
 
 ## Vision
@@ -37,22 +37,22 @@ instead (see subsystem F).
 
 | # | Subsystem | Depends on | Status |
 |---|---|---|---|
-| A | Identity & accounts | none | ✅ [spec written](superpowers/specs/2026-09-02-identity-accounts-design.md) |
-| B | Multi-tenant data & storage | A | ✅ **built**: [spec](superpowers/specs/2026-09-02-multitenant-storage-design.md), [plan](superpowers/plans/2026-09-02-multitenant-storage.md) complete 2026-09-07 |
+| A | Identity & accounts | none | ✅ [spec written](design/specs/2026-09-02-identity-accounts-design.md) |
+| B | Multi-tenant data & storage | A | ✅ **built**: [spec](design/specs/2026-09-02-multitenant-storage-design.md), [plan](design/plans/2026-09-02-multitenant-storage.md) complete 2026-09-07 |
 | C | Cadence/suite de-duplication | none | ✅ specced and verified safe; **archiving the four standalone repos is four clicks in GitHub's Settings → Archive**, left to the maintainer rather than installing a CLI to do it |
-| D | Tableaux's future | none | 🟡 **pass one built**: data boundary typed ([plan](superpowers/plans/2026-09-07-tableaux-data-boundary-typing.md), 2026-09-07); 108 files still JS |
-| E | Brigade's expanded scope | (loosely) A, B | ✅ **built**: [spec](superpowers/specs/2026-09-08-brigade-vendors-budget-tasks-design.md), [plan](superpowers/plans/2026-09-08-brigade-vendors-budget-tasks.md) complete 2026-09-08. E4 is a confirmation date, not a portal |
-| F | Onboarding, billing & legal at product scale | A | ✅ **built**: [spec](superpowers/specs/2026-09-02-onboarding-billing-legal-design.md), [plan](superpowers/plans/2026-09-07-licensing-and-self-hosting.md) complete 2026-09-07; privacy/terms rewritten 2026-09-08 |
-| H | Guided tour & example wedding | none | ✅ **built**: [spec](superpowers/specs/2026-09-07-guided-tour-design.md), [plan](superpowers/plans/2026-09-07-guided-tour.md) complete 2026-09-07 |
+| D | Tableaux's future | none | 🟡 **pass one built**: data boundary typed ([plan](design/plans/2026-09-07-tableaux-data-boundary-typing.md), 2026-09-07); 108 files still JS |
+| E | Brigade's expanded scope | (loosely) A, B | ✅ **built**: [spec](design/specs/2026-09-08-brigade-vendors-budget-tasks-design.md), [plan](design/plans/2026-09-08-brigade-vendors-budget-tasks.md) complete 2026-09-08. E4 is a confirmation date, not a portal |
+| F | Onboarding, billing & legal at product scale | A | ✅ **built**: [spec](design/specs/2026-09-02-onboarding-billing-legal-design.md), [plan](design/plans/2026-09-07-licensing-and-self-hosting.md) complete 2026-09-07; privacy/terms rewritten 2026-09-08 |
+| H | Guided tour & example wedding | none | ✅ **built**: [spec](design/specs/2026-09-07-guided-tour-design.md), [plan](design/plans/2026-09-07-guided-tour.md) complete 2026-09-07 |
 | I | Retention sweep for account weddings | B | ✅ **built**: `app/api/cron/sweep` deletes account weddings unwritten for 24 months (`lib/documents/retention.ts`), and the Privacy Policy states it |
-| G | Multi-tenant suite mechanics | A, B | ✅ **built**: [spec](superpowers/specs/2026-09-02-multitenant-mechanics-design.md), [plan](superpowers/plans/2026-09-07-multitenant-mechanics.md) complete 2026-09-07 |
-| J | Planner role and many weddings per account | A, G | ✅ **built**: [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 3: Weddings and library (2026-09-28) |
-| K | Setup flow and signing in safely | A, B | ✅ **built**: [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 1: setup flow (2026-09-28) |
-| L | Design language and shared kit | none | ✅ **built**: [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 0: shared kit and design language (2026-09-28) |
-| M | Windows around the tools: Overview, Guests, Money, Checklist, Sync & history, palette | E, L | ✅ **built**: [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 2: guests, money, checklist and palette (2026-09-28) |
-| N | Day-of binder and vendor links | E, J | ✅ **built**: [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 3: binder and supplier links (2026-09-29) |
-| O | One live document: tools stop keeping copies; real-time sync | none | ✅ **built**: [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md), phase 4: real-time sync and presence (2026-09-29) |
-| P | The toolbox, and travel, ceremony, boxes and bar | L, O | ✅ **built**: [spec](superpowers/specs/2026-09-29-toolbox-and-new-tools-design.md), plans for [the toolbox](superpowers/plans/2026-09-29-toolbox.md), [travel and calendars](superpowers/plans/2026-09-29-timeline-travel-and-calendars.md), [the cast and Ceremony](superpowers/plans/2026-09-29-cast-and-ceremony.md), [Boxes](superpowers/plans/2026-09-29-boxes.md) and [the Bar](superpowers/plans/2026-09-29-bar.md), 2026-09-29; the proposals joining tools to each other wait on the maintainer |
+| G | Multi-tenant suite mechanics | A, B | ✅ **built**: [spec](design/specs/2026-09-02-multitenant-mechanics-design.md), [plan](design/plans/2026-09-07-multitenant-mechanics.md) complete 2026-09-07 |
+| J | Planner role and many weddings per account | A, G | ✅ **built**: [master plan](design/specs/2026-09-28-expansion-master-plan.md), phase 3: Weddings and library (2026-09-28) |
+| K | Setup flow and signing in safely | A, B | ✅ **built**: [master plan](design/specs/2026-09-28-expansion-master-plan.md), phase 1: setup flow (2026-09-28) |
+| L | Design language and shared kit | none | ✅ **built**: [master plan](design/specs/2026-09-28-expansion-master-plan.md), phase 0: shared kit and design language (2026-09-28) |
+| M | Windows around the tools: Overview, Guests, Money, Checklist, Sync & history, palette | E, L | ✅ **built**: [master plan](design/specs/2026-09-28-expansion-master-plan.md), phase 2: guests, money, checklist and palette (2026-09-28) |
+| N | Day-of binder and vendor links | E, J | ✅ **built**: [master plan](design/specs/2026-09-28-expansion-master-plan.md), phase 3: binder and supplier links (2026-09-29) |
+| O | One live document: tools stop keeping copies; real-time sync | none | ✅ **built**: [master plan](design/specs/2026-09-28-expansion-master-plan.md), phase 4: real-time sync and presence (2026-09-29) |
+| P | The toolbox, and travel, ceremony, boxes and bar | L, O | ✅ **built**: [spec](design/specs/2026-09-29-toolbox-and-new-tools-design.md), plans for [the toolbox](design/plans/2026-09-29-toolbox.md), [travel and calendars](design/plans/2026-09-29-timeline-travel-and-calendars.md), [the cast and Ceremony](design/plans/2026-09-29-cast-and-ceremony.md), [Boxes](design/plans/2026-09-29-boxes.md) and [the Bar](design/plans/2026-09-29-bar.md), 2026-09-29; the proposals joining tools to each other wait on the maintainer |
 
 ## Decisions log
 
@@ -129,7 +129,7 @@ against, not a discussion to reopen without a reason.
   may be a partner in one wedding and a planner in any number; a wedding has
   at most one planner in v1. This is the "extend later" the entry above left
   room for. Detail in the
-  [master plan](superpowers/specs/2026-09-28-expansion-master-plan.md).
+  [master plan](design/specs/2026-09-28-expansion-master-plan.md).
 - **2026-09-28.** Sides are named after the partners, not "bride" and
   "groom".
 - **2026-09-28.** Phones get a read-only day-of binder; the editing tools
@@ -185,7 +185,7 @@ rather than a tour library; and a committed example wedding produced by driving
 the real app and exporting, offered with a backup prompt rather than silently
 replacing existing work.
 
-**Built.** [`2026-09-07-guided-tour.md`](superpowers/plans/2026-09-07-guided-tour.md)
+**Built.** [`2026-09-07-guided-tour.md`](design/plans/2026-09-07-guided-tour.md)
 executed in full on 2026-09-07 (branch `guided-tour`). Six chapters, 29 steps,
 an example wedding of 100 guests and 27 day blocks, and no new dependencies.
 
@@ -196,7 +196,7 @@ different roots in their empty and populated states, and two Place cards panels
 return fragments that cannot carry an attribute at all. Full list in the plan's
 status section.
 
-**Spec:** [`2026-09-07-guided-tour-design.md`](superpowers/specs/2026-09-07-guided-tour-design.md)
+**Spec:** [`2026-09-07-guided-tour-design.md`](design/specs/2026-09-07-guided-tour-design.md)
 includes fixing Timeline's **Sample day** button, which today replaces the
 current day with no confirmation while the **New** button beside it does
 confirm. Ready for an implementation plan.
@@ -220,7 +220,7 @@ link-based, no logins); no passwords. Sign-in started as an email magic link
 and is now a six-digit emailed code, with Google and Apple alongside it (see
 the decisions log, 2026-10-03).
 
-**Spec written:** [`2026-09-02-identity-accounts-design.md`](superpowers/specs/2026-09-02-identity-accounts-design.md)
+**Spec written:** [`2026-09-02-identity-accounts-design.md`](design/specs/2026-09-02-identity-accounts-design.md)
 settles: one-click invite via emailed link (locked to the invited email, rejects a
 mismatched signer), no separate email verification, long-lived sessions, and
 wedding survives account deletion as long as one member remains. Ready for
@@ -244,11 +244,11 @@ JSON document per wedding stored as JSONB, matching the existing zod
 contract; compare-and-set conflict detection with a refresh-and-reapply
 notice, not real-time collaboration.
 
-**Built.** [`2026-09-02-multitenant-storage.md`](superpowers/plans/2026-09-02-multitenant-storage.md)
+**Built.** [`2026-09-02-multitenant-storage.md`](design/plans/2026-09-02-multitenant-storage.md)
 executed in full on 2026-09-07 (branch `multitenant-storage`). This unblocks
 subsystem G, which was waiting on it.
 
-**Spec:** [`2026-09-02-multitenant-storage-design.md`](superpowers/specs/2026-09-02-multitenant-storage-design.md)
+**Spec:** [`2026-09-02-multitenant-storage-design.md`](design/specs/2026-09-02-multitenant-storage-design.md)
 settles: `wedding_documents` + append-only `wedding_document_history` (the DVC
 version-history replacement), CAS-gated write path that also runs the
 ported `validate-wedding.mjs` as a hard gate (errors block, warnings don't),
@@ -268,7 +268,7 @@ repo is archived via `gh` (not deleted) once its content is confirmed fully
 absorbed. Same policy applies to the other three apps' standalone repo
 histories.
 
-**Spec written:** [`2026-09-02-cadence-deduplication-design.md`](superpowers/specs/2026-09-02-cadence-deduplication-design.md).
+**Spec written:** [`2026-09-02-cadence-deduplication-design.md`](design/specs/2026-09-02-cadence-deduplication-design.md).
 A git log comparison verified that the standalone `cadence` repo has no
 unported commits as of now, so it is safe to archive. Execution is blocked on `gh`
 CLI access on this machine (or use the GitHub web UI instead; either
@@ -280,7 +280,7 @@ later pass, not this one.
 **Revised same day:** first decided as a full TypeScript rewrite, then
 reconsidered in favor of keeping current function and workings intact.
 
-**Pass one built.** [`2026-09-07-tableaux-data-boundary-typing.md`](superpowers/plans/2026-09-07-tableaux-data-boundary-typing.md)
+**Pass one built.** [`2026-09-07-tableaux-data-boundary-typing.md`](design/plans/2026-09-07-tableaux-data-boundary-typing.md)
 converted `store/planSchema` and `store/sliceBridge` to TypeScript and replaced
 `planDocSchema`'s `.passthrough()` with real guest/table/room shapes.
 `store/useStore.js` and the other 108 JS files are the obvious next pass.
@@ -299,7 +299,7 @@ by renaming `coupleNames` and watching `tsc` stay silent. `sliceBridge.ts` now
 asserts against `eventSchema.shape` instead. **Cadence, Plaque and Brigade have
 the same blind spot and no such guard.**
 
-**Spec:** [`2026-09-02-tableaux-migration-design.md`](superpowers/specs/2026-09-02-tableaux-migration-design.md)
+**Spec:** [`2026-09-02-tableaux-migration-design.md`](design/specs/2026-09-02-tableaux-migration-design.md)
 settles: incremental in-place TS migration (allowJs during transition, data
 boundary converted first), real zod validation replacing `.passthrough()`,
 no behavior changes bundled in, proceeds independently of subsystem B.
@@ -314,10 +314,10 @@ subsystems do:
 
 | # | Feature | Depends on | Status |
 |---|---|---|---|
-| E1 | Vendor/contract management (deposits, payment dates, contact history) | none | ✅ **built**: [plan](superpowers/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08 |
-| E2 | Budget tracking (per-vendor cost vs. overall budget) | E1 | ✅ **built**: [plan](superpowers/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08 |
-| E3 | General task/checklist management (not tied to a Cadence block) | none | ✅ **built**: [plan](superpowers/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08 |
-| E4 | Vendor-facing communication/portal (send job sheets, track confirmation) | E1, likely reuses the `/seat/[token]` share-link pattern rather than real vendor logins | ✅ **built**: [plan](superpowers/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08; shipped as supplier links with confirmation |
+| E1 | Vendor/contract management (deposits, payment dates, contact history) | none | ✅ **built**: [plan](design/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08 |
+| E2 | Budget tracking (per-vendor cost vs. overall budget) | E1 | ✅ **built**: [plan](design/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08 |
+| E3 | General task/checklist management (not tied to a Cadence block) | none | ✅ **built**: [plan](design/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08 |
+| E4 | Vendor-facing communication/portal (send job sheets, track confirmation) | E1, likely reuses the `/seat/[token]` share-link pattern rather than real vendor logins | ✅ **built**: [plan](design/plans/2026-09-08-brigade-vendors-budget-tasks.md), 2026-09-08; shipped as supplier links with confirmation |
 
 **Sequencing rationale:** E1 is foundational: both E2 (budget lines attach
 to vendors) and E4 (you need a real vendor contact to send something to)
@@ -343,7 +343,7 @@ paid fork of the hosted service can't undercut the free-forever intent (the
 root contract package is currently MIT and needs reconciling, see open
 questions).
 
-**Built.** [`2026-09-07-licensing-and-self-hosting.md`](superpowers/plans/2026-09-07-licensing-and-self-hosting.md)
+**Built.** [`2026-09-07-licensing-and-self-hosting.md`](design/plans/2026-09-07-licensing-and-self-hosting.md)
 executed in full on 2026-09-07 (branch `licensing-selfhosting`).
 
 **Licence decision refined during implementation.** The spec said to relicense
@@ -367,7 +367,7 @@ setting up from it got an instance where sign-in silently never worked.
 spec as a writing task. It should happen before real strangers' data is at
 stake. Donations remain deferred until real usage exists.
 
-**Spec:** [`2026-09-02-onboarding-billing-legal-design.md`](superpowers/specs/2026-09-02-onboarding-billing-legal-design.md)
+**Spec:** [`2026-09-02-onboarding-billing-legal-design.md`](design/specs/2026-09-02-onboarding-billing-legal-design.md)
 settles: mechanical MIT→AGPL relicensing, self-hosting via a thorough markdown
 runbook (no Docker), privacy/terms flagged for a real content rewrite
 before real users' data is at stake, donations/sponsorship explicitly
@@ -383,7 +383,7 @@ yet. Kept additive-safe: multi-wedding-per-account can be layered on later
 without a redesign, since it's a superset of the one-wedding case, not a
 different shape.
 
-**Built.** [`2026-09-07-multitenant-mechanics.md`](superpowers/plans/2026-09-07-multitenant-mechanics.md)
+**Built.** [`2026-09-07-multitenant-mechanics.md`](design/plans/2026-09-07-multitenant-mechanics.md)
 executed in full on 2026-09-07 (branch `multitenant-mechanics`). The write path
 is rate limited per account, and `GET /api/documents/export` plus a button on
 the account page give a couple their whole wedding as a file.
@@ -393,7 +393,7 @@ the `/seat/[token]` limiter had **no** test coverage at all (added before making
 it load-bearing), and the RLS negative test it asks for already existed at the
 database layer, so the application-layer half was added instead of a duplicate.
 
-**Spec:** [`2026-09-02-multitenant-mechanics-design.md`](superpowers/specs/2026-09-02-multitenant-mechanics-design.md)
+**Spec:** [`2026-09-02-multitenant-mechanics-design.md`](design/specs/2026-09-02-multitenant-mechanics-design.md)
 settles: no built-in admin/support access to user data by design, reuse of the
 existing in-memory rate limiter until real usage demands better, and data
 export from day one (reusing the existing `bundle.mjs` pack format almost

@@ -22,7 +22,7 @@ itself is Supabase's own magic-link flow via `@supabase/ssr`, not custom code.
 `@electric-sql/pglite` (already a dependency, used for real-Postgres RLS/SQL
 function tests), Vitest, Zod.
 
-**Spec:** `docs/superpowers/specs/2026-09-02-identity-accounts-design.md`
+**Spec:** `docs/design/specs/2026-09-02-identity-accounts-design.md`
 
 ## Global Constraints
 

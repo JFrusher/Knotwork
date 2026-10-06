@@ -4,7 +4,7 @@
 -- `p_user_id <> auth.uid()`. With nobody signed in, auth.uid() is null, the
 -- comparison is null, and the `if` it guarded was skipped: a caller with no
 -- session removed the member — and, with the last one gone, the wedding.
--- Reproduced against Postgres; see docs/superpowers/specs/2026-09-29-database-review.md, D7.
+-- Reproduced against Postgres; see docs/design/specs/2026-09-29-database-review.md, D7.
 -- It now refuses a caller with no session before anything else.
 --
 -- Whether such a caller can reach it at all depends on who may execute it.
