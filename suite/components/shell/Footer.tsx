@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { PRIVACY } from "@/lib/legal";
+import { CONTROLLER, PRIVACY } from "@/lib/legal";
+
+// Couples have no GitHub account, so the way to say what's missing is email.
+// Only a subject is prefilled: nothing from the wedding is ever attached.
+const feedback = `mailto:${CONTROLLER.email}?subject=${encodeURIComponent("Something missing from Knotwork")}`;
 
 /**
  * The footer, on every page of the application and on the guest page.
@@ -16,7 +20,7 @@ export function Footer() {
         <span>Knotwork — free and open source. No account needed.</span>
         {/* `min-h-11` is 44px: these are the only controls on the guest page
             besides the search box, and a guest is on a phone at a venue. */}
-        <nav className="flex gap-2">
+        <nav className="flex flex-wrap gap-2">
           <Link
             href="/blog"
             className="inline-flex min-h-11 items-center px-2 underline underline-offset-2 hover:text-charcoal"
@@ -41,6 +45,12 @@ export function Footer() {
           >
             Support
           </Link>
+          <a
+            href={feedback}
+            className="inline-flex min-h-11 items-center px-2 underline underline-offset-2 hover:text-charcoal"
+          >
+            Something missing? Tell me.
+          </a>
         </nav>
         <span className="ms-auto">
           Updated{" "}
