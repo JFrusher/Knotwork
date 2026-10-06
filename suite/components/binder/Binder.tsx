@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Phone } from "lucide-react";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
-import { contacts, dayClock, findGuests, nowAndNext, runningOrder, takenKey, type BinderBlock } from "@/lib/binder/binder";
+import { contacts, dayClock, findBoxes, findGuests, nowAndNext, runningOrder, takenKey, type BinderBlock } from "@/lib/binder/binder";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { readCast, readGuests, readSeating, readShots } from "@/lib/model/slices";
 import { formatClock } from "@/lib/minutes";
@@ -215,18 +215,21 @@ function Find() {
   const doc = useKnotworkStore((s) => s.doc);
   const [query, setQuery] = useState("");
   const found = useMemo(() => findGuests(doc, query), [doc, query]);
+  const boxes = useMemo(() => findBoxes(doc, query), [doc, query]);
   return (
-    <section aria-label="Find a guest">
+    <section aria-label="Find a guest or a box">
       <input
         type="search"
-        aria-label="A guest’s name"
-        placeholder="A guest’s name"
+        aria-label="A guest, a box or a thing"
+        placeholder="A guest, a box or a thing"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         className="w-full rounded border border-charcoal/15 bg-parchment px-3 py-3 text-base text-charcoal focus:border-gold"
       />
-      {query.trim() && found.length === 0 ? <p className="mt-3 text-slate">Nobody coming is called that.</p> : null}
-      <ul className="mt-3 divide-y divide-charcoal/10">
+      {query.trim() && found.length === 0 && boxes.length === 0 ? (
+        <p className="mt-3 text-slate">Nobody coming, and nothing packed, is called that.</p>
+      ) : null}
+      <ul aria-label="Guests" className="mt-3 divide-y divide-charcoal/10">
         {found.map((guest) => (
           <li key={guest.id} className="flex justify-between gap-3 py-3">
             <span className="text-charcoal">{guest.name}</span>
@@ -234,6 +237,19 @@ function Find() {
           </li>
         ))}
       </ul>
+      {boxes.length > 0 ? (
+        <ul aria-label="Boxes" className="mt-3 divide-y divide-charcoal/10">
+          {boxes.map((found) => (
+            <li key={found.key} className="py-3">
+              <span className="block text-charcoal">{found.item ?? found.box}</span>
+              <span className="block text-sm text-slate">
+                {found.item ? `In ${found.box}. ` : ""}
+                {found.where}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </section>
   );
 }

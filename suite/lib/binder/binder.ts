@@ -1,5 +1,7 @@
 import type { Knotwork } from "@jfrusher/knotwork";
-import { guestName, isComing, readCrew, readGuests, readSeating, readTimeline, resolvedDay } from "@/lib/model/slices";
+import { dayPlaces, guestName, isComing, readBoxes, readCrew, readGuests, readSeating, readTimeline, resolvedDay } from "@/lib/model/slices";
+import { hiddenToolIds } from "@/lib/model/toolbox";
+import { find, neededAt, whereBy } from "@/lib/boxes/view";
 
 /**
  * The day itself, for a phone in a pocket: what is on now and next against
@@ -124,6 +126,25 @@ export function findGuests(doc: Knotwork, query: string, limit = 20): FoundGuest
     .filter((guest) => words.every((word) => guest.name.toLowerCase().includes(word)))
     .sort((a, b) => a.name.localeCompare(b.name, "en"))
     .slice(0, limit);
+}
+
+interface FoundBox {
+  key: string;
+  box: string;
+  /** The thing packed that matched, or null when it was the box's own name. */
+  item: string | null;
+  /** "The suite, by 08:00", as Boxes says it. */
+  where: string;
+}
+
+/** "Where are the rings?": boxes and what is packed in them, with Boxes' own search. */
+export function findBoxes(doc: Knotwork, query: string): FoundBox[] {
+  if (hiddenToolIds(doc).has("boxes")) return [];
+  const places = dayPlaces(doc);
+  return find(readBoxes(doc), query).map(({ box, item }) => {
+    const { place, lost } = neededAt(box, places);
+    return { key: `${box.id}:${item?.id ?? ""}`, box: box.name, item: item?.label ?? null, where: whereBy(place, lost) };
+  });
 }
 
 /** Where a phone keeps which shots it has ticked off, one wedding per key. */
