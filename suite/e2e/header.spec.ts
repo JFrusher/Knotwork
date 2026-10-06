@@ -48,3 +48,38 @@ test("the front page leads with the one thing to do next", async ({ page }) => {
   await expect(areas.getByRole("link", { name: /Seating\s*97 of 100 seated/ })).toBeVisible();
   await expect(page.getByRole("region", { name: "Also left" })).toContainText("2 suppliers have not confirmed yet.");
 });
+
+/*
+ * On a phone the tabs once shared a row with the wedding's name and the Data
+ * button: 94px of 390, two and a half tabs showing and nothing to say there
+ * were more. And the front page's one loud next step opened a tool that only
+ * says it needs a wider screen.
+ */
+test.describe("at 390px", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("every tab is in view, with every tool added", async ({ page }) => {
+    await seedExampleWedding(page);
+    await page.goto("/");
+    const nav = page.getByRole("navigation", { name: "Tools" });
+    await expect(nav.locator("a, button")).toHaveCount(TOOLS.length + 2);
+    const outside = await nav.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      return [...element.querySelectorAll("a, button")]
+        .filter((tab) => {
+          const r = tab.getBoundingClientRect();
+          return r.left < Math.max(box.left, 0) - 1 || r.right > Math.min(box.right, window.innerWidth) + 1;
+        })
+        .map((tab) => tab.getAttribute("aria-label"));
+    });
+    expect(outside).toEqual([]);
+  });
+
+  test("a next step that needs a laptop says so, rather than opening a dead end", async ({ page }) => {
+    await seedExampleWedding(page);
+    await page.goto("/");
+    const next = page.getByRole("region", { name: "Next" });
+    await expect(next).toContainText(/3 guests have no table yet\.\s*On a laptop or tablet/);
+    await expect(next.getByRole("link")).toHaveCount(0);
+  });
+});
