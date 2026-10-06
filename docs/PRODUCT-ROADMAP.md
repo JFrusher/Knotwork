@@ -329,8 +329,9 @@ something without a full account, which points toward reusing the
 `/seat/[token]` share-link pattern (subsystem B's territory) rather than
 extending subsystem A's couple-only accounts to a third role.
 
-**Still open:** each of E1-E4 needs its own full design pass (data model,
-UI, testing) when its turn comes. None are speced yet.
+**Designed and built together:** one
+[spec](design/specs/2026-09-08-brigade-vendors-budget-tasks-design.md) and one
+[plan](design/plans/2026-09-08-brigade-vendors-budget-tasks.md) covered E1-E4.
 
 ## Subsystem F: Onboarding, billing & legal at product scale
 
