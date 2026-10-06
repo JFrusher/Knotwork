@@ -3,8 +3,9 @@ import { useStore } from './useStore'
 import { seatId } from '../utils/ids'
 import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
+import type { Plan } from './types'
 
-const mkGuest = (id, first, last) => ({
+const mkGuest = (id: string, first: string, last: string) => ({
   id,
   firstName: first,
   lastName: last,
@@ -22,7 +23,8 @@ const mkGuest = (id, first, last) => ({
   tags: [],
 })
 
-const fixture = () => ({
+const fixture = () =>
+  ({
   meta: { weddingName: 'Test', venue: '', date: '', createdAt: '', updatedAt: '' },
   guests: { g1: mkGuest('g1', 'A', 'X'), g2: mkGuest('g2', 'B', 'Y') },
   groups: {},
@@ -53,7 +55,7 @@ const fixture = () => ({
     gridSnap: true,
     gridSize: 20,
   },
-})
+  }) as unknown as Partial<Plan>
 
 const s = () => useStore.getState()
 

@@ -1,15 +1,19 @@
 import { describe, it, expect } from 'vitest'
-import { computeWarnings, buildWarningIndex } from './warnings'
+import { computeWarnings, buildWarningIndex, type SeatingWarning } from './warnings'
+import type { Constraint, Guest, Table } from '../store/types'
 
-const guest = (id, over = {}) => ({
+// Only the fields the rules read.
+const guest = (id: string, over: Partial<Guest> = {}) =>
+  ({
   id,
   fullName: id,
   dietary: '',
   rsvpStatus: 'confirmed',
   assignedTableId: null,
   ...over,
-})
-const table = (id, over = {}) => ({
+  }) as Guest
+const table = (id: string, over: Partial<Table> = {}) =>
+  ({
   id,
   label: id,
   type: 'round',
@@ -17,7 +21,7 @@ const table = (id, over = {}) => ({
   designation: null,
   assignedGuestIds: [],
   ...over,
-})
+  }) as Table
 
 describe('computeWarnings', () => {
   it('flags an over-capacity table', () => {
@@ -55,7 +59,7 @@ describe('computeWarnings', () => {
   })
 
   it('warns when more than 30% of guests are unseated', () => {
-    const guests = {}
+    const guests: Record<string, Guest> = {}
     for (let i = 0; i < 10; i++) guests[`g${i}`] = guest(`g${i}`, { assignedTableId: i < 6 ? 't' : null })
     const w = computeWarnings({ guests, tables: { t: table('t') }, constraints: [] })
     expect(w.some((x) => x.kind === 'unassigned')).toBe(true)
@@ -65,14 +69,14 @@ describe('computeWarnings', () => {
     const apart = computeWarnings({
       guests: { a: guest('a', { assignedTableId: 't' }), b: guest('b', { assignedTableId: 't' }) },
       tables: { t: table('t', { assignedGuestIds: ['a', 'b'] }) },
-      constraints: [{ id: 'c1', kind: 'apart', guestIds: ['a', 'b'] }],
+      constraints: [{ id: 'c1', kind: 'apart', guestIds: ['a', 'b'] } as Constraint],
     })
     expect(apart.some((x) => x.kind === 'apart')).toBe(true)
 
     const together = computeWarnings({
       guests: { a: guest('a', { assignedTableId: 't1' }), b: guest('b', { assignedTableId: 't2' }) },
       tables: { t1: table('t1', { assignedGuestIds: ['a'] }), t2: table('t2', { assignedGuestIds: ['b'] }) },
-      constraints: [{ id: 'c2', kind: 'together', guestIds: ['a', 'b'] }],
+      constraints: [{ id: 'c2', kind: 'together', guestIds: ['a', 'b'] } as Constraint],
     })
     expect(together.some((x) => x.kind === 'together')).toBe(true)
   })
@@ -90,8 +94,8 @@ describe('computeWarnings', () => {
 describe('buildWarningIndex', () => {
   it('indexes warnings by table and guest', () => {
     const { byTable, byGuest } = buildWarningIndex([
-      { id: 'w1', tableId: 't', message: 'x' },
-      { id: 'w2', guestId: 'g', message: 'y' },
+      { id: 'w1', tableId: 't', message: 'x' } as SeatingWarning,
+      { id: 'w2', guestId: 'g', message: 'y' } as SeatingWarning,
     ])
     expect(byTable.get('t')).toHaveLength(1)
     expect(byGuest.get('g')).toHaveLength(1)

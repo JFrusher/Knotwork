@@ -1,9 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { buildFloorPlanSvg, measureFloorPlan } from './floorPlanSvg'
+import type { Guest, Space, Table } from '../store/types'
+
+type FloorPlanSource = Parameters<typeof measureFloorPlan>[0]
 
 // Two 8-seat trestles side by side plus a rotated 4-seat top table, matching the
 // shape of a real plan: rect tables with seats on the long sides only.
-const trestle = (id, label, x, y, extra = {}) => ({
+const trestle = (id: string, label: string, x: number, y: number, extra: Partial<Table> = {}) =>
+  ({
   id,
   label,
   type: 'rect',
@@ -16,13 +20,14 @@ const trestle = (id, label, x, y, extra = {}) => ({
   sizeUnits: { shape: 'rect', width: 365.76, height: 76.2 },
   assignedGuestIds: [],
   ...extra,
-})
+  }) as Table
 
-const guest = (id, firstName, lastName) => ({ id, firstName, lastName, fullName: `${firstName} ${lastName}` })
+const guest = (id: string, firstName: string, lastName: string) =>
+  ({ id, firstName, lastName, fullName: `${firstName} ${lastName}` }) as Guest
 
-function makeDoc() {
-  const guests = {}
-  const ids = []
+function makeDoc(): FloorPlanSource {
+  const guests: Record<string, Guest> = {}
+  const ids: string[] = []
   const names = [
     ['Sam', 'Sparkes'],
     ['Jude', 'Silk'],
@@ -63,7 +68,7 @@ function makeDoc() {
     // Sits at negative x, i.e. outside the room rect.
     zones: { z1: { id: 'z1', label: 'Stage', shape: 'rect', x: -103, y: 158, width: 103, height: 336 } },
     room: { spaces: [{ id: 'sp1', shape: 'rect', x: 0, y: 0, width: 1261, height: 629 }] },
-  }
+  } as unknown as FloorPlanSource
 }
 
 describe('measureFloorPlan', () => {
@@ -74,7 +79,7 @@ describe('measureFloorPlan', () => {
 
   it('does not drag the origin in when the room is drawn away from it', () => {
     const doc = makeDoc()
-    doc.room.spaces = [{ id: 'sp1', shape: 'rect', x: 600, y: 400, width: 500, height: 400 }]
+    doc.room!.spaces = [{ id: 'sp1', shape: 'rect', x: 600, y: 400, width: 500, height: 400 } as Space]
     doc.zones = {}
     doc.tables = {}
     const m = measureFloorPlan(doc)
@@ -88,7 +93,7 @@ describe('measureFloorPlan', () => {
     expect(m.cellW).toBeGreaterThan(10)
 
     // Rebuild the world seat positions the same way the layout does.
-    const cells = []
+    const cells: { x: number; y: number; w: number; h: number }[] = []
     const svg = buildFloorPlanSvg(doc, { seatLabels: 'name' }).svg
     const re = /<rect x="(-?[\d.]+)" y="(-?[\d.]+)" width="([\d.]+)" height="([\d.]+)" rx="2"/g
     let mt
@@ -148,7 +153,7 @@ describe('buildFloorPlanSvg seatLabels', () => {
 
   it('keeps names sharing an edge on a common baseline', () => {
     const { svg } = buildFloorPlanSvg(makeDoc(), { seatLabels: 'name' })
-    const yOf = (token) => {
+    const yOf = (token: string) => {
       const m = new RegExp(`<text x="[-\\d.]+" y="([-\\d.]+)"[^>]*>${token}<`).exec(svg)
       return m ? +m[1] : null
     }
@@ -181,6 +186,6 @@ describe('buildFloorPlanSvg seatLabels', () => {
     const { svg } = buildFloorPlanSvg(makeDoc(), { seatLabels: 'name' })
     const seymour = /<text x="[-\d.]+" y="[-\d.]+"[^>]*>Seymour</.exec(svg)
     expect(seymour).not.toBeNull()
-    expect(seymour[0]).not.toContain('rotate')
+    expect(seymour![0]).not.toContain('rotate')
   })
 })

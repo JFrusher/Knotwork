@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { computeSnap, buildContainers } from './alignmentSnap'
+import { computeSnap, buildContainers, type Guide } from './alignmentSnap'
+import type { Room } from '../store/types'
 
-const box = (cx, cy, hw = 10, hh = 10) => ({ cx, cy, hw, hh })
+const box = (cx: number, cy: number, hw = 10, hh = 10) => ({ cx, cy, hw, hh })
 
 describe('computeSnap — table-to-table alignment', () => {
   it('snaps centre-to-centre on X within threshold', () => {
@@ -62,7 +63,7 @@ describe('computeSnap — walls (containers)', () => {
       threshold: 8,
     })
     expect(res.x).toBe(100)
-    expect(res.guides.some((g) => g.variant === 'center')).toBe(true)
+    expect(res.guides.some((g) => (g as { variant?: string }).variant === 'center')).toBe(true)
   })
 
   it('snaps a table flush to a wall face', () => {
@@ -84,9 +85,9 @@ describe('computeSnap — equal spacing', () => {
       threshold: 8,
     })
     expect(res.x).toBe(100)
-    const spacing = res.guides.find((g) => g.kind === 'spacing')
+    const spacing = res.guides.find((g): g is Extract<Guide, { kind: 'spacing' }> => g.kind === 'spacing')
     expect(spacing).toBeTruthy()
-    expect(spacing.dist).toBe(80)
+    expect(spacing!.dist).toBe(80)
   })
 
   it('matches the adjacent gap to extend an even row', () => {
@@ -116,7 +117,7 @@ describe('buildContainers', () => {
       width: 1200,
       height: 900,
       spaces: [{ shape: 'rect', x: 50, y: 60, width: 400, height: 300 }],
-    })
+    } as unknown as Room)
     expect(out).toContainEqual({ left: 0, top: 0, right: 1200, bottom: 900 })
     expect(out).toContainEqual({ left: 50, top: 60, right: 450, bottom: 360 })
   })
@@ -135,7 +136,7 @@ describe('buildContainers', () => {
           ],
         },
       ],
-    })
+    } as unknown as Room)
     expect(out[0]).toEqual({ left: 100, top: 50, right: 500, bottom: 300 })
   })
 })

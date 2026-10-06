@@ -3,8 +3,13 @@ import { useStore } from './useStore'
 import { getTableGeometry } from '../utils/seatPositions'
 import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
+import type { Plan, SizeUnits, Table } from './types'
 
-const baseDoc = () => ({
+// The round tables here are sized by a diameter.
+const diameter = (t: Table) => (t.sizeUnits as Extract<SizeUnits, { diameter: number }>).diameter
+
+const baseDoc = () =>
+  ({
   meta: { weddingName: 'T', venue: '', date: '', createdAt: '', updatedAt: '' },
   guests: {},
   groups: {},
@@ -15,7 +20,7 @@ const baseDoc = () => ({
   snapshots: [],
   constraints: [],
   settings: { defaultSeatMode: 'table', gridSnap: true, gridSize: 20 },
-})
+  }) as unknown as Plan
 
 const s = () => useStore.getState()
 
@@ -25,25 +30,25 @@ beforeEach(() => {
 
 describe('table geometry actions', () => {
   it('new tables carry real-world sizeUnits', () => {
-    const id = s().addTable({ type: 'round', x: 0, y: 0 }).meta.newTableId
+    const id = s().addTable({ type: 'round', x: 0, y: 0 })!.meta!.newTableId as string
     const t = s().tables[id]
     expect(t.sizeUnits).toBeTruthy()
-    expect(t.sizeUnits.shape).toBe('circle')
-    expect(t.sizeUnits.diameter).toBeGreaterThan(0)
+    expect(t.sizeUnits!.shape).toBe('circle')
+    expect(diameter(t)).toBeGreaterThan(0)
   })
 
   it('resizeTable changes the footprint and undoes', () => {
-    const id = s().addTable({ type: 'round', x: 0, y: 0 }).meta.newTableId
+    const id = s().addTable({ type: 'round', x: 0, y: 0 })!.meta!.newTableId as string
     const before = getTableGeometry(s().tables[id], s().settings.pixelsPerUnit).radius
-    s().resizeTable(id, { diameter: s().tables[id].sizeUnits.diameter * 2 })
+    s().resizeTable(id, { diameter: diameter(s().tables[id]) * 2 })
     const after = getTableGeometry(s().tables[id], s().settings.pixelsPerUnit).radius
     expect(after).toBeGreaterThan(before)
     useKnotworkStore.getState().undo()
-    expect(s().tables[id].sizeUnits.diameter).toBeCloseTo(before * 2 / s().settings.pixelsPerUnit, 0)
+    expect(diameter(s().tables[id])).toBeCloseTo(before * 2 / s().settings.pixelsPerUnit, 0)
   })
 
   it('rotateTable stores degrees and undoes', () => {
-    const id = s().addTable({ type: 'rect', x: 0, y: 0 }).meta.newTableId
+    const id = s().addTable({ type: 'rect', x: 0, y: 0 })!.meta!.newTableId as string
     s().rotateTable(id, 45)
     expect(s().tables[id].rotation).toBe(45)
     useKnotworkStore.getState().undo()
@@ -58,14 +63,14 @@ describe('table geometry actions', () => {
       height: 120,
       perSideSeats: { top: 3, right: 1, bottom: 3, left: 1 },
     })
-    const t = s().tables[cmd.meta.newTableId]
+    const t = s().tables[cmd!.meta!.newTableId]
     expect(t.custom).toBe(true)
     expect(t.capacity).toBe(8)
     expect(getTableGeometry(t, s().settings.pixelsPerUnit).seats).toHaveLength(8)
   })
 
   it('setPerSideSeats recomputes capacity', () => {
-    const id = s().addTable({ type: 'rect', x: 0, y: 0 }).meta.newTableId
+    const id = s().addTable({ type: 'rect', x: 0, y: 0 })!.meta!.newTableId as string
     s().setPerSideSeats(id, { top: 5, right: 0, bottom: 5, left: 2 })
     expect(s().tables[id].capacity).toBe(12)
     useKnotworkStore.getState().undo()
@@ -105,7 +110,7 @@ describe('table geometry actions', () => {
   })
 
   it('changeTableType clears per-side seating', () => {
-    const id = s().createCustomTable({ perSideSeats: { top: 2, bottom: 2 } }).meta.newTableId
+    const id = s().createCustomTable({ perSideSeats: { top: 2, bottom: 2 } })!.meta!.newTableId as string
     s().changeTableType(id, 'round')
     expect(s().tables[id].perSideSeats).toBeNull()
     expect(s().tables[id].type).toBe('round')
@@ -123,8 +128,8 @@ describe('table geometry actions', () => {
 describe('table presets', () => {
   it('saves a table as a preset capturing size + seating, then recreates it', () => {
     const srcId = s()
-      .createCustomTable({ width: 240, height: 120, perSideSeats: { top: 3, right: 1, bottom: 3, left: 1 } })
-      .meta.newTableId
+      .createCustomTable({ width: 240, height: 120, perSideSeats: { top: 3, right: 1, bottom: 3, left: 1 } })!
+      .meta!.newTableId as string
     const src = s().tables[srcId]
 
     s().saveTablePreset(srcId, 'Banquet 8')
@@ -149,8 +154,8 @@ describe('table presets', () => {
         sizeUnits: preset.sizeUnits,
         perSideSeats: preset.perSideSeats,
         seatMode: preset.seatMode,
-      })
-      .meta.newTableId
+      })!
+      .meta!.newTableId as string
     const made = s().tables[newId]
     expect(made.sizeUnits).toEqual(src.sizeUnits)
     expect(made.perSideSeats).toEqual(src.perSideSeats)
@@ -158,7 +163,7 @@ describe('table presets', () => {
   })
 
   it('deletes a preset and undoes the save', () => {
-    const id = s().addTable({ type: 'round', x: 0, y: 0 }).meta.newTableId
+    const id = s().addTable({ type: 'round', x: 0, y: 0 })!.meta!.newTableId as string
     s().saveTablePreset(id, 'Round')
     const presetId = s().settings.customTablePresets[0].id
     s().deleteTablePreset(presetId)

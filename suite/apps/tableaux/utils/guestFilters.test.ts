@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { matchesFilters } from './guestFilters'
+import type { Guest } from '../store/types'
+
+// Only the fields the chips read.
+const guest = (g: Partial<Guest>) => g as Guest
 
 describe('the Unassigned chip', () => {
   it('finds who still needs a seat, and not someone who is not coming', () => {
-    const waiting = { assignedTableId: null, rsvpStatus: 'confirmed' }
-    const declined = { assignedTableId: null, rsvpStatus: 'declined' }
+    const waiting = guest({ assignedTableId: null, rsvpStatus: 'confirmed' })
+    const declined = guest({ assignedTableId: null, rsvpStatus: 'declined' })
     expect(matchesFilters(waiting, ['unassigned'])).toBe(true)
     expect(matchesFilters(declined, ['unassigned'])).toBe(false)
   })
@@ -14,9 +18,9 @@ describe('the Unassigned chip', () => {
 // it. A guest has one diet and one side, so ANDing two chips from the same
 // category could only ever show nobody, or only the guests on both sides.
 describe('combining chips', () => {
-  const veggie = { dietary: 'vegetarian', side: 'a', assignedTableId: null, rsvpStatus: 'confirmed' }
-  const vegan = { dietary: 'vegan', side: 'b', assignedTableId: 't1', rsvpStatus: 'confirmed' }
-  const neither = { dietary: '', side: 'both', assignedTableId: null, rsvpStatus: 'confirmed' }
+  const veggie = guest({ dietary: 'vegetarian', side: 'a', assignedTableId: null, rsvpStatus: 'confirmed' })
+  const vegan = guest({ dietary: 'vegan', side: 'b', assignedTableId: 't1', rsvpStatus: 'confirmed' })
+  const neither = guest({ dietary: '', side: 'both', assignedTableId: null, rsvpStatus: 'confirmed' })
 
   it('shows vegetarians and vegans when both diet chips are on', () => {
     expect(matchesFilters(veggie, ['vegetarian', 'vegan'])).toBe(true)

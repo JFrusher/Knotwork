@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
 import { openPlan } from '../test/openPlan'
 import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
+import type { Plan } from './types'
 
-const mkGuest = (id, first, last) => ({
+const mkGuest = (id: string, first: string, last: string) => ({
   id,
   firstName: first,
   lastName: last,
@@ -21,7 +22,8 @@ const mkGuest = (id, first, last) => ({
   tags: [],
 })
 
-const fixture = () => ({
+const fixture = () =>
+  ({
   meta: { weddingName: 'Test', venue: '', date: '', createdAt: '', updatedAt: '' },
   guests: { g1: mkGuest('g1', 'A', 'X'), g2: mkGuest('g2', 'B', 'Y') },
   groups: {},
@@ -52,7 +54,7 @@ const fixture = () => ({
     gridSnap: true,
     gridSize: 20,
   },
-})
+  }) as unknown as Partial<Plan>
 
 const s = () => useStore.getState()
 const countTables = () => Object.keys(s().tables).length
@@ -64,7 +66,7 @@ beforeEach(() => {
 describe('tables', () => {
   it('adds a table and supports undo / redo', () => {
     const cmd = s().addTable({ type: 'round', x: 10, y: 10 })
-    expect(cmd.meta.newTableId).toBeTruthy()
+    expect(cmd!.meta!.newTableId).toBeTruthy()
     expect(countTables()).toBe(2)
 
     useKnotworkStore.getState().undo()
@@ -98,7 +100,7 @@ describe('assignment', () => {
   })
 
   it('moving a guest to another table clears the original', () => {
-    const t2 = s().addTable({ type: 'round', x: 5, y: 5 }).meta.newTableId
+    const t2 = s().addTable({ type: 'round', x: 5, y: 5 })!.meta!.newTableId as string
     s().assignGuest('g1', 't1')
     s().assignGuest('g1', t2)
     expect(s().tables.t1.assignedGuestIds).not.toContain('g1')
@@ -140,7 +142,7 @@ describe('plan details, settings and seating rules', () => {
   })
 
   it('adds and removes a seating rule undoably', () => {
-    const id = s().addConstraint({ kind: 'apart', guestIds: ['g1', 'g2'] }).meta.newConstraintId
+    const id = s().addConstraint({ kind: 'apart', guestIds: ['g1', 'g2'] })!.meta!.newConstraintId as string
     expect(s().constraints).toHaveLength(1)
     useKnotworkStore.getState().undo()
     expect(s().constraints).toHaveLength(0)

@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import { getTableGridLayout, getTableInterior } from './tableGrid'
 import { shortName, pickGuestLabel } from './guestFilters'
+import type { TableGeometry } from './seatPositions'
+import type { Guest } from '../store/types'
 
-const rect = (width, height) => ({ shape: 'rect', width, height })
-const circle = (radius) => ({ shape: 'circle', radius, width: radius * 2, height: radius * 2 })
+// Names with parts missing, as an imported list can have them.
+const partial = (name: Partial<Guest>) => name as Guest
+
+const rect = (width: number, height: number) => ({ shape: 'rect', width, height }) as TableGeometry
+const circle = (radius: number) =>
+  ({ shape: 'circle', radius, width: radius * 2, height: radius * 2 }) as TableGeometry
 
 describe('getTableInterior', () => {
   it('insets a rectangle by the margin on every edge', () => {
@@ -28,7 +34,7 @@ describe('getTableGridLayout', () => {
 
   it('lays out enough cells to hold every seat, clamped to capacity', () => {
     for (const cap of [2, 6, 8, 10, 12, 16, 24]) {
-      const g = getTableGridLayout({ capacity: cap }, rect(260, 200))
+      const g = getTableGridLayout({ capacity: cap }, rect(260, 200))!
       expect(g).not.toBeNull()
       expect(g.cols * g.rows).toBeGreaterThanOrEqual(cap)
       expect(g.cols).toBeLessThanOrEqual(cap)
@@ -37,40 +43,40 @@ describe('getTableGridLayout', () => {
   })
 
   it('reads wider for wide tables than for square ones', () => {
-    const square = getTableGridLayout({ capacity: 12 }, rect(200, 200))
-    const wide = getTableGridLayout({ capacity: 12 }, rect(480, 120))
+    const square = getTableGridLayout({ capacity: 12 }, rect(200, 200))!
+    const wide = getTableGridLayout({ capacity: 12 }, rect(480, 120))!
     expect(wide.cols).toBeGreaterThanOrEqual(square.cols)
   })
 
   it('keeps the grid within the table interior', () => {
     const geom = rect(260, 200)
     const interior = getTableInterior(geom)
-    const g = getTableGridLayout({ capacity: 10 }, geom)
+    const g = getTableGridLayout({ capacity: 10 }, geom)!
     expect(g.width).toBeLessThanOrEqual(interior.width)
     expect(g.height).toBeLessThanOrEqual(interior.height)
   })
 
   it('uses the fewest columns (widest boxes) that fit vertically', () => {
     // A tall, narrow interior should stack into a single wide column.
-    const tall = getTableGridLayout({ capacity: 6 }, rect(90, 320))
+    const tall = getTableGridLayout({ capacity: 6 }, rect(90, 320))!
     expect(tall.cols).toBe(1)
     // A wider interior fits more text per box (more chars per line) than a
     // cramped one, at the same fixed font.
-    const wide = getTableGridLayout({ capacity: 8 }, rect(420, 320))
-    const tight = getTableGridLayout({ capacity: 8 }, circle(40))
+    const wide = getTableGridLayout({ capacity: 8 }, rect(420, 320))!
+    const tight = getTableGridLayout({ capacity: 8 }, circle(40))!
     expect(wide.charsPerLine).toBeGreaterThan(tight.charsPerLine)
   })
 
   it('reports at least one character and line per box', () => {
-    const g = getTableGridLayout({ capacity: 12 }, circle(50))
+    const g = getTableGridLayout({ capacity: 12 }, circle(50))!
     expect(g.charsPerLine).toBeGreaterThanOrEqual(1)
     expect(g.maxLines).toBeGreaterThanOrEqual(1)
     expect(g.maxLines).toBeLessThanOrEqual(2)
   })
 
   it('drops the header row on short interiors', () => {
-    expect(getTableGridLayout({ capacity: 8 }, circle(30)).hasHeader).toBe(false)
-    expect(getTableGridLayout({ capacity: 8 }, rect(300, 240)).hasHeader).toBe(true)
+    expect(getTableGridLayout({ capacity: 8 }, circle(30))!.hasHeader).toBe(false)
+    expect(getTableGridLayout({ capacity: 8 }, rect(300, 240))!.hasHeader).toBe(true)
   })
 })
 
@@ -106,15 +112,15 @@ describe('shortName', () => {
   })
 
   it('falls back to fullName parts when first/last are absent', () => {
-    expect(shortName({ fullName: 'Jane Doe' })).toBe('Jane D.')
+    expect(shortName(partial({ fullName: 'Jane Doe' }))).toBe('Jane D.')
   })
 
   it('handles a single-word name', () => {
-    expect(shortName({ firstName: 'Cher', fullName: 'Cher' })).toBe('Cher')
+    expect(shortName(partial({ firstName: 'Cher', fullName: 'Cher' }))).toBe('Cher')
   })
 
   it('is safe for null/empty input', () => {
     expect(shortName(null)).toBe('?')
-    expect(shortName({})).toBe('?')
+    expect(shortName(partial({}))).toBe('?')
   })
 })

@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { useStore } from './useStore'
 import { useKnotworkStore } from '@/lib/store/useKnotworkStore'
 import { openPlan } from '../test/openPlan'
+import type { Guest, Plan } from './types'
 
-const guest = (id, first, extra = {}) => ({
+const guest = (id: string, first: string, extra: Partial<Guest> = {}) => ({
   id,
   firstName: first,
   lastName: 'X',
@@ -22,7 +23,8 @@ const guest = (id, first, extra = {}) => ({
   ...extra,
 })
 
-const baseDoc = () => ({
+const baseDoc = () =>
+  ({
   meta: { weddingName: 'T', venue: '', date: '', createdAt: '', updatedAt: '' },
   guests: {
     g1: guest('g1', 'A', { assignedTableId: 't1', groupId: 'grp1' }),
@@ -39,7 +41,7 @@ const baseDoc = () => ({
   snapshots: [],
   constraints: [],
   settings: { defaultSeatMode: 'table', gridSnap: true, gridSize: 20 },
-})
+  }) as unknown as Partial<Plan>
 
 const s = () => useStore.getState()
 beforeEach(() => openPlan(baseDoc()))
