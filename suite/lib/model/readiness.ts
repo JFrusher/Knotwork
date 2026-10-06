@@ -115,7 +115,12 @@ export function readiness(doc: Knotwork, raw: unknown, today: string = todayIso(
   const crew = readCrew(doc);
   const pieces = stationeryPieces(raw);
 
+  // The first steps (a guest list, the room, the cards, the ceremony's place)
+  // are for getting going; once the day has passed there is nothing to start.
+  const over = doc.event.date !== "" && daysUntil(doc.event.date, today) < 0;
+
   if (people.length === 0) {
+    if (over) return [];
     return [
       {
         id: "no-guests",
@@ -400,9 +405,54 @@ export function readiness(doc: Knotwork, raw: unknown, today: string = todayIso(
     });
   }
 
+  if (!over) out.push(...firstSteps(doc, raw, coming, seating, timeline));
+
   // A tool the wedding has removed is one it is not using: nothing in it is
   // left to do. Here rather than in the page, so the planner's Weddings page,
   // which runs this on the server, says the same.
   const hidden = hiddenToolIds(doc);
   return out.filter((item) => !hidden.has(TOOLS.find((tool) => tool.href === item.href)?.id ?? ""));
+}
+
+/**
+ * What to do next on a wedding that is still being set up, each step when its
+ * contents call for it: the room once there are guests, the place cards once
+ * ten are seated, the ceremony's place once there is a day.
+ */
+function firstSteps(
+  doc: Knotwork,
+  raw: unknown,
+  coming: ReturnType<typeof readGuests>[string][],
+  seating: ReturnType<typeof readSeating>,
+  timeline: ReturnType<typeof readTimeline>,
+): Readiness[] {
+  const out: Readiness[] = [];
+  if (Object.keys(seating.tables).length === 0) {
+    out.push({
+      id: "room-undrawn",
+      severity: "advisory",
+      message: "Your guests are in. Draw the room and its tables next.",
+      href: "/seating",
+      action: "Draw the room",
+    });
+  }
+  if (coming.filter((guest) => guest.assignedTableId !== null).length >= 10 && stationeryPieces(raw).length === 0) {
+    out.push({
+      id: "cards-undesigned",
+      severity: "advisory",
+      message: "Place cards already know every table. Design them when you are ready.",
+      href: "/stationery",
+      action: "Design place cards",
+    });
+  }
+  if (timeline.blocks.length > 0 && readCeremony(doc).blockId === null) {
+    out.push({
+      id: "ceremony-unpinned",
+      severity: "advisory",
+      message: "The ceremony is not pinned to a part of the day yet.",
+      href: "/ceremony",
+      action: "Pin the ceremony",
+    });
+  }
+  return out;
 }
