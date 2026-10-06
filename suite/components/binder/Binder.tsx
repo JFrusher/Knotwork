@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Phone } from "lucide-react";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
-import { contacts, dayClock, findBoxes, findGuests, nowAndNext, runningOrder, takenKey, type BinderBlock } from "@/lib/binder/binder";
+import { contacts, dayClock, findBoxes, findGuests, nowAndNext, walkingOrder, runningOrder, takenKey, type BinderBlock } from "@/lib/binder/binder";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { readCast, readGuests, readSeating, readShots } from "@/lib/model/slices";
 import { formatClock } from "@/lib/minutes";
@@ -162,6 +162,8 @@ function BlockList({ title, blocks }: { title: string; blocks: BinderBlock[] }) 
 }
 
 function Day({ blocks, minute }: { blocks: BinderBlock[]; minute: number | null }) {
+  const doc = useKnotworkStore((s) => s.doc);
+  const walk = useMemo(() => walkingOrder(doc), [doc]);
   return (
     <section aria-label="The day">
       <ol className="divide-y divide-charcoal/10">
@@ -169,17 +171,38 @@ function Day({ blocks, minute }: { blocks: BinderBlock[]; minute: number | null 
           const past = minute !== null && block.endMin <= minute;
           const current = minute !== null && block.startMin <= minute && minute < block.endMin;
           return (
-            <li key={block.id} aria-current={current ? "time" : undefined} className={`flex gap-3 py-2 ${past ? "opacity-60" : ""} ${current ? "bg-gold/10" : ""}`}>
-              <span className="w-16 shrink-0 text-charcoal tabular-nums">{at(block.startMin)}</span>
+            // A past block is dimmed by colour, not opacity: faded slate on
+            // parchment drops below the contrast a phone in daylight needs.
+            <li key={block.id} aria-current={current ? "time" : undefined} className={`flex gap-3 py-2 ${current ? "bg-gold/10" : ""}`}>
+              <span className={`w-16 shrink-0 tabular-nums ${past ? "text-slate" : "text-charcoal"}`}>{at(block.startMin)}</span>
               <span>
-                <span className="block text-charcoal">{block.label}</span>
+                <span className={`block ${past ? "text-slate" : "text-charcoal"}`}>{block.label}</span>
                 <span className="block text-xs text-slate">{[block.location, block.lane].filter(Boolean).join(" · ")}</span>
+                {walk && walk.blockId === block.id ? <WalkingOrder groups={walk.groups} /> : null}
               </span>
             </li>
           );
         })}
       </ol>
     </section>
+  );
+}
+
+/** Who walks, in order, and to what: for whoever is lining them up. */
+function WalkingOrder({ groups }: { groups: NonNullable<ReturnType<typeof walkingOrder>>["groups"] }) {
+  return (
+    <ol aria-label="The walking order" className="mt-2 flex flex-col gap-2 border-l-2 border-gold/40 pl-3">
+      {groups.map((group) => {
+        const names = group.names.join(", ");
+        return (
+          <li key={group.id}>
+            <span className="block text-charcoal">{group.label}</span>
+            {names && names !== group.label ? <span className="block text-sm text-slate">{names}</span> : null}
+            <span className="block text-xs text-slate">{[group.cue, group.song && `♪ ${group.song}`].filter(Boolean).join(" · ")}</span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
