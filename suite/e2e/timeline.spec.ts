@@ -82,9 +82,15 @@ test("clocks nobody has set say so, and choosing British Summer Time sets it", a
   await page.goto("/timeline");
   const clocks = page.getByRole("combobox", { name: "Clocks" });
   await expect(clocks.locator("option:checked")).toHaveText("Not set");
-  await expect(page.getByText("Set the clocks to see sunset and golden hour.")).toBeVisible();
+  await expect(page.getByText("Enter the venue's latitude and longitude to see sunset and golden hour.")).toBeVisible();
 
   await clocks.selectOption({ label: "UTC+1 (BST, CET)" });
   await expect.poll(async () => (await storedDocument(page)).event?.utcOffsetMin).toBe(60);
+  // The place is entered, not guessed, either: every wedding was once London.
+  await expect(page.getByText("Enter the venue's latitude and longitude to see sunset and golden hour.")).toBeVisible();
+  await page.getByRole("spinbutton", { name: "Latitude" }).fill("55.9533");
+  await page.getByRole("spinbutton", { name: "Latitude" }).press("Tab");
+  await page.getByRole("spinbutton", { name: "Longitude" }).fill("-3.1883");
+  await page.getByRole("spinbutton", { name: "Longitude" }).press("Tab");
   await expect(page.getByText(/^Sunset \d\d:\d\d/)).toBeVisible();
 });
