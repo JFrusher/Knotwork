@@ -164,6 +164,11 @@ against, not a discussion to reopen without a reason.
   Apple** alongside it. Each provider shows only when it is switched on in
   Supabase. Still no passwords. This supersedes "no social login for now"
   from 2026-09-02.
+- **2026-10-06** — The DVC tooling goes after all: `scripts/`, `.dvc/`,
+  `data/*.dvc`, `.githooks/` and `docs/DATA.md`. This supersedes the
+  2026-09-08 note keeping it; the cross-slice validator lives on in
+  `suite/lib/documents/crossSliceValidation.ts`, which every document save
+  runs. The data already pushed stays in its DVC remote.
 
 ## Subsystem H — Guided tour & example wedding
 

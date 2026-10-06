@@ -106,7 +106,6 @@ suite/                   the Next.js application (AGPL-3.0-or-later)
   e2e/                   Playwright specs, run against a production build
 supabase/migrations/     database migrations, applied in filename order
 docs/                    self-hosting, building a tool, specs and plans
-scripts/                 bundle, sync and cross-slice validation utilities
 ```
 
 The first four tools keep their original code names (Tableaux, Plaque,
