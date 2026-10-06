@@ -97,3 +97,34 @@ describe('buildWarningIndex', () => {
     expect(byGuest.get('g')).toHaveLength(1)
   })
 })
+
+describe('a split family', () => {
+  // Five members across two tables, as in the issue.
+  const split = () => ({
+    guests: {
+      a: guest('a', { assignedTableId: 't1' }),
+      b: guest('b', { assignedTableId: 't1' }),
+      c: guest('c', { assignedTableId: 't1' }),
+      d: guest('d', { assignedTableId: 't2' }),
+      e: guest('e', { assignedTableId: 't2' }),
+    },
+    tables: {
+      t1: table('t1', { label: 'Table 1', assignedGuestIds: ['a', 'b', 'c'] }),
+      t2: table('t2', { label: 'Table 4', assignedGuestIds: ['d', 'e'] }),
+    },
+    constraints: [],
+    families: { f: { id: 'f', name: 'Okafor', memberIds: ['a', 'b', 'c', 'd', 'e'] } },
+  })
+
+  it('is one warning naming the family and the tables it is split across', () => {
+    const family = computeWarnings(split()).filter((w) => w.kind === 'family-split')
+    expect(family).toHaveLength(1)
+    expect(family[0].message).toBe('The "Okafor" family is split across Table 1 and Table 4.')
+  })
+
+  it('still badges every member and every table it is split across', () => {
+    const { byTable, byGuest } = buildWarningIndex(computeWarnings(split()))
+    for (const id of ['t1', 't2']) expect(byTable.get(id)).toHaveLength(1)
+    for (const id of ['a', 'b', 'c', 'd', 'e']) expect(byGuest.get(id)).toHaveLength(1)
+  })
+})

@@ -9,6 +9,9 @@ export interface SeatingWarning {
   message: string
   tableId?: string | null
   guestId?: string
+  /** For a warning about several tables or people, all of them, for badges. */
+  tableIds?: string[]
+  guestIds?: string[]
 }
 
 /**
@@ -126,27 +129,22 @@ export function computeWarnings(state: {
     }
   }
 
-  // TODO(family-ux): pushes one warning PER split member, not one per family
-  // — a family of 5 split across 2 tables produces 5 rows in WarningsPanel.
-  // Also: WarningsPanel.jsx renders every warning generically off `level`,
-  // never `kind` — a family-split row looks identical to an `apart`/
-  // `together` constraint violation, no visual cue that it's family-specific.
-  // See tmp/family-ux-followups.md #9.
+  // One warning per family, however many members are apart.
   for (const f of Object.values(families)) {
     const seated = (f.memberIds || [])
       .map((id) => guests[id])
       .filter((g): g is WarnedGuest => Boolean(g && g.assignedTableId))
-    const tableIds = new Set(seated.map((g) => g.assignedTableId))
-    if (tableIds.size > 1) {
-      seated.forEach((g) => {
-        out.push({
-          id: `fam_${f.id}_${g.id}`,
-          level: 'warn',
-          kind: 'family-split',
-          guestId: g.id,
-          tableId: g.assignedTableId,
-          message: `${g.fullName} is split from the rest of the "${f.name}" family — they're at a different table.`,
-        })
+    const tableIds = [...new Set(seated.map((g) => g.assignedTableId as string))]
+    if (tableIds.length > 1) {
+      const labels = tableIds.map((id) => tables[id]?.label || 'a table')
+      out.push({
+        id: `fam_${f.id}`,
+        level: 'warn',
+        kind: 'family-split',
+        guestId: seated[0].id,
+        guestIds: seated.map((g) => g.id),
+        tableIds,
+        message: `The "${f.name}" family is split across ${labels.slice(0, -1).join(', ')} and ${labels.at(-1)}.`,
       })
     }
   }
@@ -161,13 +159,13 @@ export function buildWarningIndex(list: SeatingWarning[]): {
   const byTable = new Map<string, SeatingWarning[]>()
   const byGuest = new Map<string, SeatingWarning[]>()
   for (const w of list) {
-    if (w.tableId) {
-      if (!byTable.has(w.tableId)) byTable.set(w.tableId, [])
-      byTable.get(w.tableId)!.push(w)
+    for (const id of w.tableIds ?? (w.tableId ? [w.tableId] : [])) {
+      if (!byTable.has(id)) byTable.set(id, [])
+      byTable.get(id)!.push(w)
     }
-    if (w.guestId) {
-      if (!byGuest.has(w.guestId)) byGuest.set(w.guestId, [])
-      byGuest.get(w.guestId)!.push(w)
+    for (const id of w.guestIds ?? (w.guestId ? [w.guestId] : [])) {
+      if (!byGuest.has(id)) byGuest.set(id, [])
+      byGuest.get(id)!.push(w)
     }
   }
   return { byTable, byGuest }

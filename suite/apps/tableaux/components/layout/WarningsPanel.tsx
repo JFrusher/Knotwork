@@ -51,11 +51,14 @@ export default function WarningsPanel() {
             <li key={w.id}>
               <button type="button" className={styles.row} onClick={() => navigate(w)}>
                 <Icon
-                  name={w.level === 'warn' ? 'alert' : 'info'}
+                  name={w.kind === 'family-split' ? 'users' : w.level === 'warn' ? 'alert' : 'info'}
                   size={16}
                   className={w.level === 'warn' ? styles.warn : styles.info}
                 />
-                <span className={styles.message}>{w.message}</span>
+                <span className={styles.message}>
+                  {w.kind === 'family-split' && <span className={styles.kind}>Family</span>}
+                  {w.message}
+                </span>
                 {(w.tableId || w.guestId) && (
                   <Icon name="chevron-right" size={14} className={styles.chevron} />
                 )}
