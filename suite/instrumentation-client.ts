@@ -1,5 +1,6 @@
 import { build } from "@/lib/build";
 import { sentryBuild } from "@/lib/sentry/build";
+import { dataCollection } from "@/lib/sentry/dataCollection";
 import { scrubEvent } from "@/lib/sentry/scrub";
 
 // Which build this tab is running, for anyone with the console open — a
@@ -28,7 +29,7 @@ if (dsn) {
     Sentry.init({
       dsn,
       ...sentryBuild,
-      sendDefaultPii: false,
+      dataCollection,
       // A report is sent only when something breaks.
       tracesSampleRate: 0,
       beforeSend: (event) => scrubEvent(event),
