@@ -47,6 +47,10 @@ is retyped and nothing disagrees.
 - ✅ **Ceremony, Boxes, Bar, Money, Checklist** and the **Binder**, which
   works offline on a phone.
 - ✅ **Guest seat links** and **supplier links** with confirmation.
+- ✅ **The order of service as a booklet.** Written in Ceremony, designed in
+  Place cards — cover, repeated inside page, back, pictures, three starting
+  styles — and printed folded at home or page by page for a print shop; on
+  the guest link too, when the couple chooses.
 - ✅ **Guided tour** with an example wedding, and the ⌘/Ctrl-K palette.
 - ✅ **Download my wedding** as a single `.knotwork.json` file, and account
   deletion that really deletes.

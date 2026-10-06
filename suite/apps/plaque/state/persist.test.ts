@@ -44,8 +44,18 @@ describe("load", () => {
     expect(result.data.pieces).toHaveLength(1);
     expect(result.data.pieces[0]).toMatchObject(FIRST_PIECE);
     // The rows it printed are the room's to say now; none are kept.
-    expect(Object.keys(result.data.pieces[0]!).sort()).toEqual(["card", "id", "merged", "name", "printed", "sheet", "template"]);
+    expect(Object.keys(result.data.pieces[0]!).sort()).toEqual(["booklet", "card", "id", "merged", "name", "printed", "sheet", "template"]);
+    // Cards, as every piece saved before booklets was.
+    expect(result.data.pieces[0]!.booklet).toBeNull();
     expect(result.problem).toBeNull();
+  });
+
+  it("keeps how a booklet is printed", () => {
+    const opened = load(good());
+    if (opened.status !== "ok") throw new Error("the fixture did not load");
+    const booklet = { ...opened.data.pieces[0]!, booklet: { output: "shop", paper: "A4" } };
+    const again = load({ ...opened.data, pieces: [booklet] });
+    expect(again.status === "ok" && again.data.pieces[0]!.booklet).toEqual({ output: "shop", paper: "A4" });
   });
 
   it("discards a save from another version rather than half-applying it", () => {

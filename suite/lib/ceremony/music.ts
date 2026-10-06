@@ -20,9 +20,10 @@ export function parseTime(text: string): number | null | undefined {
   return Number(match[1] ?? 0) * 60 + seconds;
 }
 
-/** "Canon in D — Pachelbel", the name a song goes by. */
+/** "Canon in D — Pachelbel", or "Here Comes the Sun — The Beatles, arranged for strings": the name a song goes by. */
 export function songName(song: Song): string {
-  return [song.title.trim() || "A piece not chosen yet", song.artist.trim()].filter(Boolean).join(" — ");
+  const name = [song.title.trim() || "A piece not chosen yet", song.artist.trim()].filter(Boolean).join(" — ");
+  return song.arrangement.trim() ? `${name}, ${song.arrangement.trim()}` : name;
 }
 
 /** "String quartet, from 0:45 to 2:30": how it is played, for whoever is playing it. */

@@ -56,6 +56,8 @@ function fontsOf(el: CardElement): string[] {
       return [el.fontId];
     case "grid":
       return [el.fontId, el.headingFontId];
+    case "service":
+      return [el.heading.fontId, el.detail.fontId, el.words.fontId, el.congregationFontId];
     case "icon":
     case "rect":
     case "line":

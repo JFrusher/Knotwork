@@ -159,7 +159,7 @@ describe("readCeremony", () => {
         ],
       },
     });
-    const canon = { title: "Canon in D", artist: "", playedBy: "", startSec: null, endSec: null, lyrics: "" };
+    const canon = { title: "Canon in D", artist: "", arrangement: "", playedBy: "", startSec: null, endSec: null, lyrics: "" };
     expect(readCeremony(doc).processional).toEqual([
       { id: "w1", label: "", members: [{ kind: "role", ref: "a" }], formation: "threes", side: "b", song: canon, cue: "" },
       { id: "w2", label: "", members: [], formation: "single", side: "", song: null, cue: "" },
@@ -185,7 +185,7 @@ describe("readCeremony", () => {
       },
     });
     const [reading, other] = readCeremony(doc).order;
-    expect(reading).toMatchObject({ kind: "reading", minutes: 3, print: true, approved: false, song: { title: "Air", startSec: 45, endSec: null } });
+    expect(reading).toMatchObject({ kind: "reading", minutes: 3, printWords: true, printLyrics: true, approved: false, song: { title: "Air", startSec: 45, endSec: null } });
     expect(other).toMatchObject({ kind: "other", minutes: null, song: null });
     expect(readCeremony(doc).kind).toBe("humanist");
   });

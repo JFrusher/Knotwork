@@ -38,8 +38,8 @@ export const RETENTION_MONTHS = 24;
 
 export const PRIVACY: Policy = {
   title: "Privacy",
-  updated: "2026-10-03",
-  digest: "3e963c8197556790",
+  updated: "2026-10-06",
+  digest: "155ff0eba13d11de",
   intro:
     "Knotwork is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
   sections: [
@@ -72,7 +72,7 @@ export const PRIVACY: Policy = {
     {
       heading: "What a guest link contains",
       paragraphs: [
-        "Deliberately less than the wedding does. A published link carries names and table numbers, and optionally the shape of the room. It does not carry email addresses, phone numbers, dietary requirements, notes, or anybody who has declined.",
+        "Deliberately less than the wedding does. A published link carries names and table numbers, and optionally the shape of the room. If you choose, it also carries your order of service as your printed booklet has it: its parts and music, who leads each, the words you chose to print, the wedding party's names, the times of the parts of the day you picked, and your own notes to the guests. It does not carry email addresses, phone numbers, dietary requirements, notes for whoever runs the day, or anybody who has declined.",
         "It is encrypted under a key that travels in the link's own fragment — the part after the # — which browsers never send to a server. What the server hands out is sealed; without the whole link, it cannot be read.",
         "The key is also kept with your wedding on your account, so whichever of you changes the seating can keep the link current. That makes it exactly as readable to whoever runs the server as the wedding itself — which already holds everything the link does, and more.",
         "There is only ever one live link per wedding, and it updates itself as seats change, so a link you have already given out stays correct. Taking it down deletes it outright.",

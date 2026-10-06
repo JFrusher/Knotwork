@@ -398,9 +398,19 @@ export interface Song {
   startSec: number | null;
   /** Where to fade, in seconds. Null plays it to the end. */
   endSec: number | null;
+  /** "Arranged for string quartet": how this version differs from the original. */
+  arrangement: string;
   /** Typed by the couple, for the singers or the order of service. The app ships none. */
   lyrics: string;
 }
+
+/**
+ * How a part's words are set on paper: a poem line by line, prose as
+ * paragraphs, or responses — spoken parts, the congregation's (lines starting
+ * "All:") in bold, as a service sheet sets them in any tradition.
+ */
+export type WordsLayout = "poem" | "prose" | "responses";
+export const WORDS_LAYOUTS: readonly WordsLayout[] = ["poem", "prose", "responses"];
 
 /** What a part of the ceremony is, which decides its words, its checks and its print. */
 export type MomentKind =
@@ -444,10 +454,17 @@ export interface Moment {
   /** When it starts: "at 'And I will love you still'", "as the registrar finishes". */
   cue: string;
   song: Song | null;
+  /** Whose words: "William Shakespeare", "1 Corinthians 13:4–8". */
+  author: string;
   /** The reading, the vows, the officiant's words. */
   words: string;
-  /** Its words and lyrics in full in the guests' order of service, not only its title. */
-  print: boolean;
+  layout: WordsLayout;
+  /** For the guests, under its title: "Please stand". */
+  guestNote: string;
+  /** Its words in full in the guests' order of service, not only its title. */
+  printWords: boolean;
+  /** Its song's lyrics in full in the guests' order of service. */
+  printLyrics: boolean;
   /** Approved by the registrar: a civil ceremony's readings and music need to be. */
   approved: boolean;
   /** For the officiant and whoever runs the day. */
@@ -486,6 +503,23 @@ export interface Ceremony {
   /** The order of service. */
   order: Moment[];
   processional: WalkGroup[];
+  guestCopy: GuestCopy;
+}
+
+/** What the guests are told about the ceremony, beyond the parts themselves: theirs to choose. */
+export interface GuestCopy {
+  /** Name the processional's music under it, group by group. */
+  processionalMusic: boolean;
+  /** A note from the couple to open with, or "". */
+  welcome: string;
+  /** Who's who: the parents, grandparents and wedding parties, from the cast. */
+  weddingParty: boolean;
+  /** "After the ceremony": the Timeline's blocks the guests are told about, by id. */
+  dayBlockIds: string[];
+  /** A note from the couple to close with, or "". */
+  thanks: string;
+  /** Show it on the guest link too, below where a guest finds their seat. */
+  onGuestLink: boolean;
 }
 
 // boxes -----------------------------------------------------------------------

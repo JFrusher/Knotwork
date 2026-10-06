@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useShallow } from "zustand/react/shallow";
 import type { Artefact } from "../../core/data/artefacts";
 import { artefactsOf } from "../../core/data/parts";
@@ -39,8 +40,10 @@ function scopeHint(scope: RowScope, rowCount: number, artefacts: Artefact[]): st
  * it; the room is always current, and the cards are read from it as it changes.
  */
 export function DataPanel() {
-  const { template, headers, rows, rowIds, rowIssues, rowScope, setRowScope, printOnly, setPrintOnly } = usePlaque(
+  const { template, headers, rows, rowIds, rowIssues, rowScope, setRowScope, printOnly, setPrintOnly, booklet, blankPages } = usePlaque(
     useShallow((s) => ({
+      booklet: s.booklet !== null,
+      blankPages: s.blankPages,
       template: s.template,
       headers: s.headers,
       rows: s.rows,
@@ -53,6 +56,28 @@ export function DataPanel() {
     })),
   );
   const artefacts = useMemo(() => artefactsOf(template, rows, headers, rowIds), [template, rows, headers, rowIds]);
+
+  if (booklet) {
+    return (
+      <>
+        <p className={styles.live}>
+          Printing from Ceremony, as it stands: {rows.length} pages, folded. What the guests are told — the parts, the words,
+          the music — is written there and is here at once.
+        </p>
+        {blankPages > 0 && (
+          <Hint>
+            {blankPages === 1 ? "One inside page is" : `${blankPages} inside pages are`} left for the fold to work: a folded
+            booklet is four pages a sheet. Fill {blankPages === 1 ? "it" : "them"} — a picture, a note in Ceremony — or set the
+            order of service smaller to save a sheet.
+          </Hint>
+        )}
+        <Link href="/ceremony" className={styles.button}>
+          Change it in Ceremony
+        </Link>
+        <Columns headers={headers} />
+      </>
+    );
+  }
 
   return (
     <>
@@ -82,15 +107,7 @@ export function DataPanel() {
         <ReprintFew artefacts={artefacts} printOnly={printOnly} onChoose={setPrintOnly} />
       )}
 
-      <SubGroup title={`Columns (${headers.length})`}>
-        <div className={styles.tokens}>
-          {headers.map((h) => (
-            <code key={h} className={styles.token} title="Use this in any text element">
-              {`{{${h}}}`}
-            </code>
-          ))}
-        </div>
-      </SubGroup>
+      <Columns headers={headers} />
 
       {/* Grouped, the count above says who is on no card; these speak of a guest's own card. */}
       {rowIssues.length > 0 && rowScope.kind !== "per-group" && (
@@ -172,6 +189,21 @@ function ReprintFew({
       >
         {chosen.size === 0 ? "Choose cards to print" : `Print just these ${chosen.size}`}
       </button>
+    </SubGroup>
+  );
+}
+
+/** What a text element can say: each column as a token to type. */
+function Columns({ headers }: { headers: string[] }) {
+  return (
+    <SubGroup title={`Columns (${headers.length})`}>
+      <div className={styles.tokens}>
+        {headers.map((h) => (
+          <code key={h} className={styles.token} title="Use this in any text element">
+            {`{{${h}}}`}
+          </code>
+        ))}
+      </div>
     </SubGroup>
   );
 }

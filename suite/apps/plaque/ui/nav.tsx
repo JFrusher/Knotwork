@@ -35,6 +35,8 @@ interface NavCounts {
   fonts: number;
   printers: number;
   selectedKind: CardElement["kind"] | null;
+  /** The piece is a booklet: it prints from the ceremony, not the room. */
+  booklet: boolean;
 }
 
 /**
@@ -52,12 +54,17 @@ export function navCounts(s: PlaqueState): NavCounts {
     fonts: s.fonts.size,
     printers: s.printers.length,
     selectedKind: elements.find((el) => el.id === s.selectedId)?.kind ?? null,
+    booklet: s.booklet !== null,
   };
 }
 
+/** What a booklet calls the panel where a card has its guest list. */
+const dataTitle = (c: NavCounts) => (c.booklet ? "Order of service" : "Guest list");
+
 interface NavItem {
   id: string;
-  title: string;
+  /** Fixed, or said for what is open: a booklet has no guest list. */
+  title: string | ((c: NavCounts) => string);
   Component: ComponentType;
   /** Level-2 disclosure state on load. */
   open: boolean;
@@ -69,7 +76,7 @@ interface NavItem {
 
 interface NavSection {
   id: string;
-  title: string;
+  title: string | ((c: NavCounts) => string);
   icon: ReactNode;
   /** Level-1 disclosure state on load. */
   open: boolean;
@@ -105,7 +112,7 @@ function Icon({ children }: { children: ReactNode }) {
 export const NAV: NavSection[] = [
   {
     id: "data",
-    title: "Guest list",
+    title: dataTitle,
     open: true,
     icon: (
       <Icon>
@@ -116,10 +123,10 @@ export const NAV: NavSection[] = [
     items: [
       {
         id: "data",
-        title: "Guest list",
+        title: dataTitle,
         Component: DataPanel,
         open: true,
-        badge: (c) => (c.rows > 0 ? c.rows : null),
+        badge: (c) => (c.rows > 0 && !c.booklet ? c.rows : null),
       },
     ],
   },

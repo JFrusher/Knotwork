@@ -98,6 +98,8 @@ function whatItIs(el: CardElement): string {
       return `grid by ${el.groupBy}`;
     case "qr":
       return "QR code";
+    case "service":
+      return "order of service";
     case "room":
       return el.show === "room" ? "plan of the room" : "plan of this table";
     default:

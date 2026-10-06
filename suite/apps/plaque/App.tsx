@@ -7,6 +7,8 @@ import styles from "./App.module.css";
 import { validateGeometry } from "./core/geometry/validate";
 import { analyseArtefacts, paginate, sheetCountFor } from "./core/imposition/paginate";
 import { artefactsOf } from "./core/data/parts";
+import { onThisPage, PAGE_ROLE_COLUMN } from "./core/data/booklet";
+import { buildJob } from "./core/job";
 import { hasBackSide, templateForSide } from "./core/imposition/duplex";
 import { templateForRow } from "./core/template/overrides";
 import { placeChairs } from "./core/template/room";
@@ -22,7 +24,7 @@ import { loadPrinters } from "./state/printerStore";
 import { loadEveryFont } from "./state/fontLoader";
 import { designOf } from "./state/design";
 import { writeDesign } from "./state/sliceBridge";
-import { canOpenPiece, usePlaque } from "./state/store";
+import { canOpenPiece, pieceFor, usePlaque } from "./state/store";
 import { useKeyboard } from "./state/useKeyboard";
 import { Announcer } from "./ui/Announcer";
 import { ToolUndo } from "@/components/shell/ToolUndo";
@@ -35,6 +37,7 @@ import { PiecesBar } from "./ui/PiecesBar";
 import { RowsDrawer } from "./ui/RowsDrawer";
 import { printing } from "./state/printed";
 import { SincePrinted } from "./ui/SincePrinted";
+import { BookletPages } from "./ui/BookletPages";
 import { Sidebar } from "./ui/Sidebar";
 import { WarningsList } from "./ui/WarningsList";
 
@@ -76,6 +79,8 @@ export function App() {
     designProblem,
     printed,
     printOnly,
+    service,
+    booklet,
   } = usePlaque(
     useShallow((s) => ({
       card: s.card,
@@ -101,6 +106,8 @@ export function App() {
       activePrinterId: s.activePrinterId,
       designProblem: s.designProblem,
       printed: s.printed,
+      service: s.service,
+      booklet: s.booklet,
     })),
   );
 
@@ -150,7 +157,9 @@ export function App() {
   const wanted = useSearchParams().get("piece");
   useEffect(() => {
     // A link to a piece since removed opens the stationery as it is.
-    if (ready && wanted && canOpenPiece(wanted)) usePlaque.getState().openPiece(wanted);
+    if (!ready || !wanted) return;
+    const id = pieceFor(wanted);
+    if (canOpenPiece(id)) usePlaque.getState().openPiece(id);
   }, [ready, wanted]);
 
   // Esc leaves crop mode, the way it leaves every other transient mode.
@@ -164,8 +173,8 @@ export function App() {
   }, [cropId, setCropId]);
 
   const resolveOptions = useMemo(
-    () => makeResolveOptions(fonts, uploadedIcons, images, assetNames, room),
-    [fonts, uploadedIcons, images, assetNames, room],
+    () => makeResolveOptions(fonts, uploadedIcons, images, assetNames, room, service),
+    [fonts, uploadedIcons, images, assetNames, room, service],
   );
 
   // Rows become artefacts once, here. Everything downstream counts artefacts:
@@ -185,11 +194,15 @@ export function App() {
     // The editor shows the card as it will actually print: one side, with this
     // row's own overrides applied. Editing against anything else would mean the
     // preview and the sheet disagree, which is the one thing Plaque must not do.
-    const sided = hasBackSide(template) ? templateForSide(template, editingSide) : template;
+    const sided = booklet
+      ? { ...template, elements: template.elements.filter((el) => onThisPage(el, previewRow)) }
+      : hasBackSide(template)
+        ? templateForSide(template, editingSide)
+        : template;
     const own = previewArtefact ? templateForRow(sided, previewArtefact.rowId) : sided;
     // A box that follows a chair is grabbed where it prints on this card.
     return placeChairs(own, room, previewRow);
-  }, [template, editingSide, previewArtefact, room, previewRow]);
+  }, [template, booklet, editingSide, previewArtefact, room, previewRow]);
 
   // Row-independent, so this gates export without resolving a single card.
   const missing = useMemo(
@@ -200,10 +213,19 @@ export function App() {
   // The sheets show what will print: just the chosen few, when only a few are.
   const onPaper = useMemo(() => printing(artefacts, printOnly), [artefacts, printOnly]);
 
+  // A booklet printed at home is folded: each side of a sheet carries two of its pages.
+  const foldedSides = useMemo(
+    () =>
+      booklet?.output === "home" && !sheetCollapsed
+        ? buildJob({ template, card, sheet, rows, headers, rowIds, resolve: resolveOptions, booklet: { paper: booklet.paper, flipEdge: "short" } }).sheets
+        : null,
+    [booklet, sheetCollapsed, template, card, sheet, rows, headers, rowIds, resolveOptions],
+  );
+
   // How many sheets the job needs, without building any of them.
   const sheetCount = useMemo(
-    () => sheetCountFor(onPaper.length, card, sheet),
-    [onPaper.length, card, sheet],
+    () => (booklet?.output === "home" ? onPaper.length / 2 : sheetCountFor(onPaper.length, card, sheet)),
+    [booklet, onPaper.length, card, sheet],
   );
   const pageIndex = Math.min(page, Math.max(0, sheetCount - 1));
 
@@ -213,10 +235,11 @@ export function App() {
     // A collapsed pane imposes nothing. On a big job that is the difference
     // between a keystroke costing one card and costing a whole sheet.
     if (sheetCollapsed) return undefined;
+    if (foldedSides) return foldedSides[pageIndex];
     const range = { from: pageIndex, to: pageIndex };
     const front = templateForSide(template, "front");
     return paginate(front, onPaper, card, sheet, resolveOptions, { pages: range }).sheets[0];
-  }, [template, onPaper, card, sheet, resolveOptions, pageIndex, sheetCollapsed]);
+  }, [template, onPaper, card, sheet, resolveOptions, pageIndex, sheetCollapsed, foldedSides]);
 
   // The "these names do not fit" pass has to look at every guest, so it runs at
   // a lower priority: it may lag a drag by a frame, but it never blocks one.
@@ -296,9 +319,13 @@ export function App() {
         />
 
         <div className={sheetCollapsed ? `${styles.workspace} ${styles.workspaceWide}` : styles.workspace}>
-          <section data-tour="placecards.canvas" className={styles.pane} aria-label="Card">
+          <section data-tour="placecards.canvas" className={styles.pane} aria-label={booklet ? "Page" : "Card"}>
             <h2 className={styles.paneTitle}>
-              Card{hasBackSide(template) ? ` — ${editingSide}` : ""}
+              {booklet ? (
+                <BookletPages role={previewRow[PAGE_ROLE_COLUMN] ?? ""} count={artefacts.length} onOpen={setPreviewGuestIndex} />
+              ) : (
+                `Card${hasBackSide(template) ? ` — ${editingSide}` : ""}`
+              )}
               {artefacts.length > 0 && (
                 <span className={styles.paneMeta}>
                   {/* Scope decides what "one of these" means: a guest, a table, the lot. */}
@@ -352,7 +379,7 @@ export function App() {
               index={previewGuestIndex}
               count={artefacts.length}
               onChange={setPreviewGuestIndex}
-              noun={{ one: "Card", many: "Cards" }}
+              noun={booklet ? { one: "Page", many: "Pages" } : { one: "Card", many: "Cards" }}
             />
           </section>
 
@@ -388,7 +415,7 @@ export function App() {
                 index={pageIndex}
                 count={sheetCount}
                 onChange={setPage}
-                noun={{ one: "Sheet", many: "Sheets" }}
+                noun={booklet?.output === "home" ? { one: "Side", many: "Sides" } : { one: "Sheet", many: "Sheets" }}
               />
             </section>
           )}

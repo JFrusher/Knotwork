@@ -4772,7 +4772,8 @@
           "lyrics": ""
         },
         "words": "",
-        "print": false,
+        "printWords": false,
+        "printLyrics": false,
         "approved": true,
         "notes": ""
       },
@@ -4785,7 +4786,8 @@
         "cue": "",
         "song": null,
         "words": "",
-        "print": false,
+        "printWords": false,
+        "printLyrics": false,
         "approved": true,
         "notes": ""
       },
@@ -4803,14 +4805,16 @@
         "cue": "",
         "song": null,
         "words": "",
-        "print": false,
+        "printWords": false,
+        "printLyrics": false,
         "approved": false,
         "notes": ""
       },
       {
         "id": "moment-reading",
         "kind": "reading",
-        "title": "Sonnet 116, by William Shakespeare",
+        "title": "Sonnet 116",
+        "author": "William Shakespeare",
         "members": [
           {
             "kind": "guest",
@@ -4821,7 +4825,8 @@
         "cue": "When the registrar invites Jonty up",
         "song": null,
         "words": "Let me not to the marriage of true minds\nAdmit impediments. Love is not love\nWhich alters when it alteration finds,\nOr bends with the remover to remove.\nO no! it is an ever-fixed mark\nThat looks on tempests and is never shaken;\nIt is the star to every wand'ring bark,\nWhose worth's unknown, although his height be taken.\nLove's not Time's fool, though rosy lips and cheeks\nWithin his bending sickle's compass come;\nLove alters not with his brief hours and weeks,\nBut bears it out even to the edge of doom.\nIf this be error and upon me prov'd,\nI never writ, nor no man ever lov'd.",
-        "print": true,
+        "printWords": true,
+        "printLyrics": true,
         "approved": true,
         "notes": ""
       },
@@ -4834,7 +4839,8 @@
         "cue": "",
         "song": null,
         "words": "",
-        "print": false,
+        "printWords": false,
+        "printLyrics": false,
         "approved": false,
         "notes": ""
       },
@@ -4856,7 +4862,8 @@
         "cue": "",
         "song": null,
         "words": "",
-        "print": false,
+        "printWords": false,
+        "printLyrics": false,
         "approved": false,
         "notes": ""
       },
@@ -4869,7 +4876,8 @@
         "cue": "",
         "song": null,
         "words": "",
-        "print": false,
+        "printWords": false,
+        "printLyrics": false,
         "approved": false,
         "notes": "The best man has them from 13:15, in his left pocket."
       },
@@ -4882,7 +4890,8 @@
         "cue": "",
         "song": null,
         "words": "",
-        "print": false,
+        "printWords": false,
+        "printLyrics": false,
         "approved": false,
         "notes": ""
       },
@@ -4895,7 +4904,8 @@
         "cue": "",
         "song": null,
         "words": "",
-        "print": false,
+        "printWords": false,
+        "printLyrics": false,
         "approved": false,
         "notes": ""
       },
@@ -4920,7 +4930,8 @@
           "lyrics": "The water is wide, I can't cross o'er,\nAnd neither have I wings to fly.\nGive me a boat that can carry two,\nAnd both shall row, my love and I."
         },
         "words": "",
-        "print": true,
+        "printWords": true,
+        "printLyrics": true,
         "approved": false,
         "notes": ""
       },
@@ -4940,7 +4951,8 @@
           "lyrics": ""
         },
         "words": "",
-        "print": false,
+        "printWords": false,
+        "printLyrics": false,
         "approved": true,
         "notes": "The photographer may photograph the signing, not the register itself."
       },
@@ -4953,14 +4965,16 @@
         "cue": "As the registrar introduces the married couple",
         "song": {
           "title": "Here Comes the Sun",
-          "artist": "The Beatles, arranged for strings",
+          "artist": "The Beatles",
+          "arrangement": "arranged for strings",
           "playedBy": "String quartet",
           "startSec": null,
           "endSec": null,
           "lyrics": ""
         },
         "words": "",
-        "print": false,
+        "printWords": false,
+        "printLyrics": false,
         "approved": true,
         "notes": ""
       }

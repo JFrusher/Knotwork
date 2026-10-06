@@ -9,7 +9,7 @@ import type { Ceremony, Moment, ShotMember, Song, WalkGroup } from "@/lib/model/
 
 /** A song with nothing chosen yet. */
 export function blankSong(patch: Partial<Song> = {}): Song {
-  return { title: "", artist: "", playedBy: "", startSec: null, endSec: null, lyrics: "", ...patch };
+  return { title: "", artist: "", playedBy: "", startSec: null, endSec: null, arrangement: "", lyrics: "", ...patch };
 }
 
 /** Moves an item to another place in a list; the same list back when nothing moves. */
@@ -22,7 +22,7 @@ function moved<T>(items: T[], fromIndex: number, toIndex: number): T[] {
   return next;
 }
 
-export function setFacts(ceremony: Ceremony, patch: Partial<Pick<Ceremony, "kind" | "blockId" | "officiant" | "notes">>): Ceremony {
+export function setFacts(ceremony: Ceremony, patch: Partial<Pick<Ceremony, "kind" | "blockId" | "officiant" | "notes" | "guestCopy">>): Ceremony {
   return { ...ceremony, ...patch };
 }
 

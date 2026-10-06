@@ -46,6 +46,7 @@ export function SongFields({ song, onChange }: { song: Song; onChange: (song: So
         <TextField label="Title" value={song.title} onChange={(title) => patch({ title })} placeholder="e.g. Canon in D" />
         <TextField label="Artist or composer" value={song.artist} onChange={(artist) => patch({ artist })} placeholder="e.g. Pachelbel" />
       </div>
+      <TextField label="Arrangement" value={song.arrangement} onChange={(arrangement) => patch({ arrangement })} placeholder="e.g. arranged for string quartet" />
       <TextField label="Played by" value={song.playedBy} onChange={(playedBy) => patch({ playedBy })} placeholder="e.g. String quartet, the organist, a recording" />
       <div className="grid grid-cols-2 gap-2">
         <TimeInput label="Start the track at" value={song.startSec} onCommit={(startSec) => patch({ startSec })} />

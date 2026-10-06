@@ -30,6 +30,9 @@ import type {
   SheetSpec,
   Template,
   TextElement,
+  Booklet,
+  PageRole,
+  ServiceBlock,
 } from "../core/types";
 import type { LoadedFont } from "../core/text/measure";
 import type { PrinterProfile } from "../core/print/printerProfile";
@@ -39,6 +42,8 @@ import { DESIGN_KEYS, designFor, designOf, initialSuite, newPiece, withDesign, t
 import { readDesign, readSuite, writeDesign, writeSuite } from "./sliceBridge";
 import { roomRows, withMerges, type Merged } from "./fromRoom";
 import { roomScene } from "./roomScene";
+import { bookletData } from "./fromCeremony";
+import { PAGE_ROLE_COLUMN } from "../core/data/booklet";
 import { recordPrint, type PrintBasis } from "./printed";
 import { normalise, type Artefact } from "../core/data/artefacts";
 import { artefactsOf } from "../core/data/parts";
@@ -72,6 +77,10 @@ interface RoomData {
   rowIssues: RowIssue[];
   /** The seating plan, for a room element to draw. */
   room: RoomScene;
+  /** A booklet's order of service, for its service element to set; null on cards. */
+  service: ServiceBlock[] | null;
+  /** Inside pages a booklet carries only so it folds: the service ends before them. */
+  blankPages: number;
 }
 
 export interface PlaqueState extends Design, RoomData {
@@ -155,6 +164,11 @@ export interface PlaqueState extends Design, RoomData {
    * after another piece is opened.
    */
   notePrinted: (pieceId: string, artefacts: Artefact[], partial: boolean, basis: PrintBasis) => void;
+  /**
+   * How the booklet on screen is printed. A print shop takes each page on its
+   * own, with crop marks and bleed, which is the sheet this sets for it.
+   */
+  setBooklet: (booklet: Booklet) => void;
   setCard: (patch: Partial<CardSpec>) => void;
   setSheet: (patch: Partial<SheetSpec>) => void;
   applySuggestion: (s: LayoutSuggestion) => void;
@@ -231,8 +245,23 @@ type Wedding = { raw: Record<string, unknown>; doc: Knotwork };
 /** The last room read, so a design edit does not rebuild every row. */
 let lastLive: { inputs: unknown[]; data: RoomData } | null = null;
 
-/** The open piece's rows: the room, with its combined cards in place, and the guest link. */
-function live(wedding: Wedding, design: Pick<Design, "merged" | "template">): RoomData {
+/** The last booklet read, so a design edit that moves nothing does not lay the service out again. */
+let lastBooklet: { inputs: unknown[]; data: RoomData } | null = null;
+
+/**
+ * The open piece's rows. A booklet's are its pages, from the ceremony; a
+ * card's are the room, with its combined cards in place, and the guest link.
+ */
+function live(wedding: Wedding, design: Pick<Design, "merged" | "template" | "booklet">, fonts: Map<string, LoadedFont>): RoomData {
+  if (design.booklet) {
+    const raw = wedding.raw;
+    const inputs = [raw["ceremony"], raw["guests"], raw["seating"], raw["cast"], raw["event"], raw["timeline"], design.template, fonts];
+    if (lastBooklet && inputs.every((input, i) => input === lastBooklet!.inputs[i])) return lastBooklet.data;
+    const pages = bookletData(wedding.doc, design.template, fonts);
+    const data = { ...pages, rowIssues: [], room: roomScene(wedding.doc) };
+    lastBooklet = { inputs, data };
+    return data;
+  }
   const { merged } = design;
   const chairName = design.template.chairName;
   const link = guestLinkUrl();
@@ -246,6 +275,8 @@ function live(wedding: Wedding, design: Pick<Design, "merged" | "template">): Ro
     rows: link ? merges.rows.map((row) => ({ ...row, "Guest Link": link })) : merges.rows,
     rowIssues: room.issues,
     room: roomScene(wedding.doc),
+    service: null,
+    blankPages: 0,
   };
   lastLive = { inputs, data };
   return data;
@@ -292,7 +323,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     const design = designFor(suite, id);
     set({
       ...design,
-      ...live(useKnotworkStore.getState(), design),
+      ...live(useKnotworkStore.getState(), design, get().fonts),
       pieceId: id,
       printOnly: null,
       pieces: summarise(suite, get().pieces),
@@ -307,7 +338,7 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
   const opened = readDesign(useKnotworkStore.getState(), null);
   return {
     ...opened.design,
-    ...live(useKnotworkStore.getState(), opened.design),
+    ...live(useKnotworkStore.getState(), opened.design, new Map()),
     printOnly: null,
     designProblem: opened.problem,
     pieceId: opened.pieceId,
@@ -411,6 +442,17 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
     applySuggestion: (suggestion) =>
       commit("a sheet layout", (s) => ({ sheet: { ...s.sheet, ...suggestion.patch }, page: 0 })),
 
+    setBooklet: (booklet) =>
+      commit("how the booklet is printed", (s) =>
+        booklet.output === "shop"
+          ? {
+              booklet,
+              card: { ...s.card, bleedMm: s.card.bleedMm || 3 },
+              sheet: { ...s.sheet, page: "FIT", marginTopMm: 10, marginRightMm: 10, marginBottomMm: 10, marginLeftMm: 10, cropMarks: true },
+            }
+          : { booklet },
+      ),
+
     setBackground: (hex) => commit("the background", (s) => ({ template: { ...s.template, backgroundHex: hex } })),
 
     setChairName: (pattern) =>
@@ -421,12 +463,18 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
       }),
 
     applyGalleryTemplate: (entry) =>
-      commit("a gallery design", (s) => ({
-        ...fromGallery(entry, s.card, s.sheet, s.headers),
-        selectedId: null,
-        page: 0,
-        previewGuestIndex: 0,
-      })),
+      commit("a gallery design", (s) => {
+        const design = fromGallery(entry, s.card, s.sheet, s.headers);
+        // One booklet's design for another: the couple's own pictures stay where they put them.
+        const pictures = s.booklet && design.booklet ? s.template.elements.filter((el) => el.kind === "image") : [];
+        return {
+          ...design,
+          template: { ...design.template, elements: [...design.template.elements, ...pictures] },
+          selectedId: null,
+          page: 0,
+          previewGuestIndex: 0,
+        };
+      }),
 
     setRowScope: (rowScope) =>
       commit("what each card is for", (s) => ({
@@ -472,7 +520,9 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
 
     addElement: (kind) =>
       commit("adding to the card", (s) => {
-        const el = { ...makeElement(kind, s.card, s.headers, nextZ(s.template)), side: s.editingSide };
+        // On a booklet, it goes on the page on screen: the cover, the inside, or the back.
+        const role = previewRow(s)[PAGE_ROLE_COLUMN] as PageRole | undefined;
+        const el = { ...makeElement(kind, s.card, s.headers, nextZ(s.template)), side: s.editingSide, ...(role ? { page: role } : {}) };
         return {
           template: { ...s.template, elements: [...s.template.elements, el] },
           selectedId: el.id,
@@ -675,7 +725,11 @@ export const usePlaque = create<PlaqueState>()((set, get) => {
         };
       }),
 
-    setFonts: (fonts, fontLabels, uploadedFontIds) => set({ fonts, fontLabels, uploadedFontIds }),
+    setFonts: (fonts, fontLabels, uploadedFontIds) => {
+      set({ fonts, fontLabels, uploadedFontIds });
+      // A booklet's page count is its service set in these faces.
+      follow(useKnotworkStore.getState());
+    },
 
     addFont: (font, label, fileName) =>
       note((s) => ({
@@ -782,7 +836,7 @@ function follow(wedding: Wedding): void {
   const present = (id: ElementId | null) => id !== null && design.template.elements.some((el) => el.id === id);
   usePlaque.setState((s) => ({
     ...design,
-    ...live(wedding, design),
+    ...live(wedding, design, usePlaque.getState().fonts),
     designProblem: problem,
     pieceId,
     pieces: summarise(suite, s.pieces),
@@ -804,7 +858,8 @@ function follow(wedding: Wedding): void {
  * Place cards nothing.
  */
 useKnotworkStore.subscribe((state, prev) => {
-  const watched = ["stationery", "guests", "seating", "event"] as const;
+  // A booklet reads the ceremony, its people and its time as well.
+  const watched = ["stationery", "guests", "seating", "event", "ceremony", "cast", "timeline"] as const;
   if (watched.some((slice) => state.raw[slice] !== prev.raw[slice])) follow(state);
 });
 
@@ -842,6 +897,17 @@ function withChairNudge(s: PlaqueState, el: CardElement): CardElement {
   if (!cell) return el;
   const at = centredOn(el, cell.box);
   return { ...el, chair: { ...link, dx: el.x - at.x, dy: el.y - at.y } };
+}
+
+/** What Ceremony sends for: the wedding's order of service, whichever it is. */
+export const ORDER_OF_SERVICE = "order-of-service";
+/** The design a wedding's first order of service starts from. */
+const FIRST_BOOKLET = "order-of-service-classic";
+
+/** The piece a link names: the order of service is the wedding's first booklet, or a new one from the first design. */
+export function pieceFor(id: string): string {
+  if (id !== ORDER_OF_SERVICE) return id;
+  return readSuite(useKnotworkStore.getState()).suite.pieces.find((p) => p.booklet)?.id ?? FIRST_BOOKLET;
 }
 
 /** Whether `id` names a piece of this wedding, or a design a piece can be made from. */

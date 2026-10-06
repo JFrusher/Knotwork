@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import type { Knotwork } from "@jfrusher/knotwork";
 import { fingerprint } from "@/lib/documents/fingerprint";
-import { readGuests, readSeating } from "@/lib/model/slices";
+import { weddingGuestBlocks } from "@/lib/ceremony/guestCopy";
+import { readCeremony, readGuests, readSeating } from "@/lib/model/slices";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { importShareKey, newShareKey, seal } from "./crypto";
 import { shareSnapshot, type ShareSnapshot } from "./snapshot";
@@ -14,7 +15,8 @@ type GuestLink = GuestLinkRecord;
  * different every time and would make every check a change.
  */
 export function guestView(doc: Knotwork, showPlan: boolean): { snapshot: ShareSnapshot; fingerprint: string } {
-  const snapshot = shareSnapshot(readGuests(doc), readSeating(doc), doc.event, { showPlan });
+  const ceremony = readCeremony(doc).guestCopy.onGuestLink ? weddingGuestBlocks(doc) : null;
+  const snapshot = shareSnapshot(readGuests(doc), readSeating(doc), doc.event, { showPlan, ceremony });
   const { publishedAt: _, ...seen } = snapshot;
   return { snapshot, fingerprint: fingerprint(seen) };
 }

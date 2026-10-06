@@ -1,0 +1,248 @@
+{
+  "format": "plaque-template",
+  "version": 1,
+  "id": "order-of-service-modern",
+  "name": "Order of service — Modern, A5 booklet",
+  "description": "A folded A5 booklet set from the left: your names large in Marcellus on a quiet cover, the ceremony in Lato, page numbers in the corner.",
+  "card": {
+    "widthMm": 148,
+    "heightMm": 210,
+    "fold": "none",
+    "foldPositionMm": 105,
+    "bleedMm": 0
+  },
+  "booklet": {
+    "output": "home",
+    "paper": "A4"
+  },
+  "template": {
+    "backgroundHex": null,
+    "elements": [
+      {
+        "kind": "rect",
+        "id": "cover-band",
+        "page": "cover",
+        "x": 0,
+        "y": 0,
+        "w": 10,
+        "h": 210,
+        "z": 0,
+        "fillHex": "#5b6b5d",
+        "strokeHex": null,
+        "strokeWidthMm": 0,
+        "dashed": false
+      },
+      {
+        "kind": "text",
+        "id": "cover-title",
+        "page": "cover",
+        "x": 24,
+        "y": 120,
+        "w": 110,
+        "h": 8,
+        "z": 2,
+        "template": "The marriage of",
+        "fontId": "lato",
+        "fontSizePt": 10,
+        "align": "left",
+        "vAlign": "middle",
+        "lineHeight": 1.2,
+        "colorHex": "#8a857c",
+        "letterSpacingMm": 0.6,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 6,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "text",
+        "id": "cover-couple",
+        "page": "cover",
+        "x": 24,
+        "y": 130,
+        "w": 110,
+        "h": 22,
+        "z": 2,
+        "template": "{{Couple}}",
+        "fontId": "marcellus",
+        "fontSizePt": 30,
+        "align": "left",
+        "vAlign": "middle",
+        "lineHeight": 1.2,
+        "colorHex": "#2b2620",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 15.0,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "text",
+        "id": "cover-date",
+        "page": "cover",
+        "x": 24,
+        "y": 158,
+        "w": 110,
+        "h": 7,
+        "z": 2,
+        "template": "{{Date}}",
+        "fontId": "lato",
+        "fontSizePt": 10,
+        "align": "left",
+        "vAlign": "middle",
+        "lineHeight": 1.2,
+        "colorHex": "#2b2620",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 6,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "text",
+        "id": "cover-venue",
+        "page": "cover",
+        "x": 24,
+        "y": 166,
+        "w": 110,
+        "h": 7,
+        "z": 2,
+        "template": "{{Venue}}",
+        "fontId": "lato",
+        "fontSizePt": 10,
+        "align": "left",
+        "vAlign": "middle",
+        "lineHeight": 1.2,
+        "colorHex": "#8a857c",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 6,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "service",
+        "id": "service",
+        "page": "inside",
+        "x": 18,
+        "y": 20,
+        "w": 112,
+        "h": 166,
+        "z": 2,
+        "heading": {
+          "fontId": "marcellus",
+          "fontSizePt": 12.5,
+          "colorHex": "#5b6b5d"
+        },
+        "detail": {
+          "fontId": "lato",
+          "fontSizePt": 8.5,
+          "colorHex": "#8a857c"
+        },
+        "words": {
+          "fontId": "lato",
+          "fontSizePt": 9.5,
+          "colorHex": "#2b2620"
+        },
+        "congregationFontId": "lato",
+        "align": "left",
+        "lineHeight": 1.35,
+        "gapMm": 6
+      },
+      {
+        "kind": "text",
+        "id": "folio",
+        "page": "inside",
+        "x": 112,
+        "y": 194,
+        "w": 18,
+        "h": 6,
+        "z": 2,
+        "template": "{{Page}}",
+        "fontId": "lato",
+        "fontSizePt": 8,
+        "align": "right",
+        "vAlign": "middle",
+        "lineHeight": 1.2,
+        "colorHex": "#8a857c",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 6,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "rect",
+        "id": "back-band",
+        "page": "back",
+        "x": 138,
+        "y": 0,
+        "w": 10,
+        "h": 210,
+        "z": 0,
+        "fillHex": "#5b6b5d",
+        "strokeHex": null,
+        "strokeWidthMm": 0,
+        "dashed": false
+      },
+      {
+        "kind": "text",
+        "id": "back-thanks",
+        "page": "back",
+        "x": 18,
+        "y": 160,
+        "w": 110,
+        "h": 8,
+        "z": 2,
+        "template": "Thank you for being here.",
+        "fontId": "marcellus",
+        "fontSizePt": 13,
+        "align": "left",
+        "vAlign": "middle",
+        "lineHeight": 1.2,
+        "colorHex": "#2b2620",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 6.5,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      },
+      {
+        "kind": "text",
+        "id": "back-couple",
+        "page": "back",
+        "x": 18,
+        "y": 170,
+        "w": 110,
+        "h": 7,
+        "z": 2,
+        "template": "{{Couple}}",
+        "fontId": "lato",
+        "fontSizePt": 10,
+        "align": "left",
+        "vAlign": "middle",
+        "lineHeight": 1.2,
+        "colorHex": "#8a857c",
+        "letterSpacingMm": 0,
+        "fit": {
+          "mode": "shrink",
+          "minFontSizePt": 6,
+          "maxLines": 1,
+          "anchor": "align"
+        }
+      }
+    ]
+  }
+}

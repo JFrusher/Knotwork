@@ -3,7 +3,7 @@ import { formatClock } from "@/lib/minutes";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { coupleTitle, sideLabel } from "@/lib/model/partners";
 import type { Place } from "@/lib/model/slices";
-import type { CastSlice, Ceremony, Formation, Guest, MomentKind, Seating, WalkGroup } from "@/lib/model/types";
+import type { CastSlice, Ceremony, Formation, Guest, MomentKind, Seating, WalkGroup, WordsLayout } from "@/lib/model/types";
 import { startTimes } from "./checks";
 import { songName, songPlaying } from "./music";
 
@@ -76,6 +76,10 @@ export interface OrderRow {
   /** "14:03", "Before" for music as guests arrive, or "" with no part of the day chosen. */
   time: string;
   title: string;
+  /** Whose words: "William Shakespeare". */
+  author: string;
+  /** For the guests: "Please stand". */
+  guestNote: string;
   /** Who leads it, by name. */
   people: string[];
   minutes: number | null;
@@ -83,9 +87,10 @@ export interface OrderRow {
   music: string;
   playing: string;
   words: string;
+  layout: WordsLayout;
   lyrics: string;
-  /** Its words and lyrics go in full into the guests' order of service. */
-  print: boolean;
+  printWords: boolean;
+  printLyrics: boolean;
   notes: string;
   trouble: boolean;
   /** The processional's groups, for the moment it happens. */
@@ -110,14 +115,18 @@ export function orderRows(
       kind: moment.kind,
       time: at === null ? "Before" : place ? formatClock(at) : "",
       title: moment.title.trim() || "A moment",
+      author: moment.author.trim(),
+      guestNote: moment.guestNote.trim(),
       people: moment.members.length > 0 ? resolved.people.map((person) => person.name) : [],
       minutes: moment.minutes,
       cue: moment.cue.trim(),
       music: moment.song ? songName(moment.song) : "",
       playing: moment.song ? songPlaying(moment.song) : "",
       words: moment.words.trim(),
+      layout: moment.layout,
       lyrics: moment.song?.lyrics.trim() ?? "",
-      print: moment.print,
+      printWords: moment.printWords,
+      printLyrics: moment.printLyrics,
       notes: moment.notes.trim(),
       trouble: moment.members.length > 0 && resolved.problems.length > 0,
       groups: moment.kind === "processional" ? groups : [],
@@ -130,7 +139,7 @@ export function orderText(rows: OrderRow[], event: Pick<WeddingEvent, "partners"
   const title = coupleTitle(event.partners);
   const lines = [title ? `The order of service — ${title}` : "The order of service", ""];
   for (const row of rows) {
-    lines.push(`${row.time ? `${row.time}  ` : ""}${row.number}. ${row.title}${row.minutes ? ` (${row.minutes} min)` : ""}`);
+    lines.push(`${row.time ? `${row.time}  ` : ""}${row.number}. ${titled(row)}${row.minutes ? ` (${row.minutes} min)` : ""}`);
     if (row.people.length > 0) lines.push(`   ${row.people.join(", ")}`);
     if (row.cue) lines.push(`   Cue: ${row.cue}`);
     if (row.music) lines.push(`   Music: ${row.music}${row.playing ? ` (${row.playing})` : ""}`);
@@ -141,4 +150,9 @@ export function orderText(rows: OrderRow[], event: Pick<WeddingEvent, "partners"
     if (row.notes) lines.push(`   Note: ${row.notes}`);
   }
   return lines.join("\n");
+}
+
+/** "Sonnet 116 — William Shakespeare": a part as the officiant's pages name it. */
+export function titled(row: Pick<OrderRow, "title" | "author">): string {
+  return row.author ? `${row.title} — ${row.author}` : row.title;
 }

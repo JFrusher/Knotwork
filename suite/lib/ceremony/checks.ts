@@ -71,3 +71,16 @@ export function ceremonyChecks(ceremony: Ceremony): CeremonyChecks {
     processionalMissing: ceremony.processional.length > 0 && !ceremony.order.some((moment) => moment.kind === "processional"),
   };
 }
+
+/**
+ * Parts whose music fades before they end, and for how long the room is
+ * quiet: a ten-minute signing to a five-minute piece. Only where both are
+ * known — the part's length, and where the music is set to fade.
+ */
+export function musicShort(order: Moment[]): Array<{ moment: Moment; silentSec: number }> {
+  return order.flatMap((moment) => {
+    if (!moment.song || moment.song.endSec === null || moment.minutes === null) return [];
+    const silentSec = moment.minutes * 60 - (moment.song.endSec - (moment.song.startSec ?? 0));
+    return silentSec > 0 ? [{ moment, silentSec }] : [];
+  });
+}

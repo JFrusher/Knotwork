@@ -82,6 +82,9 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
     room,
     assetNames,
     printer,
+    service,
+    booklet,
+    blankPages,
   } = usePlaque(
       useShallow((s) => ({
         card: s.card,
@@ -99,6 +102,9 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
         room: s.room,
         assetNames: s.assetNames,
         printer: s.printers.find((p) => p.id === s.activePrinterId) ?? null,
+        service: s.service,
+        booklet: s.booklet,
+        blankPages: s.blankPages,
       })),
     );
   const [busy, setBusy] = useState(false);
@@ -108,6 +114,9 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
 
   /** A board or poster at its own size: for a print shop, or tiled at home. */
   const printShop = sheet.page === "FIT";
+  /** Folded at home: printed whole, both sides, so it has no test cards and no reprint of a few. */
+  const folded = booklet?.output === "home" ? booklet : null;
+  const flipEdge = printer?.flipEdge ?? "long";
   const blocked =
     hasErrors(issues) || artefacts.length === 0 || sheetCount === 0 || missing.length > 0;
 
@@ -155,14 +164,26 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       const tiles = variant === "tiles";
       // The same pipeline the CLI runs — see core/job. Nothing about imposition,
       // duplex or the slug lines lives in this component.
-      const job = buildJob({
+      const job = folded
+        ? buildJob({
+            template,
+            card,
+            sheet,
+            rows,
+            headers,
+            rowIds,
+            resolve: makeResolveOptions(fonts, uploadedIcons, images, assetNames, room, service),
+            scale: effectiveScale(printer?.scale),
+            booklet: { paper: folded.paper, flipEdge },
+          })
+        : buildJob({
         template,
         card,
         sheet: test ? { ...sheet, cutLines: true } : sheet,
         rows,
         headers,
         rowIds,
-        resolve: makeResolveOptions(fonts, uploadedIcons, images, assetNames, room),
+        resolve: makeResolveOptions(fonts, uploadedIcons, images, assetNames, room, service),
         scale: effectiveScale(printer?.scale),
         ...(tiles ? { tile: sheet.tilePaper } : {}),
         ...(sheet.duplex && !tiles
@@ -231,11 +252,12 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
         type="button"
         className={styles.primary}
         disabled={blocked || busy}
-        onClick={() => setPreflight(true)}
+        // A booklet's pages are checked page by page on screen; the preflight's sheets are cards'.
+        onClick={() => (booklet ? void download("all") : setPreflight(true))}
       >
-        {busy ? "Generating…" : printShop ? "Download print-shop PDF" : "Download print-ready PDF"}
+        {busy ? "Generating…" : folded ? "Download booklet PDF" : printShop ? "Download print-shop PDF" : "Download print-ready PDF"}
       </button>
-      {printShop ? (
+      {booklet ? null : printShop ? (
         <button
           type="button"
           className={styles.secondary}
@@ -258,6 +280,10 @@ export function ExportBar({ sheetCount, issues, artefacts, warnings, missing }: 
       )}
       <span className={styles.meta}>
         {missingLabel(missing, assetNames) ??
+          (booklet &&
+            (folded
+              ? `${artefacts.length} pages${blankPages > 0 ? ` (${blankPages} blank, to fold)` : ""} on ${sheetCount / 2} ${sheetCount === 2 ? "sheet" : "sheets"} of ${folded.paper === "LETTER" ? "Letter" : folded.paper} — print both sides, turning over on the ${flipEdge} edge, then fold`
+              : `${artefacts.length} pages, one to a page, with crop marks for the print shop`)) ??
           (artefacts.length === 0
             ? "No guests yet — add them in Seating or Guests"
             : printOnly

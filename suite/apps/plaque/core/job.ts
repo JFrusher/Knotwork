@@ -11,6 +11,8 @@ import {
 } from "./imposition/duplex";
 import { paginate, type GuestWarning } from "./imposition/paginate";
 import { tileSheets } from "./imposition/tile";
+import { bookletSheet, rotateSheet180 } from "./imposition/booklet";
+import { bookletOrder } from "./data/booklet";
 import { effectiveScale } from "./print/printerProfile";
 import { SLUG_RULE_MM, buildFingerprint, slugText } from "./print/slug";
 import type { ResolveOptions } from "./template/bindings";
@@ -48,6 +50,11 @@ interface JobInput {
    * sided: a board has no back.
    */
   tile?: PaperName;
+  /**
+   * Fold the pages into a booklet: two to a side of `paper`, in folding order,
+   * printed both sides. The printer's flip edge decides whether the backs turn.
+   */
+  booklet?: { paper: PaperName; flipEdge: FlipEdge };
 }
 
 interface JobResult {
@@ -83,6 +90,18 @@ export function buildJob(input: JobInput): JobResult {
     rowCount: artefacts.length,
     scale,
   });
+
+  if (input.booklet) {
+    if (input.only || input.limit !== undefined) throw new Error("A booklet is printed whole: its pages share sheets.");
+    const imposed = bookletOrder(artefacts.length).map((index) => artefacts[index]!);
+    const { flipEdge, paper } = input.booklet;
+    // Bleed would run across the fold onto the facing page: a home booklet has none.
+    const card = { ...input.card, bleedMm: 0 };
+    const sides = paginate(input.template, imposed, card, bookletSheet(card, input.sheet, paper), input.resolve).sheets;
+    // On a landscape sheet a short-edge flip keeps the backs upright; a long-edge one turns them over.
+    const sheets = sides.map((side, index) => (index % 2 === 1 && flipEdge === "long" ? rotateSheet180(side) : side));
+    return { sheets, warnings: front.warnings, artefactCount: artefacts.length, slugTexts: [], slugRuleMm: SLUG_RULE_MM, buildHash };
+  }
 
   if (input.tile) {
     if (input.duplex) throw new Error("A board tiled at home is printed one side only.");
