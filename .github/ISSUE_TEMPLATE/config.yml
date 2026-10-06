@@ -1,8 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: A question, or something missing (no GitHub account needed)
-    url: https://knotwork-suite.vercel.app/support
-    about: For couples planning a wedding. The Support page has the email address; nothing from your wedding is sent unless you attach it.
-  - name: Report a security problem
-    url: https://github.com/JFrusher/Knotwork/security/advisories/new
-    about: Privately, so it can be fixed before it is public. Please don't open a public issue for these.

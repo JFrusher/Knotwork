@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FEEDBACK_MAILTO, PRIVACY } from "@/lib/legal";
+import { PRIVACY } from "@/lib/legal";
 
 /**
  * The footer, on every page of the application and on the guest page.
@@ -16,7 +16,7 @@ export function Footer() {
         <span>Knotwork — free and open source. No account needed.</span>
         {/* `min-h-11` is 44px: these are the only controls on the guest page
             besides the search box, and a guest is on a phone at a venue. */}
-        <nav className="flex flex-wrap gap-2">
+        <nav className="flex gap-2">
           <Link
             href="/blog"
             className="inline-flex min-h-11 items-center px-2 underline underline-offset-2 hover:text-charcoal"
@@ -41,12 +41,6 @@ export function Footer() {
           >
             Support
           </Link>
-          <a
-            href={FEEDBACK_MAILTO}
-            className="inline-flex min-h-11 items-center px-2 underline underline-offset-2 hover:text-charcoal"
-          >
-            Something missing? Tell me.
-          </a>
         </nav>
         <span className="ms-auto">
           Updated{" "}

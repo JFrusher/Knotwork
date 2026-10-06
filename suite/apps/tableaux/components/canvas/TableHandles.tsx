@@ -52,7 +52,7 @@ export default function TableHandles({ tableId, width, height }: { tableId: stri
     // Fixed 2026-08-08 (ux-audit #C13): pointercancel wasn't handled, unlike
     // TableNode.jsx's own move-handler (same bug class). A palm-cancel or OS
     // gesture interrupt mid-rotate left this listener armed to fire a bogus
-    // ROTATE_TABLE on the next unrelated pointerup.
+    // ROTATE_TABLE on the next unrelated pointerup. See tmp/ux-audit.md #C13.
     window.addEventListener('pointercancel', onUp)
   }
 
@@ -101,7 +101,7 @@ export default function TableHandles({ tableId, width, height }: { tableId: stri
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
     // Fixed 2026-08-08 (ux-audit #C13): see startRotate above — same missing
-    // pointercancel handling, same fix.
+    // pointercancel handling, same fix. See tmp/ux-audit.md #C13.
     window.addEventListener('pointercancel', onUp)
   }
 

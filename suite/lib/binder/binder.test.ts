@@ -3,8 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { migrate } from "@jfrusher/knotwork";
-import { withTool } from "@/lib/model/toolbox";
-import { contacts, dayClock, findBoxes, findGuests, nowAndNext, runningOrder } from "./binder";
+import { contacts, dayClock, findGuests, nowAndNext, runningOrder } from "./binder";
 
 const doc = migrate(JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8")));
 const blocks = runningOrder(doc);
@@ -40,20 +39,5 @@ describe("the day, in a pocket", () => {
     expect(found.map((guest) => guest.name)).toEqual(["Zainab Lindqvist", "Zainab Raghunathan", "Zainab Thistlewood"]);
     expect(found[2]!.table).toBe("No table yet");
     expect(findGuests(doc, "zainab lind")).toHaveLength(1);
-  });
-});
-
-describe("finding a box on the day", () => {
-  it("finds what was packed, which box it is in, and where that box is going", () => {
-    // The box's own name matches too, as it does in Boxes' search.
-    expect(findBoxes(doc, "rings").map(({ box, item, where }) => ({ box, item, where }))).toEqual([
-      { box: "The rings and the paperwork", item: null, where: "Orangery, by 13:30" },
-      { box: "The rings and the paperwork", item: "The rings", where: "Orangery, by 13:30" },
-    ]);
-  });
-
-  it("finds nothing from Boxes while Boxes is hidden", () => {
-    const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
-    expect(findBoxes(migrate({ ...raw, tools: withTool(raw, "boxes", false) }), "rings")).toEqual([]);
   });
 });

@@ -21,7 +21,7 @@ export default function RightSidebar() {
   // setSelectedGuestIds), so this always falls through to the generic
   // StatsPanel below with no "N guests selected" summary or bulk-edit
   // affordance -- the only way to act on a multi-selection is right-clicking
-  // one of the selected cards for its context menu. Issue #66.
+  // one of the selected cards for its context menu. See tmp/ux-audit.md #G5.
   let body: ReactElement
   if (exists && selection.type === 'table') body = <TableInspector tableId={id} />
   else if (exists && selection.type === 'guest') body = <GuestInspector guestId={id} />

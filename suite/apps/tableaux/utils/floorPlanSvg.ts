@@ -657,7 +657,7 @@ export function buildFloorPlanSvg(doc: FloorPlanSource, opts: FloorPlanOptions =
   // doesn't draw the new family ring either — the printed/exported floor
   // plan has no per-guest colour cues at all, only the table-level `t.colour`
   // tint below. The on-screen canvas fix doesn't cover this (this builds SVG
-  // standalone, not a DOM screenshot). Issue #64.
+  // standalone, not a DOM screenshot). See tmp/family-ux-followups.md #5.
   geoms.forEach(({ t, g }) => {
     const rot = t.rotation || 0
     const tint = t.colour || '#ffffff'

@@ -50,13 +50,3 @@
 .emptyIcon {
   color: var(--ok);
 }
-
-/* Names what kind of warning a row is, so a family's is not read as a rule's. */
-.kind {
-  margin-right: var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--ink-soft);
-}

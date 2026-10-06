@@ -204,7 +204,7 @@ export default function GuestInspector({ guestId }: { guestId: string }) {
       {/* TODO(family-ux): subgroup/family membership is invisible here — the
           store has guest.subgroupId/guest.familyId but neither is read or
           shown anywhere in this panel, only the sidebar tree shows them.
-          Issue #64. */}
+          See tmp/family-ux-followups.md #7. */}
 
       <div className={f.group}>
         <span className={f.label}>Seating</span>

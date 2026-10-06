@@ -4,7 +4,7 @@ import type { Designation, PerSideSeats } from '@/lib/model/types'
 import { useStore } from '../../store/useStore'
 import { TABLE_TYPE_LIST, DESIGNATIONS, getTableType } from '../../utils/tableTypes'
 import { deriveSizeUnits, DEFAULT_PPU } from '../../utils/seatPositions'
-import { toDisplay, parseDisplay, formatDimensions, blankName, sizeProblem } from '../../utils/units'
+import { toDisplay, parseDisplay, formatDimensions } from '../../utils/units'
 import IconButton from '../ui/IconButton'
 import Button from '../ui/Button'
 import ColorPicker from '../ui/ColorPicker'
@@ -47,7 +47,12 @@ export default function TableInspector({ tableId }: { tableId: string }) {
   const isRect = sizeUnits.shape === 'rect'
   const perSide = table.perSideSeats
   const dim = (cm: number) => toDisplay(cm, unitSystem).label
-  const sizeInvalid = (v: string) => sizeProblem(v, unitSystem)
+  // TODO(ux-audit): silently no-ops when parseDisplay returns 0/NaN/negative
+  // -- type "abc" or "-5" into a width/height field and blur, and the field
+  // just reverts to the last valid value with zero feedback (no shake, no
+  // red border, no toast; fields.module.css has no invalid-input style at
+  // all). Same pattern in SpaceInspector.jsx's onDim and both files' rename
+  // handlers (silent no-op on blank input). See tmp/ux-audit.md #G25.
   const onDim = (key: 'diameter' | 'width' | 'height') => (v: string) => {
     const cm = parseDisplay(v, unitSystem)
     if (cm && cm > 0) resizeTable(tableId, { [key]: cm })
@@ -78,8 +83,7 @@ export default function TableInspector({ tableId }: { tableId: string }) {
         <TextField
           className={f.input}
           value={table.label}
-          onCommit={(v) => renameTable(tableId, v.trim())}
-          invalid={blankName}
+          onCommit={(v) => v.trim() && renameTable(tableId, v.trim())}
           aria-label="Table name"
         />
       </div>
@@ -165,7 +169,6 @@ export default function TableInspector({ tableId }: { tableId: string }) {
           <TextField
             className={f.input}
             value={dim(sizeUnits.diameter)}
-            invalid={sizeInvalid}
             onCommit={onDim('diameter')}
             aria-label="Diameter"
           />
@@ -174,7 +177,6 @@ export default function TableInspector({ tableId }: { tableId: string }) {
             <TextField
               className={f.input}
               value={dim(sizeUnits.width)}
-              invalid={sizeInvalid}
               onCommit={onDim('width')}
               aria-label="Width"
             />
@@ -182,7 +184,6 @@ export default function TableInspector({ tableId }: { tableId: string }) {
             <TextField
               className={f.input}
               value={dim(sizeUnits.height)}
-              invalid={sizeInvalid}
               onCommit={onDim('height')}
               aria-label="Height"
             />

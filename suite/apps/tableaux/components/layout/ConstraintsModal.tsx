@@ -3,7 +3,6 @@ import clsx from 'clsx'
 import type { ConstraintKind } from '@/lib/model/types'
 import { ruleFor } from '../../store/actions'
 import { useStore } from '../../store/useStore'
-import { computeWarnings } from '../../utils/warnings'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import IconButton from '../ui/IconButton'
@@ -16,7 +15,6 @@ export default function ConstraintsModal() {
   const addConstraint = useStore((s) => s.addConstraint)
   const removeConstraint = useStore((s) => s.removeConstraint)
   const closeModal = useStore((s) => s.closeModal)
-  const tables = useStore((s) => s.tables)
 
   const sorted = useMemo(
     () => Object.values(guests).sort((a, b) => String(a.fullName).localeCompare(b.fullName)),
@@ -26,18 +24,18 @@ export default function ConstraintsModal() {
   const [kind, setKind] = useState<ConstraintKind>('apart')
   const [a, setA] = useState('')
   const [b, setB] = useState('')
-  const [broken, setBroken] = useState('')
 
+  // TODO(ux-audit): no feedback if the new rule is already violated by the
+  // current plan — if A and B are already seated together and the user adds
+  // an "apart" rule, this just clears the form; the only way to learn it's
+  // already broken is closing the modal and separately noticing the warning
+  // badge. See tmp/ux-audit.md #G22.
   const paired = a && b ? ruleFor(constraints, a, b) : undefined
   const ready = Boolean(a && b && a !== b && !paired)
 
   const add = () => {
     if (!ready) return
     addConstraint({ kind, guestIds: [a, b] })
-    // A rule that is broken already is still added — the plan is about to be
-    // fixed — but it is said here, not only by a badge behind the dialog.
-    const [warning] = computeWarnings({ guests, tables, constraints: [{ id: 'new', kind, guestIds: [a, b], note: '' }] })
-    setBroken(warning ? `Already broken: ${warning.message}` : '')
     setA('')
     setB('')
   }
@@ -102,9 +100,6 @@ export default function ConstraintsModal() {
             These two already have a rule. Remove it below to change it.
           </p>
         )}
-        <p role="status" className={styles.none}>
-          {broken}
-        </p>
       </div>
 
       {constraints.length > 0 ? (
