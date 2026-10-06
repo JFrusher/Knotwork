@@ -2,6 +2,7 @@ import type { Knotwork } from "@jfrusher/knotwork";
 import { dayPlaces, guestName, isComing, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
 import { neededAt, packingOf } from "@/lib/boxes/view";
 import { hiddenToolIds } from "./toolbox";
+import { TOOLS } from "@/lib/tools";
 import { resolveMembers } from "@/lib/cast/resolve";
 import { ceremonyPlace, overrun } from "@/lib/ceremony/checks";
 import { DUE_SOON_DAYS, money } from "@/lib/money/money";
@@ -42,7 +43,7 @@ export interface Readiness {
     | "/money"
     | "/checklist"
     | "/seating"
-    | "/place-cards"
+    | "/stationery"
     | "/timeline"
     | "/delegation"
     | "/group-shots"
@@ -69,7 +70,7 @@ function placeNames(raw: unknown): Set<string> {
   return names;
 }
 
-/** Place cards' saved pieces, each of which knows what its printed list was drawn from. Empty when nothing is designed. */
+/** Stationery's saved pieces, each of which knows what its printed list was drawn from. Empty when nothing is designed. */
 export function stationeryPieces(raw: unknown): Record<string, unknown>[] {
   return storedPieces(isRecord(raw) ? raw["stationery"] : null);
 }
@@ -151,7 +152,7 @@ export function readiness(doc: Knotwork, raw: unknown, today: string = todayIso(
         withDietary.length === 1
           ? "One guest has a dietary requirement, and the card design has nowhere to show it."
           : `${withDietary.length} guests have dietary requirements, and the card design has nowhere to show them.`,
-      href: "/place-cards",
+      href: "/stationery",
       action: "Add it to the card",
     });
   }
@@ -403,5 +404,5 @@ export function readiness(doc: Knotwork, raw: unknown, today: string = todayIso(
   // left to do. Here rather than in the page, so the planner's Weddings page,
   // which runs this on the server, says the same.
   const hidden = hiddenToolIds(doc);
-  return out.filter((item) => !hidden.has(item.href.slice(1)));
+  return out.filter((item) => !hidden.has(TOOLS.find((tool) => tool.href === item.href)?.id ?? ""));
 }

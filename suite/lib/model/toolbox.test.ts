@@ -1,3 +1,5 @@
+import { readdirSync } from "node:fs";
+import { sep } from "node:path";
 import { describe, expect, it } from "vitest";
 import { emptyKnotwork, migrate } from "@jfrusher/knotwork";
 import { TOOLS } from "@/lib/tools";
@@ -27,8 +29,12 @@ describe("shownTools", () => {
     expect(ids(migrate({ tools: { shown: ["florist", "timeline"] } }))).toEqual(["timeline"]);
   });
 
-  it("every tool's address is its id", () => {
-    for (const tool of TOOLS) expect(tool.href).toBe(`/${tool.id}`);
+  it("every tool's address is a page that exists", () => {
+    // Route groups, "(app)", are not in the address.
+    const pages = readdirSync("app", { recursive: true, encoding: "utf8" })
+      .filter((file) => file.endsWith("page.tsx"))
+      .map((file) => `/${file.split(sep).filter((part) => !part.startsWith("(")).slice(0, -1).join("/")}`);
+    for (const tool of TOOLS) expect(pages, tool.id).toContain(tool.href);
   });
 });
 

@@ -6,7 +6,7 @@ import { readBar, readBoxes, readCeremony, readCrew, readGuests, readSeating, re
  * What a wedding holds, in the terms a person would recognise it by.
  *
  * Counts what somebody entered, never whether a slice exists. Opening
- * Timeline, Place cards or Delegation stores that tool's empty defaults
+ * Timeline, Stationery or Delegation stores that tool's empty defaults
  * without anyone typing a thing, so "a slice is there" says nothing about
  * whether there is work in it to lose.
  */

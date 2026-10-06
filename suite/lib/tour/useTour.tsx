@@ -62,7 +62,7 @@ const walkOf = (chapters: readonly TourChapter[]): Walk =>
 export function TourProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   // "How this page works" walks one chapter and stops — somebody who asked
-  // about Place cards asked about Place cards. "Take a tour" walks them all.
+  // about Stationery asked about Stationery. "Take a tour" walks them all.
   const [open, setOpen] = useState<{ walk: Walk; index: number } | null>(null);
   const [seen, setSeen] = useState(false);
   const at = open ? open.walk[open.index] : undefined;

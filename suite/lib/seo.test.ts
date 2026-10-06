@@ -38,7 +38,7 @@ test("the sitemap does not advertise the tools", () => {
   // They are an application, not a document: a crawler reaching /seating finds
   // an empty editor, because the wedding it would edit is in someone's browser.
   const paths = sitemap().map((entry) => new URL(entry.url).pathname);
-  for (const tool of ["/seating", "/timeline", "/place-cards", "/delegation"]) {
+  for (const tool of ["/seating", "/timeline", "/stationery", "/delegation"]) {
     expect(paths).not.toContain(tool);
   }
 });

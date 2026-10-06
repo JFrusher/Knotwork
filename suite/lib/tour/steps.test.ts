@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CHAPTERS, chapterForRoute } from "./steps";
 
-const ROUTES = new Set(["/", "/guests", "/seating", "/place-cards", "/timeline", "/delegation", "/group-shots"]);
+const ROUTES = new Set(["/", "/guests", "/seating", "/stationery", "/timeline", "/delegation", "/group-shots"]);
 
 describe("the chapters", () => {
   it("has the front page, then the wedding's own pages, then one chapter per tool", () => {

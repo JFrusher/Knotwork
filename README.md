@@ -64,7 +64,7 @@ Nothing is retyped.
 | --- | --- | --- |
 | 👥 | **Guests** | The one guest list everything builds on. Import a CSV from Joy, Zola, The Knot or your own spreadsheet. The column mapper guesses what it can and asks about the rest. |
 | 🪑 | **Seating** | Draw the room to scale in real units, then put people in it. Keep-together and keep-apart rules, and a live dietary breakdown. |
-| 💌 | **Place cards** | Print-ready cards and table signs, with table numbers filled in from the room. |
+| 💌 | **Stationery** | Print-ready place cards, table signs and seating boards with table numbers filled in from the room, and the order of service as a folded booklet. |
 | 🕒 | **Timeline** | The running order of the day. It shows what collides, what runs past curfew, and what can't be reached in time. |
 | 📋 | **Delegation** | The jobs, and who is doing them, hung off each part of the day. |
 | 📷 | **Group shots** | The family photo list, built from who is related to whom. |
@@ -101,7 +101,7 @@ you add the tool again.
 ![Every tool, one wedding: the front page, the guest list and every desktop tool](docs/images/tools-grid.png)
 
 **Seat a guest, and her place card has her table.** Drag Zainab onto Table 13,
-press *Use the room* in Place cards, and her card reads "Table 13".
+open Stationery, and her card already reads "Table 13".
 
 ![Seating a guest, then opening her place card with the table filled in](docs/images/seat-to-card.gif)
 
@@ -227,7 +227,7 @@ The rule everything rests on:
 ```mermaid
 flowchart LR
   S["Seating<br/>the room"]
-  P["Place cards<br/>the stationery"]
+  P["Stationery<br/>cards, signs, booklet"]
   T["Timeline<br/>the day"]
   D["Delegation<br/>the crew"]
   G["Group shots<br/>the photo list"]
@@ -297,7 +297,7 @@ security, email-code auth) · **pdf-lib / jsPDF** for print · **Vitest**,
 
 ```text
 suite/           the web application (AGPL-3.0-or-later)
-  apps/          Seating, Place cards, Timeline, Delegation
+  apps/          Seating, Stationery, Timeline, Delegation
   lib/           the shared document, sync, accounts, and the newer tools
   components/    the shell around the tools, and the newer tools' panels
   app/           routes, API, account, guest and supplier pages

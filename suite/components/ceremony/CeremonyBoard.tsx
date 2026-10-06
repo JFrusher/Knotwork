@@ -191,7 +191,7 @@ export function CeremonyBoard() {
                   Music
                 </Button>
                 <Link
-                  href="/place-cards?piece=order-of-service"
+                  href="/stationery?piece=order-of-service"
                   className="inline-flex items-center gap-1.5 rounded border border-gold bg-gold/15 px-2 py-1.5 text-sm text-charcoal transition hover:bg-gold/25"
                 >
                   <BookOpen size={14} aria-hidden />
@@ -510,7 +510,7 @@ function CeremonyInspector({
             checked={copy.onGuestLink}
             onChange={(onGuestLink) => guestCopy({ onGuestLink })}
           />
-          <p className="text-xs text-slate">Designed and printed as a booklet in Place cards: &ldquo;Design the order of service&rdquo;, above.</p>
+          <p className="text-xs text-slate">Designed and printed as a booklet in Stationery: &ldquo;Design the order of service&rdquo;, above.</p>
         </div>
       </Panel>
 

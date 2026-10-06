@@ -23,8 +23,8 @@ is retyped and nothing disagrees.
   with a preview before anything is written.
 - ✅ **Seating.** A room drawn to scale, groups, families, keep-together and
   keep-apart rules, and a dietary breakdown. Now fully TypeScript.
-- ✅ **Place cards.** Cards and table signs bound to the seating plan, with
-  print checks.
+- ✅ **Stationery** (once Place cards). Cards and table signs bound to the
+  seating plan, with print checks.
 - ✅ **Timeline.** Pinned and following blocks, squeezable blocks, collisions,
   curfew, travel between places, sunset and golden hour, and calendar files.
 - ✅ **Delegation** and **Group shots.**
@@ -48,7 +48,7 @@ is retyped and nothing disagrees.
   works offline on a phone.
 - ✅ **Guest seat links** and **supplier links** with confirmation.
 - ✅ **The order of service as a booklet.** Written in Ceremony, designed in
-  Place cards — cover, repeated inside page, back, pictures, three starting
+  Stationery — cover, repeated inside page, back, pictures, three starting
   styles — and printed folded at home or page by page for a print shop; on
   the guest link too, when the couple chooses.
 - ✅ **Guided tour** with an example wedding, and the ⌘/Ctrl-K palette.

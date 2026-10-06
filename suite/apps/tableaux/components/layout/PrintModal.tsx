@@ -5,7 +5,7 @@ import Icon from '../ui/Icon'
 import styles from './ExportModal.module.css'
 
 /**
- * Everything printed from this room is made in Place cards, from the room as
+ * Everything printed from this room is made in Stationery, from the room as
  * it stands: one design for each piece, in the wedding's own fonts, at any
  * size from a place card to a board for the door. Seating keeps no second way
  * to print, so a board and its place cards cannot disagree.
@@ -28,7 +28,7 @@ export default function PrintModal() {
         {PIECES.map((p) => (
           <Link
             key={p.piece}
-            href={`/place-cards?piece=${p.piece}`}
+            href={`/stationery?piece=${p.piece}`}
             className={styles.option}
             onClick={closeModal}
           >

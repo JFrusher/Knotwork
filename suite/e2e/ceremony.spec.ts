@@ -112,7 +112,7 @@ test("the Timeline shows the ceremony's order and music inside its block, and th
   await expect(page).toHaveURL(/\/ceremony$/);
 });
 
-test("the guests' order of service is designed as a booklet in Place cards, folded onto A4", async ({ page }) => {
+test("the guests' order of service is designed as a booklet in Stationery, folded onto A4", async ({ page }) => {
   await seedExampleWedding(page);
   await page.goto("/ceremony");
   await page.getByRole("link", { name: "Design the order of service" }).click();

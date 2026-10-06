@@ -174,6 +174,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: [...securityHeaders, ...buildHeaders] }];
   },
+  // Place cards became Stationery when it grew past cards. A bookmark, or a
+  // link Seating printed, still lands there, with its ?piece= kept.
+  async redirects() {
+    return [{ source: "/place-cards", destination: "/stationery", permanent: true }];
+  },
 };
 
 const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true" });
