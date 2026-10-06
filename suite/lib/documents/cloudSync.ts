@@ -1,6 +1,7 @@
 import { del as idbDel, get as idbGet, set as idbSet } from "idb-keyval";
 import type { Agreed } from "./mergeCloudDocument";
 import type { WeddingListing } from "@/lib/accounts/handlers";
+import { browserClient } from "@/lib/accounts/browserClient";
 
 /**
  * The cloud transport, and what this device remembers about the wedding it
@@ -44,8 +45,13 @@ type WeddingsResult =
   | { ok: true; weddings: WeddingListing[] }
   | { ok: false; reason: "unreachable" | "unavailable" };
 
-/** Every wedding the signed-in account is on. Never throws. */
+/**
+ * Every wedding the signed-in account is on. Never throws. A deployment built
+ * without accounts is not asked: its answer is always a 501, logged in the
+ * console of every page load.
+ */
 export async function fetchWeddings(): Promise<WeddingsResult> {
+  if (!browserClient()) return { ok: false, reason: "unavailable" };
   let response: Response;
   try {
     response = await fetch("/api/accounts/weddings");

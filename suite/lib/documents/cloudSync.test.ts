@@ -7,9 +7,13 @@ vi.mock("idb-keyval", () => ({
   del: async (key: string) => void idbStore.delete(key),
 }));
 
+let accounts: object | null = {};
+vi.mock("@/lib/accounts/browserClient", () => ({ browserClient: () => accounts }));
+
 const { fetchCloudDocument, fetchWeddings, pushDocument, readLink, writeLink, forgetLink } = await import("./cloudSync");
 
 beforeEach(() => {
+  accounts = {};
   idbStore.clear();
   vi.restoreAllMocks();
 });
@@ -50,6 +54,14 @@ describe("fetchWeddings", () => {
     const weddings = [{ weddingId: "w1", role: "planner", names: "Alex & Sam", date: "2027-06-12" }];
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ weddings }), { status: 200 })));
     expect(await fetchWeddings()).toEqual({ ok: true, weddings });
+  });
+
+  it("does not ask a deployment built without accounts", async () => {
+    accounts = null;
+    const fetched = vi.fn();
+    vi.stubGlobal("fetch", fetched);
+    expect(await fetchWeddings()).toEqual({ ok: false, reason: "unavailable" });
+    expect(fetched).not.toHaveBeenCalled();
   });
 
   it("reports unavailable when signed out", async () => {
