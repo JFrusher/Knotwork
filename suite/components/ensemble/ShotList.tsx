@@ -9,6 +9,7 @@ import {
   closestCenter,
   useSensor,
   useSensors,
+  type Announcements,
   type DragEndEvent,
 } from "@dnd-kit/core";
 import {
@@ -127,6 +128,7 @@ export function ShotList({
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
+                accessibility={{ announcements: shotAnnouncements(section.shots, numbers) }}
                 onDragEnd={(event: DragEndEvent) => {
                   const { active, over } = event;
                   if (!over || active.id === over.id) return;
@@ -242,4 +244,19 @@ function ShotRow({
       <IconButton icon={Trash2} label="Remove shot" tone="danger" onClick={onRemove} />
     </li>
   );
+}
+
+/** Read out while a shot is moved: its number and label, never its id. */
+function shotAnnouncements(shots: Shot[], numbers: Map<string, number>): Announcements {
+  const name = (id: string | number) => {
+    const shot = shots.find((s) => s.id === id)!;
+    return shot.label ? `Shot ${numbers.get(shot.id)}, ${shot.label}` : `Shot ${numbers.get(shot.id)}`;
+  };
+  const at = (id: string | number) => `position ${shots.findIndex((s) => s.id === id) + 1} of ${shots.length}`;
+  return {
+    onDragStart: ({ active }) => `Picked up ${name(active.id)}.`,
+    onDragOver: ({ active, over }) => (over ? `${name(active.id)} is at ${at(over.id)}.` : undefined),
+    onDragEnd: ({ active, over }) => (over ? `${name(active.id)} dropped at ${at(over.id)}.` : `${name(active.id)} dropped.`),
+    onDragCancel: ({ active }) => `Moving ${name(active.id)} was cancelled. It is back at ${at(active.id)}.`,
+  };
 }

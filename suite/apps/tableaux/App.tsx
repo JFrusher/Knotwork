@@ -12,6 +12,7 @@ import {
   type CollisionDetection,
 } from '@dnd-kit/core'
 import { useCanvasDnd } from './hooks/useCanvasDnd'
+import { dragAnnouncements } from './hooks/dragAnnouncements'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { WarningsProvider } from './store/warningsContext'
 import AppShell from './components/layout/AppShell'
@@ -42,6 +43,7 @@ export default function App() {
   )
 
   const { activeDrag, onDragStart, onDragEnd, onDragCancel } = useCanvasDnd()
+  const announcements = dragAnnouncements(useStore.getState)
 
   // When the pointer is inside multiple nested containers at once (a family
   // inside a subgroup inside a group), pointerWithin returns all of them. Sort
@@ -70,8 +72,9 @@ export default function App() {
       measuring={{ droppable: { measure: getClientRect } }}
       // Read out for every draggable. The library's default tells people to
       // press Space and use the arrow keys, which is exactly what does not work
-      // here — see the sensors above.
+      // here — see the sensors above. Its default announcements speak ids.
       accessibility={{
+        announcements,
         screenReaderInstructions: {
           draggable:
             'Drag with a mouse or finger to move it. From the keyboard, press Enter on a table or a guest and use its panel.',
