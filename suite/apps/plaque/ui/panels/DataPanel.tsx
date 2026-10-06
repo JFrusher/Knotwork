@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useTour } from "@/lib/tour/useTour";
 import { useShallow } from "zustand/react/shallow";
 import type { Artefact } from "../../core/data/artefacts";
 import { artefactsOf } from "../../core/data/parts";
@@ -56,6 +57,7 @@ export function DataPanel() {
     })),
   );
   const artefacts = useMemo(() => artefactsOf(template, rows, headers, rowIds), [template, rows, headers, rowIds]);
+  const { start } = useTour();
 
   if (booklet) {
     return (
@@ -74,6 +76,9 @@ export function DataPanel() {
         <Link href="/ceremony" className={styles.button}>
           Change it in Ceremony
         </Link>
+        <button type="button" className={styles.button} onClick={() => start("order-of-service")}>
+          Show me how, start to finish
+        </button>
         <Columns headers={headers} />
       </>
     );

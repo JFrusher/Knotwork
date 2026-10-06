@@ -75,7 +75,7 @@ export function PiecesBar() {
         </button>
       </div>
 
-      <button type="button" className={styles.designs} onClick={() => setGallery(true)}>
+      <button type="button" data-tour="stationery.designs" className={styles.designs} onClick={() => setGallery(true)}>
         Designs
       </button>
       {gallery && <DesignsGallery onClose={() => setGallery(false)} />}

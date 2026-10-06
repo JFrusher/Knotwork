@@ -32,7 +32,8 @@ export type ChapterId =
   | "timeline"
   | "place-cards"
   | "delegation"
-  | "group-shots";
+  | "group-shots"
+  | "order-of-service";
 
 export const CHAPTERS: readonly TourChapter[] = [
   {
@@ -253,7 +254,58 @@ export const CHAPTERS: readonly TourChapter[] = [
   },
 ];
 
+/**
+ * Guides: a walk through one job from start to finish, across the tools it
+ * takes, asked for where that job is done. Not part of "Take a tour", which
+ * covers what each tool is for and is kept short on purpose.
+ */
+export const GUIDES: readonly TourChapter[] = [
+  {
+    id: "order-of-service",
+    title: "Your order of service",
+    steps: [
+      {
+        anchor: "ceremony.order",
+        title: "Write it here first",
+        body: "Every part of the ceremony, in order. Pick one to give it a title, whose words it is — Shakespeare, 1 Corinthians 13 — who reads it, its music, and a note for the guests such as \"Please stand\". Paste in the words and lyrics, set them as a poem, prose or responses, and tick whether each is printed in full.",
+        route: "/ceremony",
+      },
+      {
+        anchor: "ceremony.guestcopy",
+        title: "What else the guests are told",
+        body: "A note from you to open and one to close. Who's who in the wedding party, from the people you named in Group shots. What happens after the ceremony, ticked from your Timeline. And whether the guest link shows it all too, for anyone following on a phone.",
+        route: "/ceremony",
+      },
+      {
+        anchor: "ceremony.design",
+        title: "Then design the booklet",
+        body: "This opens your order of service in Stationery, as a folded A5 booklet. Change anything here afterwards and the booklet already has it — nothing is copied across.",
+        route: "/ceremony",
+      },
+      {
+        anchor: "stationery.designs",
+        title: "Choose a style, then make it yours",
+        body: "Classic, Modern and Script, each shown with your own names. Restyle swaps one for another and keeps the pictures you added. Every font, colour and position stays yours to change.",
+        route: "/stationery?piece=order-of-service",
+      },
+      {
+        anchor: "stationery.pages",
+        title: "A cover, every inside page, a back",
+        body: "Anything added to the inside repeats on every inside page — a border, a monogram — or only on the pages you list. Add photographs under Images. Click the ceremony's box to set its fonts and sizes; it carries on onto the next page by itself.",
+        route: "/stationery?piece=order-of-service",
+      },
+      {
+        anchor: "stationery.booklet",
+        title: "Print it folded, or send it out",
+        body: "At home, the pages come out two to a side of A4 in folding order: print both sides, fold the stack, and you have a booklet. Print one on plain paper first. For a print shop, each page comes out on its own with crop marks and bleed.",
+        route: "/stationery?piece=order-of-service",
+      },
+    ],
+  },
+];
+
 const BY_ROUTE = new Map<string, ChapterId>([
+  ["/ceremony", "order-of-service"],
   ["/guests", "guests"],
   ["/seating", "seating"],
   ["/timeline", "timeline"],

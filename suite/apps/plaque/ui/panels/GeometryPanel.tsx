@@ -343,7 +343,7 @@ export function SheetPanel() {
 function BookletSetup({ booklet }: { booklet: Booklet }) {
   const setBooklet = usePlaque((s) => s.setBooklet);
   return (
-    <>
+    <div data-tour="stationery.booklet">
       <SelectField<Booklet["output"]>
         label="Printed"
         value={booklet.output}
@@ -373,6 +373,6 @@ function BookletSetup({ booklet }: { booklet: Booklet }) {
       ) : (
         <Hint>Each page on its own, 3mm of bleed past its edges and crop marks outside them: what a print shop asks for.</Hint>
       )}
-    </>
+    </div>
   );
 }
