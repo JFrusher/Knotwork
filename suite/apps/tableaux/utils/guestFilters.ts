@@ -2,12 +2,6 @@ import { sideShort } from '@/lib/model/partners'
 import { isComing } from '@/lib/model/slices'
 import type { Guest, Meta } from '../store/types'
 
-// TODO(family-ux): no "in a family" (or per-family) filter chip exists —
-// would need an entry here AND in PREDICATES below, and a predicate can't
-// just check truthiness of a static key since it'd need the families dict
-// (guest.familyId alone isn't enough context for a per-family filter).
-// Part of families being invisible outside the guest panel:
-// https://github.com/JFrusher/Knotwork/issues/64
 /**
  * Filter chips shown beneath the guest search box, and their predicates. The
  * two side chips are named after the partners — "Alex's", "Sam's" — from the
@@ -22,10 +16,12 @@ export function filterDefs(meta: Pick<Meta, 'partners'>): Array<{ key: FilterKey
     { key: 'vegan', label: 'Vegan' },
     { key: 'gluten-free', label: 'GF' },
     { key: 'notes', label: 'Has notes' },
+    // Which family is found by searching its name; this finds everyone in one.
+    { key: 'family', label: 'In a family' },
   ]
 }
 
-type FilterKey = 'unassigned' | 'a' | 'b' | 'vegetarian' | 'vegan' | 'gluten-free' | 'notes'
+type FilterKey = 'unassigned' | 'a' | 'b' | 'vegetarian' | 'vegan' | 'gluten-free' | 'notes' | 'family'
 
 const PREDICATES: Record<FilterKey, (guest: Guest) => boolean> = {
   // Who still needs a seat: someone who declined does not.
@@ -36,6 +32,7 @@ const PREDICATES: Record<FilterKey, (guest: Guest) => boolean> = {
   vegan: (g) => g.dietary === 'vegan',
   'gluten-free': (g) => g.dietary === 'gluten-free',
   notes: (g) => !!(g.notes && g.notes.trim()),
+  family: (g) => !!g.familyId,
 }
 
 /**
@@ -53,6 +50,7 @@ const CATEGORY: Record<FilterKey, string> = {
   vegan: 'diet',
   'gluten-free': 'diet',
   notes: 'notes',
+  family: 'family',
 }
 
 export function matchesFilters(guest: Guest, filters: readonly string[] | null | undefined): boolean {

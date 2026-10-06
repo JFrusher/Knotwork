@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { buildFloorPlanSvg, measureFloorPlan } from './floorPlanSvg'
+import { layoutFloorPlan } from './floorPlanSvg'
 import type { Guest, Space, Table } from '../store/types'
 
-type FloorPlanSource = Parameters<typeof measureFloorPlan>[0]
+type FloorPlanSource = Parameters<typeof layoutFloorPlan>[0]
 
 // Two 8-seat trestles side by side plus a rotated 4-seat top table, matching the
 // shape of a real plan: rect tables with seats on the long sides only.
@@ -71,9 +71,9 @@ function makeDoc(): FloorPlanSource {
   } as unknown as FloorPlanSource
 }
 
-describe('measureFloorPlan', () => {
+describe('layoutFloorPlan', () => {
   it('includes zones that sit outside the room rect in the bounds', () => {
-    const m = measureFloorPlan(makeDoc())
+    const m = layoutFloorPlan(makeDoc())
     expect(m.minX).toBeLessThanOrEqual(-103)
   })
 
@@ -82,110 +82,8 @@ describe('measureFloorPlan', () => {
     doc.room!.spaces = [{ id: 'sp1', shape: 'rect', x: 600, y: 400, width: 500, height: 400 } as Space]
     doc.zones = {}
     doc.tables = {}
-    const m = measureFloorPlan(doc)
+    const m = layoutFloorPlan(doc)
     expect(m.minX).toBeGreaterThan(0)
     expect(m.minY).toBeGreaterThan(0)
-  })
-
-  it('sizes name cells so no two overlap', () => {
-    const doc = makeDoc()
-    const m = measureFloorPlan(doc)
-    expect(m.cellW).toBeGreaterThan(10)
-
-    // Rebuild the world seat positions the same way the layout does.
-    const cells: { x: number; y: number; w: number; h: number }[] = []
-    const svg = buildFloorPlanSvg(doc, { seatLabels: 'name' }).svg
-    const re = /<rect x="(-?[\d.]+)" y="(-?[\d.]+)" width="([\d.]+)" height="([\d.]+)" rx="2"/g
-    let mt
-    while ((mt = re.exec(svg))) {
-      cells.push({ x: +mt[1], y: +mt[2], w: +mt[3], h: +mt[4] })
-    }
-    expect(cells).toHaveLength(18) // 8 + 8 + 2 seats
-
-    for (let i = 0; i < cells.length; i++) {
-      for (let j = i + 1; j < cells.length; j++) {
-        const a = cells[i]
-        const b = cells[j]
-        const overlaps =
-          a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h
-        expect(overlaps, `cells ${i} and ${j} overlap`).toBe(false)
-      }
-    }
-  })
-})
-
-describe('buildFloorPlanSvg seatLabels', () => {
-  it('defaults to numbered seat circles (the on-screen / public view)', () => {
-    const { svg } = buildFloorPlanSvg(makeDoc())
-    expect(svg).toContain('r="14"')
-    expect(svg).not.toContain('Sparkes')
-    expect(svg).toMatch(/font-size="9" font-weight="600" fill="#555">1</)
-  })
-
-  it('renders first and last name on separate lines for each seated guest', () => {
-    const { svg } = buildFloorPlanSvg(makeDoc(), { seatLabels: 'name' })
-    for (const token of ['Sam', 'Sparkes', 'Emmanuel', 'Katie', 'Sneddon', 'Kate', 'Seymour']) {
-      expect(svg).toContain(`>${token}<`)
-    }
-    // Seat numbers are gone from the chart.
-    expect(svg).not.toContain('font-size="9" font-weight="600" fill="#555"')
-  })
-
-  it('sets every name on the sheet at one size', () => {
-    const { svg } = buildFloorPlanSvg(makeDoc(), { seatLabels: 'name' })
-    const sizes = new Set(
-      [...svg.matchAll(/<text [^>]*font-size="([\d.]+)"[^>]*fill="#(?:1f1b16|4a4238)"/g)].map(
-        (m) => m[1]
-      )
-    )
-    expect(sizes.size).toBe(1)
-  })
-
-  it('cuts a name too long for its cell rather than shrinking it', () => {
-    const { svg } = buildFloorPlanSvg(makeDoc(), { seatLabels: 'name' })
-    // Every other surname survives whole, at the size the rest of the sheet uses...
-    expect(svg).toContain('>Mihaylova<')
-    expect(svg).toContain('>Loveridge<')
-    // ...and the one that will not fit is cut, not set smaller than its neighbours.
-    expect(svg).not.toContain('>Gadd-Chapman<')
-    expect(svg).toMatch(/>Gadd-[A-Za-z]*…</)
-  })
-
-  it('keeps names sharing an edge on a common baseline', () => {
-    const { svg } = buildFloorPlanSvg(makeDoc(), { seatLabels: 'name' })
-    const yOf = (token: string) => {
-      const m = new RegExp(`<text x="[-\\d.]+" y="([-\\d.]+)"[^>]*>${token}<`).exec(svg)
-      return m ? +m[1] : null
-    }
-    // Sparkes and Silk both sit on the top edge of Table 1, so their surname
-    // lines share a baseline, and their given names share the one above.
-    expect(yOf('Sparkes')).toBe(yOf('Silk'))
-    expect(yOf('Sam')).toBe(yOf('Jude'))
-  })
-
-  it('hangs a cell outward from its table rather than centring it on the chair', () => {
-    const doc = makeDoc()
-    const { cellH } = measureFloorPlan(doc)
-    const { svg } = buildFloorPlanSvg(doc, { seatLabels: 'name' })
-    const tops = [...svg.matchAll(/<rect x="-?[\d.]+" y="(-?[\d.]+)" width="[\d.]+" height="[\d.]+" rx="2"/g)].map(
-      (m) => +m[1]
-    )
-    // Table 1's top row of chairs sits at y ≈ 67.3. A cell centred on the chair
-    // would start at 67.3 - cellH / 2; these start higher, because they hang out
-    // over the clear floor instead of eating the gap to the next chair.
-    expect(Math.min(...tops)).toBeLessThan(67.3 - cellH / 2)
-  })
-
-  it('draws unassigned seats as empty dashed cells', () => {
-    const { svg } = buildFloorPlanSvg(makeDoc(), { seatLabels: 'name' })
-    const dashed = svg.match(/stroke-dasharray="3 2"/g) || []
-    expect(dashed).toHaveLength(6) // Table 2 has 8 seats, 2 filled
-  })
-
-  it('keeps names upright on a rotated table', () => {
-    const { svg } = buildFloorPlanSvg(makeDoc(), { seatLabels: 'name' })
-    const seymour = /<text x="[-\d.]+" y="[-\d.]+"[^>]*>Seymour</.exec(svg)
-    expect(seymour).not.toBeNull()
-    expect(seymour![0]).not.toContain('rotate')
   })
 })

@@ -16,6 +16,8 @@ const RSVPS: RsvpStatus[] = ['confirmed', 'pending', 'declined']
 export default function GuestInspector({ guestId }: { guestId: string }) {
   const guest = useStore((s) => s.guests[guestId])
   const groups = useStore((s) => s.groups)
+  const subgroup = useStore((s) => (guest?.subgroupId ? s.subgroups[guest.subgroupId] : null))
+  const family = useStore((s) => (guest?.familyId ? s.families[guest.familyId] : null))
   const table = useStore((s) => (guest?.assignedTableId ? s.tables[guest.assignedTableId] : null))
   const updateGuest = useStore((s) => s.updateGuest)
   const addToGroup = useStore((s) => s.addToGroup)
@@ -200,11 +202,21 @@ export default function GuestInspector({ guestId }: { guestId: string }) {
             <option value="__new__">+ New group…</option>
           </select>
         </div>
+
+        {/* Shown, not edited: a guest joins a subgroup or family in the guest panel's tree. */}
+        {subgroup && (
+          <div className={f.field} role="group" aria-label="Subgroup">
+            <span className={f.label}>Subgroup</span>
+            <span>{subgroup.name}</span>
+          </div>
+        )}
+        {family && (
+          <div className={f.field} role="group" aria-label="Family">
+            <span className={f.label}>Family</span>
+            <span>{family.name}</span>
+          </div>
+        )}
       </div>
-      {/* TODO(family-ux): subgroup/family membership is invisible here — the
-          store has guest.subgroupId/guest.familyId but neither is read or
-          shown anywhere in this panel, only the sidebar tree shows them.
-          https://github.com/JFrusher/Knotwork/issues/64 */}
 
       <div className={f.group}>
         <span className={f.label}>Seating</span>

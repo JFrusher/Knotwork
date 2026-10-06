@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { matchesFilters } from './guestFilters'
+import { filterDefs, matchesFilters } from './guestFilters'
 import type { Guest } from '../store/types'
 
 // Only the fields the chips read.
@@ -39,5 +39,13 @@ describe('combining chips', () => {
     expect(matchesFilters(vegan, ['vegan', 'b'])).toBe(true)
     expect(matchesFilters(vegan, ['vegetarian', 'vegan', 'unassigned'])).toBe(false)
     expect(matchesFilters(veggie, ['vegetarian', 'vegan', 'unassigned'])).toBe(true)
+  })
+})
+
+describe('the In a family chip', () => {
+  it('is offered, and finds who is in a family', () => {
+    expect(filterDefs({ partners: ['Alex', 'Sam'] }).map((d) => d.label)).toContain('In a family')
+    expect(matchesFilters(guest({ familyId: 'fam', rsvpStatus: 'confirmed' }), ['family'])).toBe(true)
+    expect(matchesFilters(guest({ familyId: null, rsvpStatus: 'confirmed' }), ['family'])).toBe(false)
   })
 })

@@ -24,14 +24,16 @@ export const toCsv = (headers: Cell[], rows: Cell[][]): string =>
 const sideLabel = (side: Guest['side'], meta: Plan['meta']): string =>
   side === 'a' || side === 'b' || side === 'both' ? sideShort(side, meta) : ''
 
-// TODO(family-ux): headers below have a Group column but no Subgroup or
-// Family column — inconsistent with exportXlsx.js's buildGroupSheetRows,
-// which already has Group/Subgroup/Family.
-// https://github.com/JFrusher/Knotwork/issues/64
 /** Caterer-friendly assignment rows, ordered by table then seat. */
 function buildAssignmentTable(state: PlanSource): { headers: string[]; rows: Cell[][] } {
-  const { guests = {}, tables = {}, groups = {} } = state
-  const headers = ['Table', 'Seat', 'Guest', 'Side', 'RSVP', 'Dietary', 'Group', 'Notes']
+  const { guests = {}, tables = {}, groups = {}, subgroups = {}, families = {} } = state
+  // Group, Subgroup and Family nest, so they read left to right.
+  const headers = ['Table', 'Seat', 'Guest', 'Side', 'RSVP', 'Dietary', 'Group', 'Subgroup', 'Family', 'Notes']
+  const belongs = (g: Guest): Cell[] => [
+    (g.groupId && groups[g.groupId]?.name) || '',
+    (g.subgroupId && subgroups[g.subgroupId]?.name) || '',
+    (g.familyId && families[g.familyId]?.name) || '',
+  ]
   const rows: Cell[][] = []
 
   const tableList = Object.values(tables).sort((a, b) =>
@@ -51,7 +53,7 @@ function buildAssignmentTable(state: PlanSource): { headers: string[]; rows: Cel
         sideLabel(g.side, state.meta),
         g.rsvpStatus || '',
         g.dietary || '',
-        (g.groupId && groups[g.groupId]?.name) || '',
+        ...belongs(g),
         g.notes || '',
       ])
     }
@@ -68,7 +70,7 @@ function buildAssignmentTable(state: PlanSource): { headers: string[]; rows: Cel
         sideLabel(g.side, state.meta),
         g.rsvpStatus || '',
         g.dietary || '',
-        (g.groupId && groups[g.groupId]?.name) || '',
+        ...belongs(g),
         g.notes || '',
       ])
     })

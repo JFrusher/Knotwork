@@ -38,3 +38,18 @@ describe('buildAssignmentCsv', () => {
     expect(csv).toContain('Amy')
   })
 })
+
+describe('the subgroup and family columns', () => {
+  it('follow Group, so the three nest left to right, and Notes stays last', () => {
+    const csv = buildAssignmentCsv({
+      guests: { g1: guest('g1', 'Ada Okafor', { assignedTableId: 't1', groupId: 'grp', subgroupId: 'sub', familyId: 'fam' }) },
+      tables: { t1: { id: 't1', label: 'Table 1', seatMode: 'table', assignedGuestIds: ['g1'] } as Table },
+      groups: { grp: { id: 'grp', name: 'Work', colour: '#000', memberIds: ['g1'] } },
+      subgroups: { sub: { id: 'sub', name: 'Analysts', colour: '#000', parentGroupId: 'grp', memberIds: ['g1'] } },
+      families: { fam: { id: 'fam', name: 'Okafor', colour: '#000', parentGroupId: null, parentSubgroupId: 'sub', memberIds: ['g1'] } },
+    } as unknown as PlanSource)
+    const [headers, row] = csv.trim().split('\r\n')
+    expect(headers).toBe('Table,Seat,Guest,Side,RSVP,Dietary,Group,Subgroup,Family,Notes')
+    expect(row).toBe('Table 1,,Ada Okafor,,confirmed,,Work,Analysts,Okafor,')
+  })
+})
