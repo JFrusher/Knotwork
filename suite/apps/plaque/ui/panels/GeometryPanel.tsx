@@ -5,7 +5,6 @@ import { computeLayout } from "../../core/geometry/pageLayout";
 import { suggestLayouts } from "../../core/geometry/suggestLayouts";
 import { STOCK_PRESETS, applyPreset } from "../../core/data/stockPresets";
 import { CARD_PRESETS, applyCardPreset } from "../../core/data/cardPresets";
-import { GALLERY } from "../../core/data/gallery";
 import type { Booklet, FoldAxis, Mm, Orientation, PageSizeName, PaperName } from "../../core/types";
 import { MARK_LENGTH_MM } from "../../core/geometry/cropMarks";
 import { usePlaque } from "../../state/store";
@@ -27,11 +26,10 @@ const uniformMargin = (mm: Mm) => ({
  * are two components, each subscribing to the slice it actually draws.
  */
 export function CardPanel() {
-  const { card, setCard, applyGalleryTemplate } = usePlaque(
+  const { card, setCard } = usePlaque(
     useShallow((s) => ({
       card: s.card,
       setCard: s.setCard,
-      applyGalleryTemplate: s.applyGalleryTemplate,
     })),
   );
 
@@ -39,22 +37,7 @@ export function CardPanel() {
 
   return (
     <>
-      <SelectField
-        label="Start from a design"
-        value=""
-        options={[
-          { value: "", label: "Keep the current design" },
-          ...GALLERY.map((t) => ({ value: t.id, label: t.name })),
-        ]}
-        onChange={(id) => {
-          const entry = GALLERY.find((t) => t.id === id);
-          if (entry) applyGalleryTemplate(entry);
-        }}
-      />
-      <Hint>
-        Replaces the design and the card size, then re-attaches every token to your own columns.
-        Undo puts it back.
-      </Hint>
+      <Hint>To start from a design, open Designs at the top.</Hint>
 
       <SelectField
         label="What are you making?"

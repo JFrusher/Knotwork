@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useConfirm } from "@/components/ui/Confirm";
 import { usePlaque } from "../state/store";
+import { DesignsGallery } from "./DesignsGallery";
 import styles from "./PiecesBar.module.css";
 
 /**
@@ -14,6 +15,7 @@ export function PiecesBar() {
   const confirm = useConfirm();
   // Which piece's name is being typed, if any.
   const [renaming, setRenaming] = useState<string | null>(null);
+  const [gallery, setGallery] = useState(false);
 
   const active = pieces.find((p) => p.id === pieceId)!;
 
@@ -72,6 +74,11 @@ export function PiecesBar() {
           + New piece
         </button>
       </div>
+
+      <button type="button" className={styles.designs} onClick={() => setGallery(true)}>
+        Designs
+      </button>
+      {gallery && <DesignsGallery onClose={() => setGallery(false)} />}
 
       <div className={styles.actions}>
         <button type="button" onClick={() => setRenaming(active.id)}>
