@@ -25,101 +25,7 @@ Only "What happened" is required — leave the rest blank if you don't know it.
 
 ## Open
 
-*Entries below are from a scripted first-time-couple playtest (Playwright,
-production build, no account, 1440px and 390px). Each is backed by a
-reproduction; "Evidence" says where.*
-
-### Screen readers hear raw IDs when a guest is dragged to a table
-- **Reported:** 2026-10-06
-- **App/area:** Tableaux
-- **What happened:** Dropping a guest on a table puts "Draggable item
-  guest_g_bt9u4ks7 was dropped over droppable area table_tbl_muwe79d62vkmj"
-  in the live region.
-- **Expected:** Names, e.g. "Raj Sharma seated at Table 3."
-- **Repro:** Seating → drag any guest onto a table → read the `role=status`
-  live region.
-- **Evidence:** `apps/tableaux/App.tsx:74` overrides dnd-kit's
-  `screenReaderInstructions` but not `announcements`, so the library default
-  (which speaks ids) is used. `components/ensemble/ShotList.tsx:127` sets
-  neither — likely the same, not yet reproduced.
-- **Severity:** annoying (for screen-reader users)
-
-### On a phone, four of the seven tools are hidden in an unmarked scroll strip
-- **Reported:** 2026-10-06
-- **App/area:** shell/header
-- **What happened:** At 390px the tool nav (`nav.overflow-x-auto`) is 94px
-  wide holding 272px of icons. About 2½ icons show; the half-cut third reads
-  as a stray "[". Timeline, Delegation, Group shots and "+" are off to the
-  right with nothing saying the strip scrolls.
-- **Repro:** 390 × 900 viewport, any page, look at the header.
-- **Severity:** annoying
-
-### "Seat them" on the phone overview leads to a dead end
-- **Reported:** 2026-10-06
-- **App/area:** shell/header (overview)
-- **What happened:** On a phone the overview's NEXT card says "9 guests have
-  no table yet — Seat them". The button opens Seating, which on a phone only
-  says "Seating needs a wider screen". The same holds for Place cards,
-  Timeline and Delegation.
-- **Expected:** The primary next step on a phone is one the phone can do,
-  or the card says it needs a laptop.
-- **Repro:** 390px, finish setup, tap "Seat them".
-- **Severity:** annoying
-
-### Timeline silently puts every wedding in central London
-- **Reported:** 2026-10-06
-- **App/area:** Cadence
-- **What happened:** A new wedding at "Hollins Barn" shows latitude 51.5074,
-  longitude -0.1278. Clocks are deliberately "Not set — entered, not
-  guessed", but the place is guessed. Once a couple sets BST, sunset and
-  golden hour are London's, whatever the venue (Edinburgh in June sets ~40
-  min later).
-- **Evidence:** `apps/cadence/core/model/defaults.ts:50-51`.
-- **Expected:** Location treated like the clock — unset until entered — or
-  visibly flagged as a guess.
-- **Severity:** annoying
-
-### Setup forgets everything if the page is reloaded before step 3
-- **Reported:** 2026-10-06
-- **App/area:** other (setup)
-- **What happened:** Names, date, venue and pasted guests are a draft held
-  in React state; reloading or closing the tab on steps 1–2 loses them with
-  no warning.
-- **Evidence:** by design — `app/(app)/setup/page.tsx:36` ("Nothing is
-  written until the room step"). Logged as a UX question, not a defect:
-  keep the single-commit design but warn on leave, or persist the draft.
-- **Severity:** annoying
-
-### A new timeline block starts at midnight, and setting its time is not obvious
-- **Reported:** 2026-10-06
-- **App/area:** Cadence
-- **What happened:** "+ Add" on an empty lane makes a block at 00:00. There
-  is no time field; the time appears only after pressing "Anchor to the
-  clock", then "Anchored at". A first-time couple adding "Ceremony" sees it
-  at midnight.
-- **Repro:** Timeline → Main day → + Add.
-- **Severity:** cosmetic (works once found)
-
-### Pasted names: duplicates and couples go in without a hint
-- **Reported:** 2026-10-06
-- **App/area:** other (setup / guest import)
-- **What happened:** Pasting "Dave Smith" twice adds two guests;
-  "Mr & Mrs Patel", "Ben Jones +1" and "Lucy, Mark" each become one guest
-  and one seat.
-- **Evidence:** `lib/data/guestImport.ts:249` matches names only against
-  guests already on the list, not earlier rows of the same paste. Two real
-  people can share a name, so this may be right — but nothing flags it.
-- **Severity:** cosmetic
-
-### Console 501 on every load where accounts aren't configured
-- **Reported:** 2026-10-06
-- **App/area:** accounts
-- **What happened:** Self-hosted without Supabase, every page load logs
-  "Failed to load resource: 501" for `/api/accounts/weddings`.
-- **Evidence:** `lib/store/useKnotworkStore.ts:336` always calls
-  `fetchWeddings()`; the route returns 501 by design and the result is
-  handled. Noise only.
-- **Severity:** cosmetic
+*(nothing yet)*
 
 ---
 
@@ -145,6 +51,101 @@ open bug)
 ## Resolved
 
 *(fixed entries move here, newest first, with the commit that fixed them)*
+
+*The eight below came from one first-time-couple playtest on 2026-10-06
+(scripted, production build, no account, 1440px and 390px).*
+
+### Console 501 on every load where accounts aren't configured
+- **Reported:** 2026-10-06
+- **App/area:** accounts
+- **Root cause:** `startCloudSync` (`suite/lib/store/useKnotworkStore.ts`)
+  always asks `/api/accounts/weddings`; with no Supabase configured the route
+  answers 501 by design, and the browser logs any non-2xx.
+- **Not fixed — by design:** `ca72b1f` skipped the request when the build has
+  no public Supabase env, but that request is the seam the accounts e2e tests
+  (`signing-in`, `sync-history`) intercept to simulate sign-in in an
+  env-less build; five failed. Reverted in `a46c919`. The cost is one
+  console line on self-hosted copies without accounts.
+
+### Pasted names: duplicates and couples go in without a hint
+- **Reported:** 2026-10-06
+- **App/area:** other (setup / guest import)
+- **Root cause:** `planImport` (`suite/lib/data/guestImport.ts`) matches
+  names only against guests already on the list, so repeats within one paste
+  are each added — correctly, since two guests can share a name — and
+  nothing told the couple.
+- **Fix:** `09128ca` — `pastedHints` (`suite/lib/setup/draft.ts`) lists
+  repeated names and lines that look like more than one person ("&", "and",
+  a comma, "+1"); setup's guest step shows them after "Add them". Everything
+  still goes in as typed. Tests in `draft.test.ts` and `e2e/setup.spec.ts`.
+
+### Setup forgets everything if the page is reloaded before step 3
+- **Reported:** 2026-10-06
+- **App/area:** other (setup)
+- **Root cause:** setup is a React-state draft committed as one change at
+  the room step (deliberate: one undo, one push), with nothing guarding the
+  page before that.
+- **Fix:** `09128ca` — a `beforeunload` prompt while the draft differs from
+  where it started and is not yet saved. Test in `e2e/setup.spec.ts`. Leaving
+  by a link inside the app (a header tab) is still not guarded: the App
+  Router has no navigation-blocking hook.
+
+### Timeline silently puts every wedding in central London
+- **Reported:** 2026-10-06
+- **App/area:** Cadence
+- **Root cause:** `defaultDay()` (`suite/apps/cadence/core/model/defaults.ts`)
+  set latitude/longitude to London, and `readTimeline` fell back to it for
+  any wedding that never entered a place; `promote.ts` guessed London for
+  old Cadence files too. The clocks were already "entered, not guessed".
+- **Fix:** `2f93b5c` — both are `null` until entered; `sunForDay` gives
+  nothing without them and the Day panel says what to enter. `NumberField`
+  shows null as empty. Tests in `solar.test.ts`, `roundTrip.test.ts`;
+  `e2e/timeline.spec.ts` updated in `0ec5ad0`. Weddings that already stored
+  London keep it — a stored guess cannot be told from an entered place.
+
+### A new timeline block starts at midnight, and setting its time is not obvious
+- **Reported:** 2026-10-06
+- **App/area:** Cadence
+- **Root cause:** a block floats after the one before it in its lane; with
+  none, `resolve` (`core/schedule/resolve.ts:88`) starts it at its gap from
+  minute 0. `addBlock` made the first block of an empty lane unanchored.
+- **Fix:** `d072822` — the first block of an empty lane is anchored at
+  `DAY_OPENS_MIN` (08:00, also where an empty day's ruler opens), so its
+  "Anchored at" time field is on screen. Test in `state/store.test.ts`.
+
+### "Seat them" on the phone overview leads to a dead end
+- **Reported:** 2026-10-06
+- **App/area:** shell/header (overview)
+- **Root cause:** the overview's NEXT card and "Also left" rows link to
+  `item.href` whatever the width, and every route in `app/(app)/(tools)` is
+  behind `LandscapeGate` below 1024px. Nothing in code said which tools are
+  gated — only the folder did.
+- **Fix:** `b531afd` — tools carry `wide` in `lib/tools.ts` (the gate
+  throws on a route without it, so the two cannot drift); on a narrow screen
+  those items say "On a laptop or tablet" instead of linking. Test in
+  `e2e/header.spec.ts`. The "Where things stand" cards still link to gated
+  tools, where the gate's own message explains.
+
+### On a phone, four of the seven tools are hidden in an unmarked scroll strip
+- **Reported:** 2026-10-06
+- **App/area:** shell/header
+- **Root cause:** one fixed-height header row held the wedding name, the
+  tabs and the Find/Data/Help buttons; at 390px the tabs got 94px for 272px
+  (516px with every tool on) and scrolled with no cue.
+- **Fix:** `b531afd` — below `sm` the tabs wrap onto rows of their own and
+  the header grows to fit; only the wide tools read `--shell-header-h`, and
+  none is open below 1024px. Test in `e2e/header.spec.ts` with all 11 tools.
+
+### Screen readers hear raw IDs when a guest is dragged to a table
+- **Reported:** 2026-10-06
+- **App/area:** Tableaux, Group shots
+- **Root cause:** `DndContext` in `apps/tableaux/App.tsx` set dnd-kit's
+  `screenReaderInstructions` but not `announcements`, and
+  `components/ensemble/ShotList.tsx` set neither; the library's defaults
+  speak each draggable's id.
+- **Fix:** `1a3f931` — `hooks/dragAnnouncements.ts` names guests, tables,
+  seats, groups and families from the plan; the shot list reads "Shot 4,
+  label" and its position. Test in `hooks/dragAnnouncements.test.ts`.
 
 ### [SAMPLE] Adjusting table side count removes a seated guest even when a free seat exists
 - **Reported:** 2026-09-09
