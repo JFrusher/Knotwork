@@ -63,14 +63,6 @@ const schema = z
      *  browser client (which cannot read the server-only env()) can use it. */
     NEXT_PUBLIC_SUPABASE_URL: absent(url("NEXT_PUBLIC_SUPABASE_URL")),
 
-    /**
-     * Development only: run the sync endpoints against a process-local map.
-     * Enforced below, because the cost of getting this wrong is a wedding
-     * accepted into memory that disappears on the next deploy — reported to the
-     * user as a successful save.
-     */
-    SYNC_IN_MEMORY: absent(z.enum(["0", "1"])),
-
     /** Public by design — a DSN identifies a project, it does not authorise. */
     NEXT_PUBLIC_SENTRY_DSN: absent(url("NEXT_PUBLIC_SENTRY_DSN")),
 
@@ -110,17 +102,6 @@ const schema = z
           "local-only, which is a supported deployment.",
       });
     }
-
-    if (env.NODE_ENV === "production" && env.SYNC_IN_MEMORY === "1") {
-      ctx.addIssue({
-        code: "custom",
-        path: ["SYNC_IN_MEMORY"],
-        message:
-          "SYNC_IN_MEMORY is a development shim and must never be set in " +
-          "production: it accepts a wedding into a map that vanishes on the " +
-          "next deploy, and tells the user it was saved.",
-      });
-    }
   });
 
 export type Env = z.infer<typeof schema>;
@@ -152,12 +133,6 @@ export function env(): Env {
 /** Exported for tests to reset the memoized env(). */
 export function resetCache(): void {
   cached = undefined;
-}
-
-/** Whether this deployment has somewhere to put ciphertext. */
-export function syncConfigured(): boolean {
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = env();
-  return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 }
 
 /** Whether this deployment is on Vercel, which serves its own analytics endpoint. */

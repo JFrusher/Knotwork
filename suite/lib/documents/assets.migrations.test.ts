@@ -1,12 +1,12 @@
 // @vitest-environment node
 //
 // Node, not jsdom: PGlite loads its WebAssembly through fetch, and jsdom's
-// Response has no `arrayBuffer`. Same rationale as lib/sync/migrations.test.ts.
+// Response has no `arrayBuffer`.
 import type { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, expect, test, vi } from "vitest";
 import { everyMigration } from "@/lib/testing/database";
 
-// Generous for the same reason as lib/sync/migrations.test.ts: standing up a
+// Generous because standing up a
 // Postgres takes about two seconds, longer sharing a machine with the rest of
 // the suite.
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });

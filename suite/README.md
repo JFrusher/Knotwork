@@ -7,13 +7,8 @@ Seating, stationery, timeline and crew for one wedding, in one application.
 > worked into one — which is what this does to a wedding's lists. Stored data
 > written under either old name is moved on first load by
 > [`lib/store/migrateKeys.ts`](lib/store/migrateKeys.ts), and files exported as
-> Trousseau still open.
->
-> Two things kept the old name on purpose. The HKDF labels in
-> [`lib/sync/crypto.ts`](lib/sync/crypto.ts) are opaque protocol constants that
-> derive every key from a passphrase: changing them would make every wedding
-> already shared permanently undecryptable, for no visible benefit. And the
-> `Ported from Tableaux's …` comments are provenance, and still true.
+> Trousseau still open. The `Ported from Tableaux's …` comments kept the old
+> name on purpose: they are provenance, and still true.
 Local-first: no account, no server, and no guest name leaves the device unless
 you deliberately share it.
 
@@ -98,30 +93,32 @@ npm run build -w suite   # builds the contract package first, then the app
 Optional, and off by default. With no backend configured the app is entirely
 local.
 
-- **Sync between two machines.** A passphrase is stretched with 600,000 rounds
-  of PBKDF2 and split by HKDF into a content key that never leaves the browser
-  and a write token whose *hash* the server keeps. The server stores ciphertext
-  it cannot read — uploaded fonts and artwork included.
+- **Sync through an account.** Signing in puts the wedding on the account
+  ([`lib/documents`](lib/documents)): one document per wedding, written by
+  compare-and-set, with every saved version kept in its history. Uploaded fonts
+  and artwork go to Supabase Storage alongside it.
 
-  **A slice you have edited is never overwritten by a pull.** Each slice is
-  remembered by its version on the server *and* its content fingerprint at the
-  moment it was last agreed, so the client can tell whether it changed here,
-  there, or both. Only the last is a conflict, and it is put to the user with
-  Keep mine / Take theirs. Nothing is applied or sent for a slice in conflict.
+  **An edit is never overwritten by a pull.** Each part of the wedding — a
+  guest, a table, a block, a job — is remembered by its fingerprint at the
+  moment the two sides last agreed, so the client can tell whether it changed
+  here, there, or both ([`lib/documents/mergeCloudDocument.ts`](lib/documents/mergeCloudDocument.ts)).
+  Only the last is a conflict, and it is put to the user.
 
-  Joining a wedding on a device that already holds one stops and asks first.
+  Signing in on a device that already holds a different wedding stops and asks
+  first.
 - **A link for the guests.** A deliberately reduced snapshot — names and table
   numbers, nobody who declined, and no email addresses, phone numbers, dietary
-  requirements or notes — encrypted under a fresh key carried in the link's
-  fragment, which browsers never send to a server.
+  requirements or notes — encrypted under a key carried in the link's
+  fragment. The key is also kept with the wedding, so the link keeps itself
+  current once published.
 
   There is only ever **one live link per wedding**. Publishing again replaces
   what it shows, so a link already given out stays correct, and "take it down"
   deletes it outright. An earlier version minted a new token each publish and
   left every previous link live for ever, still serving the plan as it was.
 
-Both are rate limited and size capped — this is a public URL, and without limits
-the endpoints are free storage and an unthrottled place to guess a passphrase.
+The endpoints are rate limited and size capped — they are public URLs, and
+without limits they are free storage.
 The limiter is per serverless instance, which slows an attack rather than
 stopping it dead; move the counter into Postgres if that is ever not enough.
 
@@ -133,11 +130,11 @@ See [`.env.example`](.env.example). The schema is in
 **Apply the migrations before you deploy the code, not after.** Every write
 this app makes names columns the migrations add, so a deploy that lands first
 fails every write with a 503 until the database catches up — creating a wedding,
-which is the first thing anyone does with a passphrase, included. The server log
+the first thing anyone does after signing in, included. The server log
 says so explicitly when it happens.
 
 Migrations are in [`../supabase/migrations`](../supabase/migrations), applied in
-filename order. `lib/sync/migrations.test.ts` runs them against a real Postgres
+filename order. The `migrations.test.ts` files under `lib/` run them against a real Postgres
 — PGlite, no Docker or credentials needed — including the upgrade paths, so a
 migration that only works on an empty database fails there rather than in
 production.
@@ -160,7 +157,7 @@ Bugs found by auditing this work after it was written, and fixed:
 | Fonts and artwork never synced | The other machine could not export — the design blocks on missing artwork |
 | Recalibrating did not rescale legacy tables | The room silently changed proportions |
 | Uploading a picture with no picture element | Bytes stored, nothing shown, no message |
-| No rate limits or size caps | Free storage, and unthrottled passphrase guessing |
+| No rate limits or size caps | Free storage on a public URL |
 
 ## Known gaps
 

@@ -91,9 +91,7 @@ Module not found: Can't resolve '@jfrusher/knotwork'
 If you see that, run `npm run build` at the root and try again.
 
 To work on accounts, sync or guest links you need a Supabase project. See
-[docs/SELF-HOSTING.md](docs/SELF-HOSTING.md). For sync work alone,
-`SYNC_IN_MEMORY=1` in `suite/.env.local` runs the sync endpoints against an
-in-process map (development only).
+[docs/SELF-HOSTING.md](docs/SELF-HOSTING.md).
 
 ### Where things live
 

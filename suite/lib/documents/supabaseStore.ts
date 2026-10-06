@@ -155,8 +155,8 @@ let adminClient: SupabaseClient | null = null;
  * `documentStore(client)` is generic over any `SupabaseClient` — the normal
  * app routes pass it a caller-scoped client so RLS applies, but the sweep has
  * to see every wedding, not just one account's, so it gets this one instead.
- * Same 5-second fetch timeout as lib/sync/supabaseStore.ts's equivalent, and
- * for the same reason: a paused Supabase project must fail fast, not hang.
+ * A 5-second fetch timeout, because a paused Supabase project must fail fast,
+ * not hang.
  */
 export function adminDocumentsClient(): SupabaseClient | null {
   if (adminClient) return adminClient;

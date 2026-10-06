@@ -58,9 +58,8 @@ export function sentryOrigin(dsn: string | undefined): string | null {
  * Supabase's origin, when accounts are configured.
  *
  * Accounts (subsystem A) call Supabase directly from the browser —
- * `signInWithOtp`, `getUser`, `onAuthStateChange` all run client-side, unlike
- * the older E2E sync system in `lib/sync/`, which is reached only from route
- * handlers and needs nothing added here. Without this, `connect-src 'self'`
+ * `signInWithOtp`, `getUser`, `onAuthStateChange` all run client-side.
+ * Without this, `connect-src 'self'`
  * blocks every one of those calls silently: the browser refuses the request
  * before it leaves the page, and `fetch` reports it as a generic network
  * failure with nothing that names a CSP violation as the cause. Derived from
@@ -99,9 +98,7 @@ export function supabaseOrigin(url: string | undefined): string | null {
  * threat worth engineering against is not a defaced page, it is a guest list
  * leaving for somewhere else — and the browser is permitted to talk to this
  * origin, Sentry (when configured) and Supabase (when accounts are
- * configured), and nothing else. The older E2E sync system in `lib/sync/` is
- * reached only from route handlers and needs no exception of its own; the
- * accounts feature calls Supabase straight from the browser and does.
+ * configured), and nothing else.
  *
  * Revisit if Next gains working nonce propagation, or if any page ever renders
  * HTML it did not construct itself.
