@@ -1,6 +1,6 @@
 import { useStore } from '../../store/useStore'
 import { DEFAULT_PPU } from '../../utils/seatPositions'
-import { toDisplay, parseDisplay } from '../../utils/units'
+import { toDisplay, parseDisplay, blankName, sizeProblem } from '../../utils/units'
 import IconButton from '../ui/IconButton'
 import Button from '../ui/Button'
 import ColorPicker from '../ui/ColorPicker'
@@ -28,6 +28,7 @@ export default function SpaceInspector({ spaceId }: { spaceId: string }) {
 
   if (!space) return null
   const dim = (px: number) => toDisplay(px / ppu, unitSystem).label
+  const sizeInvalid = (v: string) => sizeProblem(v, unitSystem)
   const onDim = (key: 'width' | 'height') => (v: string) => {
     const cm = parseDisplay(v, unitSystem)
     if (cm && cm > 0) resizeSpace(spaceId, { [key]: Math.max(80, Math.round(cm * ppu)) })
@@ -44,7 +45,8 @@ export default function SpaceInspector({ spaceId }: { spaceId: string }) {
         <TextField
           className={f.input}
           value={space.label}
-          onCommit={(v) => v.trim() && renameSpace(spaceId, { label: v.trim() })}
+          onCommit={(v) => renameSpace(spaceId, { label: v.trim() })}
+          invalid={blankName}
           aria-label="Space name"
         />
       </div>
@@ -56,6 +58,7 @@ export default function SpaceInspector({ spaceId }: { spaceId: string }) {
             <TextField
               className={f.input}
               value={dim(space.width)}
+              invalid={sizeInvalid}
               onCommit={onDim('width')}
               aria-label="Width"
             />
@@ -63,6 +66,7 @@ export default function SpaceInspector({ spaceId }: { spaceId: string }) {
             <TextField
               className={f.input}
               value={dim(space.height)}
+              invalid={sizeInvalid}
               onCommit={onDim('height')}
               aria-label="Height"
             />

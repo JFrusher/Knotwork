@@ -52,6 +52,18 @@ export function toDisplay(cm: number, system: UnitSystem = 'metric'): { value: n
   return { value: Math.round(v), label: `${Math.round(v)} cm` }
 }
 
+/** What to say when a name is left blank, or nothing. */
+export function blankName(name: string): string | undefined {
+  return name.trim() ? undefined : 'Enter a name'
+}
+
+/** What to say when a typed size can't be saved, or nothing when it can. */
+export function sizeProblem(input: string, system: UnitSystem = 'metric'): string | undefined {
+  const cm = parseDisplay(input, system)
+  if (cm && cm > 0) return undefined
+  return system === 'imperial' ? 'Enter a size in inches, like 72' : 'Enter a size in cm, like 180'
+}
+
 /**
  * Parse a user-entered dimension string into centimetres, or null if invalid.
  * Accepts explicit units (`5'6"`, `1.5m`, `150cm`, `60in`, `8ft`). A bare
