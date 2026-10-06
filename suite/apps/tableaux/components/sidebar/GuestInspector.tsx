@@ -242,9 +242,16 @@ export default function GuestInspector({ guestId }: { guestId: string }) {
         ) : (
           <p className={styles.unassigned}>Not seated. Drag onto a table, or choose one below.</p>
         )}
+        {family && (
+          <p id={`alone-${guestId}`} className={styles.unassigned}>
+            Moves {guest.fullName} alone. Dragging moves the whole {family.name} family.
+          </p>
+        )}
         <select
+          id={`seat-choice-${guestId}`}
           className={f.select}
-          aria-label="Seat at table"
+          aria-label={family ? 'Seat on their own' : 'Seat at table'}
+          aria-describedby={family ? `alone-${guestId}` : undefined}
           value={guest.assignedTableId || ''}
           onChange={(e) => {
             if (e.target.value) assignGuest(guestId, e.target.value)

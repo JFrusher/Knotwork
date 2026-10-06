@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import GuestInspector from './GuestInspector'
+import userEvent from '@testing-library/user-event'
 import { openPlan } from '../../test/openPlan'
+import { useStore } from '../../store/useStore'
 import { newGuest } from '@/lib/model/factories'
 import type { Guest } from '../../store/types'
 
@@ -26,5 +28,29 @@ describe('GuestInspector', () => {
     render(<GuestInspector guestId="g1" />)
     expect(screen.queryByRole('group', { name: 'Subgroup' })).toBeNull()
     expect(screen.queryByRole('group', { name: 'Family' })).toBeNull()
+  })
+})
+
+describe('seating one member of a family on their own', () => {
+  const family = () => {
+    openPlan({
+      guests: { g1: guest('g1', { familyId: 'fam' }), g2: { ...guest('g2', { familyId: 'fam' }), fullName: 'Bola Okafor' } },
+      families: { fam: { id: 'fam', name: 'Okafor', colour: '#000', parentGroupId: null, parentSubgroupId: null, memberIds: ['g1', 'g2'] } },
+    })
+    const st = useStore.getState()
+    const t1 = st.addTable({ type: 'round', x: 100, y: 100 })!.meta!.newTableId as string
+    st.assignGuest('g1', t1)
+    st.assignGuest('g2', t1)
+    return { t2: st.addTable({ type: 'round', x: 400, y: 100 })!.meta!.newTableId as string, t1 }
+  }
+
+  it('moves only that guest, and says so beside the choice', async () => {
+    const { t1, t2 } = family()
+    render(<GuestInspector guestId="g1" />)
+    const choice = screen.getByRole('combobox', { name: 'Seat on their own' })
+    expect(choice).toHaveAccessibleDescription('Moves Ada Okafor alone. Dragging moves the whole Okafor family.')
+    await userEvent.setup().selectOptions(choice, t2)
+    expect(useStore.getState().guests.g1.assignedTableId).toBe(t2)
+    expect(useStore.getState().guests.g2.assignedTableId).toBe(t1)
   })
 })

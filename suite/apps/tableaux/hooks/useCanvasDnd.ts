@@ -148,12 +148,8 @@ export function useCanvasDnd() {
 
     // Guest → table (table-level). Family is an unsplittable seating unit —
     // grabbing any one member and dropping them on a table carries the whole
-    // family along, same as dragging the family block itself.
-    // TODO(family-ux): no escape hatch to seat/move just one family member —
-    // also pulls in anyone already seated elsewhere (heals a pre-existing
-    // split), which may surprise a user who put someone there deliberately.
-    // Needs a product decision (e.g. a modifier key to drag solo) before
-    // building. https://github.com/JFrusher/Knotwork/issues/67
+    // family along, same as dragging the family block itself. One member is
+    // seated alone from the inspector ("Seat on their own").
     if (data.type === 'guest' && overData?.type === 'table') {
       const guest = store.guests[data.guestId]
       if (guest?.familyId) {

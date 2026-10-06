@@ -191,6 +191,17 @@ export default function GuestPanel() {
     const multi = selectedGuestIds.length > 1 && selectedGuestIds.includes(g.id)
     const items: Array<MenuItem | '' | null | false> = [
       { label: 'Edit details', icon: 'user', onClick: () => select('guest', g.id) },
+      // Dragging a family member moves the whole family; the inspector's table
+      // choice moves just them. This takes you there.
+      !multi &&
+        g.familyId && {
+          label: 'Seat on their own…',
+          icon: 'user',
+          onClick: () => {
+            select('guest', g.id)
+            requestAnimationFrame(() => document.getElementById(`seat-choice-${g.id}`)?.focus())
+          },
+        },
       multi && {
         label: `Group ${selectedGuestIds.length} selected`,
         icon: 'users',
