@@ -569,9 +569,10 @@ export function readTimeline(doc: Knotwork): Timeline {
         utcOffsetMin:
           doc.event.utcOffsetMin ?? (typeof storedDay["utcOffsetMin"] === "number" ? storedDay["utcOffsetMin"] : null),
         // The venue's coordinates are Cadence's alone: nothing else needs them,
-        // and they drive only the golden-hour advisory.
-        latitude: num(storedDay["latitude"], fallbackDay.latitude),
-        longitude: num(storedDay["longitude"], fallbackDay.longitude),
+        // and they drive only the golden-hour advisory. Unset stays unset,
+        // like the clocks: a guessed place gives a wrong sunset.
+        latitude: typeof storedDay["latitude"] === "number" ? storedDay["latitude"] : null,
+        longitude: typeof storedDay["longitude"] === "number" ? storedDay["longitude"] : null,
         logoKey: typeof storedDay["logoKey"] === "string" ? storedDay["logoKey"] : null,
       },
       lanes: laneNames,

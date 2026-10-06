@@ -23,6 +23,11 @@ const isWide = () => window.matchMedia(WIDE).matches;
 // exception; the client corrects it on its first render.
 const isWideOnServer = () => true;
 
+/** Whether this screen is wide enough for the tools marked `wide`. */
+export function useWideScreen(): boolean {
+  return useSyncExternalStore(subscribe, isWide, isWideOnServer);
+}
+
 /**
  * One gate in front of all five tools, rather than a copy inside each.
  *
@@ -37,10 +42,11 @@ const isWideOnServer = () => true;
  */
 export function LandscapeGate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const wide = useSyncExternalStore(subscribe, isWide, isWideOnServer);
+  const wide = useWideScreen();
 
   const tool = TOOLS.find((candidate) => candidate.href === pathname);
   if (!tool) throw new Error(`LandscapeGate wraps the tools only, not ${pathname}.`);
+  if (!tool.wide) throw new Error(`LandscapeGate wraps ${pathname}, which lib/tools.ts does not mark wide.`);
   if (wide) {
     return (
       <>

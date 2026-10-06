@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { Knotwork } from "@jfrusher/knotwork";
 import { readTimeline } from "@/lib/model/slices";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
-import { DEFAULT_BLOCK_OUTPUTS } from "../core/model/defaults";
+import { DAY_OPENS_MIN, DEFAULT_BLOCK_OUTPUTS } from "../core/model/defaults";
 import { newId } from "@/lib/readableId";
 import type { Block, DaySettings, OutputId, StyleSpec, TagDetail, TimelineDoc, UploadedFont } from "../core/model/types";
 import { writeSlice } from "./sliceBridge";
@@ -161,11 +161,19 @@ export const useStore = create<StoreState>((set, get) => {
 
     addBlock: (lane, seed = {}) => {
       const id = seed.id ?? newId("blk");
+      // Land it at the end of its own lane, not the end of the document.
+      const doc = currentDoc();
+      const lastInLane = doc.blocks.reduce(
+        (last, entry, index) => (entry.lane === lane ? index : last),
+        -1,
+      );
       const block: Block = {
         id,
         label: "New block",
         durationMin: 30,
-        anchorMin: null,
+        // Nothing before it in its lane to follow: pinned to a time of day,
+        // and its time is on screen to change.
+        anchorMin: lastInLane === -1 ? DAY_OPENS_MIN : null,
         gapMin: 0,
         bufferMin: 0,
         lane,
@@ -175,12 +183,6 @@ export const useStore = create<StoreState>((set, get) => {
         outputs: [...DEFAULT_BLOCK_OUTPUTS],
         ...seed,
       };
-      // Land it at the end of its own lane, not the end of the document.
-      const doc = currentDoc();
-      const lastInLane = doc.blocks.reduce(
-        (last, entry, index) => (entry.lane === lane ? index : last),
-        -1,
-      );
       const at = lastInLane === -1 ? doc.blocks.length : lastInLane + 1;
       edit("a new block", (current) =>
         withBlocks(current, [

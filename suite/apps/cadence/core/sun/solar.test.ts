@@ -82,4 +82,13 @@ describe("sunForDay", () => {
     const { sampleDoc } = await import("../model/defaults");
     expect(sunForDay({ ...sampleDoc().day, utcOffsetMin: null })).toBeNull();
   });
+
+  it("gives nothing until the venue's place is entered, rather than London's sunset", async () => {
+    const { sunForDay } = await import("./solar");
+    const { emptyDoc, sampleDoc } = await import("../model/defaults");
+    expect(emptyDoc().day.latitude).toBeNull();
+    expect(emptyDoc().day.longitude).toBeNull();
+    expect(sunForDay({ ...sampleDoc().day, latitude: null })).toBeNull();
+    expect(sunForDay({ ...sampleDoc().day, longitude: null })).toBeNull();
+  });
 });

@@ -99,15 +99,16 @@ export function sunTimes(
 
 /**
  * Convenience for the document's own day settings. Nothing until the clocks
- * are set: sunset on the venue's clock needs the venue's offset, and one
- * guessed would print a sunset an hour out.
+ * and the place are set: sunset on the venue's clock needs the venue's offset,
+ * and one guessed would print a sunset an hour out; a guessed place, up to an
+ * hour more.
  */
 export function sunForDay(day: {
   date: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   utcOffsetMin: number | null;
 }): SunTimes | null {
-  if (day.utcOffsetMin === null) return null;
+  if (day.utcOffsetMin === null || day.latitude === null || day.longitude === null) return null;
   return sunTimes(day.date, day.latitude, day.longitude, day.utcOffsetMin);
 }

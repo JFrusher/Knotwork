@@ -173,3 +173,11 @@ test("a seated guest and their table never disagree about where they sit", () =>
   expect(guest.assignedTableId).toBe(table.id);
   expect(table.assignedGuestIds).toContain(guest.id);
 });
+
+test("a wedding's venue has no place until one is entered, and keeps the one that is", () => {
+  const fresh = emptyKnotwork();
+  expect(readTimeline(fresh).day).toMatchObject({ latitude: null, longitude: null });
+
+  const placed = { ...fresh, timeline: { day: { latitude: 55.9533, longitude: -3.1883 } } } as typeof fresh;
+  expect(readTimeline(placed).day).toMatchObject({ latitude: 55.9533, longitude: -3.1883 });
+});
