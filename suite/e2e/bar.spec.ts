@@ -82,3 +82,13 @@ test("the drinks print as a shopping list, download as CSV, and join the pack on
   await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Download the pack" }).click()]);
   await expect(page.getByText(/The boxes \(\d+\), The shots/)).toBeVisible();
 });
+
+test("the reception's hours can be read from the Timeline's block, instead of typed twice", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/bar");
+  const each = page.getByText(/each at the reception$/);
+  const before = await each.textContent();
+  await page.getByRole("combobox", { name: "Hours of the reception from" }).selectOption("blk-drinks");
+  await expect(page.getByRole("status").filter({ hasText: "1h 15m at the reception, from the Timeline." })).toBeVisible();
+  await expect(each).not.toHaveText(before ?? "");
+});

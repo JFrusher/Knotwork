@@ -1,4 +1,5 @@
 import type { Knotwork } from "@jfrusher/knotwork";
+import { hoursFromTheDay } from "./fromTheDay";
 import { cached, isComing, readBar, readGuests } from "@/lib/model/slices";
 import type { Bar, BarLine, Figure, Mix, MixedPart, Pour, Shop } from "@/lib/model/types";
 import { BAR_LINES, POURS } from "@/lib/model/types";
@@ -155,10 +156,19 @@ export function sumBar(bar: Bar, listed: number): BarSum {
   };
 }
 
-/** The wedding's bar, worked out from its guest list. Cached per document, for selectors. */
+/**
+ * The wedding's bar, worked out from its guest list, with the reception's and
+ * evening's hours from the Timeline where blocks are picked. Cached per
+ * document, for selectors.
+ */
 export function barSum(doc: Knotwork): BarSum {
   return cached(doc, "barSum", () => {
     const listed = Object.values(readGuests(doc)).filter(isComing).length;
-    return sumBar(readBar(doc), listed);
+    const bar = readBar(doc);
+    const day = hoursFromTheDay(doc);
+    const figures = { ...bar.figures };
+    if (day.reception.hours !== null) figures.receptionHours = day.reception.hours;
+    if (day.evening.hours !== null) figures.eveningHours = day.evening.hours;
+    return sumBar({ ...bar, figures }, listed);
   });
 }

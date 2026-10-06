@@ -648,4 +648,15 @@ export interface Bar {
   lines: Partial<Record<BarLine, LineChoice>>;
   /** Round up to whole cases, for buying on sale or return. */
   wholeCases: boolean;
+  /**
+   * Which Timeline blocks the reception and the evening are, first to last.
+   * The Bar keeps which blocks, never their hours, so it follows the day.
+   */
+  spans: Partial<Record<MixedPart, BlockSpan>>;
+}
+
+/** A run of the day's blocks, from the start of one to the end of another (the same one for a single block). */
+export interface BlockSpan {
+  from: string;
+  to: string;
 }
