@@ -8,6 +8,7 @@ import { readCrew } from "@/lib/model/slices";
 import { addTask, assigneeNames, patchJob, removeJob, setJobStatus } from "@/lib/model/crewActions";
 import type { Crew, Job } from "@/lib/model/types";
 import { checklist, isTask, USUAL_TASKS, withUsualTasks } from "@/lib/checklist/checklist";
+import { barErrands, withErrandDone, type Errand } from "@/lib/checklist/barErrands";
 import { longDate, todayIso } from "@/lib/dates";
 import { Button, Empty } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
@@ -33,6 +34,7 @@ export function ChecklistPage() {
 
   const crew = readCrew(doc);
   const list = useMemo(() => checklist(crew, today), [crew, today]);
+  const errands = useMemo(() => barErrands(doc), [doc]);
   const missing = useMemo(() => {
     const have = new Set(crew.jobs.filter(isTask).map((task) => task.label.trim().toLowerCase()));
     return USUAL_TASKS.filter((task) => !have.has(task.label.toLowerCase())).length;
@@ -113,7 +115,42 @@ export function ChecklistPage() {
           ) : null}
         </div>
       )}
+
+      {errands.length > 0 ? (
+        <section aria-labelledby="tasks-bar" className="mt-8">
+          <h2 id="tasks-bar" className="mb-2 text-sm tracking-[0.14em] text-slate uppercase">
+            From the Bar
+          </h2>
+          <ul className="divide-y divide-charcoal/10 rounded-lg border border-charcoal/10 bg-parchment">
+            {errands.map((errand) => (
+              <ErrandRow key={errand.id} errand={errand} />
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-slate">
+            Worked out from the{" "}
+            <Link href="/bar" className="underline">
+              Bar
+            </Link>
+            &rsquo;s shopping list, so they change when it does.
+          </p>
+        </section>
+      ) : null}
     </div>
+  );
+}
+
+/** One of the Bar's errands: ticked here, worked out there. */
+function ErrandRow({ errand }: { errand: Errand }) {
+  const toggle = () => {
+    const { doc } = useKnotworkStore.getState();
+    write((crew) => withErrandDone(crew, errand.id, !errand.done, barErrands(doc)), errand.done ? "an errand undone" : "an errand done");
+  };
+  return (
+    <li className="flex flex-wrap items-center gap-3 px-4 py-2">
+      <input type="checkbox" aria-label={`${errand.label}: done`} checked={errand.done} onChange={toggle} />
+      <span className={`min-w-0 flex-1 text-sm ${errand.done ? "text-slate line-through" : "text-charcoal"}`}>{errand.label}</span>
+      <span className="text-sm text-slate">{errand.dueOn ? `By ${longDate(errand.dueOn)}` : "No date yet"}</span>
+    </li>
   );
 }
 

@@ -292,6 +292,8 @@ export interface Crew {
   jobs: Job[];
   /** What the couple intends to spend in total, or null if they have not said. */
   budget: number | null;
+  /** The ids of errands the Checklist works out from other tools (the Bar's shopping) that are ticked off. */
+  errandsDone: string[];
 }
 
 // group shots ------------------------------------------------------------------

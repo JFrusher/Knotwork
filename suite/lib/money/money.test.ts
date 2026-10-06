@@ -19,7 +19,7 @@ const team = (id: string, over: Partial<Team>): Team => ({
   ...over,
 });
 
-const crew = (teams: Team[], budget: number | null = null): Crew => ({ teams, people: [], jobs: [], budget });
+const crew = (teams: Team[], budget: number | null = null): Crew => ({ teams, people: [], jobs: [], budget, errandsDone: [] });
 
 describe("money", () => {
   it("adds up what is committed, paid and still to pay", () => {

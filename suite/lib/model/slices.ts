@@ -766,6 +766,7 @@ export function readCrew(doc: Knotwork): Crew {
         };
       }),
       budget: typeof raw["budget"] === "number" ? raw["budget"] : null,
+      errandsDone: Array.isArray(raw["errandsDone"]) ? raw["errandsDone"].filter((id): id is string => typeof id === "string") : [],
     };
   });
 }

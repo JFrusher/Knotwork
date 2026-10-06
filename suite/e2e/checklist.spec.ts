@@ -38,3 +38,18 @@ test("the usual tasks come dated back from the day, and only once", async ({ pag
   await expect(page.getByRole("checkbox", { name: "Order the cake: done" })).toHaveCount(1);
   await expect(page.getByLabel("Order the cake: done by")).toHaveValue("2028-02-02");
 });
+
+test("the Bar's shopping is on the Checklist, dated back from the day, and ticks off", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/checklist");
+  const bar = page.getByRole("region", { name: "From the Bar" });
+  await expect(bar.getByRole("listitem").first()).toContainText("Buy the Fizz, White wine and Red wine from the wine merchant");
+  await expect(bar.getByRole("listitem").first()).toContainText("By 18 May 2028");
+  await expect(bar.getByRole("listitem").last()).toContainText("Collect the ice");
+  await bar.getByRole("checkbox", { name: "Collect the ice: done" }).check();
+  // Away and back, as a person would go: the tick is in the wedding, not the page.
+  const tools = page.getByRole("navigation", { name: "Tools" });
+  await tools.getByRole("link", { name: "Bar" }).click();
+  await tools.getByRole("link", { name: "Checklist" }).click();
+  await expect(page.getByRole("region", { name: "From the Bar" }).getByRole("checkbox", { name: "Collect the ice: done" })).toBeChecked();
+});
