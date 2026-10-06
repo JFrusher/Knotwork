@@ -2,6 +2,26 @@ import type { IconViewBox } from "../../assets/icons";
 
 type ParsedIcon = { ok: true; d: string; view: IconViewBox } | { ok: false; reason: string };
 
+function sanitizeSvgSource(source: string): { ok: true; value: string } | { ok: false; reason: string } {
+  const value = source.trim();
+  if (!value) return { ok: false, reason: "That file is empty." };
+
+  // Reject declarations and active constructs we never support.
+  if (
+    /<\?xml[\s\S]*\?>/i.test(value) ||
+    /<!doctype[\s\S]*>/i.test(value) ||
+    /<!entity[\s\S]*>/i.test(value) ||
+    /<\s*(script|foreignObject|animate|animateTransform|set)\b/i.test(value) ||
+    /\son[a-z]+\s*=/i.test(value) ||
+    /javascript\s*:/i.test(value)
+  ) {
+    return { ok: false, reason: "That SVG contains unsupported or unsafe content." };
+  }
+
+  if (!/<\s*svg\b/i.test(value)) return { ok: false, reason: "That file has no <svg> element." };
+  return { ok: true, value };
+}
+
 /**
  * Turns an uploaded SVG into fill-only path data.
  *
@@ -11,7 +31,10 @@ type ParsedIcon = { ok: true; d: string; view: IconViewBox } | { ok: false; reas
  * than a clear "this file will not work".
  */
 export function parseSvgIcon(source: string): ParsedIcon {
-  const doc = new DOMParser().parseFromString(source, "image/svg+xml");
+  const sanitized = sanitizeSvgSource(source);
+  if (!sanitized.ok) return sanitized;
+
+  const doc = new DOMParser().parseFromString(sanitized.value, "text/xml");
   if (doc.querySelector("parsererror")) return { ok: false, reason: "That file is not valid SVG." };
 
   const svg = doc.querySelector("svg");
