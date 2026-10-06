@@ -12,6 +12,13 @@ export const APP_VERSION = "0.1.0";
 
 export const DEFAULT_LANES = ["Main day", "Suppliers", "Transport"];
 
+/**
+ * 08:00: where an empty day's ruler opens, and where the first block of an
+ * empty lane is anchored — with nothing before it to follow, it would
+ * otherwise start at midnight.
+ */
+export const DAY_OPENS_MIN = 480;
+
 export const DEFAULT_OUTPUTS: OutputSpec[] = [
   { id: "run-sheet", label: "Master run-sheet", pageSize: "A4" },
   { id: "call-sheet", label: "Call sheets", pageSize: "A4" },

@@ -1,4 +1,5 @@
 import { formatClock } from "@/lib/minutes";
+import { DAY_OPENS_MIN } from "../../core/model/defaults";
 
 interface Tick {
   min: number;
@@ -53,7 +54,7 @@ export function spanOf(
   starts: { startMin: number; endMin: number }[],
   curfewMin: number,
 ): { fromMin: number; toMin: number } {
-  if (starts.length === 0) return { fromMin: 480, toMin: Math.max(curfewMin, 1440) };
+  if (starts.length === 0) return { fromMin: DAY_OPENS_MIN, toMin: Math.max(curfewMin, 1440) };
   const earliest = Math.min(...starts.map((entry) => entry.startMin));
   const latest = Math.max(curfewMin, ...starts.map((entry) => entry.endMin));
   return {
