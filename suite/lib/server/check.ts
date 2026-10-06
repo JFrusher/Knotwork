@@ -1,11 +1,11 @@
 import type { z } from "zod";
 
-export interface Checked<T> {
+interface Checked<T> {
   ok: true;
   value: T;
 }
 
-export interface Failed {
+interface Failed {
   ok: false;
   error: string;
 }

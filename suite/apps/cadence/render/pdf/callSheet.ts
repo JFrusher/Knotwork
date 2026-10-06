@@ -5,7 +5,7 @@ import { formatClock } from "../../core/time/minutes";
 import type { FontSource } from "./fontSource";
 import { renderRunSheet } from "./runSheet";
 
-export interface CallSheetOptions {
+interface CallSheetOptions {
   fontSource: FontSource;
   generatedOn?: string;
 }

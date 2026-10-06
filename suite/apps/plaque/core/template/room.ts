@@ -177,7 +177,7 @@ function drawRoom(
 }
 
 /** Where a plan draws: its tables, scaled and centred in its box. */
-export interface PlanLayout {
+interface PlanLayout {
   tables: RoomTable[];
   scale: number;
   /** The plan's own coordinates to the card's, in millimetres. */
@@ -220,7 +220,7 @@ export function planLayout(
 }
 
 /** Where each chair's name goes at a table that numbers its seats: hanging off the chair, away from the table. */
-export function tableCells(layout: PlanLayout, table: RoomTable, gap: number): Array<{ seat: RoomSeat; box: Box }> {
+function tableCells(layout: PlanLayout, table: RoomTable, gap: number): Array<{ seat: RoomSeat; box: Box }> {
   if (!table.numbered) return [];
   const across = Math.max(layout.seatR * 2, nearestSeat(table, layout.scale) * 0.96);
   return table.seats.map((seat) => ({

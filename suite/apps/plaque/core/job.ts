@@ -26,7 +26,7 @@ import type { CardSpec, PaperName, Sheet, SheetSpec, Template } from "./types";
  *
  * Deliberately knows nothing about PDFs, files or the store.
  */
-export interface JobInput {
+interface JobInput {
   template: Template;
   card: CardSpec;
   sheet: SheetSpec;
@@ -50,7 +50,7 @@ export interface JobInput {
   tile?: PaperName;
 }
 
-export interface JobResult {
+interface JobResult {
   sheets: Sheet[];
   warnings: GuestWarning[];
   artefactCount: number;

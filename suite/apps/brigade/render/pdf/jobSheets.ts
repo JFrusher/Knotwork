@@ -8,7 +8,7 @@ import { columnOffsets, fitColumns, type Column } from "./table";
 import { truncate, wrap } from "./text";
 import { contentBox, PAGE_SIZES, ptToMm } from "./units";
 
-export interface SheetOptions {
+interface SheetOptions {
   fontSource: FontSource;
   /** Shown in the footer beside the page numbers. */
   generatedOn?: string;

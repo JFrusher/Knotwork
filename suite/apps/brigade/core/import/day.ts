@@ -1,8 +1,8 @@
 import type { DayBlock, ImportedDay } from "../model/types";
 
 /** The export format Brigade reads. Cadence writes `kind: "cadence.day"`. */
-export const DAY_KIND = "cadence.day";
-export const DAY_VERSION = 1;
+const DAY_KIND = "cadence.day";
+const DAY_VERSION = 1;
 
 /** A team the file suggests, from the tag details Cadence recorded. */
 export interface DayTeam {
@@ -12,7 +12,7 @@ export interface DayTeam {
   notes: string;
 }
 
-export type DayResult =
+type DayResult =
   | { day: ImportedDay; teams: DayTeam[]; fromFuture: boolean; error?: undefined }
   | { error: string; day?: undefined; teams?: undefined; fromFuture?: undefined };
 

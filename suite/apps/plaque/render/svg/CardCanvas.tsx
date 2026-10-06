@@ -11,7 +11,7 @@ import { SelectionHandles } from "./SelectionHandles";
 import { MOVE_THRESHOLD_MM, useDragElement } from "./useDragElement";
 import styles from "./CardCanvas.module.css";
 
-export interface CardCanvasProps {
+interface CardCanvasProps {
   card: CardSpec;
   template: Template;
   /** The row `{{Column}}` tokens bind to. */

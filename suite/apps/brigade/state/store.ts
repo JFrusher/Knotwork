@@ -6,7 +6,7 @@ import { newId } from "../core/model/ids";
 import type { BrigadeDoc, Job, Person, Team } from "../core/model/types";
 import { crewSlice, readSlice } from "./sliceBridge";
 
-export interface Cover {
+interface Cover {
   warnings: Warning[];
   byJob: Map<string, Warning[]>;
 }
@@ -33,7 +33,7 @@ let cache: { doc: BrigadeDoc; cover: Cover } | null = null;
  * edit replaces the document, so a stale cache is impossible, and the screen
  * and the printed sheets cannot disagree because both read this.
  */
-export function coverFor(doc: BrigadeDoc): Cover {
+function coverFor(doc: BrigadeDoc): Cover {
   if (cache && cache.doc === doc) return cache.cover;
   const warnings = coverage(doc);
   const cover: Cover = { warnings, byJob: warningsByJob(warnings) };
@@ -46,7 +46,7 @@ export const useBrigadeDoc = (): BrigadeDoc => useKnotworkStore((state) => briga
 export const useCover = (): Cover => useKnotworkStore((state) => coverFor(brigadeDoc(state.doc)));
 
 /** Which jobs the board shows. */
-export interface Filter {
+interface Filter {
   personId: string | null;
   teamId: string | null;
   unassignedOnly: boolean;
@@ -57,7 +57,7 @@ export interface Filter {
  * crew itself is the wedding's — every edit below goes straight into it, on
  * the one history the header's undo drives.
  */
-export interface StoreState {
+interface StoreState {
   selectedJobId: string | null;
   filter: Filter;
   notice: string | null;

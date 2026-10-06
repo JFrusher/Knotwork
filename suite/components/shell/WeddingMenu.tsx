@@ -9,7 +9,7 @@ import { useWeddings } from "@/lib/store/weddings";
 import { WEDDING_PAGES } from "@/lib/tools";
 import type { WeddingListing } from "@/lib/accounts/handlers";
 
-export function weddingLabel(wedding: WeddingListing): string {
+function weddingLabel(wedding: WeddingListing): string {
   return `${wedding.names || "A wedding with no names yet"}${wedding.role === "planner" ? " · client" : ""}`;
 }
 

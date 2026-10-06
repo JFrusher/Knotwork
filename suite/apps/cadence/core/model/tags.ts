@@ -1,6 +1,6 @@
 import type { Block, TagDetail, TimelineDoc } from "./types";
 
-export interface TagSummary {
+interface TagSummary {
   tag: string;
   /** How many blocks carry it. Zero means the detail has outlived its blocks. */
   count: number;

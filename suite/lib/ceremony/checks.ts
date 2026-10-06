@@ -2,7 +2,7 @@ import type { Place } from "@/lib/model/slices";
 import type { Ceremony, Moment } from "@/lib/model/types";
 
 /** A civil or religious ceremony is a legal one in England and Wales, and its register is signed by two witnesses. */
-export const WITNESSES_NEEDED = 2;
+const WITNESSES_NEEDED = 2;
 
 const isLegal = (ceremony: Ceremony) => ceremony.kind === "civil" || ceremony.kind === "religious";
 
@@ -55,7 +55,7 @@ export function needsApproval(ceremony: Ceremony): Moment[] {
 }
 
 /** What the page says is still to do in the ceremony itself: each is its own problem, seen only there. */
-export interface CeremonyChecks {
+interface CeremonyChecks {
   /** In a civil ceremony, readings and music the registrar has not yet approved. */
   unapproved: number;
   /** Witnesses still to name at a legal ceremony. */

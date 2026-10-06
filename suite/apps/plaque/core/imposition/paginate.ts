@@ -11,7 +11,7 @@ export interface GuestWarning extends CardWarning {
   artefactIndex: number;
 }
 
-export interface PaginateResult {
+interface PaginateResult {
   sheets: Sheet[];
   layout: PageLayout;
   /** Total sheets the whole guest list needs, even if only some were built. */
@@ -19,7 +19,7 @@ export interface PaginateResult {
   warnings: GuestWarning[];
 }
 
-export interface PaginateOptions {
+interface PaginateOptions {
   /**
    * Build only these pages, inclusive. The editor shows one sheet at a time, and
    * resolving all 150 guests on every drag frame is what puts it under 60fps.
@@ -37,7 +37,7 @@ export function sheetCountFor(
   return perSheet === 0 || artefactCount === 0 ? 0 : Math.ceil(artefactCount / perSheet);
 }
 
-export interface ArtefactAnalysis {
+interface ArtefactAnalysis {
   warnings: GuestWarning[];
   /**
    * Typographic headroom per artefact, 0..1: 1 means everything printed at the

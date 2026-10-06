@@ -19,7 +19,7 @@ import type { Room } from '../store/types'
 type Axis = 'x' | 'y'
 
 /** A table's unrotated box: centre and half-extents. */
-export interface SnapBox {
+interface SnapBox {
   cx: number
   cy: number
   hw: number

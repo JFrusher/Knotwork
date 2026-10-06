@@ -7,7 +7,7 @@
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === "object" && v !== null && !Array.isArray(v);
 
-export interface CrossSliceResult {
+interface CrossSliceResult {
   errors: string[];
   warnings: string[];
   facts: string[];

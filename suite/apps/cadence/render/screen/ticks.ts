@@ -1,6 +1,6 @@
 import { formatClock } from "../../core/time/minutes";
 
-export interface Tick {
+interface Tick {
   min: number;
   label: string;
   /** Hours and half-days get a heavier rule and a label; the rest are hairlines. */

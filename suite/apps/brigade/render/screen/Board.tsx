@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useMemo } from "react";
-import { assigneeNames, type DayBlock, type Job } from "../../core/model/types";
+import { assigneeNames, type Job } from "../../core/model/types";
 import { formatClock } from "../../core/time/minutes";
 import { useBrigadeDoc, useCover, useStore } from "../../state/store";
 import styles from "./Board.module.css";
@@ -184,4 +184,3 @@ export function Board() {
   }
 }
 
-export type { DayBlock };

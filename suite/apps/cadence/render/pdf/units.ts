@@ -1,5 +1,5 @@
-export const MM_PER_INCH = 25.4;
-export const PT_PER_INCH = 72;
+const MM_PER_INCH = 25.4;
+const PT_PER_INCH = 72;
 
 export function mmToPt(mm: number): number {
   return (mm / MM_PER_INCH) * PT_PER_INCH;
@@ -19,7 +19,7 @@ export const PAGE_SIZES: Record<"A4" | "A5", PageSize> = {
   A5: { widthMm: 148, heightMm: 210 },
 };
 
-export interface Box {
+interface Box {
   xMm: number;
   yMm: number;
   widthMm: number;

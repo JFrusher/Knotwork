@@ -18,7 +18,7 @@
  */
 import type { TableGeometry } from './seatPositions'
 
-export interface TableGridLayout {
+interface TableGridLayout {
   cols: number
   rows: number
   gap: number
@@ -36,7 +36,7 @@ const HEADER_H = 16 // "seated/capacity" header row height (px)
 const MIN_INTERIOR = 22 // below this the grid is dropped in favour of a count
 
 // Seat-level text metrics (must match SeatSlot / var(--text-xs)).
-export const GRID_FONT_PX = 11
+const GRID_FONT_PX = 11
 const LINE_H = 1.15 // line-height multiple
 const CHAR_W = 0.56 // average glyph width as a fraction of the font size
 const BOX_PAD_X = 3 // inner horizontal padding per side (px)

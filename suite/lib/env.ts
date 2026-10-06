@@ -104,7 +104,7 @@ const schema = z
     }
   });
 
-export type Env = z.infer<typeof schema>;
+type Env = z.infer<typeof schema>;
 
 /** Exported for the tests, which need to try environments this process is not in. */
 export function parseEnv(source: Record<string, string | undefined>): Env {

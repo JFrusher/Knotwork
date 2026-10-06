@@ -156,7 +156,7 @@ export const TOOLS: readonly Tool[] = [
  * The wedding's own pages, as against its tools: views over the whole of it,
  * under the wedding's name in the header.
  */
-export interface WeddingPage {
+interface WeddingPage {
   href: string;
   name: string;
   icon: LucideIcon;

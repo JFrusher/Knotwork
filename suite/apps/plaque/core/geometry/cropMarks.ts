@@ -7,7 +7,7 @@ export const MARK_LENGTH_MM = 5;
 /** Hairline. Thin enough that the blade, not the ink, defines the edge. */
 export const HAIRLINE_PT = 0.25;
 
-export interface CardGuides {
+interface CardGuides {
   /** Corner registration marks, offset outside the bleed. */
   cropMarks: Segment[];
   /** The trim outline itself. */

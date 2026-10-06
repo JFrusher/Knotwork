@@ -54,7 +54,7 @@ export function startingRoom(seating: Record<string, unknown>, type: StartingTab
 }
 
 /** One name per line, as a one-column file, so pasting runs the importer's own rules. */
-export function pastedList(text: string): CsvTable {
+function pastedList(text: string): CsvTable {
   const names = text
     .split(/\r?\n/)
     .map((line) => line.trim())

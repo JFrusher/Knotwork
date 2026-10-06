@@ -33,10 +33,10 @@ export function contrastRatio(a: Hex, b: Hex): number {
  * print sizes here are large. 4.5 is the point below which a name at arm's
  * length in poor light starts to fail; below 3 it is not really printing.
  */
-export const READABLE_RATIO = 4.5;
-export const POOR_RATIO = 3;
+const READABLE_RATIO = 4.5;
+const POOR_RATIO = 3;
 
-export type ContrastVerdict = "fine" | "marginal" | "poor";
+type ContrastVerdict = "fine" | "marginal" | "poor";
 
 export function verdictFor(inkHex: Hex, stockHex: Hex): ContrastVerdict {
   const ratio = contrastRatio(inkHex, stockHex);
@@ -74,7 +74,7 @@ function toRgb(hex: Hex): { r: number; g: number; b: number } {
  * report the same thing. `stockHex` is the card background when one is set, and
  * paper white otherwise — the colour the ink will actually sit on.
  */
-export interface ContrastIssue {
+interface ContrastIssue {
   elementId: string;
   verdict: Exclude<ContrastVerdict, "fine">;
   inkHex: Hex;

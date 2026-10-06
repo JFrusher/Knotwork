@@ -28,7 +28,7 @@ export interface PartConflict {
   theirs: unknown;
 }
 
-export interface MergeResult {
+interface MergeResult {
   /** Ready to become the new local raw document. */
   raw: Record<string, unknown>;
   /** Parts changed on both sides. This side's value stands in `raw` until the user chooses. */

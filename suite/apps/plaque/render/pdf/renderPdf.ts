@@ -26,7 +26,7 @@ import { mmToPt } from "../../core/units";
 import { drawIconPath } from "./drawIcon";
 import { embedFonts } from "./embedFonts";
 
-export interface RenderPdfOptions {
+interface RenderPdfOptions {
   sheets: Sheet[];
   /** Keyed by fontId. Every text element's font must be present. */
   fonts: Map<string, LoadedFont>;
@@ -53,7 +53,7 @@ export interface RenderPdfOptions {
   deterministic?: boolean;
 }
 
-export interface RenderPdfResult {
+interface RenderPdfResult {
   bytes: Uint8Array;
   pageCount: number;
   notSubset: string[];

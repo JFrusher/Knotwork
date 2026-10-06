@@ -22,7 +22,7 @@ import styles from "./Preflight.module.css";
 
 export type PreflightChoice = "all" | "first" | "test" | "duplex-test";
 
-export interface PreflightProps {
+interface PreflightProps {
   sheetCount: number;
   artefacts: Artefact[];
   issues: Issue[];

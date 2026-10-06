@@ -9,7 +9,7 @@ import { addSheet, hexColour, type Colour, type Sheet } from "./page";
 import { measureMm, truncate } from "./text";
 import { contentBox, mmToPt, PAGE_SIZES, ptToMm } from "./units";
 
-export interface TimelineOptions {
+interface TimelineOptions {
   fontSource: FontSource;
   /** Shown in the footer beside the page numbers. */
   generatedOn?: string;
@@ -324,7 +324,7 @@ export interface Body {
   mmPerMin: number;
 }
 
-export interface Box {
+interface Box {
   entry: Placed;
   topMm: number;
   heightMm: number;

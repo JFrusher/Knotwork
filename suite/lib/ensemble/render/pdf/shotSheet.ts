@@ -11,7 +11,7 @@ import { contentBox, PAGE_SIZES, ptToMm } from "@/apps/brigade/render/pdf/units"
 import type { Cast, CustomRole, Guest, Seating, ShotSection } from "@/lib/model/types";
 import { resolveMembers } from "@/lib/cast/resolve";
 
-export interface ShotSheetOptions {
+interface ShotSheetOptions {
   fontSource: FontSource;
   pageSize?: "A4" | "A5";
   coupleNames?: string;

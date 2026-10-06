@@ -3,7 +3,7 @@ import { cached, readSeating } from "./slices";
 import type { Seating } from "./types";
 
 /** Where one guest sits, as everything printed or shared says it. */
-export interface SeatAt {
+interface SeatAt {
   tableId: string;
   /** The table's label as printed on the plan. */
   table: string;

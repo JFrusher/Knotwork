@@ -7,20 +7,7 @@ import {
   type KnotworkState,
   type WriteOptions,
 } from "@/lib/store/useKnotworkStore";
-import {
-  publishDay,
-  readBar,
-  readBoxes,
-  readCast,
-  readCeremony,
-  readCrew,
-  readGuests,
-  readSeating,
-  readShots,
-  readTimeline,
-  resolvedDay,
-  timelineDoc,
-} from "./slices";
+import { publishDay, readBar, readBoxes, readCast, readCeremony, readCrew, readGuests, readSeating, readShots, readTimeline } from "./slices";
 import { coupleTitle } from "./partners";
 import type { Bar, Boxes, CastSlice, Ceremony, Crew, Guest, Seating, Shots } from "./types";
 import type { Timeline } from "./timeline";
@@ -37,15 +24,12 @@ export const useEvent = (): WeddingEvent => useKnotworkStore((s) => s.doc.event)
 export const useGuests = (): Record<string, Guest> =>
   useKnotworkStore((s) => readGuests(s.doc));
 export const useSeating = (): Seating => useKnotworkStore((s) => readSeating(s.doc));
-export const useTimeline = (): Timeline => useKnotworkStore((s) => readTimeline(s.doc));
 export const useCrew = (): Crew => useKnotworkStore((s) => readCrew(s.doc));
 export const useShots = (): Shots => useKnotworkStore((s) => readShots(s.doc));
 export const useCast = (): CastSlice => useKnotworkStore((s) => readCast(s.doc));
 export const useCeremony = (): Ceremony => useKnotworkStore((s) => readCeremony(s.doc));
 export const useBoxes = (): Boxes => useKnotworkStore((s) => readBoxes(s.doc));
 export const useBar = (): Bar => useKnotworkStore((s) => readBar(s.doc));
-export const useResolvedDay = () => useKnotworkStore((s) => resolvedDay(s.doc));
-export const useTimelineDoc = () => useKnotworkStore((s) => timelineDoc(s.doc));
 export const useStatus = (): KnotworkState["status"] => useKnotworkStore((s) => s.status);
 
 /**
@@ -70,7 +54,7 @@ export function eventChange(doc: Knotwork, patch: Partial<WeddingEvent>): Array<
   ];
 }
 
-export interface SuiteWriters {
+interface SuiteWriters {
   setEvent: (patch: Partial<WeddingEvent>, options?: WriteOptions) => void;
   setGuests: (next: Record<string, Guest>, options?: WriteOptions) => void;
   setSeating: (next: Seating, options?: WriteOptions) => void;

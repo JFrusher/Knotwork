@@ -4,14 +4,14 @@ import { isMoment, type TimelineDoc } from "../model/types";
 import { resolve } from "../schedule/resolve";
 import { slugFor } from "./file";
 
-export const DAY_EXTENSION = ".day.json";
+const DAY_EXTENSION = ".day.json";
 
 /** The export format's own version. It moves when this shape changes, and is
  * deliberately not the document's `schemaVersion`: a reader of the export does
  * not care how the project file is stored. */
-export const DAY_VERSION = 1;
+const DAY_VERSION = 1;
 
-export interface DayBlock {
+interface DayBlock {
   id: string;
   label: string;
   lane: string;
@@ -28,7 +28,7 @@ export interface DayBlock {
   moment: boolean;
 }
 
-export interface DayTeam {
+interface DayTeam {
   tag: string;
   displayName: string;
   phone: string;
@@ -46,7 +46,7 @@ export interface DayTeam {
  * day's 00:00, as everywhere inside the document; formatting is the reader's
  * business.
  */
-export interface ResolvedDay {
+interface ResolvedDay {
   /** So a reader can refuse the wrong file politely rather than by exception. */
   kind: "cadence.day";
   version: number;

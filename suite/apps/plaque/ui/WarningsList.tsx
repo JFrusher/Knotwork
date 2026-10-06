@@ -3,7 +3,7 @@ import type { Issue } from "../core/geometry/validate";
 import type { GuestWarning } from "../core/imposition/paginate";
 import styles from "./WarningsList.module.css";
 
-export interface WarningsListProps {
+interface WarningsListProps {
   issues: Issue[];
   warnings: GuestWarning[];
   artefacts: Artefact[];

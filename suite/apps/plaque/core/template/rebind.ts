@@ -15,7 +15,7 @@ import type { CardElement, Template } from "../types";
  * silently pointed at the wrong column would print the wrong guest's name,
  * which is worse than printing none.
  */
-export interface RebindResult {
+interface RebindResult {
   template: Template;
   /** old header → new header, for the report. */
   renamed: Record<string, string>;

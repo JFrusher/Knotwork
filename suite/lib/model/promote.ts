@@ -38,7 +38,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const empty = (value: unknown): boolean =>
   !isRecord(value) || Object.keys(value).length === 0;
 
-export interface Promotion {
+interface Promotion {
   raw: Record<string, unknown>;
   /** What was filled in, for telling the user. Empty when nothing needed doing. */
   filled: string[];

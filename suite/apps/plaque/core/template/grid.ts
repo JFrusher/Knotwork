@@ -3,7 +3,7 @@ import type { GuestRow } from "../data/rows";
 import { ptToMm } from "../units";
 import type { GridElement, Mm } from "../types";
 
-export interface GridBlock {
+interface GridBlock {
   heading: string;
   /** The rows with a line to print, in the order they print. */
   rows: GuestRow[];
@@ -70,7 +70,7 @@ export function gridBlocks(
  * a heading never sits alone at the foot of a column; a block too long for
  * what is left carries on at the top of the next column, then the next page.
  */
-export interface FlowRun {
+interface FlowRun {
   page: number;
   column: number;
   /** From the top of the grid's box. */

@@ -4,7 +4,7 @@
  * ending at 01:30 is 1530. There is no Date, no timezone and no DST here.
  */
 
-export const MIN_PER_HOUR = 60;
+const MIN_PER_HOUR = 60;
 export const MIN_PER_DAY = 24 * MIN_PER_HOUR;
 
 /** `14:30`, `2:30pm`, `2.30pm`, `1430`, `9am`, and any of those with a ` +1` day suffix. */
@@ -49,7 +49,7 @@ export function parseClock(input: string): number | null {
   return days * MIN_PER_DAY + hours * MIN_PER_HOUR + mins;
 }
 
-export interface FormatClockOptions {
+interface FormatClockOptions {
   /** Show the ` +1` day suffix past midnight. Default true. */
   dayOffset?: boolean;
 }

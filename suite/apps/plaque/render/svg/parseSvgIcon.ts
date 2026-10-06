@@ -1,6 +1,6 @@
 import type { IconViewBox } from "../../assets/icons";
 
-export type ParsedIcon = { ok: true; d: string; view: IconViewBox } | { ok: false; reason: string };
+type ParsedIcon = { ok: true; d: string; view: IconViewBox } | { ok: false; reason: string };
 
 /**
  * Turns an uploaded SVG into fill-only path data.

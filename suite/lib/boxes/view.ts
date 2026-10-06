@@ -1,4 +1,3 @@
-import type { Knotwork } from "@jfrusher/knotwork";
 import { formatClock } from "@/apps/cadence/core/time/minutes";
 import type { Place } from "@/lib/model/slices";
 import type { Box, BoxItem, Boxes } from "@/lib/model/types";
@@ -36,7 +35,7 @@ export function packingOf(boxes: Boxes): { packed: number; total: number } {
   );
 }
 
-export interface Found {
+interface Found {
   box: Box;
   /** The thing that matched, or null when it was the box's own name. */
   item: BoxItem | null;

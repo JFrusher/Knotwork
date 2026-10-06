@@ -7,7 +7,7 @@ import type { LoadedFont } from "./measure";
  * cost real money, and nothing on screen necessarily says so. This finds it
  * before the sheet does, per row, and suggests a face that can print it.
  */
-export interface GlyphReport {
+interface GlyphReport {
   /** The characters this face cannot draw, in first-seen order. */
   missing: string[];
 }

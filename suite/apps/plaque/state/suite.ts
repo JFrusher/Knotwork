@@ -24,7 +24,7 @@ export function isRecord(value: unknown): value is Raw {
 }
 
 /** True when Place cards wrote this slice — any version — rather than an empty envelope. */
-export function isStationery(slice: unknown): slice is Raw {
+function isStationery(slice: unknown): slice is Raw {
   return isRecord(slice) && "version" in slice;
 }
 

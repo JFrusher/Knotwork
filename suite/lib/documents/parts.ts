@@ -38,7 +38,7 @@ interface Keyed {
   shape: "map" | "list";
 }
 
-export const KEYED: Partial<Record<SliceName, Keyed>> = {
+const KEYED: Partial<Record<SliceName, Keyed>> = {
   guests: { field: null, shape: "map" },
   seating: { field: "tables", shape: "map" },
   timeline: { field: "blocks", shape: "list" },
@@ -57,7 +57,7 @@ const MERGED_SLICES = SLICE_NAMES.filter((slice) => slice !== DERIVED);
 const prefixOf = (slice: SliceName, keyed: Keyed) => (keyed.field === null ? slice : `${slice}/${keyed.field}`);
 
 /** What a part is: its slice, and the record or order it holds, if any. */
-export interface PartInfo {
+interface PartInfo {
   slice: SliceName;
   record: { collection: string; id: string } | null;
   order: boolean;

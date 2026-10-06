@@ -22,13 +22,13 @@ export const VERSION = SUITE_VERSION;
  * Uploaded font and image binaries are NOT here. Those are separate keys in
  * IndexedDB — see blobStore.
  */
-export interface Persisted extends Suite {
+interface Persisted extends Suite {
   version: number;
   /** ISO time of the write. */
   savedAt: string | null;
 }
 
-export type LoadResult =
+type LoadResult =
   | { status: "empty" }
   /** `problem` names any piece that could not be read and was left out. */
   | { status: "ok"; data: Persisted; problem: string | null }

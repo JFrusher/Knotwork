@@ -1,8 +1,8 @@
 import type { PDFFont } from "pdf-lib";
-import { mmToPt, ptToMm } from "./units";
+import { ptToMm } from "./units";
 
 /** Width of a string in millimetres, at a point size. */
-export function measureMm(value: string, font: PDFFont, sizePt: number): number {
+function measureMm(value: string, font: PDFFont, sizePt: number): number {
   return ptToMm(font.widthOfTextAtSize(value, sizePt));
 }
 
@@ -62,9 +62,3 @@ export function truncate(value: string, font: PDFFont, sizePt: number, maxWidthM
   return cut === "" ? "" : `${cut}…`;
 }
 
-/** Height of a run of lines, leading included. */
-export function blockHeightMm(lines: number, sizePt: number, leading = 1.35): number {
-  return ptToMm(lines * sizePt * leading);
-}
-
-export { mmToPt };

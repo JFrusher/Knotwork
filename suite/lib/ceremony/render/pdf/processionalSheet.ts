@@ -9,7 +9,7 @@ import { wrap } from "@/apps/brigade/render/pdf/text";
 import { contentBox, PAGE_SIZES, ptToMm } from "@/apps/brigade/render/pdf/units";
 import type { ProcessionalRow } from "../../rows";
 
-export interface ProcessionalSheetOptions {
+interface ProcessionalSheetOptions {
   fontSource: FontSource;
   /** "Alex & Sam", or nothing yet. */
   coupleNames: string;

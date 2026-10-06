@@ -9,10 +9,10 @@ import { embedFamily } from "./embedFonts";
 import type { FontSource } from "./fontSource";
 import { addSheet, hexColour, type Sheet } from "./page";
 import { columnOffsets, fitColumns, type Column } from "./table";
-import { measureMm, truncate, wrap } from "./text";
+import { truncate, wrap } from "./text";
 import { contentBox, PAGE_SIZES, ptToMm } from "./units";
 
-export interface SheetOptions {
+interface SheetOptions {
   fontSource: FontSource;
   /** Only blocks carrying this tag. Absent means every block on the piece. */
   tag?: string;
@@ -352,4 +352,3 @@ function formatDate(iso: string): string {
   return `${Number(match[3])} ${months[Number(match[2]) - 1]} ${match[1]}`;
 }
 
-export { measureMm };

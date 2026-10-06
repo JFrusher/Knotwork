@@ -78,7 +78,7 @@ const TARGET_PX = 12;
  * like is not, and says why. Chairs this text already names are ringed. The
  * map is one stop on Tab; arrow keys go chair to chair.
  */
-export function ChairPicker({
+function ChairPicker({
   template,
   cardTable,
   onPick,

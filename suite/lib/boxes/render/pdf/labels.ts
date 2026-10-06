@@ -8,7 +8,7 @@ import { wrap } from "@/apps/brigade/render/pdf/text";
 import { PAGE_SIZES, ptToMm } from "@/apps/brigade/render/pdf/units";
 import { itemText, type BoxRow } from "../../rows";
 
-export interface LabelOptions {
+interface LabelOptions {
   fontSource: FontSource;
 }
 

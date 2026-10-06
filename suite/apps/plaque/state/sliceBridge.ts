@@ -34,7 +34,7 @@ export function writeSuite(suite: Suite, options: WriteOptions): void {
 }
 
 /** `pieceId` when the suite still has it, otherwise its first piece. */
-export function resolvePieceId(suite: Suite, pieceId: string | null): string {
+function resolvePieceId(suite: Suite, pieceId: string | null): string {
   return suite.pieces.some((p) => p.id === pieceId) ? pieceId! : suite.pieces[0]!.id;
 }
 

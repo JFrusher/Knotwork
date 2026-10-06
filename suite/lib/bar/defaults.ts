@@ -10,7 +10,7 @@ import type { BarKind, BarLine, Crowd, Figure, MixedPart, Mix, Shop } from "@/li
  * drinks and 100kg of ice — pinned in `sum.test.ts`, so a change here is seen.
  */
 
-export interface FigureInfo {
+interface FigureInfo {
   value: number;
   label: string;
   /** After the number: "%", "hours", "ml". */
@@ -72,7 +72,7 @@ export const CROWD_NAMES: Record<Crowd, string> = {
   heavier: "Heavier than most",
 };
 
-export interface LineInfo {
+interface LineInfo {
   name: string;
   /** What one of the line's units is: "bottle", "litre". */
   unit: string;

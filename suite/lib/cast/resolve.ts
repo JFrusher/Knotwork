@@ -3,7 +3,7 @@ import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { roleLabel } from "@/lib/model/partners";
 import type { Cast, CustomRole, Guest, RsvpStatus, Seating, ShotMember } from "@/lib/model/types";
 
-export interface ResolvedPerson {
+interface ResolvedPerson {
   guestId: string | null;
   name: string;
   rsvpStatus: RsvpStatus | null;
@@ -14,7 +14,7 @@ export type MemberProblem =
   | { kind: "declined"; name: string }
   | { kind: "empty" };
 
-export interface ResolvedGroup {
+interface ResolvedGroup {
   label: string;
   people: ResolvedPerson[];
   problems: MemberProblem[];

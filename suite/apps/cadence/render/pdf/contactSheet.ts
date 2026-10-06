@@ -10,7 +10,7 @@ import { columnOffsets, fitColumns, type Column } from "./table";
 import { truncate, wrap } from "./text";
 import { contentBox, PAGE_SIZES, ptToMm } from "./units";
 
-export interface ContactSheetOptions {
+interface ContactSheetOptions {
   fontSource: FontSource;
   generatedOn?: string;
 }

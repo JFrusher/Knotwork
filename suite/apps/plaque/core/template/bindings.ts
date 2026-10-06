@@ -88,7 +88,7 @@ export interface CardWarning {
   detail: string;
 }
 
-export interface ResolvedCard {
+interface ResolvedCard {
   /** Card-local coordinates. `paginate` maps these onto a sheet. */
   scene: CardScene;
   warnings: CardWarning[];

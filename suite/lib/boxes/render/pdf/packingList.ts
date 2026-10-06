@@ -9,7 +9,7 @@ import { wrap } from "@/apps/brigade/render/pdf/text";
 import { contentBox, PAGE_SIZES, ptToMm } from "@/apps/brigade/render/pdf/units";
 import { itemText, type BoxRow } from "../../rows";
 
-export interface PackingListOptions {
+interface PackingListOptions {
   fontSource: FontSource;
   coupleNames: string;
   generatedOn?: string;

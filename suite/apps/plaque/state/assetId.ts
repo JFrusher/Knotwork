@@ -10,7 +10,7 @@ const SHA_PREFIX = "sha256-";
 /** 128 bits of SHA-256. Collision risk is nil at this scale and ids stay readable. */
 const HEX_LENGTH = 32;
 
-export type AssetKind = "img" | "user";
+type AssetKind = "img" | "user";
 
 export async function sha256Hex(data: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new Uint8Array(data));

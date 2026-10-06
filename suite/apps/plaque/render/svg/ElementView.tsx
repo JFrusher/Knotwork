@@ -6,7 +6,7 @@ import type { LoadedFont } from "../../core/text/measure";
 import type { ResolvedElement } from "../../core/types";
 import { ptToMm } from "../../core/units";
 
-export interface ElementViewProps {
+interface ElementViewProps {
   element: ResolvedElement;
   fonts: Map<string, LoadedFont>;
 }

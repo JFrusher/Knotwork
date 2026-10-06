@@ -12,7 +12,7 @@
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-export interface Sealed {
+interface Sealed {
   /** Base64 ciphertext, with the GCM tag appended by WebCrypto. */
   ciphertext: string;
   /** Base64 nonce. Fresh for every seal — never reused under one key. */

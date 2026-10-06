@@ -1,6 +1,6 @@
 import type { Mm, Rect } from "../types";
 
-export interface IconFit {
+interface IconFit {
   /** Top-left of the drawn artwork, in the same space as the element box. */
   x: Mm;
   y: Mm;

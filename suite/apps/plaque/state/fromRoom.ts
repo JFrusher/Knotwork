@@ -41,7 +41,7 @@ export const ROOM_COLUMNS = [
   "Guest Link",
 ] as const;
 
-export interface RoomRows {
+interface RoomRows {
   headers: string[];
   rows: GuestRow[];
   /** Guest ids, one per row: what per-guest tweaks and combined cards hang off. */

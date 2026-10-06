@@ -11,7 +11,7 @@ export type PlanSource = Partial<Plan> & Pick<Plan, 'meta'>
 // Cells beginning with these characters can be executed as formulas by Excel /
 // Google Sheets; prefix with a quote to neutralise spreadsheet injection.
 const FORMULA_LEAD = /^[=+\-@\t\r]/
-export const escCsvCell = (v: Cell): string => {
+const escCsvCell = (v: Cell): string => {
   let s = v == null ? '' : String(v)
   if (FORMULA_LEAD.test(s)) s = `'${s}`
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
@@ -28,7 +28,7 @@ const sideLabel = (side: Guest['side'], meta: Plan['meta']): string =>
 // Family column — inconsistent with exportXlsx.js's buildGroupSheetRows,
 // which already has Group/Subgroup/Family. See tmp/family-ux-followups.md #6.
 /** Caterer-friendly assignment rows, ordered by table then seat. */
-export function buildAssignmentTable(state: PlanSource): { headers: string[]; rows: Cell[][] } {
+function buildAssignmentTable(state: PlanSource): { headers: string[]; rows: Cell[][] } {
   const { guests = {}, tables = {}, groups = {} } = state
   const headers = ['Table', 'Seat', 'Guest', 'Side', 'RSVP', 'Dietary', 'Group', 'Notes']
   const rows: Cell[][] = []

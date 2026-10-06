@@ -1,5 +1,5 @@
 import { rgb, type PDFFont, type PDFPage, type PDFDocument } from "pdf-lib";
-import { mmToPt, PAGE_SIZES, type PageSize } from "./units";
+import { mmToPt, type PageSize } from "./units";
 
 /**
  * A page with the origin at the top left and millimetres for units, which is
@@ -38,7 +38,7 @@ export interface RectOptions {
 
 export type Colour = { r: number; g: number; b: number };
 
-export const BLACK: Colour = { r: 0, g: 0, b: 0 };
+const BLACK: Colour = { r: 0, g: 0, b: 0 };
 
 /** `#37548a` to a colour. Bad input falls back to black rather than throwing. */
 export function hexColour(hex: string): Colour {
@@ -94,4 +94,3 @@ export function addSheet(pdf: PDFDocument, size: PageSize): Sheet {
   };
 }
 
-export { PAGE_SIZES };

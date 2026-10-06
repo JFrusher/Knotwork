@@ -7,7 +7,7 @@ import { addSheet, hexColour, type Colour } from "@/apps/brigade/render/pdf/page
 import { contentBox, PAGE_SIZES, ptToMm } from "@/apps/brigade/render/pdf/units";
 import type { ShoppingGroup } from "../../rows";
 
-export interface ShoppingListOptions {
+interface ShoppingListOptions {
   fontSource: FontSource;
   coupleNames: string;
   /** "For 100 coming, and 30 in the evening". */

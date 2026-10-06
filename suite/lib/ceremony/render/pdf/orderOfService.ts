@@ -6,7 +6,7 @@ import type { Place } from "@/lib/model/slices";
 import type { OrderRow } from "../../rows";
 import { renderFlow, type FlowBlock, type FlowLine } from "./flow";
 
-export interface OrderOfServiceOptions {
+interface OrderOfServiceOptions {
   fontSource: FontSource;
   event: Pick<WeddingEvent, "partners" | "date" | "venueName">;
   where: Place | null;

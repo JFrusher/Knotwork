@@ -34,7 +34,7 @@ function writeSeen(): void {
   }
 }
 
-export interface TourState {
+interface TourState {
   /** Null when the tour is closed. */
   step: TourStep | null;
   chapterTitle: string;

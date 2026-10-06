@@ -7,8 +7,8 @@ import { useStore } from '../store/useStore'
  */
 export const canvasViewportRef: { current: HTMLElement | null } = { current: null }
 
-export const MIN_ZOOM = 0.25
-export const MAX_ZOOM = 2
+const MIN_ZOOM = 0.25
+const MAX_ZOOM = 2
 const clampZoom = (z: number): number => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z))
 
 export const viewportRect = (): DOMRect | null => canvasViewportRef.current?.getBoundingClientRect() || null

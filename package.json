@@ -35,7 +35,6 @@
     "clean": "git clean -Xdf node_modules dist .next coverage"
   },
   "dependencies": {
-    "next": "^16.3.8",
     "zod": "^4.6.5"
   },
   "devDependencies": {

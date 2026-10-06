@@ -8,7 +8,7 @@ import { addSheet, hexColour } from "./page";
 import { measureMm } from "./text";
 import { contentBox, PAGE_SIZES, ptToMm } from "./units";
 
-export interface OrderOfDayOptions {
+interface OrderOfDayOptions {
   fontSource: FontSource;
 }
 

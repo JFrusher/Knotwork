@@ -62,10 +62,10 @@ export function designOf(source: Design): Design {
 }
 
 /** What each piece has of its own. Everything else in a `Design` is shared by the suite. */
-export const PIECE_KEYS = ["card", "sheet", "template", "merged", "printed"] as const satisfies readonly (keyof Design)[];
+const PIECE_KEYS = ["card", "sheet", "template", "merged", "printed"] as const satisfies readonly (keyof Design)[];
 
-export type PieceDesign = Pick<Design, (typeof PIECE_KEYS)[number]>;
-export type SharedDesign = Omit<Design, (typeof PIECE_KEYS)[number]>;
+type PieceDesign = Pick<Design, (typeof PIECE_KEYS)[number]>;
+type SharedDesign = Omit<Design, (typeof PIECE_KEYS)[number]>;
 
 /** One printed thing — place cards, table numbers, the seating board. */
 export interface Piece extends PieceDesign {

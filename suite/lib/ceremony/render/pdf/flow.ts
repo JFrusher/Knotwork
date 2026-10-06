@@ -27,7 +27,7 @@ export interface FlowBlock {
   marked?: boolean;
 }
 
-export interface FlowOptions {
+interface FlowOptions {
   fontSource: FontSource;
   size: "A4" | "A5";
   title: string;

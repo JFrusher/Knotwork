@@ -2,7 +2,7 @@ import fontkit from "@pdf-lib/fontkit";
 import type { PDFDocument, PDFFont } from "pdf-lib";
 import type { LoadedFont } from "../../core/text/measure";
 
-export interface EmbedResult {
+interface EmbedResult {
   fonts: Map<string, PDFFont>;
   /** Faces that had to be embedded whole because subsetting failed. */
   notSubset: string[];

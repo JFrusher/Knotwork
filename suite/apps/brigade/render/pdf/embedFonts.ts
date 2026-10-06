@@ -7,7 +7,7 @@ export interface FontBytes {
   bold?: Uint8Array;
 }
 
-export interface EmbeddedFonts {
+interface EmbeddedFonts {
   regular: PDFFont;
   bold: PDFFont;
   /** Families that had to go in whole because subsetting failed. */

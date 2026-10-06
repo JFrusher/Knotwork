@@ -72,7 +72,7 @@ const withoutMember = (ids: string[] = [], id: string): string[] => ids.filter((
  * `anchor` pins the run's first seat (a drop onto a specific SeatSlot).
  * Returns null when no run fits — callers must treat that as a refused drop.
  */
-export const placeMembers = (
+const placeMembers = (
   arr: Seats = [],
   capacity: number,
   seatMode: SeatMode,
@@ -218,7 +218,7 @@ export const addTable =
     }
   }
 
-export const removeTable =
+const removeTable =
   (id: string): Action =>
   (plan) => {
     const table = plan.tables[id]
@@ -231,7 +231,7 @@ export const removeTable =
     return { type: 'DELETE_TABLE', label: 'Delete table', payload: { tables: { [id]: null }, guests } }
   }
 
-export const duplicateTable =
+const duplicateTable =
   (id: string): Action =>
   (plan) => {
     const src = plan.tables[id]
@@ -259,17 +259,17 @@ const patchTable = (plan: Plan, id: string, type: string, label: string, patch: 
   return { type, label, payload: { tables: { [id]: { ...table, ...patch } } } }
 }
 
-export const moveTable =
+const moveTable =
   (id: string, x: number, y: number): Action =>
   (plan) =>
     patchTable(plan, id, 'MOVE_TABLE', 'Move table', { x: Math.round(x), y: Math.round(y) })
 
-export const renameTable =
+const renameTable =
   (id: string, label: string): Action =>
   (plan) =>
     plan.tables[id]?.label === label ? null : patchTable(plan, id, 'RENAME_TABLE', 'Rename table', { label })
 
-export const changeCapacity =
+const changeCapacity =
   (id: string, capacity: number): Action =>
   (plan) => {
     const table = plan.tables[id]
@@ -279,7 +279,7 @@ export const changeCapacity =
     return patchTable(plan, id, 'CHANGE_CAPACITY', 'Change capacity', { capacity: next })
   }
 
-export const changeTableType =
+const changeTableType =
   (id: string, type: string): Action =>
   (plan) => {
     const table = plan.tables[id]
@@ -295,7 +295,7 @@ export const changeTableType =
 // Set independent seat counts per edge for a (custom) rectangle. Capacity is
 // derived from the sum, and seat-level arrays are re-sliced side by side so a
 // resize on one edge can't evict a guest sitting on a different, untouched one.
-export const setPerSideSeats =
+const setPerSideSeats =
   (id: string, perSide: Partial<PerSideSeats>): Action =>
   (plan) => {
     const table = plan.tables[id]
@@ -315,7 +315,7 @@ export const setPerSideSeats =
   }
 
 // Create a rectangle/square table with per-edge seat counts (the custom builder).
-export const createCustomTable =
+const createCustomTable =
   ({
     x = 0,
     y = 0,
@@ -361,24 +361,24 @@ export const createCustomTable =
     }
   }
 
-export const setDesignation =
+const setDesignation =
   (id: string, designation: Designation): Action =>
   (plan) =>
     patchTable(plan, id, 'SET_DESIGNATION', 'Set designation', { designation })
 
-export const setTableColour =
+const setTableColour =
   (id: string, colour: string | null): Action =>
   (plan) =>
     patchTable(plan, id, 'SET_TABLE_COLOUR', 'Recolour table', { colour })
 
-export const rotateTable =
+const rotateTable =
   (id: string, rotation: number): Action =>
   (plan) =>
     patchTable(plan, id, 'ROTATE_TABLE', 'Rotate table', { rotation })
 
 // Set the canvas scale (px per cm). Undoable so an accidental calibration can
 // be reversed — every table/room/chair re-derives its pixels from this.
-export const calibrate =
+const calibrate =
   (pixelsPerUnit: number): Action =>
   (plan) => {
     if (!pixelsPerUnit || pixelsPerUnit === plan.settings.pixelsPerUnit) return null
@@ -387,7 +387,7 @@ export const calibrate =
 
 // Resize the room in real-world units. Stores cm (authoritative) plus derived
 // px so legacy readers stay in sync.
-export const setRoomSizeUnits =
+const setRoomSizeUnits =
   (widthUnits: number, heightUnits: number): Action =>
   (plan) => {
     const ppu = plan.settings?.pixelsPerUnit || DEFAULT_PPU
@@ -411,7 +411,7 @@ export const setRoomSizeUnits =
 // dropped from the palette to recreate the same table. Stored on settings so it
 // persists with the plan; undoable like any settings change.
 
-export const saveTablePreset =
+const saveTablePreset =
   (id: string, name: string): Action =>
   (plan) => {
     const table = plan.tables[id]
@@ -433,7 +433,7 @@ export const saveTablePreset =
     }
   }
 
-export const deleteTablePreset =
+const deleteTablePreset =
   (presetId: string): Action =>
   (plan) => {
     const presets = plan.settings.customTablePresets || []
@@ -445,7 +445,7 @@ export const deleteTablePreset =
     }
   }
 
-export const resizeTable =
+const resizeTable =
   (id: string, sizeUnits: Partial<SizeUnits>): Action =>
   (plan) => {
     const table = plan.tables[id]
@@ -455,7 +455,7 @@ export const resizeTable =
     })
   }
 
-export const setSeatMode =
+const setSeatMode =
   (id: string, mode: SeatMode): Action =>
   (plan) => {
     const table = plan.tables[id]
@@ -467,7 +467,7 @@ export const setSeatMode =
     })
   }
 
-export const clearTable =
+const clearTable =
   (id: string): Action =>
   (plan) => {
     const table = plan.tables[id]
@@ -487,7 +487,7 @@ export const clearTable =
 // ── guests ──────────────────────────────────────────────────────────────────
 
 // Create a single guest manually (e.g. a late RSVP) without re-importing a CSV.
-export const addGuest =
+const addGuest =
   (partial: Partial<Guest> = {}): Action =>
   () => {
     const first = (partial.firstName || '').trim()
@@ -586,7 +586,7 @@ const removal = (plan: Plan, ids: ReadonlySet<string>) => {
   }
 }
 
-export const removeGuest =
+const removeGuest =
   (guestId: string): Action =>
   (plan) =>
     plan.guests[guestId]
@@ -648,7 +648,7 @@ export const assignGuest =
 
 // Swap two seated guests within the same seat-level table (or move one into an
 // empty seat in the pair). Drag a seated guest onto an occupied seat to swap.
-export const swapSeatGuests =
+const swapSeatGuests =
   (tableId: string, indexA: number, indexB: number): Action =>
   (plan) => {
     const table = plan.tables[tableId]
@@ -698,7 +698,7 @@ export const unassignGuest =
     }
   }
 
-export const assignGroupToTable =
+const assignGroupToTable =
   (groupId: string, tableId: string): Action =>
   (plan) => {
     const group = plan.groups[groupId]
@@ -735,7 +735,7 @@ export const createGroup =
 // Create an empty group (no members yet) — for the "+ New group" entry point,
 // after which guests are added via drag or the inspector. createGroup requires
 // at least one member; this one intentionally does not.
-export const createEmptyGroup =
+const createEmptyGroup =
   ({ name, colour }: { name?: string; colour?: string } = {}): Action =>
   (plan) => {
     const group: Group = {
@@ -783,7 +783,7 @@ export const dissolveGroup =
     }
   }
 
-export const renameGroup =
+const renameGroup =
   (groupId: string, name: string): Action =>
   (plan) => {
     const group = plan.groups[groupId]
@@ -791,7 +791,7 @@ export const renameGroup =
     return { type: 'RENAME_GROUP', label: 'Rename group', payload: { groups: { [groupId]: { ...group, name } } } }
   }
 
-export const recolourGroup =
+const recolourGroup =
   (groupId: string, colour: string): Action =>
   (plan) => {
     const group = plan.groups[groupId]
@@ -799,7 +799,7 @@ export const recolourGroup =
     return { type: 'RECOLOUR_GROUP', label: 'Recolour group', payload: { groups: { [groupId]: { ...group, colour } } } }
   }
 
-export const addToGroup =
+const addToGroup =
   (groupId: string, guestId: string): Action =>
   (plan) => {
     const group = plan.groups[groupId]
@@ -829,7 +829,7 @@ export const addToGroup =
     }
   }
 
-export const mergeGroups =
+const mergeGroups =
   (sourceGroupId: string, targetGroupId: string): Action =>
   (plan) => {
     const source = plan.groups[sourceGroupId]
@@ -854,7 +854,7 @@ export const mergeGroups =
     }
   }
 
-export const removeFromGroup =
+const removeFromGroup =
   (guestId: string): Action =>
   (plan) => {
     const guest = plan.guests[guestId]
@@ -882,7 +882,7 @@ const SUBGROUP_COLOURS = [
   '#8C6E4A', '#4E9A8E', '#9E7A3A', '#5E6EAE', '#8E5E6E',
 ]
 
-export const createSubgroup =
+const createSubgroup =
   (parentGroupId: string, { name, colour }: { name?: string; colour?: string } = {}): Action =>
   (plan) => {
     if (!plan.groups[parentGroupId]) return null
@@ -903,7 +903,7 @@ export const createSubgroup =
     }
   }
 
-export const renameSubgroup =
+const renameSubgroup =
   (subgroupId: string, name: string): Action =>
   (plan) => {
     const sg = plan.subgroups[subgroupId]
@@ -911,7 +911,7 @@ export const renameSubgroup =
     return { type: 'RENAME_SUBGROUP', label: 'Rename subgroup', payload: { subgroups: { [subgroupId]: { ...sg, name } } } }
   }
 
-export const recolourSubgroup =
+const recolourSubgroup =
   (subgroupId: string, colour: string): Action =>
   (plan) => {
     const sg = plan.subgroups[subgroupId]
@@ -919,7 +919,7 @@ export const recolourSubgroup =
     return { type: 'RECOLOUR_SUBGROUP', label: 'Recolour subgroup', payload: { subgroups: { [subgroupId]: { ...sg, colour } } } }
   }
 
-export const dissolveSubgroup =
+const dissolveSubgroup =
   (subgroupId: string): Action =>
   (plan) => {
     const sg = plan.subgroups[subgroupId]
@@ -943,7 +943,7 @@ export const dissolveSubgroup =
     }
   }
 
-export const addToSubgroup =
+const addToSubgroup =
   (subgroupId: string, guestId: string): Action =>
   (plan) => {
     const sg = plan.subgroups[subgroupId]
@@ -986,7 +986,7 @@ export const addToSubgroup =
     }
   }
 
-export const removeFromSubgroup =
+const removeFromSubgroup =
   (guestId: string): Action =>
   (plan) => {
     const guest = plan.guests[guestId]
@@ -1004,7 +1004,7 @@ export const removeFromSubgroup =
     }
   }
 
-export const assignSubgroupToTable =
+const assignSubgroupToTable =
   (subgroupId: string, tableId: string): Action =>
   (plan) => {
     const sg = plan.subgroups[subgroupId]
@@ -1057,7 +1057,7 @@ export const createFamily =
     }
   }
 
-export const renameFamily =
+const renameFamily =
   (familyId: string, name: string): Action =>
   (plan) => {
     const f = plan.families[familyId]
@@ -1065,7 +1065,7 @@ export const renameFamily =
     return { type: 'RENAME_FAMILY', label: 'Rename family', payload: { families: { [familyId]: { ...f, name } } } }
   }
 
-export const recolourFamily =
+const recolourFamily =
   (familyId: string, colour: string): Action =>
   (plan) => {
     const f = plan.families[familyId]
@@ -1073,7 +1073,7 @@ export const recolourFamily =
     return { type: 'RECOLOUR_FAMILY', label: 'Recolour family', payload: { families: { [familyId]: { ...f, colour } } } }
   }
 
-export const dissolveFamily =
+const dissolveFamily =
   (familyId: string): Action =>
   (plan) => {
     const f = plan.families[familyId]
@@ -1184,7 +1184,7 @@ export const removeFromFamily =
 
 // `seatIndex` is set when the family was dropped onto a specific SeatSlot — it
 // pins where the family's run starts. Null means "anywhere it fits".
-export const assignFamilyToTable =
+const assignFamilyToTable =
   (familyId: string, tableId: string, seatIndex: number | null = null): Action =>
   (plan) => {
     const fam = plan.families[familyId]
@@ -1193,7 +1193,7 @@ export const assignFamilyToTable =
 
 // ── zones ───────────────────────────────────────────────────────────────────
 
-export const addZone =
+const addZone =
   ({
     x,
     y,
@@ -1222,7 +1222,7 @@ export const addZone =
     }
   }
 
-export const removeZone =
+const removeZone =
   (id: string): Action =>
   (plan) =>
     plan.zones[id] ? { type: 'REMOVE_ZONE', label: 'Remove zone', payload: { zones: { [id]: null } } } : null
@@ -1234,12 +1234,12 @@ const patchZone = (plan: Plan, id: string, type: string, label: string, patch: P
   return { type, label, payload: { zones: { [id]: { ...zone, ...patch } } } }
 }
 
-export const moveZone =
+const moveZone =
   (id: string, x: number, y: number): Action =>
   (plan) =>
     patchZone(plan, id, 'MOVE_ZONE', 'Move zone', { x: Math.round(x), y: Math.round(y) })
 
-export const resizeZone =
+const resizeZone =
   (id: string, dims: Partial<Pick<Zone, 'x' | 'y' | 'width' | 'height'>>): Action =>
   (plan) => {
     const next: Partial<Zone> = {}
@@ -1250,13 +1250,13 @@ export const resizeZone =
     return patchZone(plan, id, 'RESIZE_ZONE', 'Resize zone', next)
   }
 
-export const renameZone =
+const renameZone =
   (id: string, label: string): Action =>
   (plan) =>
     plan.zones[id]?.label === label ? null : patchZone(plan, id, 'RENAME_ZONE', 'Rename zone', { label })
 
 /** Round or square, the other way from what it is. */
-export const reshapeZone =
+const reshapeZone =
   (id: string): Action =>
   (plan) => {
     const zone = plan.zones[id]
@@ -1272,7 +1272,7 @@ export const reshapeZone =
 
 const SPACE_COLOURS = ['#FAF8F5', '#F3EFEA', '#EEF3F1', '#F1EEF5', '#F5EFEA']
 
-export const addSpace =
+const addSpace =
   (
     space: {
       shape?: Space['shape']
@@ -1307,7 +1307,7 @@ export const addSpace =
     }
   }
 
-export const removeSpace =
+const removeSpace =
   (id: string): Action =>
   (plan) => {
     const room = plan.room
@@ -1345,17 +1345,17 @@ const patchSpace =
     }
   }
 
-export const renameSpace = patchSpace('RENAME_SPACE', 'Rename space')
-export const recolourSpace = patchSpace('RECOLOUR_SPACE', 'Recolour space')
-export const resizeSpace = patchSpace('RESIZE_SPACE', 'Resize space')
+const renameSpace = patchSpace('RENAME_SPACE', 'Rename space')
+const recolourSpace = patchSpace('RECOLOUR_SPACE', 'Recolour space')
+const resizeSpace = patchSpace('RESIZE_SPACE', 'Resize space')
 
 /** The room as a drag of a space left it, as one step. */
-export const editRoom =
+const editRoom =
   (room: Plan['room']): Action =>
   () => ({ type: 'EDIT_SPACE', label: 'Edit space', payload: { room } })
 
 // Toggle a join between two spaces (open boundary so they read as one floor).
-export const joinSpaces =
+const joinSpaces =
   (a: string, b: string): Action =>
   (plan) => {
     if (a === b) return null
@@ -1371,7 +1371,7 @@ export const joinSpaces =
 
 // ── wall elements (doors, openings on space walls) ───────────────────────────
 
-export const addWallElement =
+const addWallElement =
   ({
     spaceId,
     wallIndex,
@@ -1387,14 +1387,14 @@ export const addWallElement =
     return { type: 'ADD_WALL_ELEMENT', label: `Add ${type}`, payload: { wallElements: { [id]: we } } }
   }
 
-export const removeWallElement =
+const removeWallElement =
   (id: string): Action =>
   (plan) =>
     plan.wallElements[id]
       ? { type: 'REMOVE_WALL_ELEMENT', label: 'Remove wall element', payload: { wallElements: { [id]: null } } }
       : null
 
-export const updateWallElement =
+const updateWallElement =
   (id: string, patch: Partial<WallElement>): Action =>
   (plan) => {
     const we = plan.wallElements[id]
@@ -1404,7 +1404,7 @@ export const updateWallElement =
 
 // ── pillars ──────────────────────────────────────────────────────────────────
 
-export const addPillar =
+const addPillar =
   ({ x, y, radiusUnits = 15 }: { x: number; y: number; radiusUnits?: number }): Action =>
   () => {
     const id = makeId('pillar')
@@ -1415,7 +1415,7 @@ export const addPillar =
     }
   }
 
-export const movePillar =
+const movePillar =
   (id: string, x: number, y: number): Action =>
   (plan) => {
     const pillar = plan.pillars[id]
@@ -1423,14 +1423,14 @@ export const movePillar =
     return { type: 'MOVE_PILLAR', label: 'Move pillar', payload: { pillars: { [id]: { ...pillar, x: Math.round(x), y: Math.round(y) } } } }
   }
 
-export const removePillar =
+const removePillar =
   (id: string): Action =>
   (plan) =>
     plan.pillars[id] ? { type: 'REMOVE_PILLAR', label: 'Remove pillar', payload: { pillars: { [id]: null } } } : null
 
 // ── settings and seating rules ──────────────────────────────────────────────
 
-export const updateSettings =
+const updateSettings =
   (patch: Partial<Settings>): Action =>
   (plan) => {
     const keys = Object.keys(patch) as Array<keyof Settings>

@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import styles from './ColorPicker.module.css'
 
-export const SWATCHES = [
+const SWATCHES = [
   '#7B6FA0',
   '#4A7C59',
   '#C07C2A',

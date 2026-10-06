@@ -3,12 +3,12 @@ import { check } from "@/lib/server/check";
 import { KINDS } from "./items";
 import type { LibraryStore } from "./store";
 
-export interface Reply {
+interface Reply {
   status: number;
   body: unknown;
 }
 
-export const saveSchema = z.object({
+const saveSchema = z.object({
   kind: z.enum(KINDS),
   name: z.string().trim().min(1, "Give it a name.").max(120, "That name is too long."),
   content: z.record(z.string(), z.unknown()),

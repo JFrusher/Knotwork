@@ -381,8 +381,6 @@ export interface CastSlice {
 /** How a group walks: one at a time, side by side in pairs, or in threes. */
 export type Formation = "single" | "pairs" | "threes";
 
-export const FORMATIONS: readonly Formation[] = ["single", "pairs", "threes"];
-
 /** What kind of ceremony it is, which decides the order suggested and what the law asks of it. */
 export type CeremonyKind = "civil" | "religious" | "humanist" | "other";
 export const CEREMONY_KINDS: readonly CeremonyKind[] = ["civil", "religious", "humanist", "other"];

@@ -12,14 +12,14 @@ export type DragMode = "move" | "n" | "s" | "e" | "w" | "nw" | "ne" | "sw" | "se
 /** Movement below this is a click, not a drag. */
 export const MOVE_THRESHOLD_MM = 0.2;
 
-export interface DragState {
+interface DragState {
   id: ElementId;
   box: Rect;
   hitXs: Mm[];
   hitYs: Mm[];
 }
 
-export interface UseDragOptions {
+interface UseDragOptions {
   svgRef: RefObject<SVGSVGElement | null>;
   snapTargets: SnapTargets;
   snapEnabled: boolean;

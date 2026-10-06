@@ -1,15 +1,9 @@
 import type { UploadedFont } from "../core/model/types";
 import { getBlob, putBlob, type BlobBackend } from "./blobStore";
 
-export interface LoadedFont {
-  family: string;
-  blobKey: string;
-  bytes: Uint8Array;
-}
-
 const registered = new Set<string>();
 
-export type AddFontResult = { font: UploadedFont; error?: undefined } | { error: string };
+type AddFontResult = { font: UploadedFont; error?: undefined } | { error: string };
 
 /**
  * Takes an uploaded file, checks it is really a font, stores the bytes and
@@ -30,7 +24,7 @@ export async function addFont(file: File | Blob, backend?: BlobBackend): Promise
 }
 
 /** Makes a family usable in the browser's own text rendering. */
-export async function registerFace(family: string, bytes: Uint8Array): Promise<void> {
+async function registerFace(family: string, bytes: Uint8Array): Promise<void> {
   if (registered.has(family) || typeof FontFace === "undefined") return;
   const face = new FontFace(family, bytes as unknown as BufferSource);
   await face.load();

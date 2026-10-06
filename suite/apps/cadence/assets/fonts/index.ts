@@ -6,7 +6,7 @@
  * fetched off-origin either way, and the same paths work for the Node tests.
  */
 
-export interface BundledFont {
+interface BundledFont {
   family: string;
   /** Served from this app's own origin. */
   url: string;
@@ -42,8 +42,3 @@ export const BUNDLED_FONTS: BundledFont[] = [
   },
 ];
 
-export const DEFAULT_FONT_FAMILY = "Lato";
-
-export function bundledFont(family: string): BundledFont | null {
-  return BUNDLED_FONTS.find((font) => font.family === family) ?? null;
-}

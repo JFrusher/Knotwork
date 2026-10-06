@@ -19,7 +19,7 @@ export const figure = (bar: Bar, id: Figure): number => bar.figures[id] ?? FIGUR
 export const mixOf = (bar: Bar, part: MixedPart): Mix => bar.mix[part] ?? MIXES[bar.kind][part];
 
 /** A line's name, alcohol-free at a no and low bar. */
-export const lineName = (bar: Bar, line: BarLine): string =>
+const lineName = (bar: Bar, line: BarLine): string =>
   bar.kind === "no-and-low" ? (LINES[line].alcoholFree ?? LINES[line].name) : LINES[line].name;
 
 export type Part = "reception" | "toast" | "meal" | "evening";

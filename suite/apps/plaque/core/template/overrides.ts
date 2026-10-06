@@ -13,7 +13,7 @@ export type { ElementPatch };
  * design, not data: it belongs in the project file next to the elements it
  * patches, and it is undoable with them.
  */
-export type RowOverrides = Record<string, Record<ElementId, ElementPatch>>;
+type RowOverrides = Record<string, Record<ElementId, ElementPatch>>;
 
 /**
  * The template as this row should print it.

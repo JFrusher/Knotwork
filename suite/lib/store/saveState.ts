@@ -12,7 +12,7 @@ import type { KnotworkState } from "./useKnotworkStore";
 
 export type SaveTone = "ok" | "busy" | "warn" | "danger";
 
-export interface SaveState {
+interface SaveState {
   /** One or two words, for the pill. */
   label: string;
   tone: SaveTone;

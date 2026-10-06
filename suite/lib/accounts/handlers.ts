@@ -2,7 +2,7 @@ import { weddingState, type WeddingState } from "@/lib/model/weddingState";
 import type { DocumentStore } from "@/lib/documents/store";
 import { ROLE_CAP, type AccountsStore, type Role } from "./store";
 
-export interface Reply {
+interface Reply {
   status: number;
   body: unknown;
 }

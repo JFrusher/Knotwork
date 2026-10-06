@@ -19,7 +19,7 @@ import * as plaque from "@/apps/plaque/state/syncAssets";
  * module here and changes nothing else.
  */
 
-export interface PortableAsset {
+interface PortableAsset {
   id: string;
   bytes: Uint8Array;
 }
