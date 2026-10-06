@@ -33,6 +33,12 @@ export const CONTROLLER = {
   jurisdiction: "England and Wales",
 } as const;
 
+/**
+ * How someone without a GitHub account says what's missing. Only a subject is
+ * prefilled: nothing from the wedding is ever attached.
+ */
+export const FEEDBACK_MAILTO = `mailto:${CONTROLLER.email}?subject=${encodeURIComponent("Something missing from Knotwork")}`;
+
 /** Also stated in `lib/documents/retention.ts`. The two must not drift. */
 export const RETENTION_MONTHS = 24;
 

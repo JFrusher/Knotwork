@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FEEDBACK_MAILTO } from "@/lib/legal";
 import { KO_FI_URL } from "@/lib/support";
 
 export const metadata: Metadata = {
@@ -44,6 +45,17 @@ export default function Support() {
           >
             Buy us a coffee on Ko-fi
           </a>
+        </p>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl">Something missing?</h2>
+        <p className="mt-3 text-slate">
+          A question, or something Knotwork should do for your wedding: no GitHub account needed.{" "}
+          <a href={FEEDBACK_MAILTO} className="underline underline-offset-2 hover:text-charcoal">
+            Tell me by email
+          </a>
+          . Nothing from your wedding is sent unless you attach it.
         </p>
       </section>
 

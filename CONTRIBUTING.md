@@ -24,7 +24,7 @@ or a screenshot. Use the guided tour's example wedding, or invent people.
 
 ## Reporting a bug
 
-Open an issue with:
+Press **New issue** and pick **Something is broken**. The form asks for:
 
 1. **What you did.** The steps, starting from which page.
 2. **What happened.** Include the exact error text if there was one.
@@ -37,13 +37,19 @@ a useful report. Leave the rest blank if you don't know it.
 
 **Security problems** (one account reading another's wedding, a guest link
 revealing more than one seat, anything touching row-level security): do not
-open a public issue. Use GitHub's **Report a vulnerability** button on the
-Security tab, so it can be fixed before it is public.
+open a public issue. Pick **Report a security problem** under **New issue**,
+or use GitHub's **Report a vulnerability** button on the Security tab, so it
+can be fixed before it is public.
+
+A question from a couple, with no GitHub account, goes by email: the
+**Something missing? Tell me.** link in the app's footer, or the
+[Support page](https://knotwork-suite.vercel.app/support).
 
 ## Suggesting a feature
 
-Open an issue that starts from the job, not the solution: "I needed to know
-who was bringing the cake stand" beats "add a cake stand field". Then:
+Press **New issue** and pick **An idea**. Start from the job, not the
+solution: "I needed to know who was bringing the cake stand" beats "add a
+cake stand field". Then:
 
 - Check [ROADMAP.md](ROADMAP.md). It may already be planned, or explicitly
   ruled out with a reason.

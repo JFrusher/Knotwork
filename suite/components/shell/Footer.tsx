@@ -1,9 +1,5 @@
 import Link from "next/link";
-import { CONTROLLER, PRIVACY } from "@/lib/legal";
-
-// Couples have no GitHub account, so the way to say what's missing is email.
-// Only a subject is prefilled: nothing from the wedding is ever attached.
-const feedback = `mailto:${CONTROLLER.email}?subject=${encodeURIComponent("Something missing from Knotwork")}`;
+import { FEEDBACK_MAILTO, PRIVACY } from "@/lib/legal";
 
 /**
  * The footer, on every page of the application and on the guest page.
@@ -46,7 +42,7 @@ export function Footer() {
             Support
           </Link>
           <a
-            href={feedback}
+            href={FEEDBACK_MAILTO}
             className="inline-flex min-h-11 items-center px-2 underline underline-offset-2 hover:text-charcoal"
           >
             Something missing? Tell me.
