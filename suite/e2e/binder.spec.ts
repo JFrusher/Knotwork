@@ -23,8 +23,11 @@ test("on the day: what is on now, a guest's table, a number to ring, a shot tick
 
   const binder = page.getByRole("navigation", { name: "The Binder" });
   await binder.getByRole("button", { name: "Find" }).click();
-  await page.getByRole("searchbox", { name: "A guest’s name" }).fill("zainab lind");
-  await expect(page.getByRole("region", { name: "Find a guest" }).getByRole("listitem")).toHaveText([/Zainab Lindqvist\s*Table \d+/]);
+  await page.getByRole("searchbox", { name: "A guest, a box, or what is in one" }).fill("zainab lind");
+  await expect(page.getByRole("list", { name: "Guests" }).getByRole("listitem")).toHaveText([/Zainab Lindqvist\s*Table \d+/]);
+  await page.getByRole("searchbox", { name: "A guest, a box, or what is in one" }).fill("rings");
+  await expect(page.getByRole("list", { name: "Boxes" }).getByRole("listitem").first()).toHaveText(/The rings and the paperwork.*, by \d\d:\d\d/);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 
   await binder.getByRole("button", { name: "Ring" }).click();
   await expect(page.getByRole("link", { name: "Ring Eleanor Vane Photography, 07700 900141" })).toHaveAttribute("href", "tel:07700900141");
