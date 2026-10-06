@@ -167,6 +167,13 @@ const nextConfig: NextConfig = {
   // whose source is already public, so they reveal nothing new, and Sentry
   // fetches them from the deployment to turn minified frames back into lines.
   productionBrowserSourceMaps: true,
+  // Next traces sharp (three platform builds, ~47 MB) into every server
+  // function for its image optimizer. Nothing here uses `next/image`, Vercel
+  // optimizes images on its own infrastructure, and `next/og` renders with
+  // resvg, so the weight was dead and stored again with every deployment.
+  outputFileTracingExcludes: {
+    "*": ["../node_modules/sharp/**", "../node_modules/@img/**"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: [...securityHeaders, ...buildHeaders] }];
   },
