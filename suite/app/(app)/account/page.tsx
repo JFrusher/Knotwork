@@ -11,6 +11,7 @@ import { SignInFailed } from "@/components/shell/SignInFailed";
 import { WeddingPeople } from "@/components/shell/WeddingPeople";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import type { WeddingListing } from "@/lib/accounts/handlers";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 type AccountState = { signedIn: false } | { signedIn: true; me: string; weddings: WeddingListing[] };
 
@@ -108,8 +109,7 @@ export default function AccountPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
-      <h1 className="mt-3 font-display text-3xl text-charcoal">Your account</h1>
+      <h1 className="font-display text-3xl text-charcoal">Your account</h1>
 
       {!client ? (
         <p className="mt-6 text-slate">
@@ -162,7 +162,7 @@ export default function AccountPage() {
                 <>
                   <WeddingPeople weddingId={open} me={state.me} onNotice={say} />
                   <section className="space-y-3 border-t border-charcoal/10 pt-6">
-                    <h2 className="text-xs tracking-widest text-slate uppercase">Your data</h2>
+                    <h2 className={`text-slate ${EYEBROW}`}>Your data</h2>
                     <p className="text-sm text-slate">
                       Download the wedding open here as one file — guests, seating, the day, the
                       crew and the stationery. It opens in Knotwork anywhere, including your own

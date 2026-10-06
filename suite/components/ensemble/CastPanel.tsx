@@ -9,6 +9,7 @@ import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { roleLabel } from "@/lib/model/partners";
 import { CAST_ROLES, SINGLE_ROLES, type CastSlice, type Guest } from "@/lib/model/types";
 import { addCustomRole, removeCustomRole, renameCustomRole, setCastRole, setCustomRoleMembers } from "@/lib/cast/actions";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 /** Who is who, shared with Ceremony: a mother named here walks there too. */
 export function CastPanel({
@@ -61,7 +62,7 @@ export function CastPanel({
               aria-label="Role name"
               value={role.name}
               onChange={(e) => onChange(renameCustomRole(cast, role.id, e.target.value))}
-              className="min-w-0 flex-1 bg-transparent text-xs tracking-widest text-slate uppercase"
+              className={`min-w-0 flex-1 bg-transparent text-slate ${EYEBROW}`}
             />
             <IconButton icon={Trash2} label={`Remove ${role.name}`} tone="danger" onClick={() => onChange(removeCustomRole(cast, role.id))} />
           </div>

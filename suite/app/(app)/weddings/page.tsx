@@ -54,8 +54,7 @@ export default function WeddingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
-      <h1 className="mt-3 font-display text-3xl text-charcoal">Your weddings</h1>
+      <h1 className="font-display text-3xl text-charcoal">Your weddings</h1>
 
       {!client ? (
         <p className="mt-6 text-slate">Accounts are not set up on this deployment.</p>

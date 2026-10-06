@@ -10,6 +10,7 @@ import { GUESTS, TOOLS, type Tab } from "@/lib/tools";
 import { SignInFailed } from "./SignInFailed";
 import { TakeTheTour } from "./TourButtons";
 import { useWideScreen } from "./LandscapeGate";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 /** Where each area is worked on, and how it is drawn. */
 const PLACES = { guests: GUESTS, ...Object.fromEntries(TOOLS.map((tool) => [tool.id, tool])) } as Record<AreaId, Tab>;
@@ -61,7 +62,7 @@ export function Overview() {
       </section>
 
       <section aria-labelledby="areas-heading" className="mt-12">
-        <h2 id="areas-heading" className="mb-4 text-sm tracking-[0.14em] text-slate uppercase">
+        <h2 id="areas-heading" className={`mb-4 text-slate ${EYEBROW}`}>
           Where things stand
         </h2>
         <ul data-tour="shell.areas" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -81,7 +82,7 @@ export function Overview() {
 
       {rest.length > 0 ? (
         <section aria-labelledby="left-heading" className="mt-12">
-          <h2 id="left-heading" className="mb-4 text-sm tracking-[0.14em] text-slate uppercase">
+          <h2 id="left-heading" className={`mb-4 text-slate ${EYEBROW}`}>
             Also left
           </h2>
           <ul className="flex flex-col gap-2">
@@ -106,7 +107,7 @@ function NextStep({ item }: { item: Readiness }) {
   }`;
   const message = (
     <span className="min-w-0 flex-1">
-      <span className="block text-xs tracking-[0.14em] text-slate uppercase">Next</span>
+      <span className={`block text-slate ${EYEBROW}`}>Next</span>
       <span className="mt-1 block text-lg text-charcoal">{item.message}</span>
     </span>
   );

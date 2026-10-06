@@ -5,6 +5,7 @@ import { Mail } from "lucide-react";
 import { browserClient } from "@/lib/accounts/browserClient";
 import { enabledProviders, type Provider } from "@/lib/accounts/providers";
 import { Button, TextField } from "@/components/ui/controls";
+import { EYEBROW } from "@/components/ui/eyebrow";
 
 function GoogleMark() {
   return (
@@ -252,7 +253,7 @@ export default function LoginPage() {
                 </button>
               ))}
             </div>
-            <div className="my-6 flex items-center gap-3 text-xs tracking-[0.14em] text-slate uppercase" role="separator">
+            <div className={`my-6 flex items-center gap-3 text-slate ${EYEBROW}`} role="separator">
               <span className="h-px flex-1 bg-charcoal/15" />
               or
               <span className="h-px flex-1 bg-charcoal/15" />
@@ -283,8 +284,7 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-12 sm:py-16">
-      <p className="text-sm tracking-[0.14em] text-slate uppercase">Knotwork</p>
-      <h1 className="mt-3 font-display text-3xl text-charcoal">Sign in</h1>
+      <h1 className="font-display text-3xl text-charcoal">Sign in</h1>
       {content}
     </div>
   );
