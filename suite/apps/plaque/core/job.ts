@@ -95,7 +95,9 @@ export function buildJob(input: JobInput): JobResult {
     if (input.only || input.limit !== undefined) throw new Error("A booklet is printed whole: its pages share sheets.");
     const imposed = bookletOrder(artefacts.length).map((index) => artefacts[index]!);
     const { flipEdge, paper } = input.booklet;
-    const sides = paginate(input.template, imposed, input.card, bookletSheet(input.card, input.sheet, paper), input.resolve).sheets;
+    // Bleed would run across the fold onto the facing page: a home booklet has none.
+    const card = { ...input.card, bleedMm: 0 };
+    const sides = paginate(input.template, imposed, card, bookletSheet(card, input.sheet, paper), input.resolve).sheets;
     // On a landscape sheet a short-edge flip keeps the backs upright; a long-edge one turns them over.
     const sheets = sides.map((side, index) => (index % 2 === 1 && flipEdge === "long" ? rotateSheet180(side) : side));
     return { sheets, warnings: front.warnings, artefactCount: artefacts.length, slugTexts: [], slugRuleMm: SLUG_RULE_MM, buildHash };

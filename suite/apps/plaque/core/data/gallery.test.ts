@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
 import { ROOM_COLUMNS } from "../../state/fromRoom";
+import { BOOKLET_COLUMNS } from "../../state/fromCeremony";
+import { INSIDE_PAGE_COLUMN, PAGE_COLUMN, PAGE_ROLE_COLUMN } from "./booklet";
 import { describe, expect, it } from "vitest";
 import { BUNDLED_FONTS } from "../../assets/fonts";
 import { parseCsv } from "@/lib/data/csv";
@@ -55,15 +57,21 @@ describe("the template gallery", () => {
     for (const entry of GALLERY) {
       for (const el of entry.template.elements) {
         if (el.kind === "grid") expect([entry.id, fonts.has(el.headingFontId)]).toEqual([entry.id, true]);
+        if (el.kind === "service") {
+          for (const id of [el.heading.fontId, el.detail.fontId, el.words.fontId, el.congregationFontId]) {
+            expect([entry.id, fonts.has(id)]).toEqual([entry.id, true]);
+          }
+        }
         if (el.kind !== "text" && el.kind !== "list" && el.kind !== "grid" && el.kind !== "room") continue;
         expect([entry.id, fonts.has(el.fontId)]).toEqual([entry.id, true]);
       }
     }
   });
 
-  it("binds only to columns the room gives every card", () => {
+  it("binds only to columns the room gives every card, or a booklet every page", () => {
+    const pageColumns = [...BOOKLET_COLUMNS, PAGE_COLUMN, PAGE_ROLE_COLUMN, INSIDE_PAGE_COLUMN];
     for (const entry of GALLERY) {
-      expect([entry.id, unboundTokens(entry.template, [...ROOM_COLUMNS])]).toEqual([entry.id, []]);
+      expect([entry.id, unboundTokens(entry.template, entry.booklet ? pageColumns : [...ROOM_COLUMNS])]).toEqual([entry.id, []]);
     }
   });
 

@@ -8,7 +8,6 @@ import { dayPlaces, readCast, readCeremony, readGuests, readSeating } from "@/li
 import { ceremonyPlace } from "./checks";
 import { musicCues } from "./music";
 import { renderMusicSheet } from "./render/pdf/musicSheet";
-import { renderOrderOfService } from "./render/pdf/orderOfService";
 import { renderProcessionalSheet } from "./render/pdf/processionalSheet";
 import { renderRunningOrder } from "./render/pdf/runningOrder";
 import { orderRows, orderText, processionalRows, processionalText } from "./rows";
@@ -100,17 +99,6 @@ describe("the ceremony, printed", () => {
     expect(text).toContain("Cue: The music changes as the couple enter");
   });
 
-  it("is an order of service for the guests, with the words only of what the couple chose to print", async () => {
-    const { text } = await textOf(await renderOrderOfService(guestBlocks(order, ceremony.guestCopy), { fontSource: nodeFontSource, event: doc.event, where: place }));
-    expect(text).toContain("The marriage of Alex & Sam");
-    expect(text).toContain("Let me not to the marriage of true minds");
-    expect(text).toContain("The water is wide, I can't cross o'er,");
-    // A song that is its own part is named once, with whose it is.
-    expect(text).not.toContain("The Water Is Wide — Traditional");
-    expect(text).toContain("Traditional");
-    expect(text).not.toContain("The best man has them");
-    expect(text).not.toContain("13:30");
-  });
 });
 
 describe("the guests' copy", () => {
@@ -130,9 +118,12 @@ describe("the guests' copy", () => {
     expect(guestBlocks(wordsOnly, ceremony.guestCopy)[song]!.passages).toEqual([]);
   });
 
-  it("sets responses from the left, everyone's lines in bold", async () => {
-    const vows = { ...order[5]!, words: "Will you take Sam?\nI will.\nAll: We will.", layout: "responses" as const, printWords: true };
-    const { text } = await textOf(await renderOrderOfService(guestBlocks([vows], ceremony.guestCopy), { fontSource: nodeFontSource, event: doc.event, where: place }));
-    expect(text).toContain("All: We will.");
+  it("says nothing for running the day: no times, cues or notes, and a song is named once", () => {
+    const told = JSON.stringify(guestBlocks(order, ceremony.guestCopy));
+    expect(told).not.toContain("The best man has them");
+    expect(told).not.toContain("13:30");
+    expect(told).not.toContain("As the registrar brings out the register");
+    const song = guestBlocks(order, ceremony.guestCopy).find((block) => block.title === "The Water Is Wide")!;
+    expect(song.music).toEqual(["Traditional"]);
   });
 });

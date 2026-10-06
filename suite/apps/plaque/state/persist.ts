@@ -1,5 +1,5 @@
 import type { GuestRow } from "../core/data/rows";
-import type { Template } from "../core/types";
+import type { Booklet, Template } from "../core/types";
 import type { Piece, Suite } from "./design";
 import type { Merged } from "./fromRoom";
 import type { Printed } from "./printed";
@@ -112,6 +112,7 @@ function readPiece(
     // Absent in anything written before boards could be tiled at home.
     sheet: { tilePaper: "A4", ...(source["sheet"] as object) } as Piece["sheet"],
     template: source["template"] as Template,
+    booklet: readBooklet(source["booklet"]),
   };
   if (!legacy) {
     const merged = source["merged"] ?? {};
@@ -139,6 +140,14 @@ function readPiece(
     );
   }
   return { ...design, ...moved, printed: null };
+}
+
+/** A booklet's print choice, or null for a piece of cards: anything unreadable is cards. */
+function readBooklet(value: unknown): Booklet | null {
+  if (!isRecord(value)) return null;
+  const output = value["output"] === "shop" ? "shop" : "home";
+  const paper = value["paper"] === "LETTER" || value["paper"] === "A3" ? value["paper"] : "A4";
+  return { output, paper };
 }
 
 function isPrinted(value: unknown): value is Printed {

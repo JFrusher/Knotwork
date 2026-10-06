@@ -1,5 +1,5 @@
 import { defaultCard, defaultSheet, defaultTemplate } from "../core/template/defaults";
-import type { CardSpec, SheetSpec, Template } from "../core/types";
+import type { Booklet, CardSpec, SheetSpec, Template } from "../core/types";
 import { ROOM_COLUMNS, type Merged } from "./fromRoom";
 import { FIRST_PIECE } from "./suite";
 import type { Printed } from "./printed";
@@ -17,6 +17,8 @@ export interface Design {
   card: CardSpec;
   sheet: SheetSpec;
   template: Template;
+  /** Set when this piece is a booklet — the order of service — and how it is printed. */
+  booklet: Booklet | null;
   /** Guests printed together on one card. See `withMerges`. */
   merged: Merged;
   /** What this piece last went to the printer as, or null if it never has. */
@@ -33,6 +35,7 @@ export const DESIGN_KEYS = [
   "card",
   "sheet",
   "template",
+  "booklet",
   "merged",
   "printed",
   "uploadedIcons",
@@ -47,6 +50,7 @@ export function initialDesign(): Design {
     card: defaultCard(),
     sheet: defaultSheet(),
     template: { elements: [], backgroundHex: null },
+    booklet: null,
     merged: {},
     printed: null,
     uploadedIcons: {},
@@ -62,7 +66,7 @@ export function designOf(source: Design): Design {
 }
 
 /** What each piece has of its own. Everything else in a `Design` is shared by the suite. */
-const PIECE_KEYS = ["card", "sheet", "template", "merged", "printed"] as const satisfies readonly (keyof Design)[];
+const PIECE_KEYS = ["card", "sheet", "template", "booklet", "merged", "printed"] as const satisfies readonly (keyof Design)[];
 
 type PieceDesign = Pick<Design, (typeof PIECE_KEYS)[number]>;
 type SharedDesign = Omit<Design, (typeof PIECE_KEYS)[number]>;

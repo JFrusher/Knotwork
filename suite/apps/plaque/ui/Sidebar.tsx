@@ -32,7 +32,7 @@ function SidebarInner() {
             >
               <summary className={styles.sectionSummary}>
                 <span className={styles.sectionIcon}>{section.icon}</span>
-                <span className={styles.sectionTitle}>{section.title}</span>
+                <span className={styles.sectionTitle}>{typeof section.title === "string" ? section.title : section.title(counts)}</span>
                 <span className={styles.sectionChevron} aria-hidden="true">
                   ▸
                 </span>
@@ -41,7 +41,7 @@ function SidebarInner() {
                 {section.items.map(({ id, title, Component, open, badge, active: isActive }) => (
                   <Panel
                     key={id}
-                    title={title}
+                    title={typeof title === "string" ? title : title(counts)}
                     open={open}
                     badge={badge?.(counts)}
                     active={isActive?.(counts) ?? false}

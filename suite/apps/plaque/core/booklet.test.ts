@@ -12,6 +12,8 @@ import { bookletOrder, bookletRows, PAGE_COLUMN, PAGE_ROLE_COLUMN } from "./data
 import { buildJob } from "./job";
 import { defaultSheet } from "./template/defaults";
 import { ELEMENT_KINDS } from "./template/registry";
+import { GALLERY, fromGallery } from "./data/gallery";
+import { bookletFacts } from "../state/fromCeremony";
 import { makeResolveOptions } from "./template/resolve";
 import { paginateService, typesetService } from "./template/service";
 import { loadFont, type LoadedFont } from "./text/measure";
@@ -149,5 +151,24 @@ describe("a booklet for a print shop", () => {
     expect(built.sheets).toHaveLength(rows.length);
     expect(built.sheets[0]!.cards[0]!.scene.elements.some((el) => el.id === "cover")).toBe(true);
     expect(built.sheets.at(-1)!.cards[0]!.scene.elements.some((el) => el.id === "back")).toBe(true);
+  });
+});
+
+describe("the booklet designs in the gallery", () => {
+  it("print the example wedding's whole service, nothing overflowing, folded at home", async () => {
+    const designs = GALLERY.filter((entry) => entry.booklet);
+    expect(designs.length).toBeGreaterThan(0);
+    for (const entry of designs) {
+      const { card, sheet, template } = fromGallery(entry, a5, defaultSheet(), []);
+      const box = template.elements.find((el): el is ServiceElement => el.kind === "service")!;
+      const inside = paginateService(typesetService(blocks, box, measure).lines, box.h).length;
+      const pages = bookletRows(bookletFacts(doc), inside);
+      const built = buildJob({ template, card, sheet, ...pages, headers: Object.keys(pages.rows[0]!), resolve, booklet: { paper: "A4", flipEdge: "short" } });
+      expect([entry.id, built.warnings.filter((w) => w.kind === "overflow" || w.kind === "missing-font")]).toEqual([entry.id, []]);
+      const { text } = await textOf((await renderPdf({ sheets: built.sheets, fonts })).bytes);
+      for (const expected of ["Alex", "Sonnet 116", "I never writ, nor no man ever lov'd.", "The recessional"]) {
+        expect([entry.id, text.includes(expected)]).toEqual([entry.id, true]);
+      }
+    }
   });
 });

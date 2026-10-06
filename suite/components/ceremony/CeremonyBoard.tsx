@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ArrowDown, ArrowUp, BookOpen, Copy, ListOrdered, Music, Plus, Printer, Trash2, Wand2 } from "lucide-react";
 import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { formatClock } from "@/lib/minutes";
@@ -29,7 +30,6 @@ import {
   setFacts,
 } from "@/lib/ceremony/actions";
 import { ceremonyChecks, ceremonyPlace, lengthOf, musicShort, needsApproval, overrun, startTimes } from "@/lib/ceremony/checks";
-import { guestBlocks } from "@/lib/ceremony/guestCopy";
 import { MOMENT_KIND_NAMES, newMoment } from "@/lib/ceremony/moments";
 import { formatSec, musicCues, songName, songPlaying } from "@/lib/ceremony/music";
 import { suggestOrder } from "@/lib/ceremony/propose";
@@ -124,7 +124,7 @@ export function CeremonyBoard() {
   const rows = () => orderRows(ceremony, guests, seating, cast, event, place);
   const troubleCount = checks.unapproved + checks.witnessesShort + (checks.processionalMissing ? 1 : 0) + (lost ? 1 : 0);
 
-  const print = async (what: "running-order" | "music" | "order-of-service" | "processional") => {
+  const print = async (what: "running-order" | "music" | "processional") => {
     setNote(null);
     try {
       const { browserFontSource } = await import("@/lib/pdf/fontSource");
@@ -138,9 +138,6 @@ export function CeremonyBoard() {
         const { renderMusicSheet } = await import("@/lib/ceremony/render/pdf/musicSheet");
         const labels = new Map(processionalRows(processional, guests, seating, cast, event).map((row, i) => [processional[i]!.id, row.label]));
         bytes = await renderMusicSheet(musicCues(ceremony, (id) => labels.get(id) ?? "A group"), { fontSource, coupleNames: event.coupleNames, generatedOn });
-      } else if (what === "order-of-service") {
-        const { renderOrderOfService } = await import("@/lib/ceremony/render/pdf/orderOfService");
-        bytes = await renderOrderOfService(guestBlocks(rows(), ceremony.guestCopy), { fontSource, event, where: place });
       } else {
         const { renderProcessionalSheet } = await import("@/lib/ceremony/render/pdf/processionalSheet");
         bytes = await renderProcessionalSheet(processionalRows(processional, guests, seating, cast, event), {
@@ -193,9 +190,13 @@ export function CeremonyBoard() {
                 <Button icon={Music} onClick={() => void print("music")}>
                   Music
                 </Button>
-                <Button icon={BookOpen} onClick={() => void print("order-of-service")}>
-                  Order of service
-                </Button>
+                <Link
+                  href="/place-cards?piece=order-of-service"
+                  className="inline-flex items-center gap-1.5 rounded border border-gold bg-gold/15 px-2 py-1.5 text-sm text-charcoal transition hover:bg-gold/25"
+                >
+                  <BookOpen size={14} aria-hidden />
+                  Design the order of service
+                </Link>
                 <Button icon={Copy} onClick={() => void copy()}>
                   Copy as text
                 </Button>

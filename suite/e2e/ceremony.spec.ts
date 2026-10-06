@@ -47,7 +47,7 @@ test("a new wedding adds Ceremony from Tools and is given a starting order, and 
   await expect(page.getByText("No one is set as Partner one yet.")).toBeVisible();
 });
 
-test("the ceremony prints for the officiant, the musicians, the guests and the wedding party, and copies as text", async ({ page, context }) => {
+test("the ceremony prints for the officiant, the musicians and the wedding party, and copies as text", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await seedExampleWedding(page);
   await page.goto("/ceremony");
@@ -58,7 +58,6 @@ test("the ceremony prints for the officiant, the musicians, the guests and the w
 
   expect(await save("Running order")).toBe("alex-and-sam-running-order.pdf");
   expect(await save("Music")).toBe("alex-and-sam-music.pdf");
-  expect(await save("Order of service")).toBe("alex-and-sam-order-of-service.pdf");
   expect(await save("Processional")).toBe("alex-and-sam-processional.pdf");
 
   await page.getByRole("button", { name: "Copy as text" }).click();
@@ -111,4 +110,37 @@ test("the Timeline shows the ceremony's order and music inside its block, and th
   await expect(page.getByRole("list", { name: "The order of service" })).toContainText("13:30 The processional");
   await page.getByRole("link", { name: "Plan it in Ceremony" }).click();
   await expect(page).toHaveURL(/\/ceremony$/);
+});
+
+test("the guests' order of service is designed as a booklet in Place cards, folded onto A4", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/ceremony");
+  await page.getByRole("link", { name: "Design the order of service" }).click();
+
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await expect(pieces.getByRole("button", { name: "Order of service", exact: true })).toHaveAttribute("aria-current", "true");
+  const pages = page.getByRole("group", { name: "Which page of the booklet" });
+  await expect(pages.getByRole("button", { name: "Cover" })).toHaveAttribute("aria-pressed", "true");
+
+  // A picture on one inside page only: added on the inside, then kept to page 3.
+  await pages.getByRole("button", { name: "Inside" }).click();
+  await expect(pages.getByRole("button", { name: "Inside" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "+ Text" }).click();
+  const only = page.getByRole("textbox", { name: "Only on pages" });
+  await only.fill("3");
+  await only.press("Enter");
+  type Piece = { id: string; template: { elements: Array<{ page?: string; onPages?: number[] }> } };
+  await expect
+    .poll(async () => ((await storedDocument(page)).stationery.pieces as Piece[]).find((p) => p.id === "order-of-service-classic")!.template.elements.at(-1))
+    .toMatchObject({ page: "inside", onPages: [3] });
+
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Download booklet PDF" }).click()]);
+  expect(download.suggestedFilename()).toBe("order-of-service.pdf");
+  const { PDFDocument } = await import("pdf-lib");
+  const pdf = await PDFDocument.load(await (await import("node:fs/promises")).readFile((await download.path())!));
+  // Four A5 pages: one sheet of A4, both sides.
+  expect(pdf.getPages().map((p) => [Math.round((p.getWidth() / 72) * 25.4), Math.round((p.getHeight() / 72) * 25.4)])).toEqual([
+    [297, 210],
+    [297, 210],
+  ]);
 });

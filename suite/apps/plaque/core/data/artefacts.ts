@@ -1,5 +1,6 @@
 import type { GuestRow } from "./rows";
 import type { RowScope } from "../types";
+import { PAGE_COLUMN, PAGE_ROLE_COLUMN } from "./booklet";
 
 /**
  * One thing that gets printed.
@@ -152,6 +153,9 @@ export function normalise(value: string): string {
 
 /** The first couple of values, which is how a person recognises their own row. */
 function rowLabel(row: GuestRow, headers: string[]): string {
+  // A booklet's page is known by its number, and which of its designs it is.
+  const role = row[PAGE_ROLE_COLUMN];
+  if (role) return `Page ${row[PAGE_COLUMN]}${role === "inside" ? "" : `, the ${role}`}`;
   const keys = headers.length > 0 ? headers : Object.keys(row);
   const values = keys.map((h) => row[h]).filter((v): v is string => Boolean(v));
   return values.slice(0, 2).join(" ") || "(blank row)";

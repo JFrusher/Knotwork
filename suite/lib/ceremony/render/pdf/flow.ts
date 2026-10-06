@@ -15,7 +15,6 @@ export interface FlowLine {
   sizePt?: number;
   muted?: boolean;
   indentMm?: number;
-  center?: boolean;
 }
 
 /** Lines that stay together on a page: one moment, one piece of music. */
@@ -32,8 +31,6 @@ interface FlowOptions {
   size: "A4" | "A5";
   title: string;
   subtitle?: string;
-  /** The title and subtitle centred, as an order of service's are. */
-  centred?: boolean;
   generatedOn?: string;
 }
 
@@ -51,7 +48,6 @@ interface Wrapped {
   sizePt: number;
   muted: boolean;
   xMm: number;
-  center: boolean;
 }
 
 const heightOf = (lines: Wrapped[]) => lines.reduce((sum, line) => sum + ptToMm(line.sizePt * LEADING), 0) + BLOCK_GAP_MM;
@@ -81,7 +77,6 @@ export async function renderFlow(blocks: FlowBlock[], options: FlowOptions): Pro
           sizePt,
           muted: line.muted ?? false,
           xMm: textX + indent,
-          center: line.center ?? false,
         })),
       );
     });
@@ -110,12 +105,9 @@ export async function renderFlow(blocks: FlowBlock[], options: FlowOptions): Pro
   pages.forEach((indices, pageIndex) => {
     const sheet = addSheet(pdf, size);
     const y0 = box.yMm;
-    const centreX = box.xMm + box.widthMm / 2;
-    const place = (text: string, font: PDFFont, sizePt: number) =>
-      options.centred ? centreX - ptToMm(font.widthOfTextAtSize(text, sizePt)) / 2 : box.xMm;
-    sheet.text(options.title, { xMm: place(options.title, bold, 14), yMm: y0 + 6, font: bold, sizePt: 14 });
+    sheet.text(options.title, { xMm: box.xMm, yMm: y0 + 6, font: bold, sizePt: 14 });
     if (options.subtitle) {
-      sheet.text(options.subtitle, { xMm: place(options.subtitle, regular, 9), yMm: y0 + 12, font: regular, sizePt: 9, colour: MUTED });
+      sheet.text(options.subtitle, { xMm: box.xMm, yMm: y0 + 12, font: regular, sizePt: 9, colour: MUTED });
     }
     if (pages.length > 1) {
       sheet.text(`Page ${pageIndex + 1} of ${pages.length}`, { xMm: box.xMm + box.widthMm, yMm: y0 + 6, font: regular, sizePt: 8, colour: MUTED, alignRight: true });
@@ -136,8 +128,7 @@ export async function renderFlow(blocks: FlowBlock[], options: FlowOptions): Pro
       for (const line of entry.lines) {
         lineY += ptToMm(line.sizePt * LEADING);
         if (!line.text) continue;
-        const x = line.center ? box.xMm + box.widthMm / 2 - ptToMm(line.font.widthOfTextAtSize(line.text, line.sizePt)) / 2 : line.xMm;
-        sheet.text(line.text, { xMm: x, yMm: lineY, font: line.font, sizePt: line.sizePt, colour: line.muted ? MUTED : undefined });
+        sheet.text(line.text, { xMm: line.xMm, yMm: lineY, font: line.font, sizePt: line.sizePt, colour: line.muted ? MUTED : undefined });
       }
       y += entry.heightMm;
     }

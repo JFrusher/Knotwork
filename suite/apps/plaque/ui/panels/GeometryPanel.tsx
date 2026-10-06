@@ -6,7 +6,7 @@ import { suggestLayouts } from "../../core/geometry/suggestLayouts";
 import { STOCK_PRESETS, applyPreset } from "../../core/data/stockPresets";
 import { CARD_PRESETS, applyCardPreset } from "../../core/data/cardPresets";
 import { GALLERY } from "../../core/data/gallery";
-import type { FoldAxis, Mm, Orientation, PageSizeName, PaperName } from "../../core/types";
+import type { Booklet, FoldAxis, Mm, Orientation, PageSizeName, PaperName } from "../../core/types";
 import { MARK_LENGTH_MM } from "../../core/geometry/cropMarks";
 import { usePlaque } from "../../state/store";
 import { CheckboxField, Hint, NumberField, Row, SelectField, SubGroup } from "../controls";
@@ -156,13 +156,14 @@ export function CardPanel() {
 
 /** FR-STA-02, the sheet half: what the press does with the card. */
 export function SheetPanel() {
-  const { card, sheet, setCard, setSheet, applySuggestion } = usePlaque(
+  const { card, sheet, setCard, setSheet, applySuggestion, booklet } = usePlaque(
     useShallow((s) => ({
       card: s.card,
       sheet: s.sheet,
       setCard: s.setCard,
       setSheet: s.setSheet,
       applySuggestion: s.applySuggestion,
+      booklet: s.booklet,
     })),
   );
 
@@ -171,6 +172,8 @@ export function SheetPanel() {
     [card, sheet.printerMarginMm],
   );
   const layout = useMemo(() => computeLayout(card, sheet), [card, sheet]);
+
+  if (booklet) return <BookletSetup booklet={booklet} />;
 
   return (
     <>
@@ -346,6 +349,47 @@ export function SheetPanel() {
           ? `${layout.cols} × ${layout.rows} — ${layout.perSheet} cards per sheet.`
           : "No cards fit at these settings."}
       </Hint>
+    </>
+  );
+}
+
+/**
+ * A booklet is printed one of two ways: folded at home, two pages to a side,
+ * or a page at a time with crop marks for a print shop to fold and trim.
+ */
+function BookletSetup({ booklet }: { booklet: Booklet }) {
+  const setBooklet = usePlaque((s) => s.setBooklet);
+  return (
+    <>
+      <SelectField<Booklet["output"]>
+        label="Printed"
+        value={booklet.output}
+        options={[
+          { value: "home", label: "At home — folded, two pages to a side" },
+          { value: "shop", label: "By a print shop — a page each, with crop marks" },
+        ]}
+        onChange={(output) => setBooklet({ ...booklet, output })}
+      />
+      {booklet.output === "home" ? (
+        <>
+          <SelectField<PaperName>
+            label="On"
+            value={booklet.paper}
+            options={[
+              { value: "A4", label: "A4 — for A5 pages" },
+              { value: "A3", label: "A3 — for A4 pages" },
+              { value: "LETTER", label: "Letter — for half-letter pages" },
+            ]}
+            onChange={(paper) => setBooklet({ ...booklet, paper })}
+          />
+          <Hint>
+            The pages are put in folding order. Print on both sides, turning over on the edge your printer is set to under
+            Print setup, then fold the stack in half. Keep words 10mm from the edge: most home printers cannot reach it.
+          </Hint>
+        </>
+      ) : (
+        <Hint>Each page on its own, 3mm of bleed past its edges and crop marks outside them: what a print shop asks for.</Hint>
+      )}
     </>
   );
 }

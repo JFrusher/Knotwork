@@ -14,7 +14,10 @@ import type {
   ImageFit,
   GridElement,
   ListElement,
+  PageRole,
   RoomElement,
+  ServiceElement,
+  ServiceStyle,
   ShrinkAnchor,
   TextElement,
   VAlign,
@@ -60,6 +63,7 @@ export function InspectorPanel() {
     images,
     cropId,
     setCropId,
+    booklet,
   } = usePlaque(
     useShallow((s) => {
       const artefacts = artefactsOf(s.template, s.rows, s.headers, s.rowIds);
@@ -86,6 +90,7 @@ export function InspectorPanel() {
         images: s.images,
         cropId: s.cropId,
         setCropId: s.setCropId,
+        booklet: s.booklet !== null,
       };
     }),
   );
@@ -132,6 +137,8 @@ export function InspectorPanel() {
           )}
         </div>
       )}
+      {booklet && <PageProperties element={element} patch={patch} />}
+
       <SubGroup title="Position and size">
         <Row>
           <NumberField label="X" value={element.x} step={0.5} suffix="mm" onChange={(x) => patch({ x })} />
@@ -175,6 +182,14 @@ export function InspectorPanel() {
           cardTable={cardTable}
           fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
           fonts={fonts}
+          patch={patch}
+        />
+      )}
+
+      {element.kind === "service" && (
+        <ServiceProperties
+          element={element}
+          fontOptions={[...fonts.keys()].map((id) => ({ value: id, label: fontLabels[id] ?? id }))}
           patch={patch}
         />
       )}
@@ -368,6 +383,116 @@ export function InspectorPanel() {
           </Row>
         </SubGroup>
       )}
+    </>
+  );
+}
+
+/**
+ * Where on a booklet an element is: which of its pages, and on the inside,
+ * every page or only some — a photograph on page 3, a border on them all.
+ */
+function PageProperties({ element, patch }: { element: CardElement; patch: (p: Partial<CardElement>) => void }) {
+  const role = element.page ?? "inside";
+  return (
+    <SubGroup title="On the booklet">
+      <SelectField<PageRole>
+        label="Page"
+        value={role}
+        options={[
+          { value: "cover", label: "The cover" },
+          { value: "inside", label: "The inside pages" },
+          { value: "back", label: "The back" },
+        ]}
+        onChange={(page) => patch({ page, onPages: [] })}
+      />
+      {role === "inside" && <PagesField value={element.onPages ?? []} onChange={(onPages) => patch({ onPages })} />}
+    </SubGroup>
+  );
+}
+
+/** Page numbers as typed, "3, 5": kept when the field is left, so a half-typed list is not fought. */
+function PagesField({ value, onChange }: { value: number[]; onChange: (pages: number[]) => void }) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const commit = (text: string) => {
+    setDraft(null);
+    onChange([...new Set(text.split(/[\s,]+/).map(Number).filter((n) => Number.isInteger(n) && n > 0))].sort((a, b) => a - b));
+  };
+  return (
+    <>
+      <label className={styles.pages}>
+        <span>Only on pages</span>
+        <input
+          type="text"
+          inputMode="numeric"
+          value={draft ?? value.join(", ")}
+          placeholder="Every inside page"
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={(e) => commit(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+          }}
+        />
+      </label>
+      <Hint>Leave it empty for every inside page. To change one page alone, tick &ldquo;Just this one&rdquo; above.</Hint>
+    </>
+  );
+}
+
+/** The order of service's type: its titles, its details, its words, each in its own face. */
+function ServiceProperties({
+  element,
+  fontOptions,
+  patch,
+}: {
+  element: ServiceElement;
+  fontOptions: Array<{ value: string; label: string }>;
+  patch: (p: Partial<CardElement>) => void;
+}) {
+  const style = (key: "heading" | "detail" | "words", title: string) => {
+    const current: ServiceStyle = element[key];
+    const set = (change: Partial<ServiceStyle>) => patch({ [key]: { ...current, ...change } } as Partial<CardElement>);
+    return (
+      <SubGroup title={title}>
+        <SelectField label="Font" value={current.fontId} options={fontOptions} onChange={(fontId) => set({ fontId })} />
+        <Row>
+          <NumberField label="Size" value={current.fontSizePt} step={0.5} min={5} suffix="pt" onChange={(fontSizePt) => set({ fontSizePt })} />
+          <ColorField label="Colour" value={current.colorHex} onChange={(c) => set({ colorHex: c ?? "#000000" })} />
+        </Row>
+      </SubGroup>
+    );
+  };
+  return (
+    <>
+      <Hint>
+        The ceremony as Ceremony tells the guests it, carrying on onto the next inside page when the box is full. What it says —
+        the words, the lyrics, a note to stand — is chosen in Ceremony.
+      </Hint>
+      {style("heading", "Each part's title")}
+      {style("detail", "Whose words, who leads it, the music")}
+      {style("words", "Readings, vows and lyrics")}
+      <SelectField
+        label="Everyone's lines in responses"
+        value={element.congregationFontId}
+        options={fontOptions}
+        onChange={(congregationFontId) => patch({ congregationFontId })}
+      />
+      <SubGroup title="Layout">
+        <SelectField<HAlign>
+          label="Align"
+          value={element.align}
+          options={[
+            { value: "center", label: "Centred" },
+            { value: "left", label: "Left" },
+            { value: "right", label: "Right" },
+          ]}
+          onChange={(align) => patch({ align })}
+        />
+        <Row>
+          <NumberField label="Line height" value={element.lineHeight} step={0.05} min={0.8} onChange={(lineHeight) => patch({ lineHeight })} />
+          <NumberField label="Between parts" value={element.gapMm} step={0.5} min={0} suffix="mm" onChange={(gapMm) => patch({ gapMm })} />
+        </Row>
+        <Hint>Prose and responses are always set from the left, so they read as paragraphs.</Hint>
+      </SubGroup>
     </>
   );
 }

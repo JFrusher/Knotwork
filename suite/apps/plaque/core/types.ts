@@ -367,6 +367,15 @@ export interface QrElement extends ElementBase {
   colorHex: Hex;
 }
 
+/**
+ * A piece that is a folded booklet rather than cards: printed at home, two
+ * pages to a side of `paper` and folded, or page by page for a print shop.
+ */
+export interface Booklet {
+  output: "home" | "shop";
+  paper: PaperName;
+}
+
 /** How one kind of line in the order of service is set. */
 export interface ServiceStyle {
   fontId: string;

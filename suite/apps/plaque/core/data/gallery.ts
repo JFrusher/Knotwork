@@ -1,5 +1,5 @@
 import { rebindTemplate } from "../template/rebind";
-import type { CardSpec, SheetSpec, Template } from "../types";
+import type { Booklet, CardSpec, SheetSpec, Template } from "../types";
 import escortCard from "../../templates/escort-card.json";
 import finder from "../../templates/finder.json";
 import floorPlan from "../../templates/floor-plan.json";
@@ -8,6 +8,7 @@ import seatingBoard from "../../templates/seating-board.json";
 import tableCard from "../../templates/table-card.json";
 import serviceDockets from "../../templates/service-dockets.json";
 import tableMenu from "../../templates/table-menu.json";
+import orderOfServiceClassic from "../../templates/order-of-service-classic.json";
 
 /**
  * The starter gallery (F2) — designs as files in `templates/`.
@@ -33,6 +34,8 @@ export interface GalleryTemplate {
   card: Pick<CardSpec, "widthMm" | "heightMm" | "fold" | "foldPositionMm" | "bleedMm">;
   /** What a design needs of the sheet, when it is more than paper — a board printed at its own size. */
   sheet?: Partial<SheetSpec>;
+  /** Present for a booklet design: the order of service. */
+  booklet?: Booklet;
   template: Template;
 }
 
@@ -50,6 +53,7 @@ const FILES: Record<string, unknown> = {
   "table-card.json": tableCard,
   "service-dockets.json": serviceDockets,
   "table-menu.json": tableMenu,
+  "order-of-service-classic.json": orderOfServiceClassic,
 };
 
 /** Returns the offending field, or null. Named so a bad contribution is findable. */
@@ -112,8 +116,9 @@ export function fromGallery(
   card: CardSpec,
   sheet: SheetSpec,
   headers: string[],
-): { card: CardSpec; sheet: SheetSpec; template: Template } {
+): { card: CardSpec; sheet: SheetSpec; template: Template; booklet: Booklet | null } {
   return {
+    booklet: entry.booklet ?? null,
     card: { ...card, ...entry.card },
     sheet: { ...sheet, ...entry.sheet },
     template: rebindTemplate({ ...entry.template, overrides: {} }, SAMPLE_HEADERS, headers).template,

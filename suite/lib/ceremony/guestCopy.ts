@@ -1,5 +1,8 @@
+import type { Knotwork } from "@jfrusher/knotwork";
+import { dayPlaces, readCast, readCeremony, readGuests, readSeating } from "@/lib/model/slices";
 import type { GuestCopy, WordsLayout } from "@/lib/model/types";
-import type { OrderRow } from "./rows";
+import { ceremonyPlace } from "./checks";
+import { orderRows, type OrderRow } from "./rows";
 
 /** Words set one way: a reading as a poem, the vows as prose, the declarations as responses. */
 export interface GuestPassage {
@@ -51,7 +54,9 @@ function ownMusic(row: OrderRow): string {
   return row.music.startsWith(`${row.title} — `) ? row.music.slice(row.title.length + 3) : row.music;
 }
 
-/** A line of responses spoken by everyone: "All: We will." */
-export function isCongregation(line: string): boolean {
-  return /^\s*all\s*:/i.test(line);
+/** The wedding's guest copy, as it stands: what the booklet and the guest link are made from. */
+export function weddingGuestBlocks(doc: Knotwork): GuestBlock[] {
+  const ceremony = readCeremony(doc);
+  const { place } = ceremonyPlace(ceremony, dayPlaces(doc));
+  return guestBlocks(orderRows(ceremony, readGuests(doc), readSeating(doc), readCast(doc), doc.event, place), ceremony.guestCopy);
 }
