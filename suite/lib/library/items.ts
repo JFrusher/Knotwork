@@ -134,7 +134,11 @@ export function extract(kind: Kind, raw: Raw): Raw | null {
           cue: moment.cue,
           song: moment.song,
           words: moment.kind === "vows" ? "" : moment.words,
-          print: moment.print,
+          author: moment.author,
+          layout: moment.layout,
+          guestNote: moment.guestNote,
+          printWords: moment.printWords,
+          printLyrics: moment.printLyrics,
         })),
         processional: ceremony.processional.map((group) => ({
           label: group.label,

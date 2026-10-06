@@ -28,9 +28,10 @@ import {
   removeWitness,
   setFacts,
 } from "@/lib/ceremony/actions";
-import { ceremonyChecks, ceremonyPlace, lengthOf, needsApproval, overrun, startTimes } from "@/lib/ceremony/checks";
+import { ceremonyChecks, ceremonyPlace, lengthOf, musicShort, needsApproval, overrun, startTimes } from "@/lib/ceremony/checks";
+import { guestBlocks } from "@/lib/ceremony/guestCopy";
 import { MOMENT_KIND_NAMES, newMoment } from "@/lib/ceremony/moments";
-import { musicCues, songName, songPlaying } from "@/lib/ceremony/music";
+import { formatSec, musicCues, songName, songPlaying } from "@/lib/ceremony/music";
 import { suggestOrder } from "@/lib/ceremony/propose";
 import { FORMATION_WORDS, orderRows, orderText, processionalRows } from "@/lib/ceremony/rows";
 import { CEREMONY_KIND_NAMES, suggestService } from "@/lib/ceremony/service";
@@ -42,6 +43,7 @@ import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import {
   CEREMONY_KINDS,
   MOMENT_KINDS,
+  WORDS_LAYOUTS,
   type CastSlice,
   type Ceremony,
   type Formation,
@@ -51,6 +53,7 @@ import {
   type Seating,
   type Side,
   type WalkGroup,
+  type WordsLayout,
 } from "@/lib/model/types";
 
 const CONTROL = "rounded border border-charcoal/15 bg-parchment px-2 py-1 text-sm text-charcoal focus:border-gold";
@@ -76,6 +79,9 @@ const THE_LAW: Record<Ceremony["kind"], string[]> = {
 };
 
 /** What a moment's words are, for the label on the box they are typed in. */
+/** How a part's words are set, as the choice is put. */
+const LAYOUT_NAMES: Record<WordsLayout, string> = { poem: "A poem", prose: "Prose", responses: "Responses" };
+
 const WORDS_LABEL: Partial<Record<MomentKind, string>> = {
   reading: "The reading",
   vows: "The vows",
@@ -134,7 +140,7 @@ export function CeremonyBoard() {
         bytes = await renderMusicSheet(musicCues(ceremony, (id) => labels.get(id) ?? "A group"), { fontSource, coupleNames: event.coupleNames, generatedOn });
       } else if (what === "order-of-service") {
         const { renderOrderOfService } = await import("@/lib/ceremony/render/pdf/orderOfService");
-        bytes = await renderOrderOfService(rows(), { fontSource, event, where: place });
+        bytes = await renderOrderOfService(guestBlocks(rows(), ceremony.guestCopy), { fontSource, event, where: place });
       } else {
         const { renderProcessionalSheet } = await import("@/lib/ceremony/render/pdf/processionalSheet");
         bytes = await renderProcessionalSheet(processionalRows(processional, guests, seating, cast, event), {
@@ -421,6 +427,7 @@ function CeremonyInspector({
     checks.witnessesShort > 0 && `${checks.witnessesShort === 2 ? "Two witnesses" : "One more witness"} still to name.`,
     checks.unapproved > 0 && `${checks.unapproved} ${checks.unapproved === 1 ? "reading or piece of music" : "readings and pieces of music"} not yet approved by the registrar.`,
     checks.processionalMissing && "The processional is not in the order of service: add it where they walk.",
+    ...musicShort(ceremony.order).map(({ moment, silentSec }) => `The music for ${moment.title || "a part"} fades ${formatSec(silentSec)} before it ends.`),
   ].filter((problem): problem is string => typeof problem === "string");
 
   return (
@@ -476,6 +483,14 @@ function CeremonyInspector({
         </ul>
       </Panel>
 
+      <Panel title="The guests' order of service">
+        <Check
+          label="Name the music each group walks to, under the processional"
+          checked={ceremony.guestCopy.processionalMusic}
+          onChange={(processionalMusic) => facts({ guestCopy: { ...ceremony.guestCopy, processionalMusic } }, "the guests' order of service")}
+        />
+      </Panel>
+
       <Panel title="The music, in order">
         {cues.length === 0 ? (
           <Empty>No music chosen yet. Add it to a part of the order, or to a group in the processional.</Empty>
@@ -519,6 +534,7 @@ function MomentInspector({
 }) {
   const patch = (change: Partial<Omit<Moment, "id">>, label: string) => onChange(patchMoment(ceremony, moment.id, change), { label });
   const approving = needsApproval(ceremony).some((entry) => entry.id === moment.id);
+  const silence = musicShort([moment])[0];
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -530,7 +546,11 @@ function MomentInspector({
             onChange={(kind) => patch({ kind }, "what a part is")}
             options={MOMENT_KINDS.map((kind) => ({ value: kind, label: MOMENT_KIND_NAMES[kind] }))}
           />
-          <TextField label="Title" value={moment.title} onChange={(title) => patch({ title }, "a part's title")} placeholder="e.g. Sonnet 116, read by Aunt Jo" />
+          <TextField label="Title" value={moment.title} onChange={(title) => patch({ title }, "a part's title")} placeholder="e.g. Sonnet 116" />
+          {moment.kind !== "processional" && moment.kind !== "music" && (
+            <TextField label="Whose words" value={moment.author} onChange={(author) => patch({ author }, "whose words")} placeholder="e.g. William Shakespeare, or 1 Corinthians 13" />
+          )}
+          <TextField label="A note for the guests" value={moment.guestNote} onChange={(guestNote) => patch({ guestNote }, "a note for the guests")} placeholder="e.g. Please stand" />
           {moment.kind === "processional" && <p className="text-sm text-slate">Who walks, and to what, is in the processional on the left.</p>}
         </div>
       </Panel>
@@ -577,6 +597,11 @@ function MomentInspector({
           )
         }
       >
+        {silence && (
+          <p className="mb-2 text-sm text-danger">
+            It fades {formatSec(silence.silentSec)} before this part ends. Choose a longer piece, a second one, or ask the musicians to repeat.
+          </p>
+        )}
         {moment.song ? (
           <SongFields song={moment.song} onChange={(song) => patch({ song }, "the music")} />
         ) : (
@@ -588,17 +613,26 @@ function MomentInspector({
 
       {moment.kind !== "processional" && moment.kind !== "music" && (
         <Panel title={WORDS_LABEL[moment.kind] ?? "Words"}>
-          <TextArea value={moment.words} onChange={(words) => patch({ words }, "a part's words")} rows={6} />
+          <div className="flex flex-col gap-2">
+            <TextArea value={moment.words} onChange={(words) => patch({ words }, "a part's words")} rows={6} />
+            <Segmented
+              value={moment.layout}
+              onChange={(layout) => patch({ layout }, "how the words are set")}
+              options={WORDS_LAYOUTS.map((value) => ({ value, label: LAYOUT_NAMES[value] }))}
+            />
+            {moment.layout === "responses" && <p className="text-xs text-slate">Start a line with &ldquo;All:&rdquo; for everyone to say it: it is printed in bold.</p>}
+          </div>
         </Panel>
       )}
 
       <Panel title="On paper">
         <div className="flex flex-col gap-2">
-          <Check
-            label="Print its words and lyrics in full in the order of service"
-            checked={moment.print}
-            onChange={(print) => patch({ print }, "what the order of service shows")}
-          />
+          {moment.kind !== "processional" && moment.kind !== "music" && (
+            <Check label="Print its words in full in the order of service" checked={moment.printWords} onChange={(printWords) => patch({ printWords }, "what the order of service shows")} />
+          )}
+          {moment.song && (
+            <Check label="Print the lyrics in full in the order of service" checked={moment.printLyrics} onChange={(printLyrics) => patch({ printLyrics }, "what the order of service shows")} />
+          )}
           {approving && <Check label="Approved by the registrar" checked={moment.approved} onChange={(approved) => patch({ approved }, "the registrar's approval")} />}
           <TextArea label="Notes for the officiant and whoever runs the day" value={moment.notes} onChange={(notes) => patch({ notes }, "a part's notes")} />
         </div>

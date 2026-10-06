@@ -26,8 +26,10 @@ import { resolve } from "@/apps/cadence/core/schedule/resolve";
 import { resolvedDay as resolveDaySlice } from "@/apps/cadence/core/project/day";
 import { DEFAULT_LANES, DEFAULT_OUTPUTS, defaultDay, defaultStyles, emptyDoc } from "@/apps/cadence/core/model/defaults";
 import { newMoment } from "@/lib/ceremony/moments";
-import { BAR_KINDS, BAR_LINES, CAST_ROLES, CEREMONY_KINDS, CROWDS, FIGURES, MIXED_PARTS, MOMENT_KINDS, POURS, SHOPS } from "./types";
+import { BAR_KINDS, BAR_LINES, CAST_ROLES, CEREMONY_KINDS, CROWDS, FIGURES, MIXED_PARTS, MOMENT_KINDS, POURS, SHOPS, WORDS_LAYOUTS } from "./types";
 import type {
+  GuestCopy,
+  WordsLayout,
   CeremonyKind,
   Moment,
   MomentKind,
@@ -938,12 +940,13 @@ function readSong(raw: unknown): Song | null {
     playedBy: str(raw["playedBy"]),
     startSec: seconds(raw["startSec"]),
     endSec: seconds(raw["endSec"]),
+    arrangement: str(raw["arrangement"]),
     lyrics: str(raw["lyrics"]),
   };
 }
 
 /** A song of that title alone: what a group's music was before it was a song. */
-const songTitled = (title: string): Song => ({ title, artist: "", playedBy: "", startSec: null, endSec: null, lyrics: "" });
+const songTitled = (title: string): Song => ({ title, artist: "", playedBy: "", startSec: null, endSec: null, arrangement: "", lyrics: "" });
 
 function readWalkGroup(raw: unknown): WalkGroup | null {
   if (!isRecord(raw) || typeof raw["id"] !== "string") return null;
@@ -973,8 +976,13 @@ function readMoment(raw: unknown): Moment | null {
     minutes: typeof minutes === "number" && Number.isFinite(minutes) && minutes >= 0 ? minutes : null,
     cue: str(raw["cue"]),
     song: readSong(raw["song"]),
+    author: str(raw["author"]),
     words: str(raw["words"]),
-    print: bool(raw["print"], false),
+    layout: WORDS_LAYOUTS.includes(raw["layout"] as WordsLayout) ? (raw["layout"] as WordsLayout) : "poem",
+    guestNote: str(raw["guestNote"]),
+    // One `print` once said both; it still means both until either is changed.
+    printWords: bool(raw["printWords"], bool(raw["print"], false)),
+    printLyrics: bool(raw["printLyrics"], bool(raw["print"], false)),
     approved: bool(raw["approved"], false),
     notes: str(raw["notes"]),
   };
@@ -984,7 +992,12 @@ function readMoment(raw: unknown): Moment | null {
 export const PROCESSIONAL_MOMENT_ID = "moment-processional";
 
 export function emptyCeremony(): Ceremony {
-  return { kind: "civil", blockId: null, officiant: "", witnesses: [], notes: "", order: [], processional: [] };
+  return { kind: "civil", blockId: null, officiant: "", witnesses: [], notes: "", order: [], processional: [], guestCopy: readGuestCopy(undefined) };
+}
+
+function readGuestCopy(raw: unknown): GuestCopy {
+  const copy = isRecord(raw) ? raw : {};
+  return { processionalMusic: bool(copy["processionalMusic"], true) };
 }
 
 /**
@@ -1011,6 +1024,7 @@ export function readCeremony(doc: Knotwork): Ceremony {
       notes: str(raw["notes"]),
       order,
       processional,
+      guestCopy: readGuestCopy(raw["guestCopy"]),
     };
   });
 }

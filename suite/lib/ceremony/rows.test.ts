@@ -12,6 +12,7 @@ import { renderOrderOfService } from "./render/pdf/orderOfService";
 import { renderProcessionalSheet } from "./render/pdf/processionalSheet";
 import { renderRunningOrder } from "./render/pdf/runningOrder";
 import { orderRows, orderText, processionalRows, processionalText } from "./rows";
+import { guestBlocks } from "./guestCopy";
 
 const raw = JSON.parse(readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"));
 const doc = migrate(raw);
@@ -59,7 +60,7 @@ const order = orderRows(ceremony, readGuests(doc), readSeating(doc), readCast(do
 describe("the order of service, read out", () => {
   it("times each part from the ceremony's block, music as guests arrive before it", () => {
     expect(order.map((row) => row.time).slice(0, 4)).toEqual(["Before", "13:30", "13:34", "13:37"]);
-    expect(order[3]).toMatchObject({ title: "Sonnet 116, by William Shakespeare", people: ["Jonty Oyelaran"], print: true });
+    expect(order[3]).toMatchObject({ title: "Sonnet 116", author: "William Shakespeare", people: ["Jonty Oyelaran"], printWords: true });
     expect(order[1]!.groups).toHaveLength(6);
     expect(order.some((row) => row.trouble)).toBe(false);
   });
@@ -100,7 +101,7 @@ describe("the ceremony, printed", () => {
   });
 
   it("is an order of service for the guests, with the words only of what the couple chose to print", async () => {
-    const { text } = await textOf(await renderOrderOfService(order, { fontSource: nodeFontSource, event: doc.event, where: place }));
+    const { text } = await textOf(await renderOrderOfService(guestBlocks(order, ceremony.guestCopy), { fontSource: nodeFontSource, event: doc.event, where: place }));
     expect(text).toContain("The marriage of Alex & Sam");
     expect(text).toContain("Let me not to the marriage of true minds");
     expect(text).toContain("The water is wide, I can't cross o'er,");
@@ -109,5 +110,29 @@ describe("the ceremony, printed", () => {
     expect(text).toContain("Traditional");
     expect(text).not.toContain("The best man has them");
     expect(text).not.toContain("13:30");
+  });
+});
+
+describe("the guests' copy", () => {
+  it("names the music each group walks to under the processional, unless the couple says not to", () => {
+    const processional = guestBlocks(order, ceremony.guestCopy)[1]!;
+    expect(processional.title).toBe("The processional");
+    expect(processional.music).toContain("Canon in D — Johann Pachelbel");
+    expect(guestBlocks(order, { ...ceremony.guestCopy, processionalMusic: false })[1]!.music).toEqual([]);
+  });
+
+  it("prints words and lyrics each only as chosen, a reading's author apart from its title", () => {
+    const blocks = guestBlocks(order, ceremony.guestCopy);
+    expect(blocks[3]).toMatchObject({ title: "Sonnet 116", author: "William Shakespeare" });
+    expect(blocks[3]!.passages[0]!.text).toContain("Let me not to the marriage of true minds");
+    const song = order.findIndex((row) => row.kind === "song");
+    const wordsOnly = order.map((row, i) => (i === song ? { ...row, printLyrics: false } : row));
+    expect(guestBlocks(wordsOnly, ceremony.guestCopy)[song]!.passages).toEqual([]);
+  });
+
+  it("sets responses from the left, everyone's lines in bold", async () => {
+    const vows = { ...order[5]!, words: "Will you take Sam?\nI will.\nAll: We will.", layout: "responses" as const, printWords: true };
+    const { text } = await textOf(await renderOrderOfService(guestBlocks([vows], ceremony.guestCopy), { fontSource: nodeFontSource, event: doc.event, where: place }));
+    expect(text).toContain("All: We will.");
   });
 });

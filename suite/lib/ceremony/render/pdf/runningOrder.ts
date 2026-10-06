@@ -1,7 +1,7 @@
 import { formatClock } from "@/lib/minutes";
 import type { FontSource } from "@/lib/pdf/fontSource";
 import type { Place } from "@/lib/model/slices";
-import type { OrderRow } from "../../rows";
+import { titled, type OrderRow } from "../../rows";
 import { renderFlow, type FlowBlock, type FlowLine } from "./flow";
 
 interface RunningOrderOptions {
@@ -20,7 +20,7 @@ interface RunningOrderOptions {
  */
 export async function renderRunningOrder(rows: OrderRow[], options: RunningOrderOptions): Promise<Uint8Array> {
   const blocks: FlowBlock[] = rows.map((row) => {
-    const lines: FlowLine[] = [{ text: `${row.number}. ${row.title}${row.minutes ? `  ·  ${row.minutes} min` : ""}`, bold: true }];
+    const lines: FlowLine[] = [{ text: `${row.number}. ${titled(row)}${row.minutes ? `  ·  ${row.minutes} min` : ""}`, bold: true }];
     if (row.people.length > 0) lines.push({ text: row.people.join(", ") });
     if (row.cue) lines.push({ text: `Cue: ${row.cue}` });
     if (row.music) lines.push({ text: `Music: ${row.music}${row.playing ? ` — ${row.playing}` : ""}` });

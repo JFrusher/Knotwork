@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { emptyCeremony } from "@/lib/model/slices";
 import { CEREMONY_KINDS, type Ceremony } from "@/lib/model/types";
 import { blankSong, newGroup } from "./actions";
-import { ceremonyChecks, ceremonyPlace, lengthOf, overrun, startTimes } from "./checks";
+import { ceremonyChecks, ceremonyPlace, lengthOf, musicShort, overrun, startTimes } from "./checks";
 import { newMoment } from "./moments";
 import { formatSec, musicCues, parseTime, songPlaying } from "./music";
 import { suggestService } from "./service";
@@ -96,5 +96,31 @@ describe("the music", () => {
       ["The processional — Alex and Sam", "The Water Is Wide", "at the second verse"],
       ["Signing the register", "Air", ""],
     ]);
+  });
+});
+
+describe("music shorter than its part", () => {
+  it("says how long the silence is where the music fades before the part ends", () => {
+    const signing = newMoment("signing", { song: blankSong({ title: "Clair de Lune", startSec: 0, endSec: 300 }) });
+    expect(musicShort([signing])).toEqual([{ moment: signing, silentSec: 300 }]);
+  });
+
+  it("is quiet where the music lasts, plays to its end, or the part has no length", () => {
+    const lasts = newMoment("signing", { song: blankSong({ startSec: 0, endSec: 600 }) });
+    const toTheEnd = newMoment("signing", { song: blankSong({ startSec: 30 }) });
+    const untimed = newMoment("music", { song: blankSong({ endSec: 60 }) });
+    expect(musicShort([lasts, toTheEnd, untimed])).toEqual([]);
+  });
+});
+
+describe("a Church of England service", () => {
+  it("follows Common Worship, says where to stand, and sets the declarations and vows as responses", () => {
+    const order = suggestService("religious");
+    const titles = order.map((moment) => moment.title);
+    expect(titles.indexOf("The declarations")).toBeLessThan(titles.indexOf("The vows"));
+    expect(titles.indexOf("The proclamation")).toBeLessThan(titles.indexOf("The blessing of the marriage"));
+    expect(order.filter((moment) => moment.guestNote === "Please stand").length).toBeGreaterThanOrEqual(3);
+    expect(order.find((moment) => moment.kind === "vows")!.layout).toBe("responses");
+    expect(order.every((moment) => moment.words === "")).toBe(true);
   });
 });

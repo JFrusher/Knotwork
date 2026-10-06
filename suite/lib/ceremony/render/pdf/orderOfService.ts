@@ -3,7 +3,7 @@ import type { FontSource } from "@/lib/pdf/fontSource";
 import { longDate } from "@/lib/dates";
 import { coupleTitle } from "@/lib/model/partners";
 import type { Place } from "@/lib/model/slices";
-import type { OrderRow } from "../../rows";
+import { isCongregation, type GuestBlock, type GuestPassage } from "../../guestCopy";
 import { renderFlow, type FlowBlock, type FlowLine } from "./flow";
 
 interface OrderOfServiceOptions {
@@ -13,30 +13,35 @@ interface OrderOfServiceOptions {
 }
 
 /**
- * The order of service for the guests, on A5: each part's title, who reads
- * or sings, and the music — with the words and lyrics in full only where the
- * couple chose to print them. Nothing for running the day: no times, cues or
- * notes.
+ * The order of service for the guests, on A5: each part's title, whose words,
+ * who reads or sings, the music, and the words and lyrics the couple chose to
+ * print. Nothing for running the day: no times, cues or notes.
  */
-export async function renderOrderOfService(rows: OrderRow[], options: OrderOfServiceOptions): Promise<Uint8Array> {
-  const blocks: FlowBlock[] = rows.map((row) => {
-    const lines: FlowLine[] = [{ text: row.title, bold: true, sizePt: 11, center: true }];
-    if (row.people.length > 0) lines.push({ text: row.people.join(" and "), center: true, muted: true });
-    // A song sung as its own part is already named by its title: say only whose it is.
-    const music = row.music.startsWith(`${row.title} — `) ? row.music.slice(row.title.length + 3) : row.music === row.title ? "" : row.music;
-    if (music) lines.push({ text: music, center: true });
-    if (row.print && row.words) lines.push({ text: row.words, center: true });
-    if (row.print && row.lyrics) lines.push({ text: row.lyrics, center: true });
+export async function renderOrderOfService(blocks: GuestBlock[], options: OrderOfServiceOptions): Promise<Uint8Array> {
+  const flow: FlowBlock[] = blocks.map((block) => {
+    const lines: FlowLine[] = [{ text: block.title, bold: true, sizePt: 11, center: true }];
+    if (block.author) lines.push({ text: block.author, center: true, muted: true });
+    if (block.note) lines.push({ text: block.note, center: true, muted: true });
+    if (block.people.length > 0) lines.push({ text: block.people.join(" and "), center: true, muted: true });
+    for (const music of block.music) lines.push({ text: music, center: true });
+    for (const passage of block.passages) lines.push(...passageLines(passage));
     return { lines };
   });
   const title = coupleTitle(options.event.partners);
   const date = options.event.date ? longDate(options.event.date) : "";
   const venue = options.where?.location || options.event.venueName;
-  return renderFlow(blocks, {
+  return renderFlow(flow, {
     fontSource: options.fontSource,
     size: "A5",
     title: title ? `The marriage of ${title}` : "The order of service",
     subtitle: [date, venue].filter(Boolean).join(" · ") || undefined,
     centred: true,
   });
+}
+
+/** A poem centred line by line; prose and responses from the left, the congregation's lines in bold. */
+function passageLines(passage: GuestPassage): FlowLine[] {
+  if (passage.layout === "poem") return [{ text: passage.text, center: true }];
+  if (passage.layout === "prose") return [{ text: passage.text }];
+  return passage.text.split("\n").map((line) => ({ text: line, bold: isCongregation(line) }));
 }

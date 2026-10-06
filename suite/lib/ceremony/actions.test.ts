@@ -43,7 +43,7 @@ describe("the order of service", () => {
   const service = [newMoment("welcome"), newMoment("reading"), newMoment("vows")].reduce(addMoment, emptyCeremony());
 
   it("makes a moment of a kind with its usual title and length", () => {
-    expect(newMoment("signing")).toMatchObject({ kind: "signing", title: "Signing the register", minutes: 10, song: null, print: false, approved: false });
+    expect(newMoment("signing")).toMatchObject({ kind: "signing", title: "Signing the register", minutes: 10, song: null, printWords: false, printLyrics: false, approved: false });
     expect(newMoment("music").minutes).toBeNull();
   });
 

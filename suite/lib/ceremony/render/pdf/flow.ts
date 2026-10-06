@@ -54,6 +54,8 @@ interface Wrapped {
   center: boolean;
 }
 
+const heightOf = (lines: Wrapped[]) => lines.reduce((sum, line) => sum + ptToMm(line.sizePt * LEADING), 0) + BLOCK_GAP_MM;
+
 /** Blocks of text flowed down pages, each kept whole, with a header on every page. */
 export async function renderFlow(blocks: FlowBlock[], options: FlowOptions): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
@@ -83,11 +85,28 @@ export async function renderFlow(blocks: FlowBlock[], options: FlowOptions): Pro
         })),
       );
     });
-    const heightMm = lines.reduce((sum, line) => sum + ptToMm(line.sizePt * LEADING), 0) + BLOCK_GAP_MM;
-    return { block, lines, heightMm };
+    return { block, lines, heightMm: heightOf(lines) };
   });
 
-  const pages = paginate(measured, box.heightMm - headerMm - 10);
+  const available = box.heightMm - headerMm - 10;
+  // A block taller than a page is cut between lines and carries on overleaf;
+  // only its first part has the time and the mark.
+  const runs = measured.flatMap((entry) => {
+    if (entry.heightMm <= available) return [entry];
+    const parts: (typeof entry)[] = [];
+    let part: Wrapped[] = [];
+    for (const line of entry.lines) {
+      if (part.length > 0 && heightOf([...part, line]) > available) {
+        parts.push({ block: parts.length === 0 ? entry.block : { lines: [] }, lines: part, heightMm: heightOf(part) });
+        part = [];
+      }
+      part.push(line);
+    }
+    parts.push({ block: parts.length === 0 ? entry.block : { lines: [] }, lines: part, heightMm: heightOf(part) });
+    return parts;
+  });
+
+  const pages = paginate(runs, available);
   pages.forEach((indices, pageIndex) => {
     const sheet = addSheet(pdf, size);
     const y0 = box.yMm;
@@ -106,7 +125,7 @@ export async function renderFlow(blocks: FlowBlock[], options: FlowOptions): Pro
 
     let y = y0 + headerMm;
     for (const index of indices) {
-      const entry = measured[index];
+      const entry = runs[index];
       if (!entry) continue;
       const first = entry.lines[0];
       if (entry.block.time && first) {
