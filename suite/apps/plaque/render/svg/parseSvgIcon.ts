@@ -11,7 +11,7 @@ type ParsedIcon = { ok: true; d: string; view: IconViewBox } | { ok: false; reas
  * than a clear "this file will not work".
  */
 export function parseSvgIcon(source: string): ParsedIcon {
-  const doc = new DOMParser().parseFromString(source, "image/svg+xml");
+  const doc = new DOMParser().parseFromString(source, "text/xml");
   if (doc.querySelector("parsererror")) return { ok: false, reason: "That file is not valid SVG." };
 
   const svg = doc.querySelector("svg");
