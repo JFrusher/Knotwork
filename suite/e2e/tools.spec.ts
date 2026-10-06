@@ -9,7 +9,7 @@ import { seedExampleWedding, storedDocument } from "./wedding";
 test("a new wedding has Guests and the five in the header, and adds the rest from Tools", async ({ page }) => {
   await page.goto("/");
   const tabs = page.getByRole("navigation", { name: "Tools" });
-  await expect(tabs.getByRole("link")).toHaveText(["Guests", "Seating", "Place cards", "Timeline", "Delegation", "Group shots"]);
+  await expect(tabs.getByRole("link")).toHaveText(["Guests", "Seating", "Stationery", "Timeline", "Delegation", "Group shots"]);
 
   await tabs.getByRole("button", { name: "Add or remove tools" }).click();
   const panel = page.getByRole("dialog", { name: "Tools" });

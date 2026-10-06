@@ -16,7 +16,7 @@ const ROLES = [
 export function BookletPages({ role, count, onOpen }: { role: string; count: number; onOpen: (index: number) => void }) {
   const first = { cover: 0, inside: 1, back: count - 1 } as const;
   return (
-    <span className={styles.pages} role="group" aria-label="Which page of the booklet">
+    <span data-tour="stationery.pages" className={styles.pages} role="group" aria-label="Which page of the booklet">
       {ROLES.map((entry) => (
         <button key={entry.role} type="button" aria-pressed={role === entry.role} onClick={() => onOpen(first[entry.role])}>
           {entry.label}

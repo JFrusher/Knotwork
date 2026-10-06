@@ -112,7 +112,7 @@ test("the Timeline shows the ceremony's order and music inside its block, and th
   await expect(page).toHaveURL(/\/ceremony$/);
 });
 
-test("the guests' order of service is designed as a booklet in Place cards, folded onto A4", async ({ page }) => {
+test("the guests' order of service is designed as a booklet in Stationery, folded onto A4", async ({ page }) => {
   await seedExampleWedding(page);
   await page.goto("/ceremony");
   await page.getByRole("link", { name: "Design the order of service" }).click();
@@ -143,4 +143,19 @@ test("the guests' order of service is designed as a booklet in Place cards, fold
     [297, 210],
     [297, 210],
   ]);
+});
+
+test("Show me how walks the order of service from Ceremony into the booklet, and the full guide is a page of its own", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/ceremony");
+  await page.getByRole("button", { name: "Show me how" }).click();
+  await expect(page.getByRole("dialog", { name: "Your order of service: Write it here first" })).toBeVisible();
+  for (let i = 0; i < 3; i++) await page.getByRole("button", { name: "Next" }).click();
+  await expect(page).toHaveURL(/\/stationery\?piece=order-of-service$/);
+  await expect(page.getByRole("dialog", { name: "Your order of service: Choose a style, then make it yours" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Pieces" }).getByRole("button", { name: "Order of service", exact: true })).toHaveAttribute("aria-current", "true");
+
+  await page.goto("/blog/design-your-order-of-service");
+  await expect(page.getByRole("heading", { name: "Designing your order of service, in your own style" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "6. The cover, the inside, the back" })).toBeVisible();
 });

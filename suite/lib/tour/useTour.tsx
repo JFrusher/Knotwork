@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useMemo, useState } from "react
 import { useRouter } from "next/navigation";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { hiddenToolIds } from "@/lib/model/toolbox";
-import { CHAPTERS, type ChapterId, type TourChapter, type TourStep } from "./steps";
+import { CHAPTERS, GUIDES, type ChapterId, type TourChapter, type TourStep } from "./steps";
 
 /**
  * Which chapter and step are open.
@@ -62,7 +62,7 @@ const walkOf = (chapters: readonly TourChapter[]): Walk =>
 export function TourProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   // "How this page works" walks one chapter and stops — somebody who asked
-  // about Place cards asked about Place cards. "Take a tour" walks them all.
+  // about Stationery asked about Stationery. "Take a tour" walks them all.
   const [open, setOpen] = useState<{ walk: Walk; index: number } | null>(null);
   const [seen, setSeen] = useState(false);
   const at = open ? open.walk[open.index] : undefined;
@@ -72,7 +72,8 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       const target = next?.walk[next.index];
       setOpen(target ? next : null);
       // Steps carry their own route so a walk can move between tools.
-      if (target && window.location.pathname !== target.step.route) router.push(target.step.route);
+      // A guide's step can name a piece too: the whole address is compared.
+      if (target && window.location.pathname + window.location.search !== target.step.route) router.push(target.step.route);
     },
     [router],
   );
@@ -86,7 +87,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     [go],
   );
   const start = useCallback(
-    (id: ChapterId) => begin(walkOf(CHAPTERS.filter((chapter) => chapter.id === id))),
+    (id: ChapterId) => begin(walkOf([...CHAPTERS, ...GUIDES].filter((chapter) => chapter.id === id))),
     [begin],
   );
   // Every chapter but those of the tools the wedding has removed.

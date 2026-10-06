@@ -1,16 +1,24 @@
 import { expect, test } from "@playwright/test";
 import { openSeating, seedExampleWedding, storedDocument } from "./wedding";
 
+/** Restyles the piece on screen from the gallery, as a couple does from Designs. */
+async function restyle(page: Parameters<typeof storedDocument>[0], design: string): Promise<void> {
+  await page.getByRole("button", { name: "Designs", exact: true }).click();
+  const gallery = page.getByRole("dialog", { name: "Designs" });
+  await gallery.getByRole("button", { name: new RegExp(`^Restyle .+ as ${design.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`) }).click();
+  await expect(gallery).toBeHidden();
+}
+
 const elementCount = async (page: Parameters<typeof storedDocument>[0]) =>
   ((await storedDocument(page)).stationery.pieces[0].template.elements as unknown[]).length;
 
 /*
- * Place cards keep no copy: a design edit is in the wedding as it is made, and
+ * Stationery keeps no copy: a design edit is in the wedding as it is made, and
  * the header's undo — the wedding's one history — takes it back.
  */
 test("something added to the card is stored at once, and the header's undo takes it back", async ({ page }) => {
   await seedExampleWedding(page);
-  await page.goto("/place-cards");
+  await page.goto("/stationery");
   await expect(page.getByRole("button", { name: "+ Text" })).toBeVisible();
   const before = await elementCount(page);
 
@@ -23,7 +31,7 @@ test("something added to the card is stored at once, and the header's undo takes
 
 test("a second piece is designed on its own and kept in the wedding beside the first", async ({ page }) => {
   await seedExampleWedding(page);
-  await page.goto("/place-cards");
+  await page.goto("/stationery");
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await expect(pieces.getByRole("button", { name: "Place cards", exact: true })).toHaveAttribute("aria-current", "true");
   const placeCards = await elementCount(page);
@@ -54,7 +62,7 @@ test("a table renamed in Seating is on the cards with nothing pressed", async ({
   await page.getByLabel("Table name").fill("Head table");
   await page.getByLabel("Table name").press("Enter");
 
-  await page.getByRole("link", { name: "Place cards" }).click();
+  await page.getByRole("link", { name: "Stationery" }).click();
   // Alex Morgan sits at the top table, and is the first card.
   const card = page.getByRole("region", { name: "Card" });
   await expect(card.getByText("Head table")).toBeVisible();
@@ -64,7 +72,7 @@ test("a table renamed in Seating is on the cards with nothing pressed", async ({
 
 test("a seating board goes to a print shop at full size, or onto A4 at home in tiles", async ({ page }) => {
   await seedExampleWedding(page);
-  await page.goto("/place-cards");
+  await page.goto("/stationery");
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await pieces.getByRole("button", { name: "+ New piece" }).click();
   await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
@@ -97,12 +105,12 @@ test("a seating board goes to a print shop at full size, or onto A4 at home in t
 
 test("the seating board starter lays every table out from the room", async ({ page }) => {
   await seedExampleWedding(page);
-  await page.goto("/place-cards");
+  await page.goto("/stationery");
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await pieces.getByRole("button", { name: "+ New piece" }).click();
   await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Seating board");
   await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
-  await page.getByLabel("Start from a design").selectOption({ label: "Seating board — every table, A1" });
+  await restyle(page, "Seating board — every table, A1");
 
   const card = page.getByRole("region", { name: "Card" });
   await expect(card.getByText("Find your seat")).toBeVisible();
@@ -116,12 +124,12 @@ test("the seating board starter lays every table out from the room", async ({ pa
 
 test("the finder starter files every guest A to Z, and carries on to another page when it runs long", async ({ page }) => {
   await seedExampleWedding(page);
-  await page.goto("/place-cards");
+  await page.goto("/stationery");
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await pieces.getByRole("button", { name: "+ New piece" }).click();
   await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Finder");
   await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
-  await page.getByLabel("Start from a design").selectOption({ label: "Finder — every guest A to Z, A2" });
+  await restyle(page, "Finder — every guest A to Z, A2");
 
   const card = page.getByRole("region", { name: "Card" });
   await expect(card.getByText("Find your seat")).toBeVisible();
@@ -139,12 +147,12 @@ test("the finder starter files every guest A to Z, and carries on to another pag
 
 test("the floor plan starter draws the room from Seating, every guest named at their table", async ({ page }) => {
   await seedExampleWedding(page);
-  await page.goto("/place-cards");
+  await page.goto("/stationery");
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await pieces.getByRole("button", { name: "+ New piece" }).click();
   await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Floor plan");
   await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
-  await page.getByLabel("Start from a design").selectOption({ label: "Floor plan — the room to scale, A1" });
+  await restyle(page, "Floor plan — the room to scale, A1");
 
   const card = page.getByRole("region", { name: "Card" });
   await expect(card.getByText("Top table")).toBeVisible();
@@ -159,12 +167,12 @@ test("the floor plan starter draws the room from Seating, every guest named at t
 
 test("the table card starter shows its own table, and who sits where at it", async ({ page }) => {
   await seedExampleWedding(page);
-  await page.goto("/place-cards");
+  await page.goto("/stationery");
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await pieces.getByRole("button", { name: "+ New piece" }).click();
   await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Table cards");
   await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
-  await page.getByLabel("Start from a design").selectOption({ label: "Table card — who sits here, A5" });
+  await restyle(page, "Table card — who sits here, A5");
   // A card for each of the thirteen tables with people at them; the three still to seat have none.
   await expect(page.getByText(/^13 cards · \d+ sheets?$/)).toBeVisible();
   await expect(page.getByText(/3 rows have no Table, so are on none\./)).toBeVisible();
@@ -173,12 +181,12 @@ test("the table card starter shows its own table, and who sits where at it", asy
 
 test("after printing, a change in the room names the cards it made wrong, and reprints just those", async ({ page }) => {
   await seedExampleWedding(page);
-  await page.goto("/place-cards");
+  await page.goto("/stationery");
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await pieces.getByRole("button", { name: "+ New piece" }).click();
   await pieces.getByRole("textbox", { name: "Name of this piece" }).fill("Escort cards");
   await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
-  await page.getByLabel("Start from a design").selectOption({ label: "Escort card — name, table and seat" });
+  await restyle(page, "Escort card — name, table and seat");
   await expect(page.getByRole("region", { name: "Card" }).getByText("Top table", { exact: true })).toBeVisible();
 
   const download = page.waitForEvent("download");
@@ -191,7 +199,7 @@ test("after printing, a change in the room names the cards it made wrong, and re
   await page.getByRole("button", { name: /^Top table, / }).click();
   await page.getByLabel("Table name").fill("Head table");
   await page.getByLabel("Table name").press("Enter");
-  await page.getByRole("link", { name: "Place cards" }).click();
+  await page.getByRole("link", { name: "Stationery" }).click();
 
   await expect(page.getByRole("region", { name: "Card" }).getByText("Head table", { exact: true })).toBeVisible();
   const notice = page.getByRole("status").filter({ hasText: "changed" });
@@ -211,13 +219,13 @@ test("after printing, a change in the room names the cards it made wrong, and re
   await page.screenshot({ path: process.env.SHOT ?? "test-results/reprint.png" });
 });
 
-test("Seating's Print opens Place cards on the floor plan, making it the first time", async ({ page }) => {
+test("Seating's Print opens Stationery on the floor plan, making it the first time", async ({ page }) => {
   await seedExampleWedding(page);
   await openSeating(page);
   await page.getByRole("button", { name: "Print & PDF" }).click();
   await page.getByRole("link", { name: /^Floor plan/ }).click();
 
-  await expect(page).toHaveURL(/\/place-cards\?piece=floor-plan$/);
+  await expect(page).toHaveURL(/\/stationery\?piece=floor-plan$/);
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await expect(pieces.getByRole("button", { name: "Floor plan", exact: true })).toHaveAttribute("aria-current", "true");
   await expect(page.getByRole("region", { name: "Card" }).getByText("Top table")).toBeVisible();
@@ -230,11 +238,11 @@ test("a chair picked on the map goes into the text, and the card names whoever s
   await page.getByRole("button", { name: /^Top table, / }).click();
   await page.getByRole("button", { name: "Seat-level" }).click();
 
-  await page.getByRole("link", { name: "Place cards" }).click();
+  await page.getByRole("link", { name: "Stationery" }).click();
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await pieces.getByRole("button", { name: "+ New piece" }).click();
   await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
-  await page.getByLabel("Start from a design").selectOption({ label: "Table card — who sits here, A5" });
+  await restyle(page, "Table card — who sits here, A5");
   await page.getByRole("button", { name: "+ Text" }).click();
 
   await page.getByRole("button", { name: "Pick a chair" }).click();
@@ -257,11 +265,11 @@ test("a plan's names stamped out as boxes of their own say the same names, once 
   await page.getByRole("button", { name: /^Top table, / }).click();
   await page.getByRole("button", { name: "Seat-level" }).click();
 
-  await page.getByRole("link", { name: "Place cards" }).click();
+  await page.getByRole("link", { name: "Stationery" }).click();
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await pieces.getByRole("button", { name: "+ New piece" }).click();
   await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
-  await page.getByLabel("Start from a design").selectOption({ label: "Floor plan — the room to scale, A1" });
+  await restyle(page, "Floor plan — the room to scale, A1");
 
   const doc = await storedDocument(page);
   const top = Object.values(doc.seating.tables as Record<string, any>).find((t) => t.label === "Top table");
@@ -285,7 +293,7 @@ test("a plan's names stamped out as boxes of their own say the same names, once 
   await page.screenshot({ path: process.env.SHOT ?? "test-results/stamp-chairs.png" });
 });
 
-test("the wedding pack's room is the floor plan as Place cards draws it, on A4", async ({ page }) => {
+test("the wedding pack's room is the floor plan as Stationery draws it, on A4", async ({ page }) => {
   await seedExampleWedding(page);
   await page.goto("/");
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Download the pack" }).click()]);
@@ -307,12 +315,36 @@ test("a guest known by a name of their own is called it on the plan, whatever th
   await knownAs.press("Enter");
   await expect.poll(async () => Object.values((await storedDocument(page)).guests as Record<string, any>).find((g) => g.firstName === "Alex")?.knownAs).toBe("Granny Jo");
 
-  await page.getByRole("link", { name: "Place cards" }).click();
+  await page.getByRole("link", { name: "Stationery" }).click();
   const pieces = page.getByRole("navigation", { name: "Pieces" });
   await pieces.getByRole("button", { name: "+ New piece" }).click();
   await pieces.getByRole("textbox", { name: "Name of this piece" }).press("Enter");
-  await page.getByLabel("Start from a design").selectOption({ label: "Floor plan — the room to scale, A1" });
+  await restyle(page, "Floor plan — the room to scale, A1");
   const card = page.getByRole("region", { name: "Card" });
   await expect(card.getByText("Granny Jo", { exact: true })).toBeVisible();
   await expect(card.getByText("Alex", { exact: true })).toHaveCount(0);
+});
+
+test("an old Place cards link still arrives, at Stationery, on the piece it named", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/place-cards?piece=floor-plan");
+  await expect(page).toHaveURL(/\/stationery\?piece=floor-plan$/);
+  await expect(page.getByRole("navigation", { name: "Pieces" }).getByRole("button", { name: "Floor plan", exact: true })).toHaveAttribute("aria-current", "true");
+});
+
+test("Designs shows every design with the wedding's names, and opens one as a piece of its own", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/stationery");
+  await page.getByRole("button", { name: "Designs", exact: true }).click();
+  const gallery = page.getByRole("dialog", { name: "Designs" });
+  await expect(gallery.getByRole("region", { name: "The order of service" }).getByRole("listitem")).toHaveCount(3);
+  // Only designs of the same kind can restyle the place cards; a booklet opens beside them.
+  await expect(gallery.getByRole("button", { name: /^Restyle Place cards as Order of service/ })).toHaveCount(0);
+  await gallery.getByRole("button", { name: "Open Order of service — Modern, A5 booklet" }).click();
+  await expect(gallery).toBeHidden();
+
+  const pieces = page.getByRole("navigation", { name: "Pieces" });
+  await expect(pieces.getByRole("button", { name: "Order of service", exact: true })).toHaveAttribute("aria-current", "true");
+  await expect(pieces.getByRole("button", { name: "Place cards", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Download booklet PDF" })).toBeVisible();
 });

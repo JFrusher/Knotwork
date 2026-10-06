@@ -27,7 +27,7 @@ const isWideOnServer = () => true;
  * One gate in front of all five tools, rather than a copy inside each.
  *
  * Three tools carried their own, copied from one another: Delegation's told a
- * tablet user to go and open "Cadence", and Place cards named "Plaque" — names
+ * tablet user to go and open "Cadence", and Stationery named "Plaque" — names
  * nobody using Knotwork has ever seen. The name now comes from the same list
  * the tabs are drawn from, so it cannot disagree with the tab above it.
  *

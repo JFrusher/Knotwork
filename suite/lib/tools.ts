@@ -33,7 +33,8 @@ export interface Tab {
 /** Something a wedding can add from the toolbox, or remove. */
 export interface Tool extends Tab {
   id: ToolId;
-  href: `/${ToolId}`;
+  /** Its page. Usually `/<id>`; not always, as the id is data and never renamed while a page can be. */
+  href: string;
   tagline: string;
   /** Shown in a wedding that has never chosen. */
   defaultOn: boolean;
@@ -62,10 +63,10 @@ export const TOOLS: readonly Tool[] = [
   },
   {
     id: "place-cards",
-    href: "/place-cards",
+    href: "/stationery",
     tokens: "plaque-tokens",
-    name: "Place cards",
-    tagline: "Print-ready cards from the plan you just made.",
+    name: "Stationery",
+    tagline: "Place cards, signs and the order of service, from the plan you just made.",
     icon: Contact,
     defaultOn: true,
   },

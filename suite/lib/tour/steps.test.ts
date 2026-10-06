@@ -1,9 +1,9 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { CHAPTERS, chapterForRoute } from "./steps";
+import { CHAPTERS, GUIDES, chapterForRoute } from "./steps";
 
-const ROUTES = new Set(["/", "/guests", "/seating", "/place-cards", "/timeline", "/delegation", "/group-shots"]);
+const ROUTES = new Set(["/", "/guests", "/seating", "/stationery", "/timeline", "/delegation", "/group-shots", "/ceremony", "/stationery?piece=order-of-service"]);
 
 describe("the chapters", () => {
   it("has the front page, then the wedding's own pages, then one chapter per tool", () => {
@@ -44,7 +44,29 @@ describe("the chapters", () => {
   });
 });
 
+describe("the guides", () => {
+  it("each walk one job in six steps or fewer, with words for each and routes that exist, never reusing a tour's anchor", () => {
+    const tour = new Set(CHAPTERS.flatMap((c) => c.steps.map((s) => s.anchor)));
+    for (const guide of GUIDES) {
+      expect(guide.steps.length, guide.id).toBeLessThanOrEqual(6);
+      for (const step of guide.steps) {
+        expect(step.body.length, step.anchor).toBeGreaterThan(20);
+        expect(ROUTES.has(step.route), `${step.anchor} route`).toBe(true);
+        expect(tour.has(step.anchor), step.anchor).toBe(false);
+      }
+    }
+  });
+
+  it("are not in the tour, which stays short", () => {
+    expect(CHAPTERS.map((c) => c.id)).not.toContain("order-of-service");
+  });
+});
+
 describe("chapterForRoute", () => {
+  it("asks Ceremony's help for the order of service, start to finish", () => {
+    expect(chapterForRoute("/ceremony")).toBe("order-of-service");
+  });
+
   it("maps each page with a chapter to its own", () => {
     expect(chapterForRoute("/guests")).toBe("guests");
     expect(chapterForRoute("/seating")).toBe("seating");
@@ -80,7 +102,7 @@ describe("every anchor exists in the source", () => {
   for (const root of roots) walk(root);
   const haystack = sources.join("\n");
 
-  for (const chapter of CHAPTERS) {
+  for (const chapter of [...CHAPTERS, ...GUIDES]) {
     for (const step of chapter.steps) {
       it(`${chapter.id}: ${step.anchor}`, () => {
         expect(

@@ -33,6 +33,98 @@ interface Post {
 
 export const POSTS: readonly Post[] = [
   {
+    slug: "design-your-order-of-service",
+    title: "Designing your order of service, in your own style",
+    description:
+      "Write the ceremony once, then design a folded A5 booklet around it — cover, pages, pictures — and print it at home or send it to a print shop.",
+    published: "2026-10-06",
+    author: "Knotwork",
+    kind: "guide",
+    tool: { href: "/ceremony", name: "Ceremony", invitation: "Start your order of service" },
+    sections: [
+      {
+        paragraphs: [
+          "The order of service is the one piece of stationery every guest holds. It tells them who you are, what is about to happen, when to stand, and the words to a reading they might want to keep. It is also the piece most likely to be wrong: a reading swapped in the last fortnight, a hymn moved, a name misspelt. The way round that is to write the ceremony once, in one place, and let the booklet be made from it.",
+          "This guide walks through doing that in Knotwork, from a blank ceremony to a folded booklet on the table at the door. In the app, the same walk is pointed out on the real buttons: press Show me how in Ceremony.",
+        ],
+      },
+      {
+        heading: "1. Write the ceremony, in order",
+        paragraphs: [
+          "Open Ceremony and choose what kind of ceremony it is. Suggest an order of service gives you a sensible start for that kind — a civil ceremony follows the registrar's legal words, a Church of England one the Common Worship marriage service — and every part of it is yours to rename, move or take out.",
+          "Pick a part to fill it in. A reading has a title and, separately, whose words they are — \"Sonnet 116\" by \"William Shakespeare\", or \"1 Corinthians 13:4–8\" — so the booklet can set the two differently. Name who reads it from your guest list, so the right name is printed even if they change their surname before the day.",
+          "A note for the guests goes under the part's title: \"Please stand\", \"Please remain seated\", \"Confetti outside, please\". Write it once here and it is in the booklet and on your guest link alike.",
+        ],
+      },
+      {
+        heading: "2. Decide what is printed in full",
+        paragraphs: [
+          "For each part you choose whether its words go in the booklet, and separately whether a song's lyrics do. Many couples print the readings, so guests can keep them, and leave the vows to be heard. Hymns usually go in full so everyone can sing.",
+          "Words can be set three ways. A poem is set line by line, as you typed it. Prose runs on as paragraphs. Responses are for the parts everyone says together: start a line with \"All:\" and it is printed in bold — \"All: We will.\" — which is how service sheets in most traditions set them.",
+          "In a civil ceremony your registrar approves the readings and the music in advance, and the content has to be free of anything religious. Ceremony keeps track of which you have had approved and counts any still waiting, so check it says none before you print.",
+        ],
+      },
+      {
+        heading: "3. Add the music",
+        paragraphs: [
+          "Give each piece its title, composer or artist, and its arrangement if it is not the original — \"arranged for string quartet\". The processional's music belongs to the groups who walk to it, and the booklet names each piece under The processional unless you turn that off.",
+          "If a piece is set to fade before its part ends — a five-minute track for a ten-minute signing — Ceremony says how long the room will be quiet, so you can choose a second piece before the day rather than during it.",
+        ],
+      },
+      {
+        heading: "4. Say the rest: welcome, who's who, what's next, thank you",
+        paragraphs: [
+          "Under The guests' order of service in Ceremony you can add a note from the two of you to open the booklet, and one to close it. You can list the wedding party — parents, grandparents, bridesmaids, groomsmen — straight from the people you named in Group shots, so the names match the photographs. And you can tick the parts of the day that come after the ceremony, from your Timeline, so guests know the drinks are on the lawn at half past two.",
+          "None of this is typed into the booklet itself. Move the drinks to three o'clock on the Timeline and the booklet already says three.",
+        ],
+      },
+      {
+        heading: "5. Choose a style, then make it yours",
+        paragraphs: [
+          "Press Design the order of service. It opens in Stationery as a folded A5 booklet: a cover, inside pages, and a back. The first time, it starts from Classic. Open Designs to see the others — Modern and Script — each drawn with your own names; Restyle swaps one for another and keeps any pictures you have added.",
+          "A style is only a starting point. Click anything to change its font, size, colour or position, or add your own text, lines, shapes and pictures from Elements. Your names, date and venue are filled in wherever the design says {{Couple}}, {{Date}} or {{Venue}}, and {{Page}} prints the page number.",
+        ],
+      },
+      {
+        heading: "6. The cover, the inside, the back",
+        paragraphs: [
+          "Above the page are three buttons: Cover, Inside and Back. The cover and the back are designed once each. The inside is designed once and repeated on every inside page, so a border, a monogram or a sprig of flowers in the corner appears throughout without being placed again.",
+          "Something you want on one page only — a photograph of the two of you, a picture of the church — goes on the inside with Only on pages set to that page number. To change a single page in any other way, tick Just this one and the change applies to that page alone.",
+          "The ceremony sits in its own box on the inside pages. Click it to choose the fonts and sizes for the titles, the details and the words, and how much space falls between parts. When the box is full the ceremony carries on in the same box on the next page, and a title is never left alone at the foot of a page.",
+        ],
+      },
+      {
+        heading: "7. Pictures and fonts",
+        paragraphs: [
+          "Upload photographs, illustrations or a monogram under Images, then place them with an Image element: fill the box and drag to crop, or fit the whole picture inside it. Pale artwork behind text works well at a low opacity.",
+          "Six faces come with Knotwork, from Crimson Text and Lato to Great Vibes and Parisienne for script. You can upload your own under Fonts — a face from your invitations, say — and use it anywhere in the booklet.",
+        ],
+      },
+      {
+        heading: "8. Mind the page count",
+        paragraphs: [
+          "A booklet made by folding sheets in half always has a multiple of four pages. If your ceremony fills five, the booklet has eight, and Stationery tells you how many pages are blank only so that it folds. Use them — a welcome, the wedding party, a photograph, a page for notes — or make the ceremony's type a little smaller to fit on fewer and save a sheet.",
+        ],
+      },
+      {
+        heading: "9. Print it",
+        paragraphs: [
+          "At home, choose to print folded under Sheet. The PDF puts two pages side by side on each side of A4, already in the order folding needs, so you print both sides, take the stack, fold it in half, and the pages run 1, 2, 3, 4. Your printer turns the paper over either on its long edge or its short one; set yours under Print setup and the backs come out the right way up. Print one copy on plain paper and fold it before you print the rest.",
+          "Home printers cannot print right to the edge of the paper, so keep words a centimetre in from it, and expect a white border round a full-colour cover. If you want colour to the very edge, choose to send it to a print shop instead: each page comes out on its own, with three millimetres of bleed past its edges and crop marks outside them, which is what a shop's own software expects.",
+        ],
+      },
+      {
+        heading: "10. And on their phones",
+        paragraphs: [
+          "If you publish a guest link — the page guests use to find their table — you can put the order of service on it too, from the same switch in Ceremony. It shows exactly what the booklet prints, so someone who has left theirs on the chair can still follow along, and someone who needs larger type can zoom in.",
+        ],
+      },
+    ],
+    sources: [
+      { label: "Hounslow Council — civil ceremonies, frequently asked questions", url: "https://www.hounslow.gov.uk/downloads/file/10635/frequently-asked-questions-civil-ceremonies" },
+    ],
+  },
+  {
     slug: "how-much-drink-for-a-uk-wedding",
     title: "How much drink to buy for a UK wedding",
     description:

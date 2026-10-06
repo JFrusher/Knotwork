@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowDown, ArrowUp, BookOpen, Copy, ListOrdered, Music, Plus, Printer, Trash2, Wand2 } from "lucide-react";
+import { ArrowDown, ArrowUp, BookOpen, Copy, HelpCircle, ListOrdered, Music, Plus, Printer, Trash2, Wand2 } from "lucide-react";
+import { useTour } from "@/lib/tour/useTour";
 import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import { formatClock } from "@/lib/minutes";
 import { Button, Check, Empty, IconButton, Panel, Segmented, SelectField, TextArea, TextField } from "@/components/ui/controls";
@@ -191,7 +192,8 @@ export function CeremonyBoard() {
                   Music
                 </Button>
                 <Link
-                  href="/place-cards?piece=order-of-service"
+                  data-tour="ceremony.design"
+                  href="/stationery?piece=order-of-service"
                   className="inline-flex items-center gap-1.5 rounded border border-gold bg-gold/15 px-2 py-1.5 text-sm text-charcoal transition hover:bg-gold/25"
                 >
                   <BookOpen size={14} aria-hidden />
@@ -486,7 +488,8 @@ function CeremonyInspector({
         </ul>
       </Panel>
 
-      <Panel title="The guests' order of service">
+      <div data-tour="ceremony.guestcopy">
+      <Panel title="The guests' order of service" right={<ShowMeHow />}>
         <div className="flex flex-col gap-3">
           <TextArea label="A note to open with" value={copy.welcome} onChange={(welcome) => guestCopy({ welcome })} rows={3} />
           <Check label="Name the music each group walks to, under the processional" checked={copy.processionalMusic} onChange={(processionalMusic) => guestCopy({ processionalMusic })} />
@@ -510,9 +513,15 @@ function CeremonyInspector({
             checked={copy.onGuestLink}
             onChange={(onGuestLink) => guestCopy({ onGuestLink })}
           />
-          <p className="text-xs text-slate">Designed and printed as a booklet in Place cards: &ldquo;Design the order of service&rdquo;, above.</p>
+          <p className="text-xs text-slate">
+            Designed and printed as a booklet in Stationery: &ldquo;Design the order of service&rdquo;, above.{" "}
+            <Link href="/blog/design-your-order-of-service" className="underline underline-offset-2">
+              The whole guide
+            </Link>
+          </p>
         </div>
       </Panel>
+      </div>
 
       <Panel title="The music, in order">
         {cues.length === 0 ? (
@@ -795,4 +804,14 @@ function describe(problem: MemberProblem): string {
     case "empty":
       return "Nobody is named yet.";
   }
+}
+
+/** The order of service, start to finish, pointed out on the page: the guide. */
+function ShowMeHow() {
+  const { start } = useTour();
+  return (
+    <Button icon={HelpCircle} onClick={() => start("order-of-service")}>
+      Show me how
+    </Button>
+  );
 }

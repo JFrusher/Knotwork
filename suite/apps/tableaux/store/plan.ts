@@ -8,7 +8,7 @@ import type { Family, Guest, Plan, Room, Settings, Space, Subgroup, Table } from
  * Seating's plan, read from the wedding and written back to it.
  *
  * The wedding keeps a plan in two slices rather than one, because the guest
- * list is not Seating's alone. Place cards print from it, Delegation counts
+ * list is not Seating's alone. Stationery prints from it, Delegation counts
  * heads with it, the Guests page edits it. Keeping it in the shared `guests`
  * slice means all of that reads and writes one list. Everything else —
  * tables, zones, room, groups, settings, snapshots — is `seating`, and

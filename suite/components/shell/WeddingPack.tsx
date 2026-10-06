@@ -89,8 +89,8 @@ export function WeddingPack() {
       <p className="mb-4 max-w-prose text-sm text-slate">
         The floor plan, the run sheet, the job list and the group shot list — and the processional,
         the packing list and the drinks to buy, from the tools you use — as one document, printed
-        from the wedding as it stands right now. Place cards are a separate print — they
-        go on card stock, not in a binder.
+        from the wedding as it stands right now. Place cards and the order of service are printed
+        from Stationery — they go on card stock, not in a binder.
       </p>
 
       <button
@@ -128,7 +128,7 @@ export function WeddingPack() {
   );
 }
 
-/** The room as Place cards draws it: the wedding's own floor plan, on A4. */
+/** The room as Stationery draws it: the wedding's own floor plan, on A4. */
 async function floorPlan(): Promise<Uint8Array | null> {
   const { packFloorPlanPdf } = await import("@/apps/plaque/export/packFloorPlan");
   return packFloorPlanPdf(useKnotworkStore.getState());

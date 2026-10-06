@@ -73,7 +73,7 @@ function makeToPdf(pageHeightMm: Mm) {
 export async function renderPdf(opts: RenderPdfOptions): Promise<RenderPdfResult> {
   const scale = effectiveScale(opts.scale);
   const doc = await PDFDocument.create();
-  doc.setTitle(opts.title ?? "Place cards");
+  doc.setTitle(opts.title ?? "Stationery");
   doc.setProducer("Plaque");
   doc.setCreator("Plaque");
   if (opts.deterministic) {

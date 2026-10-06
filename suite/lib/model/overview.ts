@@ -111,7 +111,7 @@ function seating(doc: Knotwork): Area {
 function placeCards(doc: Knotwork, raw: unknown): Area {
   const pieces = stationeryPieces(raw);
   if (pieces.length === 0) return { id: "place-cards", summary: "No card design yet", detail: "", progress: null };
-  // A card for everyone coming: the rows Place cards draws from the room.
+  // A card for everyone coming: the rows Stationery draws from the room.
   const cards = Object.values(readGuests(doc)).filter(isComing).length;
   return {
     id: "place-cards",
