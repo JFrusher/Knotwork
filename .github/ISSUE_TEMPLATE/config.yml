@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: A security problem
+    url: https://github.com/JFrusher/Knotwork/security/advisories/new
+    about: One account reading another's wedding, a guest link revealing more than one seat, anything touching row-level security. Report it privately so it can be fixed before it is public.
+  - name: A question about planning your wedding
+    url: mailto:jacob@frusher.co.uk
+    about: Not a developer? Email instead. No GitHub account needed.

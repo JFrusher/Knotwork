@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { CloudOff, Download, FileUp, History, Upload, X } from "lucide-react";
-import { migrate, serialise, suggestedFilename } from "@jfrusher/knotwork";
+import { migrate } from "@jfrusher/knotwork";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { Button, Notice, Panel, TextField } from "@/components/ui/controls";
 import { Dialog } from "@/components/ui/Dialog";
@@ -13,7 +13,8 @@ import { KeptCopies } from "./KeptCopies";
 import { WeddingChoice } from "./WeddingChoice";
 import { useGuestImport } from "./guestImportPanel";
 import { useSyncPanel } from "./syncPanel";
-import { download, readTextFile } from "@/lib/data/file";
+import { readTextFile } from "@/lib/data/file";
+import { downloadWedding } from "@/lib/data/backup";
 
 /**
  * Everything that moves data in or out of the machine, in one place.
@@ -52,9 +53,7 @@ function Body({ onClose }: { onClose: () => void }) {
   const exportJson = useCallback(() => {
     setProblem(null);
     try {
-      const raw = useKnotworkStore.getState().raw;
-      const doc = migrate(raw);
-      download(suggestedFilename(doc), serialise(doc));
+      downloadWedding();
       setNotice("Backup written to your downloads.");
     } catch (cause) {
       setProblem(

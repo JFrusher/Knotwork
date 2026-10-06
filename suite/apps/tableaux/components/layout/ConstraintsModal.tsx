@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import type { ConstraintKind } from '@/lib/model/types'
 import { ruleFor } from '../../store/actions'
 import { useStore } from '../../store/useStore'
+import { computeWarnings } from '../../utils/warnings'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import IconButton from '../ui/IconButton'
@@ -11,6 +12,7 @@ import styles from './ConstraintsModal.module.css'
 
 export default function ConstraintsModal() {
   const guests = useStore((s) => s.guests)
+  const tables = useStore((s) => s.tables)
   const constraints = useStore((s) => s.constraints)
   const addConstraint = useStore((s) => s.addConstraint)
   const removeConstraint = useStore((s) => s.removeConstraint)
@@ -24,18 +26,26 @@ export default function ConstraintsModal() {
   const [kind, setKind] = useState<ConstraintKind>('apart')
   const [a, setA] = useState('')
   const [b, setB] = useState('')
+  const [broken, setBroken] = useState('')
+  /** Any change to the form, or to the rules, moves on from the rule the notice was about. */
+  const moveOn =
+    <T,>(change: (value: T) => void) =>
+    (value: T) => {
+      setBroken('')
+      change(value)
+    }
 
-  // TODO(ux-audit): no feedback if the new rule is already violated by the
-  // current plan — if A and B are already seated together and the user adds
-  // an "apart" rule, this just clears the form; the only way to learn it's
-  // already broken is closing the modal and separately noticing the warning
-  // badge. See tmp/ux-audit.md #G22.
   const paired = a && b ? ruleFor(constraints, a, b) : undefined
   const ready = Boolean(a && b && a !== b && !paired)
 
   const add = () => {
     if (!ready) return
     addConstraint({ kind, guestIds: [a, b] })
+    // Allowed, since a rule is often set just before fixing the plan, but said
+    // here rather than left for the warning badge behind the dialog.
+    const rule = { id: 'new', kind, guestIds: [a, b] as [string, string], note: '' }
+    const warning = computeWarnings({ guests, tables, constraints: [rule] }).find((w) => w.id === `cst_${rule.id}`)
+    setBroken(warning ? `Already broken: ${warning.message}` : '')
     setA('')
     setB('')
   }
@@ -61,20 +71,20 @@ export default function ConstraintsModal() {
           <button
             type="button"
             className={clsx(f.segment, kind === 'apart' && f.segmentActive)}
-            onClick={() => setKind('apart')}
+            onClick={() => moveOn(setKind)('apart')}
           >
             Shouldn&rsquo;t sit together
           </button>
           <button
             type="button"
             className={clsx(f.segment, kind === 'together' && f.segmentActive)}
-            onClick={() => setKind('together')}
+            onClick={() => moveOn(setKind)('together')}
           >
             Should sit together
           </button>
         </div>
         <div className={styles.pair}>
-          <select className={f.select} value={a} onChange={(e) => setA(e.target.value)}>
+          <select className={f.select} value={a} onChange={(e) => moveOn(setA)(e.target.value)}>
             <option value="">Choose a guest…</option>
             {sorted.map((g) => (
               <option key={g.id} value={g.id}>
@@ -83,7 +93,7 @@ export default function ConstraintsModal() {
             ))}
           </select>
           <span className={styles.amp}>and</span>
-          <select className={f.select} value={b} onChange={(e) => setB(e.target.value)}>
+          <select className={f.select} value={b} onChange={(e) => moveOn(setB)(e.target.value)}>
             <option value="">Choose a guest…</option>
             {sorted.map((g) => (
               <option key={g.id} value={g.id}>
@@ -95,6 +105,9 @@ export default function ConstraintsModal() {
             Add
           </Button>
         </div>
+        <p role="status" className={styles.broken}>
+          {broken}
+        </p>
         {paired && (
           <p className={styles.none}>
             These two already have a rule. Remove it below to change it.
@@ -117,7 +130,7 @@ export default function ConstraintsModal() {
                 label="Remove rule"
                 size={26}
                 iconSize={14}
-                onClick={() => removeConstraint(c.id)}
+                onClick={() => moveOn(removeConstraint)(c.id)}
               />
             </li>
           ))}

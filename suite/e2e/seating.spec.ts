@@ -251,3 +251,18 @@ test("a zone is drawn on the floor, then moved", async ({ page }) => {
   await page.getByRole("button", { name: "Undo move zone" }).click();
   await expect.poll(async () => (await zones())[0]!.x).toBe(drawn!.x);
 });
+
+// A family's name is edited inside its block's toggle button, as a group's
+// is. Checked in a real browser, where an input inside a button is the risk.
+test("a family can be renamed by double-clicking its name", async ({ page }) => {
+  const panel = page.getByRole("complementary", { name: "Guests" });
+  await panel.getByText("Smith", { exact: true }).dblclick();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.type("Smith-Jones");
+  await page.keyboard.press("Enter");
+
+  await expect(panel.getByText("Smith-Jones", { exact: true })).toBeVisible();
+  await expect
+    .poll(async () => Object.values((await storedDocument(page)).seating.families as Record<string, { name: string }>).map((family) => family.name))
+    .toContain("Smith-Jones");
+});

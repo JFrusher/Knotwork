@@ -70,11 +70,6 @@ export default function FamilyBlock({
     if (editing) inputRef.current?.select()
   }, [editing])
 
-  // TODO(family-ux): rename didn't visibly take effect in an automated
-  // dblclick+type+Enter test — code here is a 1:1 copy of Group/SubgroupBlock's
-  // already-working rename, so this is more likely a test-harness targeting
-  // issue than a real bug, but never manually confirmed in a live session.
-  // See tmp/family-ux-followups.md #10.
   const commitName = () => {
     const v = draft.trim()
     if (v && v !== family.name) renameFamily(family.id, v)

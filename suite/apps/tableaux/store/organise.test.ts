@@ -114,3 +114,24 @@ describe('a plus-one and families', () => {
     expect(next.families[familyId].memberIds).toEqual([])
   })
 })
+
+describe('family colours', () => {
+  const colours = (p: Plan) => Object.values(p.families).map((f) => f.colour)
+  const deleteFamily = (id: string): Action => () => ({ type: 'DELETE_FAMILY', label: 'Delete family', payload: { families: { [id]: null } } })
+
+  test('ten families get ten different rings', () => {
+    const next = run(plan, ...Array.from({ length: 10 }, () => createFamily()))
+    expect(new Set(colours(next)).size).toBe(10)
+  })
+
+  test('a deleted family’s colour is the next one given out', () => {
+    const [two, meta] = step(run(plan, createFamily()), createFamily())
+    const second = meta.newFamilyId as string
+    const freed = two.families[second].colour
+
+    const [after, made] = step(run(two, createFamily(), deleteFamily(second)), createFamily())
+
+    expect(after.families[made.newFamilyId as string].colour).toBe(freed)
+    expect(new Set(colours(after)).size).toBe(3)
+  })
+})

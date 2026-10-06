@@ -1017,11 +1017,20 @@ const assignSubgroupToTable =
 // all — the same way a Group can. A guest has at most one deepest container at
 // a time, mirroring how subgroupId already implies a matching groupId.
 
-// TODO(family-ux): only 8 colours, cycles by index — confirmed real collisions
-// once a plan has >8 families (two families end up sharing a ring colour,
-// which defeats the "spot a family at a glance" goal the ring exists for).
-// See tmp/family-ux-followups.md #1.
-const FAMILY_COLOURS = ['#B3866B', '#6B8FA3', '#8FA36B', '#A36B8F', '#6BA3A0', '#A38F6B', '#7A6BA3', '#A3766B']
+// The ring that tells families apart at a glance. One lightness and saturation,
+// spread round the hue circle; the last four fill the gaps between the first
+// eight without bringing any two closer than those eight already were.
+const FAMILY_COLOURS = [
+  '#B3866B', '#6B8FA3', '#8FA36B', '#A36B8F', '#6BA3A0', '#A38F6B',
+  '#7A6BA3', '#A3766B', '#70A36C', '#6CA383', '#6C75A3', '#A36C75',
+]
+
+/** The colour fewest families wear, earliest in the list on a tie, so a deleted family's is given out again. */
+function nextFamilyColour(families: Record<string, Family>): string {
+  const worn = new Map(FAMILY_COLOURS.map((c) => [c, 0]))
+  for (const f of Object.values(families)) if (worn.has(f.colour)) worn.set(f.colour, worn.get(f.colour)! + 1)
+  return FAMILY_COLOURS.reduce((best, c) => (worn.get(c)! < worn.get(best)! ? c : best))
+}
 
 export const createFamily =
   ({
@@ -1040,11 +1049,10 @@ export const createFamily =
       return null
     }
     const id = makeId('fam')
-    const idx = Object.keys(plan.families).length
     const family: Family = {
       id,
       name: name || 'Family',
-      colour: colour || FAMILY_COLOURS[idx % FAMILY_COLOURS.length],
+      colour: colour || nextFamilyColour(plan.families),
       parentGroupId: resolvedGroupId,
       parentSubgroupId: parentSubgroupId || null,
       memberIds: [],

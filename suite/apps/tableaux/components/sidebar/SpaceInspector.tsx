@@ -1,6 +1,6 @@
 import { useStore } from '../../store/useStore'
 import { DEFAULT_PPU } from '../../utils/seatPositions'
-import { toDisplay, parseDisplay } from '../../utils/units'
+import { toDisplay, parseDisplay, sizeProblem } from '../../utils/units'
 import IconButton from '../ui/IconButton'
 import Button from '../ui/Button'
 import ColorPicker from '../ui/ColorPicker'
@@ -28,10 +28,9 @@ export default function SpaceInspector({ spaceId }: { spaceId: string }) {
 
   if (!space) return null
   const dim = (px: number) => toDisplay(px / ppu, unitSystem).label
-  const onDim = (key: 'width' | 'height') => (v: string) => {
-    const cm = parseDisplay(v, unitSystem)
-    if (cm && cm > 0) resizeSpace(spaceId, { [key]: Math.max(80, Math.round(cm * ppu)) })
-  }
+  const onDim = (key: 'width' | 'height') => (v: string) =>
+    resizeSpace(spaceId, { [key]: Math.max(80, Math.round(parseDisplay(v, unitSystem)! * ppu)) })
+  const invalidSize = (v: string) => sizeProblem(v, unitSystem)
 
   return (
     <div className={styles.inspector}>
@@ -44,7 +43,8 @@ export default function SpaceInspector({ spaceId }: { spaceId: string }) {
         <TextField
           className={f.input}
           value={space.label}
-          onCommit={(v) => v.trim() && renameSpace(spaceId, { label: v.trim() })}
+          onCommit={(v) => renameSpace(spaceId, { label: v.trim() })}
+          invalid={(v) => (v.trim() ? null : 'A space needs a name')}
           aria-label="Space name"
         />
       </div>
@@ -57,6 +57,7 @@ export default function SpaceInspector({ spaceId }: { spaceId: string }) {
               className={f.input}
               value={dim(space.width)}
               onCommit={onDim('width')}
+              invalid={invalidSize}
               aria-label="Width"
             />
             <span className={styles.dimX}>×</span>
@@ -64,6 +65,7 @@ export default function SpaceInspector({ spaceId }: { spaceId: string }) {
               className={f.input}
               value={dim(space.height)}
               onCommit={onDim('height')}
+              invalid={invalidSize}
               aria-label="Height"
             />
           </div>

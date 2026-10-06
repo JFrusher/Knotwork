@@ -95,9 +95,16 @@ export function parseDisplay(input: unknown, system: UnitSystem = 'metric'): num
     }
   }
 
+  if (!/^\d+(?:\.\d+)?$/.test(str)) return null
   const bare = parseFloat(str)
-  if (Number.isNaN(bare)) return null
   return system === 'imperial' ? round2(bare * CM_PER_INCH) : round2(bare)
+}
+
+/** What is wrong with a typed size, said the way the field reads it, or null when it is a size. */
+export function sizeProblem(input: string, system: UnitSystem = 'metric'): string | null {
+  const cm = parseDisplay(input, system)
+  if (cm !== null && cm > 0) return null
+  return system === 'imperial' ? 'Enter a size in feet and inches, like 6′' : 'Enter a size in cm, like 180'
 }
 
 /** Compact label for a table's footprint, e.g. "Ø 1.5 m" or "2.2 × 1.3 m". */

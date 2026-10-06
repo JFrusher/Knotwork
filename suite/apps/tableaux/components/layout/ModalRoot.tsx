@@ -41,8 +41,8 @@ export default function ModalRoot() {
       // dialog closes at once. The example that made this bite was
       // AccountModal's "Delete my account", which has since moved to the
       // shell; every remaining caller writes to this device and returns at
-      // once, so the race is currently unreachable rather than fixed.
-      // See tmp/ux-audit.md #A8.
+      // once, so the race is currently unreachable rather than fixed. No issue
+      // until a caller that awaits something comes back.
       const { onConfirm, ...ask } = modal.props
       return (
         <ConfirmDialog
