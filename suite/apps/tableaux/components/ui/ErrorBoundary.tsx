@@ -1,10 +1,16 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { downloadWedding } from '@/lib/data/backup'
 import styles from './ErrorBoundary.module.css'
 
 /**
  * Error boundaries are the one place React still requires a class component
  * (there is no hook equivalent). Wraps a panel so a render error in one region
  * doesn't take down the whole app.
+ *
+ * "Try again" only clears this boundary's state, so when the cause is the
+ * wedding's data rather than the render, the panel throws again at once. Reload
+ * and a download of the wedding are offered beside it, as in `app/error.tsx`,
+ * so a crash never reads as lost work.
  */
 export default class ErrorBoundary extends Component<{ label?: string; children: ReactNode }, { error: Error | null }> {
   state: { error: Error | null } = { error: null }
@@ -17,11 +23,6 @@ export default class ErrorBoundary extends Component<{ label?: string; children:
     console.error('[Tableaux] panel error:', error, info)
   }
 
-  // TODO(ux-audit): only clears local boundary state — doesn't reset/reload
-  // the data that caused the crash. If the crash was caused by corrupted
-  // table/guest data, "Try again" just re-throws immediately, trapping the
-  // user with no offered page-reload option and no way to see full error
-  // detail beyond error.message. See tmp/ux-audit.md #A11.
   reset = () => this.setState({ error: null })
 
   render() {
@@ -30,9 +31,20 @@ export default class ErrorBoundary extends Component<{ label?: string; children:
         <div className={styles.fallback}>
           <p className={styles.title}>{this.props.label || 'Something went wrong'}</p>
           <p className={styles.detail}>{this.state.error.message}</p>
-          <button className={styles.retry} onClick={this.reset}>
-            Try again
-          </button>
+          <p className={styles.detail}>
+            Your wedding is still saved on this device. Nothing has been lost.
+          </p>
+          <div className={styles.actions}>
+            <button type="button" className={styles.retry} onClick={downloadWedding}>
+              Download your wedding
+            </button>
+            <button type="button" className={styles.retry} onClick={() => window.location.reload()}>
+              Reload the page
+            </button>
+            <button type="button" className={styles.retry} onClick={this.reset}>
+              Try again
+            </button>
+          </div>
         </div>
       )
     }
