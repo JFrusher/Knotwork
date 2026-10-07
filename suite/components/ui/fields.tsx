@@ -1,5 +1,5 @@
 /**
- * The labelled fields Cadence and Delegation build their side panels from.
+ * The labelled fields Timeline and Delegation build their side panels from.
  *
  * The two shipped byte-identical copies of this file and its stylesheet — one
  * was made by copying the other, and both then stayed still. Holding it once
@@ -11,7 +11,7 @@
  * Merging it would mean renaming through its nine panels to buy a consistency
  * the shared tokens already deliver, so it keeps its own.
  *
- * The clock helpers come from Cadence, which owns the day: it is the tool that
+ * The clock helpers come from Timeline, which owns the day: it is the tool that
  * publishes the resolved times everything else reads, so it is the one that
  * should decide what "17:30" means. Delegation held an identical copy.
  *

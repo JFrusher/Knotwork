@@ -1,5 +1,5 @@
 // ponytail: imports Delegation's page/table/text/units/font kit rather than making
-// a third near-copy of it (Cadence already carries a second). Promote the
+// a third near-copy of it (Timeline already carries a second). Promote the
 // shared parts to lib/pdf/ if a fourth tool ever needs this kit.
 import { PDFDocument, type PDFFont } from "pdf-lib";
 import { embedFamily } from "@/lib/pdf/embedFonts";

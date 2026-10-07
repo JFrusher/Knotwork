@@ -15,7 +15,7 @@ export async function addFont(file: File | Blob, backend?: BlobBackend): Promise
   const { familyOf } = await import("./fontFamily");
   const family = familyOf(bytes);
   if (!family) {
-    return { error: "That file is not a font Cadence can read. Try a .ttf, .otf or .woff2." };
+    return { error: "That file is not a font Timeline can read. Try a .ttf, .otf or .woff2." };
   }
 
   const blobKey = backend ? await putBlob("font", file, backend) : await putBlob("font", file);

@@ -3,9 +3,9 @@ import { useKnotworkStore, type WriteOptions } from "@/lib/store/useKnotworkStor
 import type { TimelineDoc } from "../core/model/types";
 
 /**
- * Where Cadence's edits land.
+ * Where Timeline's edits land.
  *
- * Cadence was a standalone app that owned a localStorage key; here it is one
+ * Timeline started as Cadence, a standalone app that owned a localStorage key; here it is one
  * tool among four, and the day it plans is the same day the delegation board
  * hands out and the place cards are printed for. So its document lives in the
  * shared wedding's `timeline` slice instead.
@@ -22,7 +22,7 @@ import type { TimelineDoc } from "../core/model/types";
  *    handing out yesterday's times.
  *
  *  - The curfew and the UTC offset are mirrored back into `event`. They
- *    belong to the wedding rather than to Cadence, which keeps an echo of them
+ *    belong to the wedding rather than to Timeline, which keeps an echo of them
  *    for its own resolver, and Timeline is where they are edited. The
  *    envelope's copy wins on read, so without this the Day panel would appear
  *    to accept an edit and then quietly revert on the next load.

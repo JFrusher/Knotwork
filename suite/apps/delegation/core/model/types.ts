@@ -3,8 +3,8 @@
 import type { Box } from "@/lib/model/types";
 
 /**
- * The day as Cadence exported it: already resolved to clock times, and never
- * edited here. Delegation owns the work, Cadence owns the clock.
+ * The day as Timeline exported it: already resolved to clock times, and never
+ * edited here. Delegation owns the work, Timeline owns the clock.
  */
 export interface DayBlock {
   id: string;
@@ -22,7 +22,7 @@ export interface DayBlock {
 
 export interface ImportedDay {
   version: number;
-  /** The version of Cadence that wrote the file. Shown, never acted on. */
+  /** The version of Timeline that wrote the file. Shown, never acted on. */
   appVersion: string;
   date: string;
   coupleNames: string;
@@ -85,7 +85,7 @@ export interface Person {
  */
 export interface Job {
   id: string;
-  /** The only link back to Cadence, or null for a task not part of the day. */
+  /** The only link back to Timeline, or null for a task not part of the day. */
   blockId: string | null;
   label: string;
   notes: string;

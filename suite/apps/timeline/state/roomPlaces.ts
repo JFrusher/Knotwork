@@ -1,7 +1,7 @@
 /**
  * The named parts of the room, for the Location field on a block.
  *
- * Cadence's `location` is free text and stays free text — the church down the
+ * Timeline's `location` is free text and stays free text — the church down the
  * road is a real location even though nobody has drawn it on the floor plan.
  * But when the ceremony happens in the Orangery, and someone has already drawn
  * an Orangery next door, the two should be spelled the same. Offering the list

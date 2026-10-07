@@ -3,7 +3,7 @@ import { isDietaryKey, normaliseDietary } from "./dietary";
 
 /**
  * A build-time check that the contract still has the `event` fields this file
- * reads and hands to Cadence.
+ * reads and hands to Timeline.
  *
  * Typing is not enough on its own. `eventSchema` is a `looseObject`, so the
  * `Event` type it infers carries a catch-all index signature and
@@ -13,7 +13,7 @@ import { isDietaryKey, normaliseDietary } from "./dietary";
  * type cannot give.
  *
  * Here rather than in each tool because this file is where the suite actually
- * reads them; Stationery, Delegation and Cadence never touch `event` directly.
+ * reads them; Stationery, Delegation and Timeline never touch `event` directly.
  */
 type EventKeys = keyof typeof eventSchema.shape;
 type Assert<T extends true> = T;
@@ -22,9 +22,9 @@ type _EventFieldsExist = Assert<
     ? true
     : false
 >;
-import { resolve } from "@/apps/cadence/core/schedule/resolve";
-import { resolvedDay as resolveDaySlice } from "@/apps/cadence/core/project/day";
-import { DEFAULT_LANES, DEFAULT_OUTPUTS, defaultDay, defaultStyles, emptyDoc } from "@/apps/cadence/core/model/defaults";
+import { resolve } from "@/apps/timeline/core/schedule/resolve";
+import { resolvedDay as resolveDaySlice } from "@/apps/timeline/core/project/day";
+import { DEFAULT_LANES, DEFAULT_OUTPUTS, defaultDay, defaultStyles, emptyDoc } from "@/apps/timeline/core/model/defaults";
 import { newMoment } from "@/lib/ceremony/moments";
 import { BAR_KINDS, BAR_LINES, CAST_ROLES, CEREMONY_KINDS, CROWDS, FIGURES, MIXED_PARTS, MOMENT_KINDS, POURS, SHOPS, WORDS_LAYOUTS } from "./types";
 import type {
@@ -535,10 +535,10 @@ function namedGroups(raw: unknown): Record<string, NamedGroup> {
 // timeline -------------------------------------------------------------------
 
 /**
- * The timeline, as Cadence's own document.
+ * The timeline, as Timeline's own document.
  *
  * The stored slice is coerced into a complete `TimelineDoc`, and `day` is
- * overwritten from the envelope's `event` on every read. Cadence keeps the
+ * overwritten from the envelope's `event` on every read. Timeline keeps the
  * couple's details inside its own document; the envelope is where they are
  * authoritative, so this is the one place the echo is made, rather than two
  * places that can disagree about the date of the wedding.
@@ -560,7 +560,7 @@ export function readTimeline(doc: Knotwork): Timeline {
       schemaVersion: base.schemaVersion,
       appVersion: base.appVersion,
       day: {
-        // From the envelope, which owns these. Cadence's copy is an echo.
+        // From the envelope, which owns these. Timeline's copy is an echo.
         date: doc.event.date || str(storedDay["date"], fallbackDay.date),
         coupleNames: doc.event.coupleNames || str(storedDay["coupleNames"]),
         venueName: doc.event.venueName || str(storedDay["venueName"]),
@@ -568,7 +568,7 @@ export function readTimeline(doc: Knotwork): Timeline {
         // Never a likely value: unset stays unset, and the Day panel says so.
         utcOffsetMin:
           doc.event.utcOffsetMin ?? (typeof storedDay["utcOffsetMin"] === "number" ? storedDay["utcOffsetMin"] : null),
-        // The venue's coordinates are Cadence's alone: nothing else needs them,
+        // The venue's coordinates are Timeline's alone: nothing else needs them,
         // and they drive only the golden-hour advisory. Unset stays unset,
         // like the clocks: a guessed place gives a wrong sunset.
         latitude: typeof storedDay["latitude"] === "number" ? storedDay["latitude"] : null,
@@ -690,8 +690,8 @@ export function dayPlaces(doc: Knotwork): ReadonlyMap<string, Place> {
  * Published rather than derived on demand, because it is what leaves the
  * machine. An exported document with no `day` is one no outside reader — the
  * cross-slice validator included — can check the timeline of. Built by
- * Cadence's own publisher, so what the suite writes is byte-for-byte what
- * Cadence would have written.
+ * Timeline's own publisher, so what the suite writes is byte-for-byte what
+ * Timeline would have written.
  */
 export function publishDay(doc: Knotwork, timeline: Timeline): Record<string, unknown> {
   return resolveDaySlice({

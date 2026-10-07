@@ -81,7 +81,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "timeline",
     href: "/timeline",
-    tokens: "cadence-tokens",
+    tokens: "timeline-tokens",
     name: "Timeline",
     tagline: "The run of the day, and what collides.",
     icon: Clock,
@@ -161,7 +161,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "binder",
     href: "/binder",
-    tokens: "cadence-tokens",
+    tokens: "timeline-tokens",
     name: "Binder",
     tagline: "The day on your phone, with or without signal.",
     icon: Smartphone,

@@ -8,7 +8,7 @@ import styles from "./Board.module.css";
 /**
  * The day as a column of blocks in clock order, each holding its jobs.
  *
- * Not a Gantt: Cadence already draws the day to scale, and what this view is
+ * Not a Gantt: Timeline already draws the day to scale, and what this view is
  * for is working down a list and putting names against it. Blocks with no jobs
  * stay visible, because an empty block is where the next job goes.
  */

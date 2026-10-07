@@ -1,10 +1,10 @@
 import type { DayBlock, ImportedDay } from "../model/types";
 
-/** The export format Delegation reads. Cadence writes `kind: "cadence.day"`. */
+/** The export format Delegation reads. Timeline writes `kind: "cadence.day"`. */
 const DAY_KIND = "cadence.day";
 const DAY_VERSION = 1;
 
-/** A team the file suggests, from the tag details Cadence recorded. */
+/** A team the file suggests, from the tag details Timeline recorded. */
 export interface DayTeam {
   tag: string;
   displayName: string;
@@ -19,7 +19,7 @@ type DayResult =
 type Raw = Record<string, unknown>;
 
 /**
- * Reads a `.day.json` exported by Cadence. Returns a readable error rather
+ * Reads a `.day.json` exported by Timeline. Returns a readable error rather
  * than throwing — this runs on whatever the user dropped on the window, which
  * is often the wrong file entirely.
  */
@@ -28,7 +28,7 @@ export function parseDay(json: string): DayResult {
   try {
     raw = JSON.parse(json);
   } catch {
-    return { error: "That file is not valid JSON. Is it a day exported from Cadence?" };
+    return { error: "That file is not valid JSON. Is it a day exported from Timeline?" };
   }
 
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
@@ -40,8 +40,8 @@ export function parseDay(json: string): DayResult {
     return {
       error:
         entry["schemaVersion"] === undefined
-          ? "That file was not exported from Cadence."
-          : "That is a Cadence project file. Delegation needs the day export — press Export day in Cadence.",
+          ? "That file was not exported from Timeline."
+          : "That is a Timeline project file. Delegation needs the day export — press Export day in Timeline.",
     };
   }
 
@@ -104,7 +104,7 @@ export function parseDay(json: string): DayResult {
       blocks,
     },
     teams: teamsIn(entry["teams"]),
-    // A newer Cadence is read as far as this version understands it rather
+    // A newer Timeline is read as far as this version understands it rather
     // than refused: the fields Delegation needs have not moved.
     fromFuture: version > DAY_VERSION,
   };

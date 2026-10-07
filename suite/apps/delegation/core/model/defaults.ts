@@ -20,7 +20,7 @@ export function emptyDoc(): DelegationDoc {
 }
 
 /**
- * A realistic crew on the sample day Cadence ships, used as the fixture every
+ * A realistic crew on the sample day Timeline ships, used as the fixture every
  * test works against. Identifiers are fixed, not generated, so the fixture is
  * stable and a failure names the same job twice running.
  */

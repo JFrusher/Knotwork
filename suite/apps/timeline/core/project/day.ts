@@ -42,7 +42,7 @@ interface DayTeam {
  * A `.cadence.json` holds anchors, gaps and squeeze floors — knowing when
  * anything actually happens means running the resolver. Rather than have a
  * second application reimplement the one load-bearing function in this
- * codebase, Cadence hands out the answer. Times stay integer minutes from the
+ * codebase, Timeline hands out the answer. Times stay integer minutes from the
  * day's 00:00, as everywhere inside the document; formatting is the reader's
  * business.
  */

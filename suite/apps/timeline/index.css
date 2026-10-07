@@ -1,32 +1,32 @@
 /*
- * Cadence's own measures. Everything else it draws with — colour, type,
+ * Timeline's own measures. Everything else it draws with — colour, type,
  * spacing, radius, shadow — is decided once in `lib/design/tokens.css` and
  * mapped onto the names this tool already uses, so every `var(--grey-3)` in its
  * stylesheets keeps working while the values move with the rest of the suite.
  */
-.cadence-scope {
+.timeline-scope {
   --sidebar-w: 320px;
   --header-h: 48px;
 }
 
 /*
  * Element resets, scoped with `:where()` so they add no specificity. Standalone
- * they were bare element rules that any class beat; `.cadence-scope button`
+ * they were bare element rules that any class beat; `.timeline-scope button`
  * instead beat every button class in the tool.
  */
-:where(.cadence-scope),
-:where(.cadence-scope) *,
-:where(.cadence-scope) *::before,
-:where(.cadence-scope) *::after {
+:where(.timeline-scope),
+:where(.timeline-scope) *,
+:where(.timeline-scope) *::before,
+:where(.timeline-scope) *::after {
   box-sizing: border-box;
 }
 
 /*
- * Was `html, body, #root`. Cadence still wants exactly one screenful — its
+ * Was `html, body, #root`. Timeline still wants exactly one screenful — its
  * sidebar and timeline scroll inside themselves — it just no longer gets the
  * whole screen, so it takes the viewport less the shell's header.
  */
-.cadence-scope {
+.timeline-scope {
   height: calc(100dvh - var(--shell-header-h, 0px));
   font-family: var(--font-ui);
   font-size: var(--text-md);
@@ -35,35 +35,35 @@
   -webkit-font-smoothing: antialiased;
 }
 
-:where(.cadence-scope) :is(h1, h2, h3) {
+:where(.timeline-scope) :is(h1, h2, h3) {
   margin: 0;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-:where(.cadence-scope) h1 {
+:where(.timeline-scope) h1 {
   font-size: var(--text-xl);
 }
 
-:where(.cadence-scope) h2 {
+:where(.timeline-scope) h2 {
   font-size: var(--text-lg);
 }
 
-:where(.cadence-scope) h3 {
+:where(.timeline-scope) h3 {
   font-size: var(--text-md);
 }
 
-:where(.cadence-scope) button {
+:where(.timeline-scope) button {
   font: inherit;
   color: inherit;
 }
 
-:where(.cadence-scope) :is(input, select, textarea) {
+:where(.timeline-scope) :is(input, select, textarea) {
   font: inherit;
   color: inherit;
 }
 
-.cadence-scope :focus-visible {
+.timeline-scope :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }

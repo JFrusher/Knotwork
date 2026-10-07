@@ -136,16 +136,16 @@ async function floorPlan(): Promise<Uint8Array | null> {
 
 async function runSheet(): Promise<Uint8Array | null> {
   const [{ renderRunSheet }, { browserFontSource }, { getBlob }] = await Promise.all([
-    import("@/apps/cadence/render/pdf/runSheet"),
+    import("@/apps/timeline/render/pdf/runSheet"),
     import("@/lib/pdf/fontSource"),
-    import("@/apps/cadence/state/blobStore"),
+    import("@/apps/timeline/state/blobStore"),
   ]);
   const doc = readTimeline(useKnotworkStore.getState().doc);
   if (doc.blocks.length === 0) return null;
 
   // Any typeface uploaded for the printed pieces, by family name. Without this
   // the pack would quietly fall back to the bundled faces and look like a
-  // different document to the one Cadence exports on its own.
+  // different document to the one Timeline exports on its own.
   const uploaded = new Map<string, Uint8Array>();
   for (const font of doc.fonts) {
     const blob = await getBlob(font.blobKey).catch(() => null);

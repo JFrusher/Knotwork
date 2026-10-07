@@ -1,8 +1,8 @@
 /**
- * The editable timeline: Cadence's own document, unchanged.
+ * The editable timeline: Timeline's own document, unchanged.
  *
- * This module used to carry a trimmed copy of Cadence's model. It now re-exports
- * the real one from `apps/cadence/core`, so the scheduling resolver, the clash
+ * This module used to carry a trimmed copy of Timeline's model. It now re-exports
+ * the real one from `apps/timeline/core`, so the scheduling resolver, the clash
  * checks, the solar calculation and all five printed pieces consume exactly the
  * document they were written against — rather than a lookalike that has to be
  * kept in step by hand.
@@ -18,7 +18,7 @@
  * shape lives.
  */
 
-export type { OutputSpec, TimelineDoc } from "@/apps/cadence/core/model/types";
+export type { OutputSpec, TimelineDoc } from "@/apps/timeline/core/model/types";
 
 /**
  * What the rest of the suite calls the timeline.
@@ -26,4 +26,4 @@ export type { OutputSpec, TimelineDoc } from "@/apps/cadence/core/model/types";
  * An alias rather than a second interface: every consumer wants the whole
  * document, and a narrower type here would only mean casting at each use.
  */
-export type { TimelineDoc as Timeline } from "@/apps/cadence/core/model/types";
+export type { TimelineDoc as Timeline } from "@/apps/timeline/core/model/types";

@@ -1,4 +1,4 @@
-/** The Cadence document model. See PRD §3. */
+/** The Timeline document model. See PRD §3. */
 
 /** A printed piece. Which blocks reach it is per block, in `Block.outputs`. */
 export type OutputId = "run-sheet" | "call-sheet" | "order-of-day" | "contact-sheet";

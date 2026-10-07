@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { migrate } from "@jfrusher/knotwork";
 import { fingerprint } from "@/lib/documents/fingerprint";
-import { calendar, calendarFile } from "@/apps/cadence/render/ics/calendar";
+import { calendar, calendarFile } from "@/apps/timeline/render/ics/calendar";
 import { readTimeline } from "@/lib/model/slices";
 import { callSheet } from "./callSheet";
 

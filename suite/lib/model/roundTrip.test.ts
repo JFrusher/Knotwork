@@ -16,7 +16,7 @@ const { publishDay, readCrew, readGuests, readSeating, readTimeline, readShots, 
   "./slices"
 );
 const { useStore: useSeating } = await import("@/apps/tableaux/store/useStore");
-const { DEFAULT_BLOCK_OUTPUTS } = await import("@/apps/cadence/core/model/defaults");
+const { DEFAULT_BLOCK_OUTPUTS } = await import("@/apps/timeline/core/model/defaults");
 const { addJob, addPerson, seedTeamsFromTags, toggleAssignment } = await import(
   "@/lib/model/crewActions"
 );

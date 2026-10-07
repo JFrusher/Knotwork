@@ -2,7 +2,7 @@ import type { Knotwork } from "@jfrusher/knotwork";
 import { formatClock } from "@/lib/minutes";
 import { longDate } from "@/lib/dates";
 import { readCrew, readTimeline, resolvedDay } from "@/lib/model/slices";
-import { calendarDay, type CalendarDay } from "@/apps/cadence/render/ics/calendar";
+import { calendarDay, type CalendarDay } from "@/apps/timeline/render/ics/calendar";
 
 /**
  * One supplier's own call sheet: when to arrive, who of theirs is named, and

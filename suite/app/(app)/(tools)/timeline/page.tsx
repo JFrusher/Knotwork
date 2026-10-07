@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CadenceApp } from "./CadenceClient";
+import { TimelineApp } from "./TimelineClient";
 
 export const metadata: Metadata = {
   title: "Timeline",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function TimelinePage() {
-  return <CadenceApp />;
+  return <TimelineApp />;
 }

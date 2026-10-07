@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CalendarPlus, Check } from "lucide-react";
-import { calendarFile, slug } from "@/apps/cadence/render/ics/calendar";
+import { calendarFile, slug } from "@/apps/timeline/render/ics/calendar";
 import { Button } from "@/components/ui/controls";
 import { download } from "@/lib/data/file";
 import { localDay, longDate } from "@/lib/dates";

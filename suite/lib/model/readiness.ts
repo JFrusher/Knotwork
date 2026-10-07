@@ -15,7 +15,7 @@ import { storedPieces } from "@/apps/stationery/state/suite";
  *
  * Deliberately only the things no single tool can work out. Each of the five
  * already checks its own work and is better at it than this could be: Tableaux
- * knows a table is over capacity, Cadence knows two blocks collide, Delegation
+ * knows a table is over capacity, Timeline knows two blocks collide, Delegation
  * knows a job has nobody on it and that nobody is in two places at once. None
  * of that is repeated here — a warning shown twice in two wordings is worse
  * than one shown once, because you fix it in one place and it stays on screen

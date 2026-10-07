@@ -14,14 +14,14 @@ const STEPS: Record<number, Step> = {};
 
 interface MigrateResult {
   raw: RawDoc;
-  /** True when the file came from a newer Cadence than this one. */
+  /** True when the file came from a newer Timeline than this one. */
   fromFuture: boolean;
 }
 
 /**
  * Brings a document up to the current schema. A file from a future version is
  * passed through untouched rather than mangled — unknown fields survive a load
- * and save, so an older Cadence cannot quietly eat a newer one's data.
+ * and save, so an older Timeline cannot quietly eat a newer one's data.
  */
 export function migrate(raw: RawDoc): MigrateResult {
   const version = typeof raw["schemaVersion"] === "number" ? (raw["schemaVersion"] as number) : 0;

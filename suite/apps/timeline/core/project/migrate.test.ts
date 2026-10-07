@@ -17,7 +17,7 @@ describe("migrate", () => {
     expect(migrate(raw).raw["schemaVersion"]).toBe(SCHEMA_VERSION);
   });
 
-  it("preserves what a newer Cadence wrote", () => {
+  it("preserves what a newer Timeline wrote", () => {
     const raw = { ...JSON.parse(serialise(sampleDoc())), schemaVersion: 999, weatherPlan: "marquee" };
     const result = parse(JSON.stringify(raw));
     expect(result.error).toBeUndefined();

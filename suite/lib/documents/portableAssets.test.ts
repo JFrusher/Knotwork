@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import * as cadence from "@/apps/cadence/state/syncAssets";
+import * as timeline from "@/apps/timeline/state/syncAssets";
 import * as stationery from "@/apps/stationery/state/syncAssets";
 
 /**
@@ -9,13 +9,13 @@ import * as stationery from "@/apps/stationery/state/syncAssets";
  * opens the wedding on a second machine and finds a hole in their run sheet.
  */
 
-const SOURCES = { stationery, cadence };
+const SOURCES = { stationery, timeline };
 
 const IDS = {
   "plaque.font.abc123": "stationery",
   "plaque.image.def456": "stationery",
-  "cadence.blob.font-a1b2c3d4e5": "cadence",
-  "cadence.blob.logo-99887766": "cadence",
+  "cadence.blob.font-a1b2c3d4e5": "timeline",
+  "cadence.blob.logo-99887766": "timeline",
 } as const;
 
 describe("asset ownership", () => {

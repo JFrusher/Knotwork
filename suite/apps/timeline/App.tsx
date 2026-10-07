@@ -49,7 +49,7 @@ export function App() {
   return (
     <div className={styles.app}>
       {/*
-        * Cadence's own header used to sit here, under the suite's, with a
+        * Timeline's own header used to sit here, under the suite's, with a
         * second wordmark and the couple's names the shell already knows. There
         * is one header now; what was in it that does something goes into it.
         *
@@ -57,7 +57,7 @@ export function App() {
         * that is not a control — how much of the day is left — and it belongs
         * beside the day rather than buried in a panel.
         */}
-      <ChromeFill name="tool-actions" tokens="cadence-tokens">
+      <ChromeFill name="tool-actions" tokens="timeline-tokens">
         {doc.blocks.length > 0 && (
           <span className={curfew < 0 ? styles.over : styles.slack}>
             {curfew < 0

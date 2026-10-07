@@ -12,7 +12,7 @@ import type { DelegationDoc } from "../core/model/types";
  * Both halves change here, and the second is the interesting one.
  *
  * The crew — teams, people, jobs — is the shared wedding's `crew` slice,
- * which is Delegation's to own. The day is not: it belongs to Cadence, which
+ * which is Delegation's to own. The day is not: it belongs to Timeline, which
  * publishes the resolved version into the `day` slice on every edit. So instead
  * of a file the user has to remember to re-export, Delegation reads that slice and
  * the day is simply current. If a ceremony moves by ten minutes, the job sheets
@@ -21,7 +21,7 @@ import type { DelegationDoc } from "../core/model/types";
  * That works without new parsing because the published slice is the same
  * `kind: "cadence.day"` payload the export always was — so Delegation's own
  * importer reads it unchanged, orphan detection and all. A job whose block has
- * been deleted in Cadence is still spotted here, by the code that always did it.
+ * been deleted in Timeline is still spotted here, by the code that always did it.
  */
 
 /** The crew and the day as Delegation wants them, from the shared wedding. */
@@ -59,7 +59,7 @@ export function readSlice(doc: Knotwork): DelegationDoc {
 }
 
 /**
- * The crew only. The day is Cadence's, and writing a copy of it back here would
+ * The crew only. The day is Timeline's, and writing a copy of it back here would
  * create a second version of the timings that could disagree with the first.
  */
 export function crewSlice(doc: DelegationDoc): Record<string, unknown> {

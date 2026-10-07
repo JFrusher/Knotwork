@@ -4,9 +4,9 @@ import { readTimeline } from "@/lib/model/slices";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 
 /**
- * Cadence's uploaded bytes, for the sync layer.
+ * Timeline's uploaded bytes, for the sync layer.
  *
- * Cadence lets you upload a typeface for the printed pieces and a monogram for
+ * Timeline lets you upload a typeface for the printed pieces and a monogram for
  * the head of the day sheet. Both live in its own IndexedDB store, keyed by a
  * hash of their contents, and the document holds only the keys — which is why
  * the day is small enough to email but also why the keys are useless on their
@@ -14,7 +14,7 @@ import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
  * the run sheet, and the export refuses to print a sheet with a hole in it
  * rather than quietly dropping the monogram.
  *
- * Which keys matter is Cadence's own question, and it already answers it:
+ * Which keys matter is Timeline's own question, and it already answers it:
  * `referencedKeys` is what its project export uses to decide what to bundle.
  * Asking the same function here means the two can never disagree about what a
  * day depends on.
@@ -25,7 +25,7 @@ import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
  * under the key they arrived with is exactly what `blobStore` would have done.
  */
 
-/** Prefixed so a Cadence blob can never collide with a Stationery font or image. */
+/** Prefixed so a Timeline blob can never collide with a Stationery font or image. */
 const PREFIX = "cadence.blob.";
 
 export interface PortableAsset {
@@ -58,7 +58,7 @@ export async function heldAssetIds(): Promise<string[]> {
   return held;
 }
 
-/** Put a fetched asset back where Cadence expects it. */
+/** Put a fetched asset back where Timeline expects it. */
 export async function acceptAsset(id: string, bytes: Uint8Array): Promise<void> {
   if (!owns(id)) return;
   await set(id.slice(PREFIX.length), new Blob([bytes as BlobPart]));

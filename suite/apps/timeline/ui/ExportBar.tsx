@@ -44,7 +44,7 @@ export function ExportBar() {
       .replace(/&/g, "and")
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
-  const fileStem = slug(doc.day.coupleNames) || "cadence";
+  const fileStem = slug(doc.day.coupleNames) || "wedding";
 
   const save = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
@@ -79,7 +79,7 @@ export function ExportBar() {
       }
 
       const fontSource = browserFontSource(uploaded);
-      const generatedOn = `Made with Cadence, ${new Date().toLocaleDateString()}`;
+      const generatedOn = `Made with Knotwork, ${new Date().toLocaleDateString()}`;
       const bytes =
         piece === "timeline"
           ? await (await import("../render/pdf/timeline")).renderTimeline(doc, { fontSource, generatedOn })

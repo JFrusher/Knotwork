@@ -21,11 +21,11 @@ export function parse(json: string): ParseResult {
   try {
     raw = JSON.parse(json);
   } catch {
-    return { error: "That file is not valid JSON. Is it a Cadence project file?" };
+    return { error: "That file is not valid JSON. Is it a Timeline project file?" };
   }
 
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
-    return { error: "That file does not contain a Cadence document." };
+    return { error: "That file does not contain a Timeline document." };
   }
 
   const { raw: migrated, fromFuture } = migrate(raw as RawDoc);

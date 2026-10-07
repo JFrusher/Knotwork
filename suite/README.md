@@ -69,7 +69,7 @@ test suites:
 - **Plaque** (now Stationery) — the whole 4,800-line core: imposition, fold transforms, crop
   marks, fontkit measuring and text fitting, the element model, bindings,
   overrides, the icon and image pipelines, and both renderers.
-- **Cadence** — the scheduling resolver, clash detection, slack, NOAA solar, and
+- **Cadence** (now Timeline) — the scheduling resolver, clash detection, slack, NOAA solar, and
   all five printed pieces.
 - **Brigade** (now Delegation) — coverage analysis, reconciliation, and the three job-sheet PDFs.
 
