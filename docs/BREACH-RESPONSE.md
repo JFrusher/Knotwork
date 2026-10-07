@@ -13,7 +13,8 @@ of becoming aware of it. Report what you know; send the rest when you have it.
    weddings, guest lists, dietary notes), roughly how many people, and what you
    did. Keep it even if you decide not to report — the ICO can ask for it.
 3. **Decide promptly whether to report**: <https://ico.org.uk/for-organisations/report-a-breach/>.
-   Report if it could hurt anyone; dietary or health notes make that likely.
+   Judge each breach on its facts: report if it is likely to risk people's rights
+   and freedoms. Dietary or health notes weigh towards that; they don't decide it.
 4. **Tell every couple affected** without undue delay, whatever the risk — the
    Terms promise it. They decide whether their guests need telling.
 5. **Fix the cause**, and add a test that would have caught it.
