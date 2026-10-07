@@ -32,6 +32,10 @@ if (dsn) {
       dataCollection,
       // A report is sent only when something breaks.
       tracesSampleRate: 0,
+      // The SDK's default BrowserSession integration sends a "session" on every
+      // page load, broken or not. That is a visit counter, and the policy
+      // promises a report only when something breaks.
+      integrations: (defaults) => defaults.filter((integration) => integration.name !== "BrowserSession"),
       beforeSend: (event) => scrubEvent(event),
       // Breadcrumbs are kept for navigation and clicks, which say where an
       // error happened. Console breadcrumbs are not: the tools log document
