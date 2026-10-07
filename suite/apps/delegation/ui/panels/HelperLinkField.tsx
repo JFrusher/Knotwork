@@ -71,12 +71,17 @@ export function HelperLinkField({ personId, name }: { personId: string; name: st
               onFocus={(event) => event.target.select()}
             />
             <Button
-              onClick={() =>
-                void navigator.clipboard.writeText(url).then(() => {
+              onClick={async () => {
+                setProblem(null);
+                try {
+                  await navigator.clipboard.writeText(url);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1500);
-                })
-              }
+                } catch {
+                  setCopied(false);
+                  setProblem("The link could not be copied. Select the link and copy it manually.");
+                }
+              }}
             >
               {copied ? "Copied" : "Copy"}
             </Button>

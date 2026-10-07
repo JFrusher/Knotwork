@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 
 vi.mock("idb-keyval", () => ({ get: async () => undefined, set: async () => undefined, del: async () => undefined }));
@@ -56,4 +56,21 @@ test("taking one helper's link down leaves the others", async () => {
 
   expect(fetch).toHaveBeenCalledWith("/api/helpers", expect.objectContaining({ method: "DELETE", body: JSON.stringify({ weddingId: "w1", personId: "per-ines" }) }));
   expect(useHelperLinks.getState().links?.map((entry) => entry.personId)).toEqual(["per-tom"]);
+});
+
+
+test("clipboard failure offers manual copying; a successful retry still says Copied", async () => {
+  const writeText = vi.fn().mockRejectedValueOnce(new Error("denied")).mockResolvedValue(undefined);
+  vi.stubGlobal("navigator", { clipboard: { writeText } });
+  useKnotworkStore.setState({ weddingId: "w1" });
+  useHelperLinks.setState({ weddingId: "w1", links: [link("per-ines", "a".repeat(32))], problem: null });
+  field();
+  fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+  expect((await screen.findByRole("alert")).textContent).toContain("copy it manually");
+  const input = screen.getByLabelText("Ines Ashdown's link") as HTMLInputElement;
+  expect(input.readOnly).toBe(true);
+  expect(input.value).toContain("#k=");
+  fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+  expect(await screen.findByRole("button", { name: "Copied" })).toBeTruthy();
+  expect(screen.queryByRole("alert")).toBeNull();
 });

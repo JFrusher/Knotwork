@@ -117,3 +117,20 @@ test("a wedding deleted with its last member's account takes its helpers' links 
   await actAs(db, null);
   expect((await read(token)).rows).toEqual([]);
 });
+
+
+test("an impossible wedding date neither expires a link nor breaks reads and sweeps", async () => {
+  const { wedding } = await weddingOn("2028-02-30");
+  const token = (await publish(wedding, "per-ines", "key-1", "sealed")).rows[0]!.token;
+  await actAs(db, null);
+  expect((await read(token)).rows).toHaveLength(1);
+  await db.exec("reset role");
+  expect((await db.query("select helper_link_date('2028-02-30') as date, helper_links_expired($1) as expired", [wedding])).rows).toEqual([{ date: null, expired: false }]);
+  expect((await db.query("select sweep_helper_links() as swept")).rows).toEqual([{ swept: 0 }]);
+});
+
+test("only the helper reader's intended client roles have execution access", async () => {
+  await db.exec("create role unrelated_client");
+  const { rows } = await db.query("select has_function_privilege('anon', 'read_helper_link(text)', 'execute') as anon, has_function_privilege('authenticated', 'read_helper_link(text)', 'execute') as authenticated, has_function_privilege('unrelated_client', 'read_helper_link(text)', 'execute') as unrelated");
+  expect(rows).toEqual([{ anon: true, authenticated: true, unrelated: false }]);
+});

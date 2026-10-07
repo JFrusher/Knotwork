@@ -1,3 +1,5 @@
+import type { z } from "zod";
+import type { helperSheetSchema } from "./schemas";
 import type { Knotwork } from "@jfrusher/knotwork";
 import { formatClock } from "@/lib/minutes";
 import { longDate } from "@/lib/dates";
@@ -17,18 +19,7 @@ import { hiddenToolIds } from "@/lib/model/toolbox";
  * anyone's dietary needs, a guest's email, the guest list, the seating plan,
  * money, notes, or anything from the Checklist.
  */
-export interface HelperSheet {
-  wedding: { names: string; date: string; venue: string };
-  helper: { name: string; team: string };
-  /** The day's blocks, soonest first. */
-  day: Array<{ label: string; when: string; where: string }>;
-  /** Theirs and their team's: on the day soonest first, then those before it. */
-  jobs: Array<{ label: string; when: string; where: string; who: string[] }>;
-  boxes: Array<{ number: number; name: string; where: string; items: string[]; takenBy: string[] }>;
-  shots: Array<{ section: string; shots: Array<{ label: string; names: string[] }> }>;
-  /** Everyone in the crew there is a number for. */
-  crew: Array<{ name: string; role: string; phone: string }>;
-}
+export type HelperSheet = z.infer<typeof helperSheetSchema>;
 
 const span = (startMin: number, endMin: number) => `${formatClock(startMin)}–${formatClock(endMin)}`;
 

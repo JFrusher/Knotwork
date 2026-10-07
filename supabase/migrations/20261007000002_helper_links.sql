@@ -49,6 +49,19 @@ as $$
   select (p_date + 2)::timestamp at time zone 'Etc/GMT-14';
 $$;
 
+/** Invalid calendar dates in an imported document have no expiration. */
+create or replace function public.helper_link_date(p_date text)
+returns date
+language plpgsql
+immutable
+as $$
+begin
+  return p_date::date;
+exception when invalid_datetime_format or datetime_field_overflow then
+  return null;
+end;
+$$;
+
 /** Whether a wedding's helper links have run out. False with no date, or no document yet. */
 create or replace function public.helper_links_expired(p_wedding_id uuid)
 returns boolean
@@ -58,7 +71,7 @@ security definer
 set search_path = public
 as $$
   select coalesce((
-    select now() >= public.helper_links_end((d.document -> 'event' ->> 'date')::date)
+    select now() >= public.helper_links_end(public.helper_link_date(d.document -> 'event' ->> 'date'))
       from public.wedding_documents d
      where d.wedding_id = p_wedding_id
        and d.document -> 'event' ->> 'date' ~ '^\d{4}-\d{2}-\d{2}$'
@@ -142,6 +155,9 @@ as $$
     from public.helper_links l
    where l.token = p_token and not public.helper_links_expired(l.wedding_id);
 $$;
+
+revoke all on function public.read_helper_link(text) from public;
+grant execute on function public.read_helper_link(text) to anon, authenticated;
 
 /** Tidies away links that have run out. For the daily sweep, never a client. */
 create or replace function public.sweep_helper_links()

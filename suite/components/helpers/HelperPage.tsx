@@ -4,24 +4,21 @@ import { useEffect, useState } from "react";
 import { localDay, longDate } from "@/lib/dates";
 import { keepForOffline } from "@/lib/offline";
 import { importShareKey, unseal } from "@/lib/share/crypto";
-import type { HelperSheet } from "@/lib/helpers/helperSheet";
+import { keptHelperSheetSchema } from "@/lib/helpers/schemas";
+import type { z } from "zod";
 import type { SealedSheet } from "@/lib/helpers/store";
 
 /** Where this phone keeps the sheet it last opened, for when there is no signal. */
 const keptKey = (token: string) => `knotwork.helper.${token}`;
 
-interface Kept {
-  sheet: HelperSheet;
-  publishedAt: string;
-}
+type Kept = z.infer<typeof keptHelperSheetSchema>;
 
 function readKept(token: string): Kept | null {
-  try {
-    return JSON.parse(localStorage.getItem(keptKey(token)) ?? "null") as Kept | null;
-  } catch {
-    return null;
-  }
+  const stored = localStorage.getItem(keptKey(token));
+  return stored === null ? null : keptHelperSheetSchema.parse(JSON.parse(stored));
 }
+
+const couldNotOpen = "This link could not be opened. Copy the whole link and try again.";
 
 function keep(token: string, kept: Kept | null): void {
   try {
@@ -62,12 +59,16 @@ export function HelperPage({ token }: { token: string }) {
         response = await fetch(`/api/helpers/${token}`);
       } catch {
         // No signal: the copy from the last time it opened, if there is one.
-        const held = readKept(token);
         if (!live) return;
-        if (held) {
-          setKept(held);
-          setOffline(true);
-        } else setProblem("There is no signal, and this link has not been opened on this phone before.");
+        try {
+          const held = readKept(token);
+          if (held) {
+            setKept(held);
+            setOffline(true);
+          } else setProblem("There is no signal, and this link has not been opened on this phone before.");
+        } catch {
+          setProblem(couldNotOpen);
+        }
         return;
       }
       try {
@@ -77,13 +78,13 @@ export function HelperPage({ token }: { token: string }) {
           return;
         }
         const sealed = (await response.json()) as SealedSheet;
-        const opened = { sheet: (await unseal(await importShareKey(key), sealed)) as HelperSheet, publishedAt: sealed.publishedAt };
+        const opened = keptHelperSheetSchema.parse({ sheet: await unseal(await importShareKey(key), sealed), publishedAt: sealed.publishedAt });
         keep(token, opened);
         if (!live) return;
         setKept(opened);
         void keepForOffline("/helper/");
       } catch {
-        if (live) setProblem("This link could not be opened. Copy the whole link and try again.");
+        if (live) setProblem(couldNotOpen);
       }
     })();
 
