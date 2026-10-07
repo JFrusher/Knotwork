@@ -33,6 +33,53 @@ interface Post {
 
 export const POSTS: readonly Post[] = [
   {
+    slug: "print-your-own-place-cards",
+    title: "How to print your own place cards",
+    description:
+      "Check your printer's scale on plain paper, line up the backs if you print both sides, and let the table numbers come from the seating plan.",
+    published: "2026-10-07",
+    author: "Knotwork",
+    kind: "guide",
+    tool: { href: "/stationery", name: "Stationery", invitation: "Make your own place cards" },
+    sections: [
+      {
+        paragraphs: [
+          "You can print place cards at home on an ordinary printer. Measure what your printer does to sizes before you print on card, line the backs up if you print both sides, and take the names and table numbers from the seating plan rather than typing them. That is all a print service does for you. This is written for UK weddings, and A4, but nothing in it is law.",
+        ],
+      },
+      {
+        heading: "The paper",
+        paragraphs: [
+          "Use the heaviest card your printer says it will feed, and buy a few sheets more than you need. Before any of it goes in, print on plain paper. Stationery's Two test cards button prints the first two cards on one sheet, at true size, with the cut lines on, so your first print is never on the good card.",
+          "The classic place card in Stationery is 85 by 55mm, flat, with the name in the middle and the table beneath it. Change the size under Format, and Stationery works out how to fit the most cards on a sheet.",
+        ],
+      },
+      {
+        heading: "Check the scale first",
+        paragraphs: [
+          "Printer drivers often shrink a page a little to fit it, and you will not notice until the cards are too small for their holders. So measure it. In Stationery, open Print setup under Output and press Download calibration page. Print it at 100%, with \"fit to page\" turned off, and measure the line printed on it, which should be 100mm. Type in what you measured and save it.",
+          "From then on every export is corrected for that printer, and the correction is printed on the sheet, so a print that comes out wrong says why. The same page has a cross 10mm in from each edge. If one is missing or cut off, your printer cannot reach that edge: type the border you measured and Stationery warns you when a fold or a bleed lands in it.",
+        ],
+      },
+      {
+        heading: "Printing both sides",
+        paragraphs: [
+          "A card with something on the back, a menu or a message, has to have its back land behind its front. Most home printers are a millimetre or two out, and some turn the paper on the other edge to the one you expect.",
+          "Under Print setup, open Double-sided. Choose the edge your printer turns the paper on, usually the long edge, and download the duplex test sheet. Print it on both sides of one sheet of thin paper, at 100%, and hold it up to a window, reading from the back. A mark inside its box means the edge is right. Four numbered scales show how far out the back is: type in what each one reads and apply them, and the backs are moved by that much. Print the test again and all four should read 0.",
+          "If the two pairs of scales disagree by more than a millimetre, the sheet went through crooked. Moving the back cannot fix that, so feed the paper straight and test again.",
+        ],
+      },
+      {
+        heading: "Table numbers from the plan",
+        paragraphs: [
+          "Do not type the names in. The place cards read the guest list and the seating plan, so each card already carries the guest's name and their table, and only guests who are coming get one. Someone with no table yet still gets a card, with the table left blank, and Stationery tells you how many there are.",
+          "Plans change after you print. When they do, Stationery says which cards have changed since you printed them and offers to print just those, so a late change costs one sheet, not the set.",
+        ],
+      },
+    ],
+    sources: [],
+  },
+  {
     slug: "a-wedding-day-timeline-you-can-move",
     title: "A wedding day timeline you can move",
     description:

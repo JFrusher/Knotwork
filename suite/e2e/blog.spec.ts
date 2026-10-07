@@ -41,6 +41,11 @@ test("the blog is in the sitemap, post by post", async ({ request }) => {
 
 for (const guide of [
   {
+    slug: "print-your-own-place-cards",
+    title: "How to print your own place cards",
+    tool: { link: "Make your own place cards in Stationery", url: /\/stationery$/ },
+  },
+  {
     slug: "how-to-make-a-wedding-seating-chart",
     title: "How to make a wedding seating chart, and keep it up to date",
     tool: { link: "Draw your room and seat your guests in Seating", url: /\/seating$/ },
