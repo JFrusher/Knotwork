@@ -7,7 +7,7 @@ const root = fileURLToPath(new URL(".", import.meta.url));
  * One project per tool, plus the suite's own.
  *
  * Each tool arrived with a test setup of its own, and those settings were not
- * decoration: Plaque and Cadence run in Node because their cores are pure and
+ * decoration: Stationery and Cadence run in Node because their cores are pure and
  * their PDF renderers are headless, and jsdom is not simply a superset — its
  * `Blob` has no `arrayBuffer`, which is exactly what Cadence's blob store is
  * built on. Forcing one environment on everything broke working tests and told
@@ -55,7 +55,7 @@ export default defineConfig({
       {
         resolve: { alias: { "@": root } },
         test: {
-          name: "plaque",
+          name: "stationery",
           /*
            * Generous, because these render real PDFs. Alone each takes about a
            * second; sharing a machine with the rest of the suite they can pass
@@ -66,7 +66,7 @@ export default defineConfig({
            */
           testTimeout: 20_000,
           sequence: { groupOrder: 0 },
-          include: ["apps/plaque/**/*.test.{ts,tsx}"],
+          include: ["apps/stationery/**/*.test.{ts,tsx}"],
           environment: "node",
         },
       },

@@ -66,7 +66,7 @@ test suites:
 
 - **Tableaux** — table geometry and seat placement, alignment snapping, the
   chair-relocation pass, the warnings engine.
-- **Plaque** — the whole 4,800-line core: imposition, fold transforms, crop
+- **Plaque** (now Stationery) — the whole 4,800-line core: imposition, fold transforms, crop
   marks, fontkit measuring and text fitting, the element model, bindings,
   overrides, the icon and image pipelines, and both renderers.
 - **Cadence** — the scheduling resolver, clash detection, slack, NOAA solar, and

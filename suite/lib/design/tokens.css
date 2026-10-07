@@ -2,7 +2,7 @@
  * The one place a Knotwork colour, typeface or measure is decided.
  *
  * Four tools arrived here, each with a complete design system of its own.
- * Plaque, Cadence and Delegation agreed on their variable names to the point that
+ * Stationery, Cadence and Delegation agreed on their variable names to the point that
  * two of the three files were byte-identical; Tableaux used a different set of
  * seventy-two. Renaming its way to a single vocabulary would have meant editing
  * every CSS Module in the suite, which is a great deal of risk to buy a tidier
@@ -107,8 +107,8 @@
  * by eye later fails there rather than in front of someone trying to read it.
  */
 
-.plaque-scope,
-.plaque-tokens {
+.stationery-scope,
+.stationery-tokens {
   --accent: #2f6d5f;
   --accent-hover: #245448;
   --accent-soft: #e4efec;
@@ -147,17 +147,17 @@
 }
 
 /*
- * ── Plaque, Cadence and Delegation ───────────────────────────────────────────
+ * ── Stationery, Cadence and Delegation ───────────────────────────────────────────
  *
  * One vocabulary, shared by three tools that were built as siblings. The only
  * mapping that moved: `--surface` was `--grey-0`, pure white, which left a
  * visible seam where a tool met the shell's warmer ground. It now takes the
  * ground itself, and white stays available as the raised step above it.
  */
-.plaque-scope,
+.stationery-scope,
 .cadence-scope,
 .delegation-scope,
-.plaque-tokens,
+.stationery-tokens,
 .cadence-tokens,
 .delegation-tokens {
   --grey-0: var(--t-0);
@@ -280,7 +280,7 @@
  * Unlayered, so it beats the shell's rule in the base layer; `:where()`, so a
  * tool's own heading class still beats it.
  */
-:where(.plaque-scope, .cadence-scope, .delegation-scope, .tableaux-scope) :is(h1, h2, h3, h4, h5, h6) {
+:where(.stationery-scope, .cadence-scope, .delegation-scope, .tableaux-scope) :is(h1, h2, h3, h4, h5, h6) {
   font-family: inherit;
   color: inherit;
 }

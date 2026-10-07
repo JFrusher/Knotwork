@@ -130,7 +130,7 @@ export function WeddingPack() {
 
 /** The room as Stationery draws it: the wedding's own floor plan, on A4. */
 async function floorPlan(): Promise<Uint8Array | null> {
-  const { packFloorPlanPdf } = await import("@/apps/plaque/export/packFloorPlan");
+  const { packFloorPlanPdf } = await import("@/apps/stationery/export/packFloorPlan");
   return packFloorPlanPdf(useKnotworkStore.getState());
 }
 

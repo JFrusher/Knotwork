@@ -85,7 +85,7 @@ describe("chapterForRoute", () => {
  * A step whose anchor no longer exists degrades quietly at runtime — the card
  * shows, centred, pointing at nothing. That is right for a user and useless
  * for a maintainer, so renaming a control has to fail here instead. Follows
- * the grep-based pattern in apps/plaque/core/invariants.test.ts.
+ * the grep-based pattern in apps/stationery/core/invariants.test.ts.
  */
 describe("every anchor exists in the source", () => {
   const roots = ["app", "components", "apps", "lib"];

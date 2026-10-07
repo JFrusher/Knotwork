@@ -43,7 +43,7 @@ const NETWORK_APIS = [
  * here can only ask this app's own server for a file it already shipped.
  */
 const MAY_FETCH = [
-  join("apps", "plaque", "state", "fontLoader.ts"),
+  join("apps", "stationery", "state", "fontLoader.ts"),
   join("apps", "cadence", "render", "pdf", "fontSource.ts"),
   join("apps", "delegation", "render", "pdf", "fontSource.ts"),
 ];

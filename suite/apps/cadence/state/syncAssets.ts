@@ -25,7 +25,7 @@ import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
  * under the key they arrived with is exactly what `blobStore` would have done.
  */
 
-/** Prefixed so a Cadence blob can never collide with a Plaque font or image. */
+/** Prefixed so a Cadence blob can never collide with a Stationery font or image. */
 const PREFIX = "cadence.blob.";
 
 export interface PortableAsset {

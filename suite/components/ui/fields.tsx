@@ -6,7 +6,7 @@
  * means a change to how a number field behaves reaches both tools, which is
  * what anyone looking at them would already assume.
  *
- * Plaque has a set of its own that is genuinely different: different names,
+ * Stationery has a set of its own that is genuinely different: different names,
  * different components, a `SubGroup` and a `Hint` these two have no use for.
  * Merging it would mean renaming through its nine panels to buy a consistency
  * the shared tokens already deliver, so it keeps its own.

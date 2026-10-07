@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as cadence from "@/apps/cadence/state/syncAssets";
-import * as plaque from "@/apps/plaque/state/syncAssets";
+import * as stationery from "@/apps/stationery/state/syncAssets";
 
 /**
  * Ids are routed home by prefix, which is the kind of agreement that breaks
@@ -9,11 +9,11 @@ import * as plaque from "@/apps/plaque/state/syncAssets";
  * opens the wedding on a second machine and finds a hole in their run sheet.
  */
 
-const SOURCES = { plaque, cadence };
+const SOURCES = { stationery, cadence };
 
 const IDS = {
-  "plaque.font.abc123": "plaque",
-  "plaque.image.def456": "plaque",
+  "plaque.font.abc123": "stationery",
+  "plaque.image.def456": "stationery",
   "cadence.blob.font-a1b2c3d4e5": "cadence",
   "cadence.blob.logo-99887766": "cadence",
 } as const;

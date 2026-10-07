@@ -75,11 +75,11 @@ export function contrast(foreground: string, background: string): number {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
-const SCOPES = [".plaque-scope", ".cadence-scope", ".delegation-scope", ".tableaux-scope", ".group-shots-tokens"];
+const SCOPES = [".stationery-scope", ".cadence-scope", ".delegation-scope", ".tableaux-scope", ".group-shots-tokens"];
 
 /** The tint each tool fills behind its own accent text. Tableaux named it differently. */
 const TINT: Record<string, string> = {
-  ".plaque-scope": "--accent-soft",
+  ".stationery-scope": "--accent-soft",
   ".cadence-scope": "--accent-soft",
   ".delegation-scope": "--accent-soft",
   ".tableaux-scope": "--accent-light",

@@ -3,8 +3,8 @@ import { choices } from "@/lib/bar/actions";
 import { daysUntil } from "@/lib/dates";
 import { emptyBar, readBar, readCeremony } from "@/lib/model/slices";
 import type { ShotMember } from "@/lib/model/types";
-import { readSuite } from "@/apps/plaque/state/sliceBridge";
-import { SUITE_VERSION, storedPieces } from "@/apps/plaque/state/suite";
+import { readSuite } from "@/apps/stationery/state/sliceBridge";
+import { SUITE_VERSION, storedPieces } from "@/apps/stationery/state/suite";
 
 /**
  * What a planner keeps from one wedding to use in another, and how it goes

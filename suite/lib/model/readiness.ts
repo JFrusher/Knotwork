@@ -8,7 +8,7 @@ import { ceremonyPlace, overrun } from "@/lib/ceremony/checks";
 import { DUE_SOON_DAYS, money } from "@/lib/money/money";
 import { daysUntil, longDate, todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
-import { storedPieces } from "@/apps/plaque/state/suite";
+import { storedPieces } from "@/apps/stationery/state/suite";
 
 /**
  * What is left to do, across the whole wedding.
@@ -78,7 +78,7 @@ export function stationeryPieces(raw: unknown): Record<string, unknown>[] {
 /**
  * Every column the card design binds, so we can tell what it can and cannot
  * show: the tokens in its text, and the column an icon is drawn from — the
- * same two Plaque's own `unboundTokens` counts.
+ * same two Stationery's own `unboundTokens` counts.
  */
 function boundTokens(pieces: Record<string, unknown>[]): Set<string> {
   const tokens = new Set<string>();

@@ -71,7 +71,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "place-cards",
     href: "/stationery",
-    tokens: "plaque-tokens",
+    tokens: "stationery-tokens",
     name: "Stationery",
     tagline: "Place cards, signs and the order of service, from the plan you just made.",
     icon: Contact,

@@ -68,9 +68,9 @@ describe("the font engine", () => {
   });
 
   it("is still found where it is used, so the walk is not silently finding nothing", () => {
-    expect(chainToEngine(join(ROOT, "apps/plaque/core/text/fit.ts"))).toEqual([
-      "apps/plaque/core/text/fit.ts",
-      "apps/plaque/core/text/measure.ts",
+    expect(chainToEngine(join(ROOT, "apps/stationery/core/text/fit.ts"))).toEqual([
+      "apps/stationery/core/text/fit.ts",
+      "apps/stationery/core/text/measure.ts",
       "fontkit",
     ]);
   });

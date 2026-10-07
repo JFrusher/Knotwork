@@ -39,7 +39,7 @@ export function ChromeFill({
 }: {
   name: string;
   /**
-   * The tool's token class — `plaque-tokens` and so on.
+   * The tool's token class — `stationery-tokens` and so on.
    *
    * A portal moves the nodes out of the tool and into the header, which is
    * outside the tool's scope, so the variables its stylesheets read stop
