@@ -258,6 +258,44 @@ describe("roles", () => {
     expect((await removeMemberHandler(store, weddingId, "pat", "pat")).status).toBe(200);
     expect(await store.membershipsOf("pat")).toEqual([]);
   });
+
+  async function withAssistant() {
+    const { store, weddingId } = await weddingWithPlanner();
+    store._seedEmail("ash", "ash@planners.example");
+    const invite = await createInviteHandler(store, weddingId, "pat", "ash@planners.example", "assistant");
+    expect((await acceptInviteHandler(store, (invite.body as { token: string }).token, "ash")).status).toBe(200);
+    return { store, weddingId };
+  }
+
+  it("only the planner invites an assistant, and an assistant invites nobody", async () => {
+    const { store, weddingId } = await withAssistant();
+    expect((await createInviteHandler(store, weddingId, "alice", "bea@planners.example", "assistant")).status).toBe(403);
+    expect((await createInviteHandler(store, weddingId, "ash", "bob@example.com", "partner")).status).toBe(403);
+    expect((await createInviteHandler(store, weddingId, "pat", "bea@planners.example", "assistant")).status).toBe(200);
+  });
+
+  it("the couple or the planner removes an assistant; an assistant removes nobody else", async () => {
+    const { store, weddingId } = await withAssistant();
+    expect((await removeMemberHandler(store, weddingId, "ash", "pat")).status).toBe(403);
+    expect((await removeMemberHandler(store, weddingId, "ash", "alice")).status).toBe(403);
+    expect((await removeMemberHandler(store, weddingId, "alice", "ash")).status).toBe(200);
+  });
+
+  it("an assistant's invite dies with the planner who sent it", async () => {
+    const { store, weddingId } = await weddingWithPlanner();
+    const invite = await createInviteHandler(store, weddingId, "pat", "ash@planners.example", "assistant");
+    await removeMemberHandler(store, weddingId, "alice", "pat");
+    store._seedEmail("ash", "ash@planners.example");
+    const reply = await acceptInviteHandler(store, (invite.body as { token: string }).token, "ash");
+    expect((reply.body as { reason: string }).reason).toBe("inviter-gone");
+  });
+
+  it("the last partner or planner out takes the wedding and its assistants with them", async () => {
+    const { store, weddingId } = await withAssistant();
+    await removeMemberHandler(store, weddingId, "pat", "pat");
+    await removeMemberHandler(store, weddingId, "alice", "alice");
+    expect(await store.membershipsOf("ash")).toEqual([]);
+  });
 });
 
 describe("listWeddingsHandler", () => {

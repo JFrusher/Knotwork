@@ -11,6 +11,7 @@ const ACCOUNTS_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "
 const DOCUMENTS_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260903000001_wedding_documents.sql");
 const ROLES_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20260928000001_roles.sql");
 const PEOPLE_EMAIL_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20261003142447_wedding_people_email.sql");
+const ASSISTANT_MIGRATION = join(process.cwd(), "..", "supabase", "migrations", "20261007000001_assistant_role.sql");
 
 /**
  * A minimal stand-in for Supabase's own `auth` schema: just enough for
@@ -43,6 +44,7 @@ async function databaseWith(): Promise<PGlite> {
   // tests above were written for must still hold with roles added.
   await db.exec(readFileSync(ROLES_MIGRATION, "utf8"));
   await db.exec(readFileSync(PEOPLE_EMAIL_MIGRATION, "utf8"));
+  await db.exec(readFileSync(ASSISTANT_MIGRATION, "utf8"));
   return db;
 }
 
@@ -294,12 +296,12 @@ test("deleting one of two members leaves the wedding intact for the other", asyn
 
 // Roles ---------------------------------------------------------------------
 
-async function newWedding(role: "partner" | "planner" = "partner"): Promise<string> {
+async function newWedding(role: "partner" | "planner" | "assistant" = "partner"): Promise<string> {
   const { rows } = await db.query<{ create_wedding: string }>("select create_wedding($1)", [role]);
   return rows[0]!.create_wedding;
 }
 
-async function invite(weddingId: string, email: string, role: "partner" | "planner"): Promise<string> {
+async function invite(weddingId: string, email: string, role: "partner" | "planner" | "assistant"): Promise<string> {
   const { rows } = await db.query<{ token: string }>("select * from create_invite($1, $2, $3)", [weddingId, email, role]);
   return rows[0]!.token;
 }
@@ -466,4 +468,149 @@ test("deleting a planner's account leaves each client's wedding with its couple,
   await asSuperuser();
   const left = await db.query<{ id: string }>("select id from account_weddings where id = any($1)", [[clients, started]]);
   expect(left.rows.map((row) => row.id)).toEqual([clients]);
+});
+
+// Assistants ----------------------------------------------------------------
+
+/** Alice's wedding, with Pat as its planner. */
+async function plannedWedding(): Promise<{ alice: string; pat: string; wedding: string }> {
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  const wedding = await newWedding("partner");
+  const toPat = await invite(wedding, "pat@planners.example", "planner");
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  expect(await accept(toPat)).toMatchObject({ accepted: true });
+  return { alice, pat, wedding };
+}
+
+/** Pat invites `email` as an assistant, and they accept. Leaves the session as them. */
+async function assistantJoins(pat: string, wedding: string, email: string): Promise<string> {
+  await asUser(pat);
+  const token = await invite(wedding, email, "assistant");
+  const id = await userExists(email);
+  await asUser(id);
+  expect(await accept(token)).toMatchObject({ accepted: true });
+  return id;
+}
+
+test("the planner invites any number of assistants, who can then read and save the wedding", async () => {
+  const { pat, wedding } = await plannedWedding();
+  await assistantJoins(pat, wedding, "ash@planners.example");
+  await assistantJoins(pat, wedding, "bea@planners.example");
+  await assistantJoins(pat, wedding, "cal@planners.example");
+
+  await expect(db.query("select * from save_wedding_document($1, $2, 0)", [wedding, "{}"])).resolves.toBeTruthy();
+  expect((await db.query("select * from wedding_documents where wedding_id = $1", [wedding])).rows).toHaveLength(1);
+  await asSuperuser();
+  expect((await db.query("select * from wedding_members where wedding_id = $1 and role = 'assistant'", [wedding])).rows).toHaveLength(3);
+});
+
+test("only the planner can invite an assistant: not the couple", async () => {
+  const { alice, wedding } = await plannedWedding();
+  await asUser(alice);
+  await expect(invite(wedding, "ash@planners.example", "assistant")).rejects.toThrow(/only the planner/);
+});
+
+test("an assistant invites nobody, in any role", async () => {
+  const { pat, wedding } = await plannedWedding();
+  await assistantJoins(pat, wedding, "ash@planners.example");
+  for (const role of ["partner", "planner", "assistant"] as const) {
+    await expect(invite(wedding, "someone@example.com", role)).rejects.toThrow(/assistant cannot invite/);
+  }
+});
+
+test("an assistant's invite is refused once the planner who sent it has left", async () => {
+  const { alice, pat, wedding } = await plannedWedding();
+  await asUser(pat);
+  const token = await invite(wedding, "ash@planners.example", "assistant");
+  await asUser(alice);
+  await db.query("select remove_member($1, $2)", [wedding, pat]);
+
+  const ash = await userExists("ash@planners.example");
+  await asUser(ash);
+  expect(await accept(token)).toMatchObject({ accepted: false, reason: "inviter-gone" });
+});
+
+test("nobody starts a wedding as an assistant", async () => {
+  const ash = await userExists("ash@planners.example");
+  await asUser(ash);
+  await expect(newWedding("assistant")).rejects.toThrow(/started by/);
+});
+
+test("the couple can remove an assistant, and so can the planner", async () => {
+  const { alice, pat, wedding } = await plannedWedding();
+  const ash = await assistantJoins(pat, wedding, "ash@planners.example");
+  const bea = await assistantJoins(pat, wedding, "bea@planners.example");
+
+  await asUser(alice);
+  await db.query("select remove_member($1, $2)", [wedding, ash]);
+  await asUser(pat);
+  await db.query("select remove_member($1, $2)", [wedding, bea]);
+
+  await asSuperuser();
+  expect((await db.query("select * from wedding_members where wedding_id = $1 and role = 'assistant'", [wedding])).rows).toHaveLength(0);
+});
+
+test("an assistant removes nobody but themselves", async () => {
+  const { alice, pat, wedding } = await plannedWedding();
+  const bea = await assistantJoins(pat, wedding, "bea@planners.example");
+  const ash = await assistantJoins(pat, wedding, "ash@planners.example");
+
+  for (const someone of [alice, pat, bea]) {
+    await expect(db.query("select remove_member($1, $2)", [wedding, someone])).rejects.toThrow(/only the couple/);
+  }
+  await db.query("select remove_member($1, $2)", [wedding, ash]);
+  await asSuperuser();
+  expect((await db.query("select * from wedding_members where wedding_id = $1", [wedding])).rows).toHaveLength(3);
+});
+
+test("the planner leaving keeps their assistants on the wedding", async () => {
+  const { pat, wedding } = await plannedWedding();
+  const ash = await assistantJoins(pat, wedding, "ash@planners.example");
+  await asUser(pat);
+  await db.query("select remove_member($1, $2)", [wedding, pat]);
+
+  await asSuperuser();
+  const left = await db.query<{ user_id: string }>("select user_id from wedding_members where wedding_id = $1 and role = 'assistant'", [wedding]);
+  expect(left.rows.map((row) => row.user_id)).toEqual([ash]);
+});
+
+test("the last partner or planner leaving takes the wedding, and its assistants, with them", async () => {
+  const { alice, pat, wedding } = await plannedWedding();
+  await assistantJoins(pat, wedding, "ash@planners.example");
+  await asUser(pat);
+  await db.query("select remove_member($1, $2)", [wedding, pat]);
+  await asUser(alice);
+  await db.query("select remove_member($1, $2)", [wedding, alice]);
+
+  await asSuperuser();
+  expect((await db.query("select * from account_weddings where id = $1", [wedding])).rows).toHaveLength(0);
+  expect((await db.query("select * from wedding_members where wedding_id = $1", [wedding])).rows).toHaveLength(0);
+});
+
+test("an assistant leaving never deletes the wedding", async () => {
+  const { pat, wedding } = await plannedWedding();
+  const ash = await assistantJoins(pat, wedding, "ash@planners.example");
+  await db.query("select remove_member($1, $2)", [wedding, ash]);
+  await asSuperuser();
+  expect((await db.query("select * from account_weddings where id = $1", [wedding])).rows).toHaveLength(1);
+});
+
+test("deleting the last partner's account takes the wedding and its assistants too", async () => {
+  const alice = await userExists("alice@example.com");
+  await asUser(alice);
+  const wedding = await newWedding("partner");
+  const toPat = await invite(wedding, "pat@planners.example", "planner");
+  const pat = await userExists("pat@planners.example");
+  await asUser(pat);
+  await accept(toPat);
+  await assistantJoins(pat, wedding, "ash@planners.example");
+  await asUser(pat);
+  await db.query("select remove_member($1, $2)", [wedding, pat]);
+
+  await asUser(alice);
+  await db.query("select delete_my_account()");
+  await asSuperuser();
+  expect((await db.query("select * from account_weddings where id = $1", [wedding])).rows).toHaveLength(0);
 });
