@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { emptyBar } from "@/lib/model/slices";
 import { sumBar } from "@/lib/bar/sum";
-import { TOOLS } from "@/lib/tools";
+import { GUESTS, TOOLS } from "@/lib/tools";
 import { POSTS, postBySlug } from "./posts";
 
 test("every post has its own address, and none is taken by a page of the blog's own", () => {
@@ -22,7 +22,7 @@ test("every post says what it is in a search result's space, on a real date, new
 });
 
 test("a guide's way into a tool is a tool that exists", () => {
-  const hrefs = new Set(TOOLS.map((tool) => tool.href as string));
+  const hrefs = new Set([...TOOLS, GUESTS].map((tool) => tool.href as string));
   for (const post of POSTS) if (post.tool) expect(hrefs, post.slug).toContain(post.tool.href);
 });
 
