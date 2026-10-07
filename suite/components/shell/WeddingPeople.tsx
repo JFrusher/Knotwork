@@ -3,13 +3,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { LogOut, UserMinus, UserPlus } from "lucide-react";
 import type { PersonRecord, Role } from "@/lib/accounts/store";
-import { ROLE_CAP } from "@/lib/accounts/store";
+import { mayInvite, mayRemove, ROLE_CAP } from "@/lib/accounts/store";
 import { closeWedding } from "@/lib/store/openWedding";
 import { Button, TextField } from "@/components/ui/controls";
 import { useConfirm } from "@/components/ui/Confirm";
 import { EYEBROW } from "@/components/ui/eyebrow";
 
-const ROLE_NAME: Record<Role, string> = { partner: "One of the couple", planner: "Planner" };
+const ROLE_NAME: Record<Role, string> = { partner: "One of the couple", planner: "Planner", assistant: "Assistant" };
+/** How the invite form offers each role, to whoever may send it. */
+const INVITE_AS: Record<Role, string> = { partner: "One of the couple", planner: "Your planner", assistant: "Your assistant" };
+/** The order people are listed and roles offered in: the couple, their planner, the planner's assistants. */
+const ROLES: readonly Role[] = ["partner", "planner", "assistant"];
 
 async function readJson<T>(response: Response): Promise<T | null> {
   return (await response.json().catch(() => null)) as T | null;
@@ -19,7 +23,8 @@ async function readJson<T>(response: Response): Promise<T | null> {
  * Who has access to the wedding open here, and asking someone else in.
  *
  * The couple always sees everyone who can read their plans, and can remove
- * their planner. Anyone can leave.
+ * their planner or an assistant; the planner can remove an assistant. An
+ * assistant invites and removes nobody. Anyone can leave.
  */
 export function WeddingPeople({
   weddingId,
@@ -50,7 +55,9 @@ export function WeddingPeople({
 
   const mine = people.find((p) => p.userId === me);
   const full = (r: Role) => people.filter((p) => p.role === r).length >= ROLE_CAP[r];
-  const open = (["partner", "planner"] as const).filter((r) => !full(r));
+  const offered = ROLES.filter((r) => mine && mayInvite(mine.role, r));
+  const open = offered.filter((r) => !full(r));
+  const listed = [...people].sort((a, b) => ROLES.indexOf(a.role) - ROLES.indexOf(b.role));
   const inviteRole = open.includes(role) ? role : open[0];
 
   async function remove(person: PersonRecord) {
@@ -111,7 +118,7 @@ export function WeddingPeople({
       <section className="space-y-3 border-t border-charcoal/10 pt-6 first:border-t-0 first:pt-0">
         <h2 className={`text-slate ${EYEBROW}`}>Who has access</h2>
         <ul className="space-y-2">
-          {people.map((person) => (
+          {listed.map((person) => (
             <li key={person.userId} className="flex flex-wrap items-center justify-between gap-2 text-sm">
               <span>
                 <span className="text-charcoal">{person.email}</span>
@@ -125,7 +132,7 @@ export function WeddingPeople({
                 <Button icon={LogOut} onClick={() => void remove(person)}>
                   Leave
                 </Button>
-              ) : person.role === "planner" && mine?.role === "partner" ? (
+              ) : mine && mayRemove(mine.role, person.role) ? (
                 <Button icon={UserMinus} tone="danger" onClick={() => void remove(person)}>
                   Remove
                 </Button>
@@ -147,7 +154,7 @@ export function WeddingPeople({
           >
             <fieldset className="space-y-1">
               <legend className="mb-1 text-sm text-slate">As</legend>
-              {(["partner", "planner"] as const).map((r) => (
+              {offered.map((r) => (
                 <label key={r} className={`flex items-center gap-2 text-sm ${full(r) ? "text-slate/60" : "text-charcoal"}`}>
                   <input
                     type="radio"
@@ -157,7 +164,7 @@ export function WeddingPeople({
                     disabled={full(r)}
                     onChange={() => setRole(r)}
                   />
-                  {r === "partner" ? "One of the couple" : "Your planner"}
+                  {INVITE_AS[r]}
                   {full(r) ? " — already on the wedding" : ""}
                 </label>
               ))}

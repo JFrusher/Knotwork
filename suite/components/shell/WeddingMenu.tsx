@@ -10,7 +10,7 @@ import { WEDDING_PAGES } from "@/lib/tools";
 import type { WeddingListing } from "@/lib/accounts/handlers";
 
 function weddingLabel(wedding: WeddingListing): string {
-  return `${wedding.names || "A wedding with no names yet"}${wedding.role === "planner" ? " · client" : ""}`;
+  return `${wedding.names || "A wedding with no names yet"}${wedding.role !== "partner" ? " · client" : ""}`;
 }
 
 const item =
@@ -33,7 +33,7 @@ export function WeddingMenu() {
   const current = useKnotworkStore((s) => s.weddingId);
   const weddings = useWeddings((s) => s.weddings);
   const pathname = usePathname();
-  const planning = weddings !== null && (weddings.length > 1 || weddings.some((w) => w.role === "planner"));
+  const planning = weddings !== null && (weddings.length > 1 || weddings.some((w) => w.role !== "partner"));
 
   return (
     <Popover
