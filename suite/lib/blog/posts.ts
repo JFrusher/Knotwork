@@ -33,6 +33,70 @@ interface Post {
 
 export const POSTS: readonly Post[] = [
   {
+    slug: "how-to-make-a-wedding-seating-chart",
+    title: "How to make a wedding seating chart, and keep it up to date",
+    description:
+      "Start from the guest list, draw the room to scale, seat the hard cases first, then make the place cards and the caterer's list from the chart.",
+    published: "2026-10-07",
+    author: "Knotwork",
+    kind: "guide",
+    tool: { href: "/seating", name: "Seating", invitation: "Draw your room and seat your guests" },
+    sections: [
+      {
+        paragraphs: [
+          "Start from the guest list, draw the room to scale, seat the people with rules first and everyone else after, and make the place cards and the caterer's list from the chart rather than typing them again. That last part is the one that keeps it up to date. This is written for UK weddings, but none of it is law, so it works anywhere.",
+        ],
+      },
+      {
+        heading: "Why seating charts go wrong",
+        paragraphs: [
+          "A seating chart is rarely one list. It is the chart, the place cards and the sheet the caterer asked for, and each starts as a copy of the same names. Then someone replies late, a cousin turns vegan, a table is renamed after the florist's centrepiece, and each change has to be made three times. Sooner or later one of the three is missed, and it is usually the place cards, because they were printed first.",
+          "So the aim is one list, with the chart, the cards and the caterer's sheet all read from it.",
+        ],
+      },
+      {
+        heading: "1. Start from the guest list you already have",
+        paragraphs: [
+          "Export it as a CSV from wherever it lives now and import it. You see what will change before anything is saved. When a newer list comes in later, import that too: it adds the new names and updates the changed ones, and everyone already on the list keeps their seat. Anyone on your list who is not in the file is shown to you, and only goes if you tick them.",
+        ],
+      },
+      {
+        heading: "2. Draw the room to scale",
+        paragraphs: [
+          "Ask the venue for a plan with measurements, or measure one wall yourself. In Seating's settings, press Calibrate, draw a line along a wall you know and type what it measures, and the whole plan is to scale. Then place the tables.",
+          "Scale matters because chairs need room. If two tables are too close for the chairs to clear, Seating says so. If they do not fit on the plan, they will not fit on the day.",
+        ],
+      },
+      {
+        heading: "3. Seat the hard cases first",
+        paragraphs: [
+          "Before anyone else, write down who should not sit together and who should, and seat those people first. Seating keeps the rules and warns you when the chart breaks one. It warns rather than stops you, because sometimes you break a rule on purpose.",
+          "Families are worth the same care. Put a family together in Seating and it tells you when you have split them across tables. It also tells you when a table has more people than chairs.",
+        ],
+      },
+      {
+        heading: "4. Then everyone else",
+        paragraphs: [
+          "The rest goes quickly once the hard cases are placed. On the Guests page, show only the people who are coming and have no table yet, tick them, and move them to a table in one go. The front page counts how many still have no table, so you know when you are finished.",
+        ],
+      },
+      {
+        heading: "5. The caterer's list",
+        paragraphs: [
+          "Your caterer will want two things: the dietary needs in total, and which table each one is at. Do not type that up. Seating's Export gives you a CSV of who is at each table, and a dietary and headcount report with the totals and a summary per table. Send it again whenever the chart changes; it takes a click.",
+        ],
+      },
+      {
+        heading: "6. Place cards from the chart",
+        paragraphs: [
+          "Make the place cards in Stationery and they read the table from the chart. Rename a table and the cards say the new name with nothing pressed.",
+          "Once you have printed them, the chart can still change. When it does, Stationery names the cards that are now wrong and offers to print just those, so a late change costs one sheet, not the whole set.",
+        ],
+      },
+    ],
+    sources: [],
+  },
+  {
     slug: "design-your-order-of-service",
     title: "Designing your order of service, in your own style",
     description:
