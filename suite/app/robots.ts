@@ -10,7 +10,7 @@ import { siteUrl } from "@/lib/env";
  */
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [{ userAgent: "*", allow: "/", disallow: ["/seat/", "/supplier/", "/api/"] }],
+    rules: [{ userAgent: "*", allow: "/", disallow: ["/seat/", "/supplier/", "/helper/", "/api/"] }],
     sitemap: `${siteUrl()}/sitemap.xml`,
   };
 }

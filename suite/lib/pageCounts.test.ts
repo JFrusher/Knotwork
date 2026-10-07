@@ -6,6 +6,7 @@ import { countedUrl, PUBLIC_ROUTES } from "./pageCounts";
 test("a counted page view carries the route, never a link's token, a wedding's id, a query or a fragment", () => {
   expect(countedUrl("https://knotwork.app/seat/abc123#key")).toBe("https://knotwork.app/seat/[token]");
   expect(countedUrl("https://knotwork.app/supplier/def456#key")).toBe("https://knotwork.app/supplier/[token]");
+  expect(countedUrl("https://knotwork.app/helper/fed654#k=key")).toBe("https://knotwork.app/helper/[token]");
   expect(countedUrl("https://knotwork.app/invite/0a1b2c")).toBe("https://knotwork.app/invite/[token]");
   expect(countedUrl("https://knotwork.app/open/7f3e-wedding")).toBe("https://knotwork.app/open/[wedding]");
   expect(countedUrl("https://knotwork.app/guests?select=g_42")).toBe("https://knotwork.app/guests");

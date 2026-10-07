@@ -4,6 +4,7 @@ import { StoreHydrator } from "@/lib/store/StoreHydrator";
 import { LiveWedding } from "@/components/shell/LiveWedding";
 import { GuestLinkKeeper } from "@/components/shell/GuestLinkKeeper";
 import { SupplierLinkKeeper } from "@/components/shell/SupplierLinkKeeper";
+import { HelperLinkKeeper } from "@/components/shell/HelperLinkKeeper";
 import { TourProvider } from "@/lib/tour/useTour";
 import { TourOverlay } from "@/components/tour/TourOverlay";
 import { ConfirmProvider } from "@/components/ui/Confirm";
@@ -25,6 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <LiveWedding />
       <GuestLinkKeeper />
       <SupplierLinkKeeper />
+      <HelperLinkKeeper />
       {/* One confirmation dialog for the whole app — see `components/ui/Confirm`. */}
       <ConfirmProvider>
         {/* Above the route content, so a chapter that walks from Seating to

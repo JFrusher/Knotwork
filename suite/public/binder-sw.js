@@ -1,12 +1,13 @@
 /*
- * Keeps the Binder for when there is no signal — venues are often in a
- * valley. Scoped to /binder alone; the planning app is not cached.
+ * Keeps the Binder, and a helper's page, for when there is no signal —
+ * venues are often in a valley. Registered for /binder and for /helper/ (see
+ * lib/offline.ts); the planning app is not cached.
  *
- * The page hands over every file it loaded (see components/binder/Binder.tsx),
- * and those are kept. A page load tries the network first and falls back to
- * the kept page; files are served from what was kept, and kept anew when
- * fetched. The wedding itself never passes through here: it is already on
- * the phone, and the account's API is never cached.
+ * The page hands over every file it loaded, and those are kept. A page load
+ * tries the network first and falls back to the kept page; files are served
+ * from what was kept, and kept anew when fetched. What the pages show never
+ * passes through here: the wedding, or a helper's opened sheet, is already on
+ * the phone, and the API is never cached.
  */
 const KEPT = "binder-v1";
 

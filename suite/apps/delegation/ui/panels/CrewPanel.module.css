@@ -43,9 +43,22 @@
 
 .person {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-1);
   padding: 1px 0;
+}
+
+/* A person's number and helper link, on a line of its own under their name. */
+.personMore {
+  flex-basis: 100%;
+  padding-left: calc(22px + var(--sp-1));
+}
+
+.personMore > summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  opacity: 0.75;
 }
 
 .assign {

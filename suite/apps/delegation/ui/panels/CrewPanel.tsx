@@ -2,10 +2,12 @@ import Link from "next/link";
 import { guestName, readGuests } from "@/lib/model/slices";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
 import { useSupplierLinks } from "@/lib/suppliers/links";
+import { useHelperLinks } from "@/lib/helpers/links";
 import { assigneeNames, type Person } from "../../core/model/types";
 import { useDelegationDoc, useStore } from "../../state/store";
 import { Button, Panel, TextField } from "@/components/ui/fields";
 import { SupplierLinkField } from "./SupplierLinkField";
+import { HelperLinkField } from "./HelperLinkField";
 import styles from "./CrewPanel.module.css";
 
 /**
@@ -40,6 +42,8 @@ export function CrewPanel() {
 
   const links = useSupplierLinks((state) => state.links);
   const withLink = new Set((links ?? []).map((link) => link.teamId));
+  const helperLinks = useHelperLinks((state) => state.links);
+  const helperLinked = new Set((helperLinks ?? []).map((link) => link.personId));
 
   const job = doc.jobs.find((entry) => entry.id === selectedJobId) ?? null;
   const unteamed = doc.people.filter((person) => person.teamId === null);
@@ -99,6 +103,18 @@ export function CrewPanel() {
         >
           ×
         </button>
+        {/* Folded away under each name: their number, for the crew's sheets
+            and the Binder, and their own link for the day. */}
+        <details className={styles.personMore} open={helperLinked.has(person.id)}>
+          <summary>{person.phone || "Phone and link"}</summary>
+          <TextField
+            label="Phone"
+            type="tel"
+            value={person.phone}
+            onChange={(phone) => updatePerson(person.id, { phone })}
+          />
+          <HelperLinkField personId={person.id} name={person.name} />
+        </details>
       </li>
     );
   };
@@ -153,12 +169,18 @@ export function CrewPanel() {
               email and nothing to confirm. */}
           <details
             className={styles.contract}
-            open={team.email !== "" || team.confirmedOn !== "" || withLink.has(team.id)}
+            open={team.phone !== "" || team.email !== "" || team.confirmedOn !== "" || withLink.has(team.id)}
           >
             <summary>
               Contact
               {team.confirmedOn !== "" && " · confirmed"}
             </summary>
+            <TextField
+              label="Phone"
+              type="tel"
+              value={team.phone}
+              onChange={(phone) => updateTeam(team.id, { phone })}
+            />
             <TextField
               label="Email"
               type="email"
