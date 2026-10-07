@@ -33,6 +33,58 @@ interface Post {
 
 export const POSTS: readonly Post[] = [
   {
+    slug: "a-wedding-day-timeline-you-can-move",
+    title: "A wedding day timeline you can move",
+    description:
+      "Fix the few times that cannot move, let everything else follow, and see what happens when the ceremony starts ten minutes late.",
+    published: "2026-10-07",
+    author: "Knotwork",
+    kind: "guide",
+    tool: { href: "/timeline", name: "Timeline", invitation: "Plan your own day" },
+    sections: [
+      {
+        paragraphs: [
+          "A wedding day timeline that survives the day is built from lengths, not times. Fix the handful of times that really cannot move, give everything else a length and let it follow the thing before it, and leave slack before each fixed time. Then when something moves by ten minutes, you can see straight away what follows, what collides and what runs past the curfew. This is written for UK weddings, but nothing in it is law.",
+        ],
+      },
+      {
+        heading: "Fixed times, and everything else",
+        paragraphs: [
+          "Only a few times on the day are really fixed: the ceremony, if a registrar or a church has given you a slot; the meal, if the kitchen serves at a set time; the cars; the end of the night. In Timeline these are anchored, with Anchored at set to the time.",
+          "Everything else floats. A floating block has a length and a gap after the block before it, and starts when that block ends. Getting ready, the confetti, the drinks, the group photographs: none of them has a time of its own, only a place in the order.",
+        ],
+      },
+      {
+        heading: "When the ceremony moves ten minutes",
+        paragraphs: [
+          "Say the ceremony moves from 13:30 to 13:40. Everything floating after it moves ten minutes with it, with nothing else changed. While you drag a block, Timeline shows where the blocks after it will land before you let go.",
+          "What does not move is the next fixed time. If the meal is anchored at 16:00, the run between the ceremony and the meal now has ten minutes less. If something in that run can be shortened, give it Can be squeezed and the shortest it may run, and Timeline takes the time out of it and tells you by how much. If nothing can give, it says which block overruns into the meal, and by how many minutes, so you know where to cut.",
+        ],
+      },
+      {
+        heading: "Collisions and the curfew",
+        paragraphs: [
+          "Timeline checks the day as you build it. It warns when two fixed blocks in the same lane overlap, when a supplier is in two places at once, and when the last block in a lane ends after the curfew you set, and by how much.",
+          "Lanes run side by side: the couple's day in one, the band's in another, so the band can set up during the speeches. Within a lane, each block follows the one before.",
+        ],
+      },
+      {
+        heading: "Leave slack before the fixed times",
+        paragraphs: [
+          "The slack is what absorbs a late car or a long speech. Each block can carry a contingency, a few minutes after it that nothing is planned into. Put it before the fixed times, where an overrun would otherwise collide, not at the end of the day where it does nothing.",
+        ],
+      },
+      {
+        heading: "Everyone's copy follows",
+        paragraphs: [
+          "A timeline is only useful if everyone has the current one. Timeline prints a run sheet, a call sheet for each supplier and an order of the day, and it will not print while two blocks clash, because a sheet that contradicts itself is worse than none. It also downloads a calendar file, for the whole day or one supplier's part of it.",
+          "The other tools read the same day. Delegation's job sheets, the times on your boxes and each supplier's own link take their times from it, so moving the ceremony moves them too.",
+        ],
+      },
+    ],
+    sources: [],
+  },
+  {
     slug: "how-to-make-a-wedding-seating-chart",
     title: "How to make a wedding seating chart, and keep it up to date",
     description:

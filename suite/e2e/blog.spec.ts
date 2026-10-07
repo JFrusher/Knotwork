@@ -45,6 +45,11 @@ for (const guide of [
     title: "How to make a wedding seating chart, and keep it up to date",
     tool: { link: "Draw your room and seat your guests in Seating", url: /\/seating$/ },
   },
+  {
+    slug: "a-wedding-day-timeline-you-can-move",
+    title: "A wedding day timeline you can move",
+    tool: { link: "Plan your own day in Timeline", url: /\/timeline$/ },
+  },
 ]) {
   test(`the guide "${guide.title}" is listed, in the sitemap, and leads to its tool`, async ({ page, request }) => {
     await page.goto("/blog");
