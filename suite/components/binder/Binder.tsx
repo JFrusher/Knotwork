@@ -10,6 +10,7 @@ import { readCast, readGuests, readSeating, readShots } from "@/lib/model/slices
 import { formatClock } from "@/lib/minutes";
 import { longDate } from "@/lib/dates";
 import { EYEBROW } from "@/components/ui/eyebrow";
+import { keepForOffline } from "@/lib/offline";
 
 type Part = "now" | "day" | "ring" | "find" | "shots";
 const PARTS: Array<{ id: Part; name: string }> = [
@@ -55,7 +56,7 @@ export function Binder() {
   }, []);
 
   useEffect(() => {
-    void keepForOffline();
+    void keepForOffline("/binder");
   }, []);
 
   const blocks = useMemo(() => runningOrder(doc), [doc]);
@@ -353,25 +354,4 @@ function Shots() {
       ))}
     </section>
   );
-}
-
-/**
- * Keep this page for when there is no signal: register the worker that
- * serves it offline, and hand it every file this page loaded, so a reload
- * with no signal has all of them. The wedding itself is already on the
- * phone, in the browser's own storage.
- */
-async function keepForOffline() {
-  if (!("serviceWorker" in navigator)) return;
-  try {
-    await navigator.serviceWorker.register("/binder-sw.js", { scope: "/binder" });
-    const ready = await navigator.serviceWorker.ready;
-    const files = performance
-      .getEntriesByType("resource")
-      .map((entry) => entry.name)
-      .filter((url) => new URL(url).origin === location.origin && !new URL(url).pathname.startsWith("/api/"));
-    ready.active?.postMessage({ keep: [location.pathname, ...files] });
-  } catch {
-    // Without a worker the page still works; it just needs signal to open.
-  }
 }
