@@ -102,7 +102,7 @@ describe("what is left to do", () => {
       ).not.toContain("dietary-unprinted");
     });
 
-    it("is satisfied by an icon drawn from the dietary column, as Plaque's own design does it", () => {
+    it("is satisfied by an icon drawn from the dietary column, as Stationery's own design does it", () => {
       expect(
         ids({
           guests: { g1: { ...GUESTS.g1, dietary: "coeliac" } },

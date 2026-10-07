@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
  * Every text colour the suite puts on screen, against the ground it sits on,
  * must clear WCAG AA.
  *
- * This began as Cadence's test of Cadence's tokens. The tokens are shared now,
+ * This began as Timeline's test of Timeline's tokens. The tokens are shared now,
  * so the test is too — which matters more than it sounds: the accents are the
  * one thing still chosen per tool, and they are exactly where a colour picked
  * because it looked handsome turns out to be unreadable. Sage and bronze both
@@ -75,15 +75,15 @@ export function contrast(foreground: string, background: string): number {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
-const SCOPES = [".plaque-scope", ".cadence-scope", ".brigade-scope", ".tableaux-scope", ".ensemble-tokens"];
+const SCOPES = [".stationery-scope", ".timeline-scope", ".delegation-scope", ".seating-scope", ".group-shots-tokens"];
 
-/** The tint each tool fills behind its own accent text. Tableaux named it differently. */
+/** The tint each tool fills behind its own accent text. Seating named it differently. */
 const TINT: Record<string, string> = {
-  ".plaque-scope": "--accent-soft",
-  ".cadence-scope": "--accent-soft",
-  ".brigade-scope": "--accent-soft",
-  ".tableaux-scope": "--accent-light",
-  ".ensemble-tokens": "--accent-soft",
+  ".stationery-scope": "--accent-soft",
+  ".timeline-scope": "--accent-soft",
+  ".delegation-scope": "--accent-soft",
+  ".seating-scope": "--accent-light",
+  ".group-shots-tokens": "--accent-soft",
 };
 
 describe("the shared ramp", () => {
@@ -148,7 +148,7 @@ describe("Seating's dark panel", () => {
   // panel's ink, and the two faintest sat at 3.3:1 and 4.4:1.
   for (const ink of ["--panel-text", "--panel-text-muted"]) {
     it(`${ink} on the panel clears AA`, () => {
-      expect(contrast(hex(".tableaux-scope", ink), hex(".tableaux-scope", "--panel-bg"))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(hex(".seating-scope", ink), hex(".seating-scope", "--panel-bg"))).toBeGreaterThanOrEqual(4.5);
     });
   }
 });

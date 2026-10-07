@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PlaqueApp } from "./PlaqueClient";
+import { StationeryApp } from "./StationeryClient";
 
 export const metadata: Metadata = {
   title: "Stationery",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function StationeryPage() {
-  return <PlaqueApp />;
+  return <StationeryApp />;
 }

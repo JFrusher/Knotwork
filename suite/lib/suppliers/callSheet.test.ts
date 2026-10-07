@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { migrate } from "@jfrusher/knotwork";
 import { fingerprint } from "@/lib/documents/fingerprint";
+import { calendar, calendarFile } from "@/apps/timeline/render/ics/calendar";
+import { readTimeline } from "@/lib/model/slices";
 import { callSheet } from "./callSheet";
 
 type Raw = Record<string, any>;
@@ -21,6 +23,18 @@ describe("a supplier's call sheet", () => {
       people: ["Maya Ivers"],
       jobs: [{ label: "Photograph the ceremony", when: "13:30–14:15", where: "Orangery", during: "Ceremony" }],
       before: [],
+      calendar: {
+        couple: "Alex & Sam",
+        tagLabel: "Eleanor Vane Photography",
+        events: [
+          { id: "blk-prep", label: "Getting ready", location: "The suite", startMin: 480, endMin: 660 },
+          { id: "blk-ceremony", label: "Ceremony", location: "Orangery", startMin: 810, endMin: 855 },
+          { id: "blk-confetti", label: "Confetti", location: "Front steps", startMin: 855, endMin: 870 },
+          { id: "blk-groups", label: "Group photographs", location: "Lawn", startMin: 945, endMin: 975 },
+          { id: "blk-portraits", label: "Couple portraits", location: "Walled garden", startMin: 975, endMin: 1005 },
+          { id: "blk-cake", label: "Cake cutting", location: "Great hall", startMin: 1190, endMin: 1200 },
+        ],
+      },
     });
     // No guest travels on it. Whole names: a surname alone can be a trading
     // name too — "Eleanor Vane Photography" is not the Vane family.
@@ -48,6 +62,16 @@ describe("a supplier's call sheet", () => {
 
     expect(seen(relabelled)).not.toBe(seen(raw));
     expect(seen(guestChanged)).toBe(seen(raw));
+  });
+
+  it("makes the same calendar file the Timeline downloads for that supplier", () => {
+    const now = new Date("2028-05-01T09:00:00Z");
+    const sheet = callSheet(doc, team("registrar"))!;
+    const fromTimeline = calendar(readTimeline(doc), { date: "2028-06-01", tag: "registrar", now });
+    expect(calendarFile(sheet.calendar, sheet.wedding.date, now)).toBe(fromTimeline);
+    expect(fromTimeline).toContain("SUMMARY:Ceremony");
+    // Block notes can say anything, so they go to nobody's calendar.
+    expect(fromTimeline).not.toContain("DESCRIPTION:");
   });
 
   it("is nothing for a supplier the wedding does not have", () => {

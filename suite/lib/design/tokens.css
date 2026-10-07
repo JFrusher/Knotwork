@@ -2,8 +2,8 @@
  * The one place a Knotwork colour, typeface or measure is decided.
  *
  * Four tools arrived here, each with a complete design system of its own.
- * Plaque, Cadence and Brigade agreed on their variable names to the point that
- * two of the three files were byte-identical; Tableaux used a different set of
+ * Stationery, Timeline and Delegation agreed on their variable names to the point that
+ * two of the three files were byte-identical; Seating used a different set of
  * seventy-two. Renaming its way to a single vocabulary would have meant editing
  * every CSS Module in the suite, which is a great deal of risk to buy a tidier
  * spelling.
@@ -52,7 +52,7 @@
   /*
    * Typefaces come from the shell, which self-hosts them at build time — no
    * request leaves the browser, which is the premise of the whole suite.
-   * Tableaux asked for Inter and Cormorant Garamond and was never given either;
+   * Seating asked for Inter and Cormorant Garamond and was never given either;
    * it has been quietly falling back to system-ui since before it moved in.
    */
   --t-font-ui: var(--font-lato), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -107,39 +107,39 @@
  * by eye later fails there rather than in front of someone trying to read it.
  */
 
-.plaque-scope,
-.plaque-tokens {
+.stationery-scope,
+.stationery-tokens {
   --accent: #2f6d5f;
   --accent-hover: #245448;
   --accent-soft: #e4efec;
   --accent-bright: #2f6d5f;
 }
 
-.cadence-scope,
-.cadence-tokens {
+.timeline-scope,
+.timeline-tokens {
   --accent: #80632f;
   --accent-hover: #6e5427;
   --accent-soft: #f1e8d7;
   --accent-bright: #ac8a55;
 }
 
-.brigade-scope,
-.brigade-tokens {
+.delegation-scope,
+.delegation-tokens {
   --accent: #566f59;
   --accent-hover: #4b624e;
   --accent-soft: #e6ede6;
   --accent-bright: #7d967f;
 }
 
-.tableaux-scope,
-.tableaux-tokens {
+.seating-scope,
+.seating-tokens {
   --accent: #736755;
   --accent-hover: #5c5143;
   --accent-light: #eeeae3;
   --accent-bright: #736755;
 }
 
-.ensemble-tokens {
+.group-shots-tokens {
   --accent: #46617a;
   --accent-hover: #3a5166;
   --accent-soft: #e7ecf0;
@@ -147,19 +147,19 @@
 }
 
 /*
- * ── Plaque, Cadence and Brigade ───────────────────────────────────────────
+ * ── Stationery, Timeline and Delegation ───────────────────────────────────────────
  *
  * One vocabulary, shared by three tools that were built as siblings. The only
  * mapping that moved: `--surface` was `--grey-0`, pure white, which left a
  * visible seam where a tool met the shell's warmer ground. It now takes the
  * ground itself, and white stays available as the raised step above it.
  */
-.plaque-scope,
-.cadence-scope,
-.brigade-scope,
-.plaque-tokens,
-.cadence-tokens,
-.brigade-tokens {
+.stationery-scope,
+.timeline-scope,
+.delegation-scope,
+.stationery-tokens,
+.timeline-tokens,
+.delegation-tokens {
   --grey-0: var(--t-0);
   --grey-1: var(--t-1);
   --grey-2: var(--t-2);
@@ -201,14 +201,14 @@
 }
 
 /*
- * ── Tableaux ──────────────────────────────────────────────────────────────
+ * ── Seating ──────────────────────────────────────────────────────────────
  *
  * A vocabulary of its own, mapped onto the same values. Its dark left panel
  * stays: it is the one piece of deliberate contrast in the suite, and it is
  * what makes the room read as the thing you are working on.
  */
-.tableaux-scope,
-.tableaux-tokens {
+.seating-scope,
+.seating-tokens {
   /* The dark left panel. Its secondary text is one colour that clears 4.5:1
      on it, not a spread of transparent greys. */
   --panel-bg: #1e1c1a;
@@ -280,7 +280,7 @@
  * Unlayered, so it beats the shell's rule in the base layer; `:where()`, so a
  * tool's own heading class still beats it.
  */
-:where(.plaque-scope, .cadence-scope, .brigade-scope, .tableaux-scope) :is(h1, h2, h3, h4, h5, h6) {
+:where(.stationery-scope, .timeline-scope, .delegation-scope, .seating-scope) :is(h1, h2, h3, h4, h5, h6) {
   font-family: inherit;
   color: inherit;
 }

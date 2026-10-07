@@ -33,6 +33,122 @@ interface Post {
 
 export const POSTS: readonly Post[] = [
   {
+    slug: "a-wedding-day-timeline-you-can-move",
+    title: "A wedding day timeline you can move",
+    description:
+      "Fix the few times that cannot move, let everything else follow, and see what happens when the ceremony starts ten minutes late.",
+    published: "2026-10-07",
+    author: "Knotwork",
+    kind: "guide",
+    tool: { href: "/timeline", name: "Timeline", invitation: "Plan your own day" },
+    sections: [
+      {
+        paragraphs: [
+          "A wedding day timeline that survives the day is built from lengths, not times. Fix the handful of times that really cannot move, give everything else a length and let it follow the thing before it, and leave slack before each fixed time. Then when something moves by ten minutes, you can see straight away what follows, what collides and what runs past the curfew. This is written for UK weddings, but nothing in it is law.",
+        ],
+      },
+      {
+        heading: "Fixed times, and everything else",
+        paragraphs: [
+          "Only a few times on the day are really fixed: the ceremony, if a registrar or a church has given you a slot; the meal, if the kitchen serves at a set time; the cars; the end of the night. In Timeline these are anchored, with Anchored at set to the time.",
+          "Everything else floats. A floating block has a length and a gap after the block before it, and starts when that block ends. Getting ready, the confetti, the drinks, the group photographs: none of them has a time of its own, only a place in the order.",
+        ],
+      },
+      {
+        heading: "When the ceremony moves ten minutes",
+        paragraphs: [
+          "Say the ceremony moves from 13:30 to 13:40. Everything floating after it moves ten minutes with it, with nothing else changed. While you drag a block, Timeline shows where the blocks after it will land before you let go.",
+          "What does not move is the next fixed time. If the meal is anchored at 16:00, the run between the ceremony and the meal now has ten minutes less. If something in that run can be shortened, give it Can be squeezed and the shortest it may run, and Timeline takes the time out of it and tells you by how much. If nothing can give, it says which block overruns into the meal, and by how many minutes, so you know where to cut.",
+        ],
+      },
+      {
+        heading: "Collisions and the curfew",
+        paragraphs: [
+          "Timeline checks the day as you build it. It warns when two fixed blocks in the same lane overlap, when a supplier is in two places at once, and when the last block in a lane ends after the curfew you set, and by how much.",
+          "Lanes run side by side: the couple's day in one, the band's in another, so the band can set up during the speeches. Within a lane, each block follows the one before.",
+        ],
+      },
+      {
+        heading: "Leave slack before the fixed times",
+        paragraphs: [
+          "The slack is what absorbs a late car or a long speech. Each block can carry a contingency, a few minutes after it that nothing is planned into. Put it before the fixed times, where an overrun would otherwise collide, not at the end of the day where it does nothing.",
+        ],
+      },
+      {
+        heading: "Everyone's copy follows",
+        paragraphs: [
+          "A timeline is only useful if everyone has the current one. Timeline prints a run sheet, a call sheet for each supplier and an order of the day, and it will not print while two blocks clash, because a sheet that contradicts itself is worse than none. It also downloads a calendar file, for the whole day or one supplier's part of it.",
+          "The other tools read the same day. Delegation's job sheets, the times on your boxes and each supplier's own link take their times from it, so moving the ceremony moves them too.",
+        ],
+      },
+    ],
+    sources: [],
+  },
+  {
+    slug: "how-to-make-a-wedding-seating-chart",
+    title: "How to make a wedding seating chart, and keep it up to date",
+    description:
+      "Start from the guest list, draw the room to scale, seat the hard cases first, then make the place cards and the caterer's list from the chart.",
+    published: "2026-10-07",
+    author: "Knotwork",
+    kind: "guide",
+    tool: { href: "/seating", name: "Seating", invitation: "Draw your room and seat your guests" },
+    sections: [
+      {
+        paragraphs: [
+          "Start from the guest list, draw the room to scale, seat the people with rules first and everyone else after, and make the place cards and the caterer's list from the chart rather than typing them again. That last part is the one that keeps it up to date. This is written for UK weddings, but none of it is law, so it works anywhere.",
+        ],
+      },
+      {
+        heading: "Why seating charts go wrong",
+        paragraphs: [
+          "A seating chart is rarely one list. It is the chart, the place cards and the sheet the caterer asked for, and each starts as a copy of the same names. Then someone replies late, a cousin turns vegan, a table is renamed after the florist's centrepiece, and each change has to be made three times. Sooner or later one of the three is missed, and it is usually the place cards, because they were printed first.",
+          "So the aim is one list, with the chart, the cards and the caterer's sheet all read from it.",
+        ],
+      },
+      {
+        heading: "1. Start from the guest list you already have",
+        paragraphs: [
+          "Export it as a CSV from wherever it lives now and import it. You see what will change before anything is saved. When a newer list comes in later, import that too: it adds the new names and updates the changed ones, and everyone already on the list keeps their seat. Anyone on your list who is not in the file is shown to you, and only goes if you tick them.",
+        ],
+      },
+      {
+        heading: "2. Draw the room to scale",
+        paragraphs: [
+          "Ask the venue for a plan with measurements, or measure one wall yourself. In Seating's settings, press Calibrate, draw a line along a wall you know and type what it measures, and the whole plan is to scale. Then place the tables.",
+          "Scale matters because chairs need room. If two tables are too close for the chairs to clear, Seating says so. If they do not fit on the plan, they will not fit on the day.",
+        ],
+      },
+      {
+        heading: "3. Seat the hard cases first",
+        paragraphs: [
+          "Before anyone else, write down who should not sit together and who should, and seat those people first. Seating keeps the rules and warns you when the chart breaks one. It warns rather than stops you, because sometimes you break a rule on purpose.",
+          "Families are worth the same care. Put a family together in Seating and it tells you when you have split them across tables. It also tells you when a table has more people than chairs.",
+        ],
+      },
+      {
+        heading: "4. Then everyone else",
+        paragraphs: [
+          "The rest goes quickly once the hard cases are placed. On the Guests page, show only the people who are coming and have no table yet, tick them, and move them to a table in one go. The front page counts how many still have no table, so you know when you are finished.",
+        ],
+      },
+      {
+        heading: "5. The caterer's list",
+        paragraphs: [
+          "Your caterer will want two things: the dietary needs in total, and which table each one is at. Do not type that up. Seating's Export gives you a CSV of who is at each table, and a dietary and headcount report with the totals and a summary per table. Send it again whenever the chart changes; it takes a click.",
+        ],
+      },
+      {
+        heading: "6. Place cards from the chart",
+        paragraphs: [
+          "Make the place cards in Stationery and they read the table from the chart. Rename a table and the cards say the new name with nothing pressed.",
+          "Once you have printed them, the chart can still change. When it does, Stationery names the cards that are now wrong and offers to print just those, so a late change costs one sheet, not the whole set.",
+        ],
+      },
+    ],
+    sources: [],
+  },
+  {
     slug: "design-your-order-of-service",
     title: "Designing your order of service, in your own style",
     description:

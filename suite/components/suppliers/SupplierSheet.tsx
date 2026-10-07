@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { CalendarPlus, Check } from "lucide-react";
+import { calendarFile, slug } from "@/apps/timeline/render/ics/calendar";
 import { Button } from "@/components/ui/controls";
+import { download } from "@/lib/data/file";
 import { localDay, longDate } from "@/lib/dates";
 import { importShareKey, unseal } from "@/lib/share/crypto";
 import type { CallSheet } from "@/lib/suppliers/callSheet";
@@ -131,6 +133,21 @@ export function SupplierSheet({ token }: { token: string }) {
             ))}
           </ol>
         )}
+        {/* A sheet sealed before calendars were carried has none until the couple's app republishes it. */}
+        {sheet.calendar && sheet.calendar.events.length > 0 && sheet.wedding.date ? (
+          <div className="mt-3">
+            <Button
+              icon={CalendarPlus}
+              onClick={() =>
+                download(
+                  `${slug(sheet.calendar.couple) || "wedding"}-${slug(sheet.calendar.tagLabel) || "day"}.ics`,
+                  calendarFile(sheet.calendar, sheet.wedding.date, new Date()), "text/calendar;charset=utf-8")
+              }
+            >
+              Add to calendar
+            </Button>
+          </div>
+        ) : null}
       </section>
 
       {sheet.before.length > 0 ? (

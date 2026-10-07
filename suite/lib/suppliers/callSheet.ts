@@ -2,14 +2,16 @@ import type { Knotwork } from "@jfrusher/knotwork";
 import { formatClock } from "@/lib/minutes";
 import { longDate } from "@/lib/dates";
 import { readCrew, readTimeline, resolvedDay } from "@/lib/model/slices";
+import { calendarDay, type CalendarDay } from "@/apps/timeline/render/ics/calendar";
 
 /**
  * One supplier's own call sheet: when to arrive, who of theirs is named, and
  * what they are doing, when and where. What a supplier's link shows.
  *
  * Only theirs. No guest is on it, and nothing of any other supplier's: the
- * wedding's names, date and venue, and the jobs that are this supplier's —
- * given to the team, or to someone in it.
+ * wedding's names, date and venue, the jobs that are this supplier's —
+ * given to the team, or to someone in it — and the parts of the day carrying
+ * their tag, for their calendar.
  */
 export interface CallSheet {
   wedding: { names: string; date: string; venue: string };
@@ -21,6 +23,8 @@ export interface CallSheet {
   jobs: Array<{ label: string; when: string; where: string; during: string }>;
   /** Before the day, with the date each is wanted by. */
   before: Array<{ label: string; by: string }>;
+  /** The parts of the day with their tag: the file the Timeline downloads for them. */
+  calendar: CalendarDay;
 }
 
 export function callSheet(doc: Knotwork, teamId: string): CallSheet | null {
@@ -52,5 +56,7 @@ export function callSheet(doc: Knotwork, teamId: string): CallSheet | null {
     before: jobs
       .filter((job) => job.blockId === null)
       .map((job) => ({ label: job.label, by: job.dueOn ? longDate(job.dueOn) : "" })),
+    // No tag, no blocks of theirs: the same nothing the Timeline has for them.
+    calendar: team.tag === null ? { couple: "", tagLabel: "", events: [] } : calendarDay(timeline, team.tag),
   };
 }

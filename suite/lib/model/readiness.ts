@@ -8,14 +8,14 @@ import { ceremonyPlace, overrun } from "@/lib/ceremony/checks";
 import { DUE_SOON_DAYS, money } from "@/lib/money/money";
 import { daysUntil, longDate, todayIso } from "@/lib/dates";
 import { checklist } from "@/lib/checklist/checklist";
-import { storedPieces } from "@/apps/plaque/state/suite";
+import { storedPieces } from "@/apps/stationery/state/suite";
 
 /**
  * What is left to do, across the whole wedding.
  *
  * Deliberately only the things no single tool can work out. Each of the five
- * already checks its own work and is better at it than this could be: Tableaux
- * knows a table is over capacity, Cadence knows two blocks collide, Brigade
+ * already checks its own work and is better at it than this could be: Seating
+ * knows a table is over capacity, Timeline knows two blocks collide, Delegation
  * knows a job has nobody on it and that nobody is in two places at once. None
  * of that is repeated here — a warning shown twice in two wordings is worse
  * than one shown once, because you fix it in one place and it stays on screen
@@ -78,7 +78,7 @@ export function stationeryPieces(raw: unknown): Record<string, unknown>[] {
 /**
  * Every column the card design binds, so we can tell what it can and cannot
  * show: the tokens in its text, and the column an icon is drawn from — the
- * same two Plaque's own `unboundTokens` counts.
+ * same two Stationery's own `unboundTokens` counts.
  */
 function boundTokens(pieces: Record<string, unknown>[]): Set<string> {
   const tokens = new Set<string>();

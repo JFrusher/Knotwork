@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import * as cadence from "@/apps/cadence/state/syncAssets";
-import * as plaque from "@/apps/plaque/state/syncAssets";
+import * as timeline from "@/apps/timeline/state/syncAssets";
+import * as stationery from "@/apps/stationery/state/syncAssets";
 
 /**
  * Ids are routed home by prefix, which is the kind of agreement that breaks
@@ -9,13 +9,13 @@ import * as plaque from "@/apps/plaque/state/syncAssets";
  * opens the wedding on a second machine and finds a hole in their run sheet.
  */
 
-const SOURCES = { plaque, cadence };
+const SOURCES = { stationery, timeline };
 
 const IDS = {
-  "plaque.font.abc123": "plaque",
-  "plaque.image.def456": "plaque",
-  "cadence.blob.font-a1b2c3d4e5": "cadence",
-  "cadence.blob.logo-99887766": "cadence",
+  "plaque.font.abc123": "stationery",
+  "plaque.image.def456": "stationery",
+  "cadence.blob.font-a1b2c3d4e5": "timeline",
+  "cadence.blob.logo-99887766": "timeline",
 } as const;
 
 describe("asset ownership", () => {
@@ -31,7 +31,7 @@ describe("asset ownership", () => {
     // A wedding written by a later version of the suite, carrying a tool this
     // one has never heard of. Better ignored than stored somewhere arbitrary.
     for (const source of Object.values(SOURCES)) {
-      expect(source.owns("brigade.badge.0001")).toBe(false);
+      expect(source.owns("delegation.badge.0001")).toBe(false);
       expect(source.owns("")).toBe(false);
     }
   });

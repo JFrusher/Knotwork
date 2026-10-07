@@ -15,12 +15,12 @@ const { STORAGE_KEY, flushPersist, useKnotworkStore } = await import(
 const { publishDay, readCrew, readGuests, readSeating, readTimeline, readShots, resolvedDay } = await import(
   "./slices"
 );
-const { useStore: useSeating } = await import("@/apps/tableaux/store/useStore");
-const { DEFAULT_BLOCK_OUTPUTS } = await import("@/apps/cadence/core/model/defaults");
+const { useStore: useSeating } = await import("@/apps/seating/store/useStore");
+const { DEFAULT_BLOCK_OUTPUTS } = await import("@/apps/timeline/core/model/defaults");
 const { addJob, addPerson, seedTeamsFromTags, toggleAssignment } = await import(
   "@/lib/model/crewActions"
 );
-const { addSection, addShot, patchShot } = await import("@/lib/ensemble/actions");
+const { addSection, addShot, patchShot } = await import("@/lib/group-shots/actions");
 
 /**
  * Step 4's requirement, as a test: a wedding built through the tools survives

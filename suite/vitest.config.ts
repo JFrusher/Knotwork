@@ -7,13 +7,13 @@ const root = fileURLToPath(new URL(".", import.meta.url));
  * One project per tool, plus the suite's own.
  *
  * Each tool arrived with a test setup of its own, and those settings were not
- * decoration: Plaque and Cadence run in Node because their cores are pure and
+ * decoration: Stationery and Timeline run in Node because their cores are pure and
  * their PDF renderers are headless, and jsdom is not simply a superset — its
- * `Blob` has no `arrayBuffer`, which is exactly what Cadence's blob store is
+ * `Blob` has no `arrayBuffer`, which is exactly what Timeline's blob store is
  * built on. Forcing one environment on everything broke working tests and told
  * us nothing true about the code.
  *
- * Cadence additionally runs its files one at a time, and last. Two of its tests
+ * Timeline additionally runs its files one at a time, and last. Two of its tests
  * are wall-clock performance guards — a 200-block run sheet must export inside
  * three seconds — and workers competing for the machine make them lie. Running
  * them alone is the whole point of the guard: a number measured against a busy
@@ -23,7 +23,7 @@ const root = fileURLToPath(new URL(".", import.meta.url));
  * `fileParallelism` is read only from the root config and ignored inside a
  * project, which fails quietly — the guard simply measures a busy machine and
  * reports three and a half seconds. `singleFork` is the per-project equivalent
- * and does serialise Cadence's files; `groupOrder` then runs the project after
+ * and does serialise Timeline's files; `groupOrder` then runs the project after
  * the other two have finished, so nothing else is competing either.
  */
 export default defineConfig({
@@ -39,7 +39,7 @@ export default defineConfig({
           name: "suite",
           /*
            * Generous, because this project renders real PDFs too now
-           * (`lib/ensemble/render/pdf`). Alone each takes about a second;
+           * (`lib/group-shots/render/pdf`). Alone each takes about a second;
            * sharing a machine with the rest of the suite they can pass five,
            * and the default timeout then reports a failure about nothing — the
            * assertions here are page counts and text, never speed.
@@ -55,41 +55,41 @@ export default defineConfig({
       {
         resolve: { alias: { "@": root } },
         test: {
-          name: "plaque",
+          name: "stationery",
           /*
            * Generous, because these render real PDFs. Alone each takes about a
            * second; sharing a machine with the rest of the suite they can pass
            * five, and the default timeout then reports a failure about nothing
            * — the assertions here are page counts and paper sizes, never speed.
-           * The one place elapsed time is the assertion is Cadence's perf
+           * The one place elapsed time is the assertion is Timeline's perf
            * guard, which measures it itself and is unaffected by this.
            */
           testTimeout: 20_000,
           sequence: { groupOrder: 0 },
-          include: ["apps/plaque/**/*.test.{ts,tsx}"],
+          include: ["apps/stationery/**/*.test.{ts,tsx}"],
           environment: "node",
         },
       },
       {
         resolve: { alias: { "@": root } },
         test: {
-          name: "brigade",
+          name: "delegation",
           /*
            * Generous, because these render real PDFs. Alone each takes about a
            * second; sharing a machine with the rest of the suite they can pass
            * five, and the default timeout then reports a failure about nothing
            * — the assertions here are page counts and paper sizes, never speed.
-           * The one place elapsed time is the assertion is Cadence's perf
+           * The one place elapsed time is the assertion is Timeline's perf
            * guard, which measures it itself and is unaffected by this.
            */
           testTimeout: 20_000,
           sequence: { groupOrder: 0 },
-          include: ["apps/brigade/**/*.test.{ts,tsx}"],
+          include: ["apps/delegation/**/*.test.{ts,tsx}"],
           environment: "node",
         },
       },
       {
-        // Tableaux is the one tool written in JSX rather than TSX. Next compiles
+        // Seating is the one tool written in JSX rather than TSX. Next compiles
         // it with the automatic runtime, and its files do not import React;
         // without this the test transform falls back to the classic runtime and
         // every rendered component throws "React is not defined". It has to sit
@@ -97,37 +97,37 @@ export default defineConfig({
         oxc: { jsx: { runtime: "automatic" } },
         resolve: { alias: { "@": root } },
         test: {
-          name: "tableaux",
+          name: "seating",
           /*
            * Generous, because these render real PDFs. Alone each takes about a
            * second; sharing a machine with the rest of the suite they can pass
            * five, and the default timeout then reports a failure about nothing
            * — the assertions here are page counts and paper sizes, never speed.
-           * The one place elapsed time is the assertion is Cadence's perf
+           * The one place elapsed time is the assertion is Timeline's perf
            * guard, which measures it itself and is unaffected by this.
            */
           testTimeout: 20_000,
           sequence: { groupOrder: 0 },
-          include: ["apps/tableaux/**/*.test.{js,jsx,ts,tsx}"],
+          include: ["apps/seating/**/*.test.{js,jsx,ts,tsx}"],
           // Its component tests render, and its store tests touch localStorage.
           environment: "jsdom",
           // Testing Library unmounts between tests only when it can see a
           // global `afterEach`. Without this each render is left in the
           // document and the next query finds several copies of the panel.
           globals: true,
-          setupFiles: ["apps/tableaux/test/setup.ts"],
+          setupFiles: ["apps/seating/test/setup.ts"],
         },
       },
       {
         resolve: { alias: { "@": root } },
         test: {
-          name: "cadence",
+          name: "timeline",
           /*
            * Generous, because these render real PDFs. Alone each takes about a
            * second; sharing a machine with the rest of the suite they can pass
            * five, and the default timeout then reports a failure about nothing
            * — the assertions here are page counts and paper sizes, never speed.
-           * The one place elapsed time is the assertion is Cadence's perf
+           * The one place elapsed time is the assertion is Timeline's perf
            * guard, which measures it itself and is unaffected by this.
            */
           testTimeout: 20_000,
@@ -135,7 +135,7 @@ export default defineConfig({
           // Not `fileParallelism: false` — that is a root-only option and is
           // silently ignored here. One worker is what actually serialises.
           maxWorkers: 1,
-          include: ["apps/cadence/**/*.test.{ts,tsx}"],
+          include: ["apps/timeline/**/*.test.{ts,tsx}"],
           environment: "node",
         },
       },

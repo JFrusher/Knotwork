@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 import { importShareKey, unseal } from "@/lib/share/crypto";
 import { isEveryone } from "@/lib/ceremony/guestCopy";
 import { findSeat, type ShareSnapshot, type SharedGuest, type SharedPart } from "@/lib/share/snapshot";
-import { getTableGeometry } from "@/apps/tableaux/utils/seatPositions";
+import { getTableGeometry } from "@/apps/seating/utils/seatPositions";
 import { newTable } from "@/lib/model/factories";
 import { EYEBROW } from "@/components/ui/eyebrow";
 

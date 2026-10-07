@@ -43,16 +43,16 @@ const NETWORK_APIS = [
  * here can only ask this app's own server for a file it already shipped.
  */
 const MAY_FETCH = [
-  join("apps", "plaque", "state", "fontLoader.ts"),
-  join("apps", "cadence", "render", "pdf", "fontSource.ts"),
-  join("apps", "brigade", "render", "pdf", "fontSource.ts"),
+  join("apps", "stationery", "state", "fontLoader.ts"),
+  join("apps", "timeline", "render", "pdf", "fontSource.ts"),
+  join("apps", "delegation", "render", "pdf", "fontSource.ts"),
 ];
 
 function filesIn(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) return filesIn(path);
-    // `.js`/`.jsx` as well as TypeScript: Tableaux is written in JSX, and it is
+    // `.js`/`.jsx` as well as TypeScript: Seating is written in JSX, and it is
     // the tool that most needs checking — it arrived with an HTTP client, a
     // Supabase session and a public share API, all of which were taken out by
     // hand. A scan that skipped its file extensions would have proved nothing

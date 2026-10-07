@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
@@ -22,6 +23,11 @@ async function aSealedSheet(page: Page, confirmedAt: string | null) {
       people: ["Maya Ivers"],
       jobs: [{ label: "Photograph the ceremony", when: "13:30–14:15", where: "Orangery", during: "Ceremony" }],
       before: [{ label: "Send the shot list back", by: "18 May 2028" }],
+      calendar: {
+        couple: "Alex & Sam",
+        tagLabel: "Eleanor Vane Photography",
+        events: [{ id: "blk-ceremony", label: "Ceremony", location: "Orangery", startMin: 810, endMin: 855 }],
+      },
     };
     const ciphertext = new Uint8Array(
       await crypto.subtle.encrypt({ name: "AES-GCM", iv }, cryptoKey, new TextEncoder().encode(JSON.stringify(sheet))),
@@ -58,6 +64,16 @@ test("a supplier opens their link, sees their own call sheet, and confirms it", 
   await main.getByRole("button", { name: "Confirm" }).click();
   await expect(main.getByRole("status")).toHaveText("You confirmed this on 29 September 2026. Thank you.");
   expect(confirmations).toHaveLength(1);
+});
+
+test("a supplier adds their part of the day to their calendar", async ({ page }) => {
+  const { key } = await aSealedSheet(page, null);
+  await page.goto(`/supplier/${TOKEN}#k=${key}`);
+  const [file] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Add to calendar" }).click()]);
+  expect(file.suggestedFilename()).toBe("alex-and-sam-eleanor-vane-photography.ics");
+  const text = readFileSync(await file.path(), "utf8");
+  expect(text).toContain("DTSTART:20280601T133000");
+  expect(text).toContain("SUMMARY:Ceremony");
 });
 
 test("a sheet that changed after they confirmed asks them to look again", async ({ page }) => {

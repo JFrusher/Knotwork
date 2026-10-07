@@ -23,7 +23,7 @@ beforeEach(() => {
 
 afterEach(() => {
   // The "suite" vitest project has no global afterEach, so Testing Library
-  // does not auto-unmount between tests here (unlike "tableaux", which opts
+  // does not auto-unmount between tests here (unlike "seating", which opts
   // into that via `globals: true`). Without this, the previous test's
   // visibilitychange listener stays live and double-counts.
   cleanup();

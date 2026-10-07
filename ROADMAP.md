@@ -68,14 +68,14 @@ for a first substantial contribution.
 
 | From → To | What it does |
 | --- | --- |
-| **Boxes → Delegation** | Whoever is taking a box sees "Box 3 to the house by 09:00" on their job sheet. This is derived from the box, never stored as a job, so it follows the block if the day moves. |
+| ✅ **Boxes → Delegation** | Whoever is taking a box sees "Box 3 to the house by 09:00" on their job sheet. This is derived from the box, never stored as a job, so it follows the block if the day moves. |
 | **Boxes → Binder** | Find a box or an item on the day: "where are the rings?" |
 | **Ceremony → Binder** | The order of walking, on a phone, on the day. |
 | **Bar → Timeline** | Reception, meal and evening hours read from the blocks the couple picks, rather than typed twice. |
 | **Bar → Money** | The estimated drinks spend shown against the budget, as planned rather than paid. |
 | **Bar → Checklist** | "Buy the drinks" and "Collect the ice", dated back from the day. |
-| **Bar → Boxes** | Crates as boxes, attached to the bar's block. |
-| **Timeline → Supplier links** | Each supplier's calendar file on their own call sheet. |
+| ✅ **Bar → Boxes** | Crates as boxes, attached to the bar's block. |
+| ✅ **Timeline → Supplier links** | Each supplier's calendar file on their own call sheet. |
 
 Source: [toolbox and new tools design](docs/design/specs/2026-09-29-toolbox-and-new-tools-design.md),
 "Tools feeding each other".

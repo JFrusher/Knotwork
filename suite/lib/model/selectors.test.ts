@@ -4,7 +4,7 @@ import { readBar, readBoxes, readCast, readCeremony, readCrew, readGuests, readS
 import { hiddenToolIds, shownTools } from "./toolbox";
 import { barSum } from "@/lib/bar/sum";
 import { readSeats } from "./seats";
-import { roomRows } from "@/apps/plaque/state/fromRoom";
+import { roomRows } from "@/apps/stationery/state/fromRoom";
 
 /**
  * Every slice reader must return the same object for the same document.

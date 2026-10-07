@@ -38,3 +38,29 @@ test("the blog is in the sitemap, post by post", async ({ request }) => {
   expect(sitemap).toContain("/blog</loc>");
   expect(sitemap).toContain("/blog/giving-notice-of-marriage</loc>");
 });
+
+for (const guide of [
+  {
+    slug: "how-to-make-a-wedding-seating-chart",
+    title: "How to make a wedding seating chart, and keep it up to date",
+    tool: { link: "Draw your room and seat your guests in Seating", url: /\/seating$/ },
+  },
+  {
+    slug: "a-wedding-day-timeline-you-can-move",
+    title: "A wedding day timeline you can move",
+    tool: { link: "Plan your own day in Timeline", url: /\/timeline$/ },
+  },
+]) {
+  test(`the guide "${guide.title}" is listed, in the sitemap, and leads to its tool`, async ({ page, request }) => {
+    await page.goto("/blog");
+    await page.getByRole("link", { name: guide.title }).click();
+    await expect(page).toHaveURL(new RegExp(`/blog/${guide.slug}$`));
+    await expect(page.getByRole("heading", { level: 1, name: guide.title })).toBeVisible();
+    await expect(page).toHaveTitle(`${guide.title} · Knotwork`);
+
+    expect(await (await request.get("/sitemap.xml")).text()).toContain(`/blog/${guide.slug}</loc>`);
+
+    await page.getByRole("link", { name: guide.tool.link }).click();
+    await expect(page).toHaveURL(guide.tool.url);
+  });
+}

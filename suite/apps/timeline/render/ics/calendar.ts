@@ -1,0 +1,155 @@
+import { tagLabel } from "../../core/model/tags";
+import type { TimelineDoc } from "../../core/model/types";
+import { resolve } from "../../core/schedule/resolve";
+
+/**
+ * The day as a calendar file (RFC 5545): every block, or one tag's — a
+ * supplier's own part of the day, for their own calendar.
+ *
+ * Times are the venue's clock, written as local times with no zone ("floating"
+ * in the RFC's word): the ceremony at 13:30 is at 13:30 on every phone, as it
+ * is in the Binder. Not UTC, because turning the venue's clock into UTC needs
+ * the day's offset, which a wedding may not have set — and the venue's clock
+ * is the one everybody there on the day is reading.
+ */
+
+interface CalendarOptions {
+  /** The wedding's date, `YYYY-MM-DD`: the wedding's own, never the timeline's placeholder. */
+  date: string;
+  /** One tag's blocks; every block when absent. */
+  tag?: string;
+  /** When the file was made. Every event carries it. */
+  now: Date;
+}
+
+const CRLF = "\r\n";
+
+/** Text as a calendar reads it: backslashes, semicolons, commas and line breaks escaped. */
+export function escapeText(text: string): string {
+  return text.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+}
+
+/** A line folded at 75 octets, as the RFC asks, and never through a character. */
+export function fold(line: string): string {
+  const encoder = new TextEncoder();
+  const lines: string[] = [];
+  let current = "";
+  let octets = 0;
+  for (const char of line) {
+    const size = encoder.encode(char).length;
+    // A continuation starts with a space, which counts.
+    const limit = lines.length === 0 ? 75 : 74;
+    if (octets + size > limit) {
+      lines.push(current);
+      current = "";
+      octets = 0;
+    }
+    current += char;
+    octets += size;
+  }
+  lines.push(current);
+  return lines.join(`${CRLF} `);
+}
+
+const pad = (n: number, width = 2) => String(n).padStart(width, "0");
+
+/** A minute of the day, on the wedding's date, as a local time: past midnight is the next day. */
+function localTime(date: string, minutes: number): string {
+  const [year, month, day] = date.split("-").map(Number);
+  const at = new Date(Date.UTC(year!, month! - 1, day!, 0, minutes));
+  return `${at.getUTCFullYear()}${pad(at.getUTCMonth() + 1)}${pad(at.getUTCDate())}T${pad(at.getUTCHours())}${pad(at.getUTCMinutes())}00`;
+}
+
+const stamp = (now: Date) => now.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+
+export const slug = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+/** One block as a calendar event: what a supplier's sealed sheet carries, so it can make the same file. */
+export interface CalendarEvent {
+  id: string;
+  label: string;
+  location: string;
+  startMin: number;
+  /** When what happens in it ends, before any buffer. */
+  endMin: number;
+}
+
+/** The day, or one tag's part of it, ready to be written as a file. */
+export interface CalendarDay {
+  /** The couple's names, as the Timeline has them. */
+  couple: string;
+  /** The tag's name, or "" for the whole day. */
+  tagLabel: string;
+  /** Soonest first. */
+  events: CalendarEvent[];
+}
+
+export function calendarDay(doc: TimelineDoc, tag?: string): CalendarDay {
+  const positions = new Map(resolve(doc).map((entry) => [entry.id, entry]));
+  return {
+    couple: doc.day.coupleNames.trim(),
+    tagLabel: tag === undefined ? "" : tagLabel(doc, tag),
+    events: doc.blocks
+      .filter((block) => tag === undefined || block.tags.includes(tag))
+      .flatMap((block) => {
+        const at = positions.get(block.id);
+        return at
+          ? [{ id: block.id, label: block.label, location: block.location.trim(), startMin: at.startMin, endMin: at.contentEndMin }]
+          : [];
+      })
+      .sort((a, b) => a.startMin - b.startMin),
+  };
+}
+
+export function calendar(doc: TimelineDoc, options: CalendarOptions): string {
+  return calendarFile(calendarDay(doc, options.tag), options.date, options.now);
+}
+
+/**
+ * The file. A block's notes are left out: they can say anything, and the same
+ * file goes to a supplier through their link.
+ */
+export function calendarFile(day: CalendarDay, date: string, now: Date): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("A calendar needs the wedding's date.");
+
+  const title = [day.couple || "The wedding", day.tagLabel].filter(Boolean).join(" — ");
+  // Stable, so importing the file again updates the events rather than doubling
+  // them; and particular to this wedding, because two weddings' days can share
+  // block ids when one was started from the other's running order.
+  // `@trousseau` from before the rename, kept on purpose: a UID is what lets a
+  // calendar update an event it already has rather than add a second copy,
+  // so it must never change. The name shown is PRODID's job, below.
+  const uidSuffix = `${date}.${slug(day.couple) || "wedding"}@trousseau`;
+
+  const events = day.events.flatMap((event) => [
+    "BEGIN:VEVENT",
+    `UID:${event.id}.${uidSuffix}`,
+    `DTSTAMP:${stamp(now)}`,
+    `DTSTART:${localTime(date, event.startMin)}`,
+    // An end only where there is a length: the RFC wants it after the start,
+    // and an event with only a start is exactly what a moment is.
+    ...(event.endMin > event.startMin ? [`DTEND:${localTime(date, event.endMin)}`] : []),
+    `SUMMARY:${escapeText(event.label)}`,
+    ...(event.location ? [`LOCATION:${escapeText(event.location)}`] : []),
+    "END:VEVENT",
+  ]);
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Knotwork//Timeline//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    `X-WR-CALNAME:${escapeText(title)}`,
+    ...events,
+    "END:VCALENDAR",
+  ]
+    .map(fold)
+    .join(CRLF)
+    .concat(CRLF);
+}

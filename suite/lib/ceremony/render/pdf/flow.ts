@@ -1,5 +1,5 @@
-// Brigade's page, table, text and font kit, as the other ceremony pages use
-// it: see the note at the top of lib/ensemble/render/pdf/shotSheet.ts.
+// Delegation's page, table, text and font kit, as the other ceremony pages use
+// it: see the note at the top of lib/group-shots/render/pdf/shotSheet.ts.
 import { PDFDocument, type PDFFont } from "pdf-lib";
 import { embedFamily } from "@/lib/pdf/embedFonts";
 import type { FontSource } from "@/lib/pdf/fontSource";

@@ -64,14 +64,14 @@ Plaque had already migrated off localStorage for that reason.
 The four apps' pure cores were copied rather than reimplemented, with their own
 test suites:
 
-- **Tableaux** — table geometry and seat placement, alignment snapping, the
+- **Tableaux** (now Seating) — table geometry and seat placement, alignment snapping, the
   chair-relocation pass, the warnings engine.
-- **Plaque** — the whole 4,800-line core: imposition, fold transforms, crop
+- **Plaque** (now Stationery) — the whole 4,800-line core: imposition, fold transforms, crop
   marks, fontkit measuring and text fitting, the element model, bindings,
   overrides, the icon and image pipelines, and both renderers.
-- **Cadence** — the scheduling resolver, clash detection, slack, NOAA solar, and
+- **Cadence** (now Timeline) — the scheduling resolver, clash detection, slack, NOAA solar, and
   all five printed pieces.
-- **Brigade** — coverage analysis, reconciliation, and the three job-sheet PDFs.
+- **Brigade** (now Delegation) — coverage analysis, reconciliation, and the three job-sheet PDFs.
 
 Two things were rewritten rather than ported. Plaque's CSV reader used papaparse;
 it now uses the dependency-free tokenizer already in the suite, which grew

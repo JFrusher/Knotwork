@@ -47,6 +47,19 @@ test("a thing moved to another box goes, and lands at the end of it", async ({ p
   expect((await stored(page, "box-getting-ready")).items.map((item) => item.label)).not.toContain("Steamer");
 });
 
+test("the Bar's shopping list becomes a box of drinks the couple then packs", async ({ page }) => {
+  await seedExampleWedding(page);
+  await page.goto("/boxes");
+  await page.getByRole("button", { name: "Add the drinks" }).click();
+
+  const list = page.getByRole("list", { name: "The boxes" });
+  await expect(list.getByRole("listitem")).toHaveCount(5);
+  await list.getByRole("button", { name: /^5\. Drinks/ }).click();
+  await expect(page.getByRole("checkbox", { name: /^Fizz: \d+ bottles, \d+ cases of 6 is packed$/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add the drinks" })).toHaveCount(0);
+  await expect(page.getByText("The Bar’s list has changed since these were added.")).toHaveCount(0);
+});
+
 test("a new wedding adds Boxes from Tools and starts from the usual ones", async ({ page }) => {
   await page.goto("/");
   const tabs = page.getByRole("navigation", { name: "Tools" });

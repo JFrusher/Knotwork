@@ -1,7 +1,7 @@
-import { applyPatch } from "@/apps/tableaux/store/patch";
-import { assignGuest, removeGuests, unassignGuest, updateGuest } from "@/apps/tableaux/store/actions";
-import { emptyPlan, SEATING_KEYS } from "@/apps/tableaux/store/plan";
-import type { Action, Guest, Plan } from "@/apps/tableaux/store/types";
+import { applyPatch } from "@/apps/seating/store/patch";
+import { assignGuest, removeGuests, unassignGuest, updateGuest } from "@/apps/seating/store/actions";
+import { emptyPlan, SEATING_KEYS } from "@/apps/seating/store/plan";
+import type { Action, Guest, Plan } from "@/apps/seating/store/types";
 import { normaliseDietary } from "@/lib/model/dietary";
 import type { RsvpStatus, Side } from "@/lib/model/types";
 

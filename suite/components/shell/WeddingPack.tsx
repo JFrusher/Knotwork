@@ -130,22 +130,22 @@ export function WeddingPack() {
 
 /** The room as Stationery draws it: the wedding's own floor plan, on A4. */
 async function floorPlan(): Promise<Uint8Array | null> {
-  const { packFloorPlanPdf } = await import("@/apps/plaque/export/packFloorPlan");
+  const { packFloorPlanPdf } = await import("@/apps/stationery/export/packFloorPlan");
   return packFloorPlanPdf(useKnotworkStore.getState());
 }
 
 async function runSheet(): Promise<Uint8Array | null> {
   const [{ renderRunSheet }, { browserFontSource }, { getBlob }] = await Promise.all([
-    import("@/apps/cadence/render/pdf/runSheet"),
+    import("@/apps/timeline/render/pdf/runSheet"),
     import("@/lib/pdf/fontSource"),
-    import("@/apps/cadence/state/blobStore"),
+    import("@/apps/timeline/state/blobStore"),
   ]);
   const doc = readTimeline(useKnotworkStore.getState().doc);
   if (doc.blocks.length === 0) return null;
 
   // Any typeface uploaded for the printed pieces, by family name. Without this
   // the pack would quietly fall back to the bundled faces and look like a
-  // different document to the one Cadence exports on its own.
+  // different document to the one Timeline exports on its own.
   const uploaded = new Map<string, Uint8Array>();
   for (const font of doc.fonts) {
     const blob = await getBlob(font.blobKey).catch(() => null);
@@ -160,9 +160,9 @@ async function runSheet(): Promise<Uint8Array | null> {
 
 async function jobList(): Promise<Uint8Array | null> {
   const [{ renderJobList }, { browserFontSource }, { readSlice }] = await Promise.all([
-    import("@/apps/brigade/render/pdf/jobSheets"),
+    import("@/apps/delegation/render/pdf/jobSheets"),
     import("@/lib/pdf/fontSource"),
-    import("@/apps/brigade/state/sliceBridge"),
+    import("@/apps/delegation/state/sliceBridge"),
   ]);
   const doc = readSlice(useKnotworkStore.getState().doc);
   if (doc.jobs.length === 0) return null;
@@ -246,7 +246,7 @@ async function shotSheet(): Promise<Uint8Array | null> {
   if (total === 0) return null;
 
   const [{ renderShotSheet }, { browserFontSource }] = await Promise.all([
-    import("@/lib/ensemble/render/pdf/shotSheet"),
+    import("@/lib/group-shots/render/pdf/shotSheet"),
     import("@/lib/pdf/fontSource"),
   ]);
 

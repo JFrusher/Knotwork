@@ -1,0 +1,33 @@
+/*
+ * Seating's own measures. Everything else it draws with — colour, type,
+ * spacing, radius, shadow — is decided once in `lib/design/tokens.css` and
+ * mapped onto the names this tool already uses, so all seventy-two variables
+ * its stylesheets reference keep working while the values move with the rest
+ * of the suite.
+ *
+ * What stays here is what nothing else has a view about: the canvas grid;
+ * the widths of its two side panels; its motion; and its elevation order.
+ *
+ * Declared on `.seating-tokens` as well. The modals, tooltips, toasts and
+ * context menus are portalled to `document.body`, which is outside the tool, so
+ * anything they read has to be reachable from that class too — the motion and
+ * the elevation order among it, or a modal opens beneath the toolbar.
+ */
+.seating-scope,
+.seating-tokens {
+  --grid-dot: rgba(28, 25, 23, 0.11);
+  --grid-line: rgba(28, 25, 23, 0.06);
+  --toolbar-height: 60px;
+  --panel-left-width: 280px;
+  --panel-right-width: 260px;
+  --transition-fast: 120ms ease-out;
+  --transition-base: 200ms ease;
+  --transition-modal: 150ms ease-out;
+  --z-canvas: 0;
+  --z-panel: 10;
+  --z-toolbar: 20;
+  --z-controls: 30;
+  --z-modal: 100;
+  --z-toast: 200;
+  --z-drag: 300;
+}

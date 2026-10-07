@@ -1,5 +1,5 @@
 /**
- * Time in Cadence is an integer count of wall-clock minutes from the day's
+ * Time in Timeline is an integer count of wall-clock minutes from the day's
  * 00:00. Values at or above 1440 belong to the following morning — a reception
  * ending at 01:30 is 1530. There is no Date, no timezone and no DST here.
  */

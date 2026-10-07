@@ -50,7 +50,7 @@ export interface Tool extends Tab {
  * The guest list: always the first tab, and never removable, because every
  * tool is built on it.
  */
-export const GUESTS: Tab = { href: "/guests", name: "Guests", icon: Users, tokens: "tableaux-tokens" };
+export const GUESTS: Tab = { href: "/guests", name: "Guests", icon: Users, tokens: "seating-tokens" };
 
 /**
  * Every tool, in the order the header draws them: the five in the order the
@@ -61,7 +61,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "seating",
     href: "/seating",
-    tokens: "tableaux-tokens",
+    tokens: "seating-tokens",
     name: "Seating",
     tagline: "Build the room, then put people in it.",
     icon: Armchair,
@@ -71,7 +71,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "place-cards",
     href: "/stationery",
-    tokens: "plaque-tokens",
+    tokens: "stationery-tokens",
     name: "Stationery",
     tagline: "Place cards, signs and the order of service, from the plan you just made.",
     icon: Contact,
@@ -81,7 +81,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "timeline",
     href: "/timeline",
-    tokens: "cadence-tokens",
+    tokens: "timeline-tokens",
     name: "Timeline",
     tagline: "The run of the day, and what collides.",
     icon: Clock,
@@ -91,7 +91,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "delegation",
     href: "/delegation",
-    tokens: "brigade-tokens",
+    tokens: "delegation-tokens",
     name: "Delegation",
     tagline: "The jobs, and the hands doing them.",
     icon: ClipboardList,
@@ -101,7 +101,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "group-shots",
     href: "/group-shots",
-    tokens: "ensemble-tokens",
+    tokens: "group-shots-tokens",
     name: "Group shots",
     tagline: "The family photo list, built from who's who.",
     icon: Camera,
@@ -111,7 +111,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "ceremony",
     href: "/ceremony",
-    tokens: "ensemble-tokens",
+    tokens: "group-shots-tokens",
     name: "Ceremony",
     tagline: "Who walks down the aisle, in what order, and to what.",
     icon: Footprints,
@@ -121,7 +121,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "boxes",
     href: "/boxes",
-    tokens: "brigade-tokens",
+    tokens: "delegation-tokens",
     name: "Boxes",
     tagline: "What is packed in which box, and where each has to be, by when.",
     icon: Package,
@@ -131,7 +131,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "bar",
     href: "/bar",
-    tokens: "brigade-tokens",
+    tokens: "delegation-tokens",
     name: "Bar",
     tagline: "How much drink to buy, in bottles and cases, and roughly what it costs.",
     icon: Wine,
@@ -141,7 +141,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "money",
     href: "/money",
-    tokens: "brigade-tokens",
+    tokens: "delegation-tokens",
     name: "Money",
     tagline: "What each supplier costs, what is paid, and what falls due.",
     icon: Banknote,
@@ -151,7 +151,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "checklist",
     href: "/checklist",
-    tokens: "brigade-tokens",
+    tokens: "delegation-tokens",
     name: "Checklist",
     tagline: "What to have done before the day, each with a date.",
     icon: ListChecks,
@@ -161,7 +161,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "binder",
     href: "/binder",
-    tokens: "cadence-tokens",
+    tokens: "timeline-tokens",
     name: "Binder",
     tagline: "The day on your phone, with or without signal.",
     icon: Smartphone,
