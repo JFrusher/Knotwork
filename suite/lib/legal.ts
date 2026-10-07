@@ -49,6 +49,29 @@ export const PRIVACY: Policy = {
         `This is run by ${CONTROLLER.name}, who can be reached at ${CONTROLLER.email}. It is a personal project, not a company.`,
         "For a wedding you create, you decide what goes into it.",
         "It reaches a server only if you make an account. Then I hold your wedding in a database — encrypted at rest, walled off from every other account, but readable by whoever runs the server. That is described below, and it does not happen unless you choose it.",
+        "Knotwork is for adults planning a wedding. It is not meant for children.",
+      ],
+    },
+    {
+      heading: "Why each thing is held",
+      paragraphs: [
+        "Your account, and the wedding stored on it, are held to provide the service you asked for: planning on more than one device and sharing it with the people you invite.",
+        "Counting visits and receiving error reports are done on the basis of legitimate interest, as described in their own sections below.",
+        "A story for the blog is published only with your consent, which you can withdraw at any time.",
+      ],
+    },
+    {
+      heading: "The other people in your wedding",
+      paragraphs: [
+        "The guests, suppliers and wedding party you add are your information about them. On your own device that is entirely your business. On an account I hold it on your behalf and act only on your instructions: storing it, syncing it between the people you invite, publishing the links you choose, and deleting it as this page describes. I do not use it for anything else, and I will help you answer anyone who asks what you hold about them.",
+        "Dietary requirements can reveal someone's health or religion, which the law treats as more sensitive. Write what the kitchen needs — 'no nuts', 'vegetarian' — rather than a diagnosis. They are never put in a guest link or a supplier's link.",
+      ],
+    },
+    {
+      heading: "Where it is processed",
+      paragraphs: [
+        "The database behind accounts is in Ireland, inside the EU, which UK law recognises as giving adequate protection.",
+        "Supabase, Vercel, Sentry, Google and Apple are US companies. Vercel runs the server every request passes through, and what any of them handles can be processed in the United States. Those transfers rely on the UK–US data bridge for companies certified under it, and on the UK's approved contract terms for any that are not.",
       ],
     },
     {
@@ -91,6 +114,7 @@ export const PRIVACY: Policy = {
       paragraphs: [
         `A wedding on an account that is not written to for ${RETENTION_MONTHS} months is deleted automatically, along with its history, its uploaded files, its guest link and its suppliers' links. That is long enough to cover an engagement, the wedding, and a year of still wanting the seating plan.`,
         "There is no backup that outlives this. When it is deleted, it is gone.",
+        "Your account itself — just your email address — is kept until you delete it, because it is what lets you back in. Error reports are deleted by Sentry after 90 days. Visit counts are totals that identify nobody.",
       ],
     },
     {
@@ -108,8 +132,8 @@ export const PRIVACY: Policy = {
         "On the hosted site — this one, not a copy somebody runs elsewhere — visits to each page are counted with Vercel Web Analytics, the host's own counter. For each page it records the page's address, the site the visit came from, the country, and the kind of browser, system and device. Before an address is sent, anything in it that is not simply the page is cut out: the token in a guest link, a supplier's link or an invitation, the id of a wedding, and everything after a ? or a #. Nothing from your wedding is in it — no guest, no name, no table.",
         "The hosted site also sends the page's address to Vercel Speed Insights, to measure how quickly pages load. That address is cut the same way first.",
         "It sets no cookie and stores nothing on your device. It tells one visit from another by a code worked out from the request, which changes every day, so a visit cannot be linked to one on another day or on another website. It is done on the basis of legitimate interest: knowing which parts of the site are used.",
-        "One cookie exists, and only if you sign in: it holds your session, which is what keeps you signed in between visits. It is not used to track you and there is nothing to opt into, because without an account no cookie is set at all.",
-        "The browser storage that is used — IndexedDB — holds your wedding, which is the thing you came here to work on. Nothing about you is stored for any other purpose.",
+        "Cookies are set only once you start to sign in. While a sign-in is under way, a short-lived one proves the request came from this browser; after it, one holds your session, which is what keeps you signed in between visits. Neither is used to track you and there is nothing to opt into, because without signing in no cookie is set at all.",
+        "The browser storage that is used holds what you came here to work on: IndexedDB keeps your wedding and the images and fonts you add to it, and localStorage keeps whether you have seen the introductory tour and which group photographs you have ticked off as taken. Nothing about you is stored for any other purpose.",
       ],
     },
     {
@@ -136,7 +160,8 @@ export const PRIVACY: Policy = {
     {
       heading: "Your rights",
       paragraphs: [
-        "Under UK GDPR you have rights of access, correction, erasure and portability. Most of them are already buttons rather than requests: 'Export backup' gives you the entire wedding as one file, 'Download my wedding' on the account page does the same from the server copy, and the delete buttons above remove it.",
+        "Under UK GDPR you have rights of access, correction, erasure, restriction and portability. Most of them are already buttons rather than requests: 'Export backup' gives you the entire wedding as one file, 'Download my wedding' on the account page does the same from the server copy, and the delete buttons above remove it.",
+        "You also have the right to object. Where something here is done on the basis of legitimate interest — counting visits and receiving error reports — you can object to it, and it stops unless there is a compelling reason that outweighs yours.",
         `For anything else, or if you think something here is wrong, write to ${CONTROLLER.email}. You can also complain to the Information Commissioner's Office.`,
       ],
     },
@@ -151,8 +176,8 @@ export const PRIVACY: Policy = {
 
 export const TERMS: Policy = {
   title: "Terms",
-  updated: "2026-09-28",
-  digest: "2e9a45548776337c",
+  updated: "2026-10-07",
+  digest: "b2265ff095a7f41c",
   intro:
     "Short, because there is not much to agree about: this is free software, given as it is, that mostly runs on your own machine.",
   sections: [
@@ -162,6 +187,7 @@ export const TERMS: Policy = {
         "A free wedding planning tool, and open source: the application is under the AGPL, and the data format it is built on is under the MIT licence. There is no subscription, no paid tier, and nothing to pay. There never will be — that is the point of it.",
         "An account is optional and also free. It exists to plan on more than one device and to share a wedding with your partner or your planner, not to unlock anything.",
         "It was built for one wedding and then made available to anyone who wants it. It is offered as it is, with no warranty and no promise that it is fit for any particular purpose.",
+        "You need to be 18 or over to use it.",
       ],
     },
     {
@@ -169,6 +195,14 @@ export const TERMS: Policy = {
       paragraphs: [
         "If you put other people's names, dietary requirements or contact details into this tool, you are the one responsible for them. You need your own reason to hold that information, and you should tell those people what you are doing with it if they would not otherwise expect it.",
         "The design helps: it stays on your device unless you choose otherwise, and a guest link deliberately publishes far less than you hold.",
+        "When it is on an account, I hold it on your behalf. I act only on your instructions, as these terms and the privacy page set out; keep it confidential and secured as described there; use only the services named there to run it; delete it when you ask or when it expires; and help you answer anyone who asks what you hold about them. If a breach ever affects it, I will tell you without delay.",
+      ],
+    },
+    {
+      heading: "What you upload",
+      paragraphs: [
+        "Fonts and images you add must be yours to use: a font you hold a licence for, a photograph you took or have permission to use.",
+        `If you believe something uploaded here infringes your rights, write to ${CONTROLLER.email}. It will be looked at, and taken down if it does.`,
       ],
     },
     {
