@@ -169,6 +169,10 @@ against, not a discussion to reopen without a reason.
   2026-09-08 note keeping it; the cross-slice validator lives on in
   `suite/lib/documents/crossSliceValidation.ts`, which every document save
   runs. The data already pushed stays in its DVC remote.
+- **2026-10-07.** Bar, Boxes, Group shots and Delegation open on a phone
+  (`wide: false`, routes moved out of `(tools)`). Same components, stacked
+  below `lg`; picking an item scrolls to its detail. Seating, Stationery,
+  Timeline and Ceremony stay behind the landscape gate.
 
 ## Subsystem H: Guided tour & example wedding
 

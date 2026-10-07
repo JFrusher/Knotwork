@@ -1,6 +1,6 @@
 import { weddingState, type WeddingState } from "@/lib/model/weddingState";
 import type { DocumentStore } from "@/lib/documents/store";
-import { ROLE_CAP, type AccountsStore, type Role } from "./store";
+import { mayInvite, mayRemove, ROLE_CAP, type AccountsStore, type Role } from "./store";
 
 interface Reply {
   status: number;
@@ -81,8 +81,10 @@ export async function createInviteHandler(
   role: Role,
 ): Promise<Reply> {
   const members = await store.membersOf(weddingId);
-  if (!members.some((m) => m.userId === byUserId)) {
-    return forbidden("You are not a member of that wedding.");
+  const by = members.find((m) => m.userId === byUserId);
+  if (!by) return forbidden("You are not a member of that wedding.");
+  if (!mayInvite(by.role, role)) {
+    return forbidden(by.role === "assistant" ? "An assistant cannot invite anyone." : "Only the planner can invite an assistant.");
   }
   if (members.filter((m) => m.role === role).length >= ROLE_CAP[role]) {
     return conflict(role === "partner" ? "This wedding already has both of its couple." : "This wedding already has a planner.");
@@ -111,6 +113,7 @@ export async function acceptInviteHandler(
     "already-in-a-wedding":
       "You are already one of the couple on a wedding of your own — leave it first if you want to join this one.",
     "already-a-member": "You are already on this wedding.",
+    "inviter-gone": "The planner who sent this invite is no longer on the wedding. Ask the couple or their planner for a new one.",
   };
   return conflict(messages[result.reason ?? ""] ?? "That invite could not be accepted.", {
     reason: result.reason,
@@ -125,8 +128,9 @@ export async function peopleHandler(store: AccountsStore, weddingId: string, byU
 }
 
 /**
- * Leaving a wedding, or the couple removing their planner. A planner never
- * removes one of the couple: whose plans these are is theirs to decide.
+ * Leaving a wedding, the couple removing their planner, or the couple or the
+ * planner removing an assistant. Nobody removes one of the couple: whose
+ * plans these are is theirs to decide.
  */
 export async function removeMemberHandler(
   store: AccountsStore,
@@ -138,8 +142,10 @@ export async function removeMemberHandler(
   const by = members.find((m) => m.userId === byUserId);
   const target = members.find((m) => m.userId === userId);
   if (!by || !target) return notFound("That person is not on this wedding.");
-  if (userId !== byUserId && !(target.role === "planner" && by.role === "partner")) {
-    return forbidden("Only the couple can remove their planner.");
+  if (userId !== byUserId && !mayRemove(by.role, target.role)) {
+    return forbidden(
+      target.role === "assistant" ? "Only the couple or their planner can remove an assistant." : "Only the couple can remove their planner.",
+    );
   }
   await store.removeMember(weddingId, byUserId, userId);
   return ok({});

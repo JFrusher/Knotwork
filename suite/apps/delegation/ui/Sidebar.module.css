@@ -5,3 +5,13 @@
   background: var(--surface);
   overflow-y: auto;
 }
+
+/* On a phone the panels sit below the board, the full width of the screen. */
+@media (max-width: 1023px) {
+  .sidebar {
+    width: auto;
+    border-right: 0;
+    border-top: 1px solid var(--border);
+    overflow-y: visible;
+  }
+}

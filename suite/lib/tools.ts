@@ -95,7 +95,7 @@ export const TOOLS: readonly Tool[] = [
     name: "Delegation",
     tagline: "The jobs, and the hands doing them.",
     icon: ClipboardList,
-    wide: true,
+    wide: false,
     defaultOn: true,
   },
   {
@@ -105,7 +105,7 @@ export const TOOLS: readonly Tool[] = [
     name: "Group shots",
     tagline: "The family photo list, built from who's who.",
     icon: Camera,
-    wide: true,
+    wide: false,
     defaultOn: true,
   },
   {
@@ -125,7 +125,7 @@ export const TOOLS: readonly Tool[] = [
     name: "Boxes",
     tagline: "What is packed in which box, and where each has to be, by when.",
     icon: Package,
-    wide: true,
+    wide: false,
     defaultOn: false,
   },
   {
@@ -135,7 +135,7 @@ export const TOOLS: readonly Tool[] = [
     name: "Bar",
     tagline: "How much drink to buy, in bottles and cases, and roughly what it costs.",
     icon: Wine,
-    wide: true,
+    wide: false,
     defaultOn: false,
   },
   {

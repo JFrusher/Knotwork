@@ -82,3 +82,19 @@
   flex: 1;
   min-width: 0;
 }
+
+/* On a phone: the board first, its warnings, then the panels below it. */
+@media (max-width: 1023px) {
+  .body {
+    flex-direction: column;
+  }
+
+  .canvas {
+    order: -1;
+  }
+
+  .foot {
+    max-height: none;
+    flex-wrap: wrap;
+  }
+}

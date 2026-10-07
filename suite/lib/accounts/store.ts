@@ -9,7 +9,7 @@
  * and a planner in any number.
  */
 
-export type Role = "partner" | "planner";
+export type Role = "partner" | "planner" | "assistant";
 
 export interface WeddingRecord {
   id: string;
@@ -50,7 +50,8 @@ export type AcceptReason =
   | "already-accepted"
   | "wedding-full"
   | "already-in-a-wedding"
-  | "already-a-member";
+  | "already-a-member"
+  | "inviter-gone";
 
 export interface AcceptResult {
   accepted: boolean;
@@ -65,7 +66,23 @@ export interface AcceptResult {
   invitedEmail: string | null;
 }
 
-export const ROLE_CAP: Record<Role, number> = { partner: 2, planner: 1 };
+export const ROLE_CAP: Record<Role, number> = { partner: 2, planner: 1, assistant: Infinity };
+
+/**
+ * Who may invite whom, as `create_invite` decides it: an assistant invites
+ * nobody, and only the planner invites an assistant.
+ */
+export function mayInvite(mine: Role, role: Role): boolean {
+  return mine !== "assistant" && (role !== "assistant" || mine === "planner");
+}
+
+/**
+ * Who may remove someone other than themselves, as `remove_member` decides
+ * it: the couple their planner, the couple or the planner an assistant.
+ */
+export function mayRemove(mine: Role, target: Role): boolean {
+  return (target === "planner" && mine === "partner") || (target === "assistant" && mine !== "assistant");
+}
 
 export interface AccountsStore {
   /** Throws if a partner wedding is asked for by someone who already has one. */
@@ -104,11 +121,16 @@ export function memoryStore(): AccountsStore {
     members.find((m) => m.weddingId === weddingId && m.userId === userId);
   const leave = (weddingId: string, userId: string) => {
     members = members.filter((m) => !(m.weddingId === weddingId && m.userId === userId));
-    if (!members.some((m) => m.weddingId === weddingId)) weddings.delete(weddingId);
+    // No partner or planner left: the wedding goes, and its assistants with it.
+    if (!members.some((m) => m.weddingId === weddingId && m.role !== "assistant")) {
+      members = members.filter((m) => m.weddingId !== weddingId);
+      weddings.delete(weddingId);
+    }
   };
 
   return {
     async createWedding(userId, role) {
+      if (role === "assistant") throw new Error("a wedding is started by one of the couple or a planner");
       if (role === "partner" && isPartnerSomewhere(userId)) throw new Error("already has a wedding");
       const wedding: WeddingRecord = { id: crypto.randomUUID(), createdAt: now() };
       weddings.set(wedding.id, wedding);
@@ -132,7 +154,9 @@ export function memoryStore(): AccountsStore {
     },
 
     async createInvite(weddingId, byUserId, invitedEmail, role) {
-      if (!onWedding(weddingId, byUserId)) throw new Error("not a member of that wedding");
+      const by = onWedding(weddingId, byUserId);
+      if (!by) throw new Error("not a member of that wedding");
+      if (!mayInvite(by.role, role)) throw new Error(`a ${by.role} cannot invite a ${role}`);
       if (count(weddingId, role) >= ROLE_CAP[role]) throw new Error(`no ${role} place left`);
       const invite: InviteRecord = {
         id: crypto.randomUUID(),
@@ -165,6 +189,7 @@ export function memoryStore(): AccountsStore {
       if (callerEmail !== invite.invitedEmail) return no("wrong-email");
       if (onWedding(invite.weddingId, userId)) return no("already-a-member");
       if (count(invite.weddingId, invite.role) >= ROLE_CAP[invite.role]) return no("wedding-full");
+      if (invite.role === "assistant" && onWedding(invite.weddingId, invite.createdBy)?.role !== "planner") return no("inviter-gone");
       if (invite.role === "partner" && isPartnerSomewhere(userId)) return no("already-in-a-wedding");
 
       members.push({ userId, weddingId: invite.weddingId, role: invite.role, joinedAt: now() });
@@ -175,9 +200,9 @@ export function memoryStore(): AccountsStore {
     async removeMember(weddingId, byUserId, userId) {
       const target = onWedding(weddingId, userId);
       if (!target) throw new Error("not a member of that wedding");
-      const byPartner = onWedding(weddingId, byUserId)?.role === "partner";
-      if (userId !== byUserId && !(target.role === "planner" && byPartner)) {
-        throw new Error("only the couple can remove their planner");
+      const by = onWedding(weddingId, byUserId);
+      if (userId !== byUserId && !(by && mayRemove(by.role, target.role))) {
+        throw new Error("only the couple can remove their planner, and only the couple or the planner an assistant");
       }
       leave(weddingId, userId);
     },

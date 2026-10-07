@@ -30,7 +30,7 @@ export function WeddingList({ weddings, open }: { weddings: WeddingListing[]; op
               {[
                 longDate(wedding.date),
                 daysToGo(wedding.date),
-                wedding.role === "planner" ? "Client" : "Yours",
+                wedding.role !== "partner" ? "Client" : "Yours",
               ]
                 .filter(Boolean)
                 .join(" · ")}

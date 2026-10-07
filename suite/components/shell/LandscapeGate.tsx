@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TOOLS } from "@/lib/tools";
@@ -29,7 +29,24 @@ export function useWideScreen(): boolean {
 }
 
 /**
- * One gate in front of all five tools, rather than a copy inside each.
+ * For a tool whose detail sits below its list on a phone: each time `key`
+ * changes to something, the page scrolls the element behind the returned ref
+ * to just under the header (sticky, and as tall as its wrapped tabs there).
+ * Does nothing on a wide screen, where the detail is beside the list.
+ */
+export function useRevealOnPhone<T extends HTMLElement>(key: string | null) {
+  const wide = useWideScreen();
+  const ref = useRef<T>(null);
+  useEffect(() => {
+    if (!key || wide || !ref.current) return;
+    const header = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+    window.scrollTo({ top: ref.current.getBoundingClientRect().top + window.scrollY - header });
+  }, [key, wide]);
+  return ref;
+}
+
+/**
+ * One gate in front of the wide tools, rather than a copy inside each.
  *
  * Three tools carried their own, copied from one another: Delegation's told a
  * tablet user to go and open "Cadence", and Stationery named "Plaque" — names

@@ -106,8 +106,8 @@ export function Header() {
     <>
       <header className="sticky top-0 z-40 border-b border-charcoal/10 bg-parchment/95 backdrop-blur">
         {/* As tall as it needs on a phone: the tabs wrap onto rows of their own
-            there. Only the wide tools read --shell-header-h, and none of them
-            is open below 1024px. */}
+            there. The tools read --shell-header-h only from 1024px up, so
+            none of them depends on it there. */}
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-2 sm:h-[var(--shell-header-h)] sm:flex-nowrap sm:py-0 xl:gap-3">
           <WeddingMenu />
 
