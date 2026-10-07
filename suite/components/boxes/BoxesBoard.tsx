@@ -39,11 +39,11 @@ export function BoxesBoard() {
   const [query, setQuery] = useState("");
   const [note, setNote] = useState<string | null>(null);
   const found = useMemo(() => find(boxes, query), [boxes, query]);
+  const inspector = useRevealOnPhone<HTMLDivElement>(selectedId);
 
   if (status !== "ready") return null;
 
   const selected = boxes.boxes.find((box) => box.id === selectedId) ?? null;
-  const inspector = useRevealOnPhone<HTMLDivElement>(selectedId);
   const have = new Set(boxes.boxes.map((box) => box.name.trim().toLowerCase()));
   const usualMissing = USUAL_BOXES.some((usual) => !have.has(usual.name.toLowerCase()));
   // Only while the wedding has a Bar with something to buy, and no drinks box yet.
