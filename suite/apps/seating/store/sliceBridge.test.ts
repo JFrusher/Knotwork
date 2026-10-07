@@ -13,7 +13,7 @@ const { emptyKnotwork } = await import("@jfrusher/knotwork");
 /**
  * Guests arriving from the shared wedding must be displayable in Seating.
  *
- * Tableaux renders and sorts by `fullName`, and derives it inside its own
+ * Seating renders and sorts by `fullName`, and derives it inside its own
  * addGuest/updateGuest. Nothing derived it for guests that came from anywhere
  * else — the suite's CSV import, a restored backup, the example wedding — so
  * the panel counted a hundred guests and showed a hundred blank rows, and
@@ -47,7 +47,7 @@ test("a first name on its own is enough", () => {
 });
 
 test("a fullName the guest already carries is left exactly as it is", () => {
-  // Tableaux allows a name that is not simply first + last — a title, a
+  // Seating allows a name that is not simply first + last — a title, a
   // couple sharing a card. Deriving over the top would quietly rewrite it.
   withGuests({
     g1: { id: "g1", firstName: "Eleanor", lastName: "Abernathy", fullName: "Dr Eleanor Abernathy" },

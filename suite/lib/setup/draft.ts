@@ -3,10 +3,10 @@ import type { CsvTable } from "@/lib/data/csv";
 import type { Guest } from "@/lib/model/types";
 // Seating's own table-making, so a starting room is made of exactly the
 // tables Seating would have made by hand.
-import { addTable } from "@/apps/tableaux/store/actions";
-import { applyPatch } from "@/apps/tableaux/store/patch";
-import { normalizePlan } from "@/apps/tableaux/store/plan";
-import type { Plan } from "@/apps/tableaux/store/types";
+import { addTable } from "@/apps/seating/store/actions";
+import { applyPatch } from "@/apps/seating/store/patch";
+import { normalizePlan } from "@/apps/seating/store/plan";
+import type { Plan } from "@/apps/seating/store/types";
 
 /**
  * What setup builds before anything is written: the pieces it commits as one

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { roomPlaces } from "./roomPlaces";
 
 /**
- * The trap this guards is that Tableaux keeps two things that both sound like
- * "named areas": a `zones` map the suite's typed reader knows about and Tableaux
+ * The trap this guards is that Seating keeps two things that both sound like
+ * "named areas": a `zones` map the suite's typed reader knows about and Seating
  * never fills in, and the `room.spaces` you actually draw. Reading the first
  * gives an empty list that looks like a working feature with nothing to suggest.
  */

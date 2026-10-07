@@ -63,7 +63,7 @@ export default function ConstraintsModal() {
       }
     >
       <p className={styles.intro}>
-        Add rules and Tableaux will flag a warning if a plan breaks them — it never blocks you.
+        Add rules and Seating will flag a warning if a plan breaks them — it never blocks you.
       </p>
 
       <div className={styles.builder}>

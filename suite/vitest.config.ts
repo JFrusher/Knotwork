@@ -89,7 +89,7 @@ export default defineConfig({
         },
       },
       {
-        // Tableaux is the one tool written in JSX rather than TSX. Next compiles
+        // Seating is the one tool written in JSX rather than TSX. Next compiles
         // it with the automatic runtime, and its files do not import React;
         // without this the test transform falls back to the classic runtime and
         // every rendered component throws "React is not defined". It has to sit
@@ -97,7 +97,7 @@ export default defineConfig({
         oxc: { jsx: { runtime: "automatic" } },
         resolve: { alias: { "@": root } },
         test: {
-          name: "tableaux",
+          name: "seating",
           /*
            * Generous, because these render real PDFs. Alone each takes about a
            * second; sharing a machine with the rest of the suite they can pass
@@ -108,14 +108,14 @@ export default defineConfig({
            */
           testTimeout: 20_000,
           sequence: { groupOrder: 0 },
-          include: ["apps/tableaux/**/*.test.{js,jsx,ts,tsx}"],
+          include: ["apps/seating/**/*.test.{js,jsx,ts,tsx}"],
           // Its component tests render, and its store tests touch localStorage.
           environment: "jsdom",
           // Testing Library unmounts between tests only when it can see a
           // global `afterEach`. Without this each render is left in the
           // document and the next query finds several copies of the panel.
           globals: true,
-          setupFiles: ["apps/tableaux/test/setup.ts"],
+          setupFiles: ["apps/seating/test/setup.ts"],
         },
       },
       {

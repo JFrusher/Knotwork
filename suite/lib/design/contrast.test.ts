@@ -75,14 +75,14 @@ export function contrast(foreground: string, background: string): number {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
-const SCOPES = [".stationery-scope", ".timeline-scope", ".delegation-scope", ".tableaux-scope", ".group-shots-tokens"];
+const SCOPES = [".stationery-scope", ".timeline-scope", ".delegation-scope", ".seating-scope", ".group-shots-tokens"];
 
-/** The tint each tool fills behind its own accent text. Tableaux named it differently. */
+/** The tint each tool fills behind its own accent text. Seating named it differently. */
 const TINT: Record<string, string> = {
   ".stationery-scope": "--accent-soft",
   ".timeline-scope": "--accent-soft",
   ".delegation-scope": "--accent-soft",
-  ".tableaux-scope": "--accent-light",
+  ".seating-scope": "--accent-light",
   ".group-shots-tokens": "--accent-soft",
 };
 
@@ -148,7 +148,7 @@ describe("Seating's dark panel", () => {
   // panel's ink, and the two faintest sat at 3.3:1 and 4.4:1.
   for (const ink of ["--panel-text", "--panel-text-muted"]) {
     it(`${ink} on the panel clears AA`, () => {
-      expect(contrast(hex(".tableaux-scope", ink), hex(".tableaux-scope", "--panel-bg"))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(hex(".seating-scope", ink), hex(".seating-scope", "--panel-bg"))).toBeGreaterThanOrEqual(4.5);
     });
   }
 });

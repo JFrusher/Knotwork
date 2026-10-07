@@ -63,7 +63,7 @@ export const SEATING_KEYS = [
 export const PLAN_KEYS = [...SEATING_KEYS, 'guests'] as const
 
 /**
- * Tableaux's factory name for a plan nobody has named yet.
+ * Seating's factory name for a plan nobody has named yet.
  *
  * Treated as absence rather than as an answer: propagating it would put "Our
  * Wedding" in the couple's name on the run sheet and the place cards, which is

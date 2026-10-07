@@ -13,7 +13,7 @@ import type { CsvTable } from "./csv";
  * names and nothing else. Refusing an unfamiliar export would send the user
  * back to a spreadsheet, which is the thing this replaces.
  *
- * Patterns are Stationery's `guessMapping` and Tableaux's `csvParser` merged, since
+ * Patterns are Stationery's `guessMapping` and Seating's `csvParser` merged, since
  * between them they already covered the exports these lists arrive as.
  *
  * The one importer. Seating had a second, with different rules — it replaced

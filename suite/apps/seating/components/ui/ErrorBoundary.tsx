@@ -21,7 +21,7 @@ export default class ErrorBoundary extends Component<{ label?: string; children:
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[Tableaux] panel error:', error, info)
+    console.error('[Seating] panel error:', error, info)
   }
 
   reset = () => this.setState({ error: null })

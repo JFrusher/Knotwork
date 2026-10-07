@@ -5,7 +5,7 @@ import type { Plan } from './types'
 /**
  * Where Seating's plan lives: the wedding in the shared store.
  *
- * Tableaux was the one tool with a back end of its own: an Express server, a
+ * Seating started as Tableaux, the one tool with a back end of its own: an Express server, a
  * Supabase account, plan revisions and optimistic concurrency. All of that is
  * the shell's job now — it stores the wedding locally, syncs it to the
  * account, and resolves conflicts across devices — so what is left here is

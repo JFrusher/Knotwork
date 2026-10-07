@@ -14,7 +14,7 @@ import { storedPieces } from "@/apps/stationery/state/suite";
  * What is left to do, across the whole wedding.
  *
  * Deliberately only the things no single tool can work out. Each of the five
- * already checks its own work and is better at it than this could be: Tableaux
+ * already checks its own work and is better at it than this could be: Seating
  * knows a table is over capacity, Timeline knows two blocks collide, Delegation
  * knows a job has nobody on it and that nobody is in two places at once. None
  * of that is repeated here — a warning shown twice in two wordings is worse

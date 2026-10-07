@@ -4,7 +4,7 @@ import { coerceGuests, personName, PROCESSIONAL_MOMENT_ID, readBoxes, readCast, 
 
 describe("coerceGuests keeps what it has no opinion about", () => {
   it("preserves fields owned by a tool rather than by the suite", () => {
-    // Tableaux stores fullName, dietaryRaw and assignedSeatId on a guest; the
+    // Seating stores fullName, dietaryRaw and assignedSeatId on a guest; the
     // suite's model has never heard of them. Rebuilding a guest from the
     // suite's own field list dropped all three, and reconcileLoadedDocument
     // writes the result back on load — so seat positions inside a table were

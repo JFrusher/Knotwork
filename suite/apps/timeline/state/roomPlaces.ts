@@ -9,7 +9,7 @@
  * idea of a place.
  *
  * Read from the raw slice rather than the typed reader, because the suite's
- * `Seating` type carries a `zones` map that Tableaux does not populate: the
+ * `Seating` type carries a `zones` map that Seating does not populate: the
  * spaces you actually draw live under `room.spaces`.
  */
 export function roomPlaces(raw: unknown): string[] {

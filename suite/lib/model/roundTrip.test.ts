@@ -15,7 +15,7 @@ const { STORAGE_KEY, flushPersist, useKnotworkStore } = await import(
 const { publishDay, readCrew, readGuests, readSeating, readTimeline, readShots, resolvedDay } = await import(
   "./slices"
 );
-const { useStore: useSeating } = await import("@/apps/tableaux/store/useStore");
+const { useStore: useSeating } = await import("@/apps/seating/store/useStore");
 const { DEFAULT_BLOCK_OUTPUTS } = await import("@/apps/timeline/core/model/defaults");
 const { addJob, addPerson, seedTeamsFromTags, toggleAssignment } = await import(
   "@/lib/model/crewActions"

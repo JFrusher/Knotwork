@@ -5,31 +5,31 @@
  * several are actively destructive to one that does not: `* { margin: 0 }`
  * would flatten the shell's typography, and `body { overflow: hidden }` would
  * take the scrollbar off the other three tools' pages. So the reset applies
- * inside Tableaux and nowhere else.
+ * inside Seating and nowhere else.
  *
  * Scoped with `:where()`, which adds no specificity. Standalone, these were
- * bare element rules that any class beat; `.tableaux-scope button` would
+ * bare element rules that any class beat; `.seating-scope button` would
  * instead beat every button class in the tool.
  */
-:where(.tableaux-scope),
-:where(.tableaux-scope) *,
-:where(.tableaux-scope) *::before,
-:where(.tableaux-scope) *::after {
+:where(.seating-scope),
+:where(.seating-scope) *,
+:where(.seating-scope) *::before,
+:where(.seating-scope) *::after {
   box-sizing: border-box;
 }
 
-:where(.tableaux-scope) * {
+:where(.seating-scope) * {
   margin: 0;
   padding: 0;
 }
 
 /*
  * Was `html, body, #root { height: 100% }` plus `body { overflow: hidden }`.
- * Tableaux still wants exactly one screenful, with its canvas and panels
+ * Seating still wants exactly one screenful, with its canvas and panels
  * scrolling inside themselves — it just takes the viewport less the shell's
  * header now instead of all of it.
  */
-.tableaux-scope {
+.seating-scope {
   height: calc(100dvh - var(--shell-header-h, 0px));
   overflow: hidden;
   font-family: var(--font-ui);
@@ -42,12 +42,12 @@
   text-rendering: optimizeLegibility;
 }
 
-:where(.tableaux-scope) :is(h1, h2, h3, h4, h5, h6) {
+:where(.seating-scope) :is(h1, h2, h3, h4, h5, h6) {
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
 }
 
-:where(.tableaux-scope) button {
+:where(.seating-scope) button {
   font: inherit;
   color: inherit;
   background: none;
@@ -55,72 +55,72 @@
   cursor: pointer;
 }
 
-:where(.tableaux-scope) button:disabled {
+:where(.seating-scope) button:disabled {
   cursor: not-allowed;
 }
 
-:where(.tableaux-scope) :is(input, textarea, select) {
+:where(.seating-scope) :is(input, textarea, select) {
   font: inherit;
   color: inherit;
 }
 
-:where(.tableaux-scope) textarea {
+:where(.seating-scope) textarea {
   resize: vertical;
 }
 
-:where(.tableaux-scope) a {
+:where(.seating-scope) a {
   color: inherit;
   text-decoration: none;
 }
 
-:where(.tableaux-scope) :is(ul, ol) {
+:where(.seating-scope) :is(ul, ol) {
   list-style: none;
 }
 
-:where(.tableaux-scope) :is(img, svg) {
+:where(.seating-scope) :is(img, svg) {
   display: block;
   max-width: 100%;
 }
 
 /* ── Focus & selection ── */
-.tableaux-scope :focus {
+.seating-scope :focus {
   outline: none;
 }
 
-.tableaux-scope :focus-visible {
+.seating-scope :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
-.tableaux-scope ::selection {
+.seating-scope ::selection {
   background: var(--accent-light);
   color: var(--ink);
 }
 
 /* ── Scrollbars — slim and unobtrusive ── */
-.tableaux-scope * {
+.seating-scope * {
   scrollbar-width: thin;
   scrollbar-color: var(--ink-muted) transparent;
 }
 
-.tableaux-scope ::-webkit-scrollbar {
+.seating-scope ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.tableaux-scope ::-webkit-scrollbar-track {
+.seating-scope ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.tableaux-scope ::-webkit-scrollbar-thumb {
+.seating-scope ::-webkit-scrollbar-thumb {
   background: rgba(120, 113, 108, 0.35);
   border: 3px solid transparent;
   background-clip: padding-box;
   border-radius: var(--radius-full);
 }
 
-.tableaux-scope ::-webkit-scrollbar-thumb:hover {
+.seating-scope ::-webkit-scrollbar-thumb:hover {
   background: rgba(120, 113, 108, 0.55);
   background-clip: padding-box;
   border: 3px solid transparent;
@@ -163,7 +163,7 @@
  *
  * Deliberately left unscoped, unlike everything above it. Someone who has asked
  * their system to stop animating things means it for the whole page, not for
- * whichever quarter of it Tableaux happens to own.
+ * whichever quarter of it Seating happens to own.
  */
 @media (prefers-reduced-motion: reduce) {
   *,

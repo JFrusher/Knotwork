@@ -101,8 +101,7 @@ To work on accounts, sync or guest links you need a Supabase project. See
 ```text
 src/                     the data contract: zod schemas and the file format (MIT)
 suite/                   the Next.js application (AGPL-3.0-or-later)
-  apps/                  Seating (tableaux), stationery,
-                         timeline, delegation
+  apps/                  seating, stationery, timeline, delegation
   lib/                   the shared document, sync, accounts, and newer tools
   components/            the shell, and the newer tools' panels
   app/                   routes and API
@@ -110,9 +109,6 @@ suite/                   the Next.js application (AGPL-3.0-or-later)
 supabase/migrations/     database migrations, applied in filename order
 docs/                    self-hosting, building a tool, specs and plans
 ```
-
-One tool keeps its original code name, Tableaux, as a folder name. The
-product calls it Seating.
 
 ---
 

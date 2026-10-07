@@ -51,7 +51,7 @@ export default function Tooltip({
       {coords &&
         createPortal(
           <div
-            className={clsx('tableaux-tokens', styles.tip, styles[placement])}
+            className={clsx('seating-tokens', styles.tip, styles[placement])}
             style={{ left: coords.x, top: coords.y }}
             role="tooltip"
           >

@@ -1,9 +1,9 @@
 import type { Knotwork } from "@jfrusher/knotwork";
 import { cached } from "@/lib/model/slices";
-import { planFrom } from "@/apps/tableaux/store/plan";
-import { getWallSegs, layoutFloorPlan } from "@/apps/tableaux/utils/floorPlanSvg";
-import { SEAT_RADIUS, type TableGeometry } from "@/apps/tableaux/utils/seatPositions";
-import { getTableInterior } from "@/apps/tableaux/utils/tableGrid";
+import { planFrom } from "@/apps/seating/store/plan";
+import { getWallSegs, layoutFloorPlan } from "@/apps/seating/utils/floorPlanSvg";
+import { SEAT_RADIUS, type TableGeometry } from "@/apps/seating/utils/seatPositions";
+import { getTableInterior } from "@/apps/seating/utils/tableGrid";
 import type { GuestRow } from "../core/data/rows";
 import type { RoomScene, RoomTable } from "../core/types";
 import { roomRows } from "./fromRoom";

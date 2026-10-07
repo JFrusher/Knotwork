@@ -64,7 +64,7 @@ Plaque had already migrated off localStorage for that reason.
 The four apps' pure cores were copied rather than reimplemented, with their own
 test suites:
 
-- **Tableaux** — table geometry and seat placement, alignment snapping, the
+- **Tableaux** (now Seating) — table geometry and seat placement, alignment snapping, the
   chair-relocation pass, the warnings engine.
 - **Plaque** (now Stationery) — the whole 4,800-line core: imposition, fold transforms, crop
   marks, fontkit measuring and text fitting, the element model, bindings,

@@ -7,7 +7,7 @@ import { dayPlaces, readBoxes, readCast, readCeremony, readCrew, readGuests, rea
 import { neededAt, packingOf } from "@/lib/boxes/view";
 import { readiness } from "@/lib/model/readiness";
 import { resolveMembers } from "@/lib/cast/resolve";
-import { computeWarnings } from "@/apps/tableaux/utils/warnings";
+import { computeWarnings } from "@/apps/seating/utils/warnings";
 import { shownTools } from "@/lib/model/toolbox";
 import { TOOLS } from "@/lib/tools";
 import { USUAL_TASKS } from "@/lib/checklist/checklist";
@@ -51,7 +51,7 @@ test("Seating finds nothing wrong: families sit together, and each group lists i
   );
   const warnings = computeWarnings({ guests: named, tables: seating.tables, families: seating.families, constraints: [], settings: seating.settings });
   expect(warnings.filter((w: { level: string }) => w.level === "warn")).toEqual([]);
-  // Tableaux shows a group from its member list, the rest of the suite from the guest.
+  // Seating shows a group from its member list, the rest of the suite from the guest.
   const groups = raw.seating.groups as Record<string, { memberIds: string[] }>;
   for (const [id, group] of Object.entries(groups)) {
     expect(group.memberIds.sort()).toEqual(guests.filter((g) => g.groupId === id).map((g) => g.id).sort());

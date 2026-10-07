@@ -19,7 +19,7 @@ import { PDFDocument } from "pdf-lib";
  * two different trips to the printer — folding them together would produce a
  * document that cannot be printed in one go by anyone.
  *
- * Merging rather than rewriting: Tableaux draws its plan with jsPDF because it
+ * Merging rather than rewriting: Seating draws its plan with jsPDF because it
  * needs SVG, the other three use pdf-lib. Porting one to the other would be a
  * week of work to produce the same pages, so each section is made by whatever
  * already makes it well and the results are stapled together here.

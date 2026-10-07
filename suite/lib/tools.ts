@@ -50,7 +50,7 @@ export interface Tool extends Tab {
  * The guest list: always the first tab, and never removable, because every
  * tool is built on it.
  */
-export const GUESTS: Tab = { href: "/guests", name: "Guests", icon: Users, tokens: "tableaux-tokens" };
+export const GUESTS: Tab = { href: "/guests", name: "Guests", icon: Users, tokens: "seating-tokens" };
 
 /**
  * Every tool, in the order the header draws them: the five in the order the
@@ -61,7 +61,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "seating",
     href: "/seating",
-    tokens: "tableaux-tokens",
+    tokens: "seating-tokens",
     name: "Seating",
     tagline: "Build the room, then put people in it.",
     icon: Armchair,

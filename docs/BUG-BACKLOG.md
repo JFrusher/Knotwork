@@ -12,7 +12,7 @@ Copy this into Open, fill in what you know:
 ```
 ### <short title>
 - **Reported:** YYYY-MM-DD
-- **App/area:** Timeline | Tableaux | Delegation | Group shots | Stationery | shell/header | accounts | other
+- **App/area:** Timeline | Seating | Delegation | Group shots | Stationery | shell/header | accounts | other
 - **What happened:** <what you saw>
 - **Expected:** <what should've happened, if obvious>
 - **Repro:** <steps, or "not sure — happened while doing X">

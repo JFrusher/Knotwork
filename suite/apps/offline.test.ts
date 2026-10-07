@@ -52,7 +52,7 @@ function filesIn(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) return filesIn(path);
-    // `.js`/`.jsx` as well as TypeScript: Tableaux is written in JSX, and it is
+    // `.js`/`.jsx` as well as TypeScript: Seating is written in JSX, and it is
     // the tool that most needs checking — it arrived with an HTTP client, a
     // Supabase session and a public share API, all of which were taken out by
     // hand. A scan that skipped its file extensions would have proved nothing
