@@ -3,7 +3,7 @@
 What to do when account data may have been read, changed or lost by someone it
 does not belong to. If it is likely to risk anyone's rights, UK GDPR requires
 telling the ICO **without undue delay** and, where feasible, within **72 hours**
-of becoming aware of it. Report what you know; send the rest when you have it.
+of becoming aware of it. Report what you know; send the rest without undue delay as you learn it.
 
 1. **Contain it.** Rotate any secret that was exposed: `SUPABASE_SERVICE_ROLE_KEY`
    in Supabase, `CRON_SECRET` in Vercel. The anon key is public by design, so
