@@ -7,5 +7,11 @@ export const metadata: Metadata = {
 };
 
 export default function DelegationPage() {
-  return <DelegationApp />;
+  return (
+    <>
+      {/* The tool's name is on screen as the current tab; this one is for screen readers. */}
+      <h1 className="sr-only">Delegation</h1>
+      <DelegationApp />
+    </>
+  );
 }

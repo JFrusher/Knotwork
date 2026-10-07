@@ -200,3 +200,10 @@
   font-size: var(--text-xs);
   color: var(--danger);
 }
+
+/* On a phone the page scrolls, not the board inside it. */
+@media (max-width: 1023px) {
+  .board {
+    overflow: visible;
+  }
+}

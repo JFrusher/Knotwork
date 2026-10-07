@@ -24,6 +24,28 @@ for (const path of PAGES) {
   });
 }
 
+/**
+ * The tools that open on a phone (`wide: false` in `lib/tools.ts`), at the
+ * width of one: no violations, and nothing pushing the page sideways.
+ */
+const PHONE_TOOLS = ["/bar", "/boxes", "/group-shots", "/delegation"];
+
+test.describe("at 390px", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  for (const path of PHONE_TOOLS) {
+    test(`${path} has no accessibility violations and no sideways scroll`, async ({ page }) => {
+      await seedExampleWedding(page);
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      const { violations } = await new AxeBuilder({ page }).analyze();
+      expect(violations.map((v) => `${v.id} (${v.impact}): ${v.nodes.map((n) => n.target.join(" ")).join(" | ")}`)).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+    });
+  }
+});
+
 test("the skip link is the first stop and lands on the page's main content", async ({ page }) => {
   await page.goto("/");
   await page.keyboard.press("Tab");
