@@ -1,5 +1,5 @@
 import type { Knotwork } from "@jfrusher/knotwork";
-import { personName, readCrew, readGuests } from "@/lib/model/slices";
+import { personName, readBoxes, readCrew, readGuests } from "@/lib/model/slices";
 import { parseDay } from "../core/import/day";
 import { emptyDoc } from "../core/model/defaults";
 import type { BrigadeDoc } from "../core/model/types";
@@ -54,6 +54,7 @@ export function readSlice(doc: Knotwork): BrigadeDoc {
     people,
     jobs: crew.jobs,
     budget: crew.budget,
+    boxes: readBoxes(doc).boxes,
   };
 }
 

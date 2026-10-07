@@ -1,5 +1,7 @@
 /** The Brigade document model. Jobs, the people who do them, and the day they hang off. */
 
+import type { Box } from "@/lib/model/types";
+
 /**
  * The day as Cadence exported it: already resolved to clock times, and never
  * edited here. Brigade owns the work, Cadence owns the clock.
@@ -102,6 +104,8 @@ export interface BrigadeDoc {
   jobs: Job[];
   /** What the couple intends to spend in total, or null if they have not said. */
   budget: number | null;
+  /** Boxes' own, read so a carrier's sheet shows what they take. Never written back. */
+  boxes: Box[];
 }
 
 /**

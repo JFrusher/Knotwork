@@ -14,7 +14,8 @@ export function emptyDoc(): BrigadeDoc {
     teams: [],
     people: [],
     jobs: [],
-  budget: null,
+    budget: null,
+    boxes: [],
   };
 }
 

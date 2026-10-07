@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { sampleDoc } from "../../core/model/defaults";
 import type { BrigadeDoc } from "../../core/model/types";
@@ -11,6 +13,9 @@ import {
 } from "./jobSheets";
 import { nodeFontSource } from "@/lib/pdf/nodeFontSource";
 import { textOf } from "@/lib/pdf/readPdf";
+import { migrate } from "@jfrusher/knotwork";
+import { readCrew } from "@/lib/model/slices";
+import { crewSlice, readSlice } from "../../state/sliceBridge";
 
 const options = { fontSource: nodeFontSource, generatedOn: "Generated for the test" };
 
@@ -123,5 +128,50 @@ describe("renderAllTeamSheets", () => {
     // The band and the registrar have no jobs, so they get no sheet.
     expect(text).not.toContain("The Wrights");
     expect(pages).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("a box on its carrier's sheet", () => {
+  type Raw = Record<string, any>;
+  const raw: Raw = JSON.parse(
+    readFileSync(join(process.cwd(), "public", "fixtures", "example-wedding.knotwork.json"), "utf8"),
+  );
+  // Rafferty takes box 1, "The rings and the paperwork", to the ceremony.
+  const carrier = "p_ex00p";
+
+  it("is on their sheet, with its place and time", async () => {
+    const { text } = await textOf(await renderPersonSheet(readSlice(migrate(raw)), carrier, options));
+    expect(text).toContain("Box 1: The rings and the paperwork");
+    expect(text).toContain("Orangery");
+    expect(text).toContain("13:30");
+  });
+
+  it("follows its block when the day moves, with no other edit", async () => {
+    const moved: Raw = {
+      ...raw,
+      day: {
+        ...raw.day,
+        blocks: raw.day.blocks.map((block: Raw) =>
+          block.id === "blk-ceremony" ? { ...block, startMin: 840, contentEndMin: 885, endMin: 885 } : block,
+        ),
+      },
+    };
+    const { text } = await textOf(await renderPersonSheet(readSlice(migrate(moved)), carrier, options));
+    expect(text).toContain("14:00");
+    expect(text).not.toContain("13:30");
+  });
+
+  it("gives a sheet to someone whose only work is a box", () => {
+    const boxOnly: Raw = {
+      ...raw,
+      crew: { ...raw.crew, jobs: raw.crew.jobs.filter((job: Raw) => !job.personIds.includes(carrier)) },
+    };
+    expect(peopleWithJobs(readSlice(migrate(boxOnly)))).toContain(carrier);
+  });
+
+  it("is never written to the crew", () => {
+    const doc = migrate(raw);
+    const crew = readCrew(doc);
+    expect(crewSlice(readSlice(doc))).toEqual({ teams: crew.teams, people: crew.people, jobs: crew.jobs, budget: crew.budget });
   });
 });

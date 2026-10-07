@@ -127,11 +127,29 @@ export async function renderAllTeamSheets(
   return renderPieces(doc, pieces, options);
 }
 
-/** People with at least one job, in the order the document holds them. */
+/** People with at least one job or a box to take, in the order the document holds them. */
 export function peopleWithJobs(doc: BrigadeDoc): string[] {
   return doc.people
-    .filter((person) => doc.jobs.some((job) => job.personIds.includes(person.id)))
+    .filter((person) => personJobs(doc, person.id).length > 0)
     .map((person) => person.id);
+}
+
+/**
+ * One person's jobs, and a row for each box they take: derived from the box
+ * each time, never stored as a job, so it follows the box and its block.
+ */
+function personJobs(doc: BrigadeDoc, personId: string): Job[] {
+  const boxes = doc.boxes
+    .filter((box) => box.personIds.includes(personId))
+    .map((box) => ({
+      id: `box:${box.id}`,
+      blockId: box.blockId,
+      label: `Box ${box.number}: ${box.name}`,
+      notes: box.notes,
+      teamId: null,
+      personIds: box.personIds,
+    }));
+  return [...doc.jobs.filter((job) => job.personIds.includes(personId)), ...boxes];
 }
 
 /**
@@ -156,10 +174,7 @@ function personPiece(doc: BrigadeDoc, personId: string): Piece {
       .filter(Boolean)
       .join("  ·  "),
     columns: OWN,
-    jobs: inDayOrder(
-      doc,
-      doc.jobs.filter((job) => job.personIds.includes(personId)),
-    ),
+    jobs: inDayOrder(doc, personJobs(doc, personId)),
   };
 }
 
