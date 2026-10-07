@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import zlib from "node:zlib";
 import { describe, expect, it } from "vitest";
+import { openPdf } from "@/lib/pdf/readPdf";
 import { BUNDLED_FONTS } from "../../assets/fonts";
 import { parseCsv } from "@/lib/data/csv";
 import { buildArtefacts } from "../../core/data/artefacts";
@@ -49,12 +50,6 @@ function contentStreams(bytes: Uint8Array): string[] {
     }
   }
   return out;
-}
-
-async function openPdf(bytes: Uint8Array) {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const task = pdfjs.getDocument({ data: new Uint8Array(bytes) });
-  return { task, doc: await task.promise };
 }
 
 async function extractText(bytes: Uint8Array, pageNumber: number): Promise<string> {
