@@ -38,8 +38,8 @@ export const RETENTION_MONTHS = 24;
 
 export const PRIVACY: Policy = {
   title: "Privacy",
-  updated: "2026-10-06",
-  digest: "155ff0eba13d11de",
+  updated: "2026-10-07",
+  digest: "d1216e2ae196655e",
   intro:
     "Knotwork is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
   sections: [
@@ -81,7 +81,7 @@ export const PRIVACY: Policy = {
     {
       heading: "What a supplier's link contains",
       paragraphs: [
-        "Each supplier can be given a link to their own call sheet: when to arrive, which of their people are named, and their jobs with the times, places and dates — with the couple's names, the date and the venue. It carries no guests at all, and nothing of any other supplier's.",
+        "Each supplier can be given a link to their own call sheet: when to arrive, which of their people are named, their jobs with the times, places and dates, and the parts of the day they are in, with times and places, to add to their calendar — with the couple's names, the date and the venue. It carries no guests at all, and nothing of any other supplier's.",
         "It is sealed the same way as the guest link, under a key in the link's fragment that is also kept with your wedding, and it updates itself as their jobs and times change.",
         "It has one button, Confirm. Pressing it records when, against that link and nothing else, and that date shows on your wedding as the day they confirmed. Taking the link down deletes it outright, and it goes by itself if that supplier is removed from your wedding.",
       ],

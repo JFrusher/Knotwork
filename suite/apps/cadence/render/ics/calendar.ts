@@ -62,47 +62,82 @@ function localTime(date: string, minutes: number): string {
 
 const stamp = (now: Date) => now.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
-const slug = (text: string) =>
+export const slug = (text: string) =>
   text
     .toLowerCase()
     .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-export function calendar(doc: TimelineDoc, options: CalendarOptions): string {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(options.date)) throw new Error("A calendar needs the wedding's date.");
+/** One block as a calendar event: what a supplier's sealed sheet carries, so it can make the same file. */
+export interface CalendarEvent {
+  id: string;
+  label: string;
+  location: string;
+  startMin: number;
+  /** When what happens in it ends, before any buffer. */
+  endMin: number;
+}
 
+/** The day, or one tag's part of it, ready to be written as a file. */
+export interface CalendarDay {
+  /** The couple's names, as the Timeline has them. */
+  couple: string;
+  /** The tag's name, or "" for the whole day. */
+  tagLabel: string;
+  /** Soonest first. */
+  events: CalendarEvent[];
+}
+
+export function calendarDay(doc: TimelineDoc, tag?: string): CalendarDay {
   const positions = new Map(resolve(doc).map((entry) => [entry.id, entry]));
-  const couple = doc.day.coupleNames.trim();
-  const title = [couple || "The wedding", options.tag === undefined ? "" : tagLabel(doc, options.tag)].filter(Boolean).join(" — ");
+  return {
+    couple: doc.day.coupleNames.trim(),
+    tagLabel: tag === undefined ? "" : tagLabel(doc, tag),
+    events: doc.blocks
+      .filter((block) => tag === undefined || block.tags.includes(tag))
+      .flatMap((block) => {
+        const at = positions.get(block.id);
+        return at
+          ? [{ id: block.id, label: block.label, location: block.location.trim(), startMin: at.startMin, endMin: at.contentEndMin }]
+          : [];
+      })
+      .sort((a, b) => a.startMin - b.startMin),
+  };
+}
+
+export function calendar(doc: TimelineDoc, options: CalendarOptions): string {
+  return calendarFile(calendarDay(doc, options.tag), options.date, options.now);
+}
+
+/**
+ * The file. A block's notes are left out: they can say anything, and the same
+ * file goes to a supplier through their link.
+ */
+export function calendarFile(day: CalendarDay, date: string, now: Date): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("A calendar needs the wedding's date.");
+
+  const title = [day.couple || "The wedding", day.tagLabel].filter(Boolean).join(" — ");
   // Stable, so importing the file again updates the events rather than doubling
   // them; and particular to this wedding, because two weddings' days can share
   // block ids when one was started from the other's running order.
   // `@trousseau` from before the rename, kept on purpose: a UID is what lets a
   // calendar update an event it already has rather than add a second copy,
   // so it must never change. The name shown is PRODID's job, below.
-  const uidSuffix = `${options.date}.${slug(couple) || "wedding"}@trousseau`;
+  const uidSuffix = `${date}.${slug(day.couple) || "wedding"}@trousseau`;
 
-  const events = doc.blocks
-    .filter((block) => options.tag === undefined || block.tags.includes(options.tag))
-    .flatMap((block) => {
-      const at = positions.get(block.id);
-      return at ? [{ block, at }] : [];
-    })
-    .sort((a, b) => a.at.startMin - b.at.startMin)
-    .flatMap(({ block, at }) => [
-      "BEGIN:VEVENT",
-      `UID:${block.id}.${uidSuffix}`,
-      `DTSTAMP:${stamp(options.now)}`,
-      `DTSTART:${localTime(options.date, at.startMin)}`,
-      // An end only where there is a length: the RFC wants it after the start,
-      // and an event with only a start is exactly what a moment is.
-      ...(at.contentEndMin > at.startMin ? [`DTEND:${localTime(options.date, at.contentEndMin)}`] : []),
-      `SUMMARY:${escapeText(block.label)}`,
-      ...(block.location.trim() ? [`LOCATION:${escapeText(block.location.trim())}`] : []),
-      ...(block.notes.trim() ? [`DESCRIPTION:${escapeText(block.notes.trim())}`] : []),
-      "END:VEVENT",
-    ]);
+  const events = day.events.flatMap((event) => [
+    "BEGIN:VEVENT",
+    `UID:${event.id}.${uidSuffix}`,
+    `DTSTAMP:${stamp(now)}`,
+    `DTSTART:${localTime(date, event.startMin)}`,
+    // An end only where there is a length: the RFC wants it after the start,
+    // and an event with only a start is exactly what a moment is.
+    ...(event.endMin > event.startMin ? [`DTEND:${localTime(date, event.endMin)}`] : []),
+    `SUMMARY:${escapeText(event.label)}`,
+    ...(event.location ? [`LOCATION:${escapeText(event.location)}`] : []),
+    "END:VEVENT",
+  ]);
 
   return [
     "BEGIN:VCALENDAR",

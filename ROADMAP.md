@@ -75,7 +75,7 @@ for a first substantial contribution.
 | **Bar → Money** | The estimated drinks spend shown against the budget, as planned rather than paid. |
 | **Bar → Checklist** | "Buy the drinks" and "Collect the ice", dated back from the day. |
 | **Bar → Boxes** | Crates as boxes, attached to the bar's block. |
-| **Timeline → Supplier links** | Each supplier's calendar file on their own call sheet. |
+| ✅ **Timeline → Supplier links** | Each supplier's calendar file on their own call sheet. |
 
 Source: [toolbox and new tools design](docs/design/specs/2026-09-29-toolbox-and-new-tools-design.md),
 "Tools feeding each other".
