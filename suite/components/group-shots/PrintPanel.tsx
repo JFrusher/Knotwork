@@ -4,7 +4,7 @@ import { useState } from "react";
 import { browserFontSource } from "@/lib/pdf/fontSource";
 import { Button, Empty, Panel, Segmented } from "@/components/ui/controls";
 import { download } from "@/lib/data/file";
-import { shotListCsv } from "@/lib/ensemble/exports";
+import { shotListCsv } from "@/lib/group-shots/exports";
 import { resolveMembers } from "@/lib/cast/resolve";
 import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import type { CastSlice, Guest, Seating, Shots } from "@/lib/model/types";
@@ -48,7 +48,7 @@ export function PrintPanel({
     setBusy(true);
     setError(null);
     try {
-      const { renderShotSheet } = await import("@/lib/ensemble/render/pdf/shotSheet");
+      const { renderShotSheet } = await import("@/lib/group-shots/render/pdf/shotSheet");
       const bytes = await renderShotSheet(
         shots.sections,
         guests,

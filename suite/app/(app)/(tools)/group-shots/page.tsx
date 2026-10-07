@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EnsembleClient } from "./EnsembleClient";
+import { GroupShotsClient } from "./GroupShotsClient";
 
 export const metadata: Metadata = {
   title: "Group shots",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function GroupShotsPage() {
-  return <EnsembleClient />;
+  return <GroupShotsClient />;
 }

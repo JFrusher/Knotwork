@@ -364,7 +364,7 @@ export interface ShotSection {
   shots: Shot[];
 }
 
-/** The `shots` slice. Ensemble's model: the list itself, whoever is in it. */
+/** The `shots` slice. Group shots' model: the list itself, whoever is in it. */
 export interface Shots {
   sections: ShotSection[];
 }

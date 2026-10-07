@@ -5,7 +5,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { Button, Empty, Segmented } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 import { useCast, useEvent, useGuests, useSeating, useShots, useStatus, useWriters } from "@/lib/model/useSuite";
-import { propose } from "@/lib/ensemble/propose";
+import { propose } from "@/lib/group-shots/propose";
 import { CastPanel } from "./CastPanel";
 import { PrintPanel } from "./PrintPanel";
 import { ShotInspector } from "./ShotInspector";
@@ -13,7 +13,7 @@ import { ShotList } from "./ShotList";
 
 type Tab = "shot" | "cast" | "print";
 
-export function EnsembleBoard() {
+export function GroupShotsBoard() {
   const status = useStatus();
   const event = useEvent();
   const guests = useGuests();
@@ -22,7 +22,7 @@ export function EnsembleBoard() {
   const cast = useCast();
   const { setShots, setCast } = useWriters();
 
-  // Ensemble has no store of its own — its edits land on the suite-wide undo
+  // Group shots has no store of its own — its edits land on the suite-wide undo
   // stack, so that is the one the header's undo has to drive.
 
   const [selectedId, setSelectedId] = useState<string | null>(null);

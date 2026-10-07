@@ -20,7 +20,7 @@ const { DEFAULT_BLOCK_OUTPUTS } = await import("@/apps/cadence/core/model/defaul
 const { addJob, addPerson, seedTeamsFromTags, toggleAssignment } = await import(
   "@/lib/model/crewActions"
 );
-const { addSection, addShot, patchShot } = await import("@/lib/ensemble/actions");
+const { addSection, addShot, patchShot } = await import("@/lib/group-shots/actions");
 
 /**
  * Step 4's requirement, as a test: a wedding built through the tools survives

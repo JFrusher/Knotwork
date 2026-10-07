@@ -1,5 +1,5 @@
 // Brigade's page, text and font kit, as the packing list uses it: see the
-// note at the top of lib/ensemble/render/pdf/shotSheet.ts.
+// note at the top of lib/group-shots/render/pdf/shotSheet.ts.
 import { PDFDocument } from "pdf-lib";
 import { embedFamily } from "@/lib/pdf/embedFonts";
 import type { FontSource } from "@/lib/pdf/fontSource";

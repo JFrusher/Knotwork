@@ -246,7 +246,7 @@ async function shotSheet(): Promise<Uint8Array | null> {
   if (total === 0) return null;
 
   const [{ renderShotSheet }, { browserFontSource }] = await Promise.all([
-    import("@/lib/ensemble/render/pdf/shotSheet"),
+    import("@/lib/group-shots/render/pdf/shotSheet"),
     import("@/lib/pdf/fontSource"),
   ]);
 

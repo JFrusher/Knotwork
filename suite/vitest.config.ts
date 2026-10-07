@@ -39,7 +39,7 @@ export default defineConfig({
           name: "suite",
           /*
            * Generous, because this project renders real PDFs too now
-           * (`lib/ensemble/render/pdf`). Alone each takes about a second;
+           * (`lib/group-shots/render/pdf`). Alone each takes about a second;
            * sharing a machine with the rest of the suite they can pass five,
            * and the default timeout then reports a failure about nothing — the
            * assertions here are page counts and text, never speed.

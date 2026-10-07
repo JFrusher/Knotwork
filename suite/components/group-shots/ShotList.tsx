@@ -33,7 +33,7 @@ import {
   renameSection,
   reorderSections,
   reorderShot,
-} from "@/lib/ensemble/actions";
+} from "@/lib/group-shots/actions";
 
 export function ShotList({
   shots,

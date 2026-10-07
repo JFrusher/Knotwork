@@ -2,7 +2,7 @@
 
 import { Panel, TextArea, TextField } from "@/components/ui/controls";
 import { MemberPicker } from "@/components/cast/MemberPicker";
-import { addMember, patchShot, removeMember } from "@/lib/ensemble/actions";
+import { addMember, patchShot, removeMember } from "@/lib/group-shots/actions";
 import type { Event as WeddingEvent } from "@jfrusher/knotwork";
 import type { CastSlice, Guest, Seating, Shot, Shots } from "@/lib/model/types";
 

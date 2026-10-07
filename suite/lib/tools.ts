@@ -101,7 +101,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "group-shots",
     href: "/group-shots",
-    tokens: "ensemble-tokens",
+    tokens: "group-shots-tokens",
     name: "Group shots",
     tagline: "The family photo list, built from who's who.",
     icon: Camera,
@@ -111,7 +111,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "ceremony",
     href: "/ceremony",
-    tokens: "ensemble-tokens",
+    tokens: "group-shots-tokens",
     name: "Ceremony",
     tagline: "Who walks down the aisle, in what order, and to what.",
     icon: Footprints,
