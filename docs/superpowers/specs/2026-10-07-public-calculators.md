@@ -21,7 +21,7 @@ Issue #82. Decided with the maintainer on 2026-10-07. The drinks calculator (#83
 ## The bridge
 
 - **Wanted.** "Use these figures in your own wedding's Bar" goes to `/bar#from-calculator=<settings>`.
-- The Bar reads the settings through the library's `extract("bar")`, so only what the Bar knows survives. It **asks** before applying them through `applyTo("bar")`, the same replace a kept library Bar does: the wedding keeps its head count, evening guests and what it already has, and Undo takes it back. That keeps the rule that a wedding is never replaced silently.
+- The Bar reads the settings through the library's `extract("bar")`, so only what the Bar knows survives. It **asks** before applying them through `applyTo("bar")`, the same replace a kept library Bar does: the wedding keeps its head count, evening guests, any hours the Bar reads from its Timeline and what it already has, and Undo takes it back. An untouched calculator carries the defaults, so using it puts them back. That keeps the rule that a wedding is never replaced silently.
 - The address is cleared once it has been read, so a reload does not ask twice.
 
 ## What comes after drinks

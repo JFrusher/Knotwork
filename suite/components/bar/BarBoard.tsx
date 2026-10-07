@@ -69,7 +69,7 @@ export function BarBoard() {
     void (async () => {
       const ok = await confirm({
         title: "Use the calculator's figures here?",
-        body: <p>The bar&rsquo;s settings here are replaced. How many are coming, and what is already bought, are not. Undo takes it back.</p>,
+        body: <p>The bar&rsquo;s settings here are replaced. How many are coming, hours taken from your Timeline, and what is already bought, are not. Undo takes it back.</p>,
         action: "Use them",
       });
       if (!ok) return;

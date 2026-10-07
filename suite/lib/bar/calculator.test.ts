@@ -36,9 +36,26 @@ describe("the drinks calculator", () => {
     expect(bar.lines.white?.price).toBe(7.5);
   });
 
+  it("carries an untouched calculator too, putting the Bar back to the defaults", () => {
+    const content = fromCalculator(new URL(barHref(startingBar()), "https://x.test").hash);
+    expect(content).not.toBeNull();
+    const doc = migrate({ ...raw, bar: settings });
+    const [[slice, next]] = applyTo("bar", content!, doc as Record<string, unknown>) as [[string, unknown]];
+    expect(readBar(migrate({ ...raw, [slice]: next }))).toMatchObject({ kind: "full", crowd: "usual", figures: {} });
+  });
+
+  it("leaves the hours the Bar reads from the wedding's Timeline", () => {
+    const spans = { evening: { from: "blk-a", to: "blk-b" } };
+    const content = fromCalculator(new URL(barHref(settings), "https://x.test").hash);
+    const doc = migrate({ ...raw, bar: { ...emptyBar(), spans } });
+    const [[, next]] = applyTo("bar", content!, doc as Record<string, unknown>) as [[string, Record<string, unknown>]];
+    expect(next["spans"]).toEqual(spans);
+  });
+
   it("ignores an address it did not make", () => {
     expect(fromCalculator("")).toBeNull();
     expect(fromCalculator("#from-calculator=%7Bnot json")).toBeNull();
     expect(fromCalculator("#something-else")).toBeNull();
+    expect(fromCalculator("#from-calculator=5")).toBeNull();
   });
 });
