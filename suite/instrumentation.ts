@@ -35,8 +35,11 @@ export async function register() {
     dataCollection,
     tracesSampleRate: 0,
     // On by default: a per-minute count of requests sent whether or not
-    // anything broke. Reports here are for faults only.
-    integrations: [Sentry.httpIntegration({ sessions: false })],
+    // anything broke. Reports here are for faults only. Node only: the Edge
+    // build of the SDK has no `httpIntegration`, and this branch is removed
+    // from the Edge bundle at build time.
+    integrations:
+      process.env.NEXT_RUNTIME === "nodejs" ? [Sentry.httpIntegration({ sessions: false })] : undefined,
     beforeSend: (event) => scrubEvent(event),
   });
 }
