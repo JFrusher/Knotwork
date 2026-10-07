@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Sparkles, Wand2 } from "lucide-react";
 import { Button, Empty, Segmented } from "@/components/ui/controls";
 import { ToolUndo } from "@/components/shell/ToolUndo";
+import { useRevealOnPhone } from "@/components/shell/LandscapeGate";
 import { useCast, useEvent, useGuests, useSeating, useShots, useStatus, useWriters } from "@/lib/model/useSuite";
 import { propose } from "@/lib/group-shots/propose";
 import { CastPanel } from "./CastPanel";
@@ -27,6 +28,7 @@ export function GroupShotsBoard() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("shot");
+  const inspector = useRevealOnPhone<HTMLDivElement>(selectedId);
 
   if (status !== "ready") return null;
 
@@ -48,9 +50,9 @@ export function GroupShotsBoard() {
   const selectedShot = shots.sections.flatMap((section) => section.shots).find((shot) => shot.id === selectedId);
 
   return (
-    <div className="flex h-[calc(100dvh-var(--shell-header-h))]">
+    <div className="flex flex-col lg:h-[calc(100dvh-var(--shell-header-h))] lg:flex-row">
       {undo}
-      <div className="flex w-96 shrink-0 flex-col border-r border-charcoal/10">
+      <div className="flex flex-col border-b border-charcoal/10 lg:w-96 lg:shrink-0 lg:border-b-0 lg:border-r">
         <div data-tour="groupshots.seed" className="flex gap-2 border-b border-charcoal/10 p-3">
           <Button icon={Wand2} onClick={() => setShots({ ...shots, sections: propose(shots.sections, guests, seating, "template", event) })}>
             Seed the classic list
@@ -74,7 +76,7 @@ export function GroupShotsBoard() {
         />
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div ref={inspector} className="flex min-w-0 flex-1 flex-col">
         <div data-tour="groupshots.tabs" className="border-b border-charcoal/10 p-3">
           <Segmented
             value={tab}
@@ -92,7 +94,7 @@ export function GroupShotsBoard() {
             (selectedShot ? (
               <ShotInspector shot={selectedShot} shots={shots} cast={cast} guests={guests} seating={seating} event={event} onChange={setShots} />
             ) : (
-              <div className="flex h-full items-center justify-center">
+              <div className="hidden h-full items-center justify-center lg:flex">
                 <Empty>Pick a shot on the left, or add one.</Empty>
               </div>
             ))}

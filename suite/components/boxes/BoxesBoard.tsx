@@ -6,6 +6,7 @@ import { formatClock } from "@/lib/minutes";
 import { Button, Empty, IconButton, NumberField, Panel, SelectField, TextArea, TextField } from "@/components/ui/controls";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { ToolUndo } from "@/components/shell/ToolUndo";
+import { useRevealOnPhone } from "@/components/shell/LandscapeGate";
 import { addBox, addItem, moveItem, patchBox, patchItem, removeBox, removeItem, USUAL_BOXES, withUsualBoxes } from "@/lib/boxes/actions";
 import { DRINKS, drinksChanged, drinksLines, withDrinks } from "@/lib/boxes/drinks";
 import { find, neededAt, packing, whereBy } from "@/lib/boxes/view";
@@ -38,6 +39,7 @@ export function BoxesBoard() {
   const [query, setQuery] = useState("");
   const [note, setNote] = useState<string | null>(null);
   const found = useMemo(() => find(boxes, query), [boxes, query]);
+  const inspector = useRevealOnPhone<HTMLDivElement>(selectedId);
 
   if (status !== "ready") return null;
 
@@ -76,9 +78,9 @@ export function BoxesBoard() {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-var(--shell-header-h))]">
+    <div className="flex flex-col lg:h-[calc(100dvh-var(--shell-header-h))] lg:flex-row">
       <ToolUndo />
-      <div data-tour="boxes.list" className="flex w-96 shrink-0 flex-col border-r border-charcoal/10">
+      <div data-tour="boxes.list" className="flex flex-col border-b border-charcoal/10 lg:w-96 lg:shrink-0 lg:border-b-0 lg:border-r">
         <div className="flex flex-wrap gap-2 border-b border-charcoal/10 p-3">
           <Button icon={Plus} onClick={add}>
             Add a box
@@ -170,7 +172,7 @@ export function BoxesBoard() {
         )}
       </div>
 
-      <div className="min-w-0 flex-1 overflow-y-auto">
+      <div ref={inspector} className="min-w-0 flex-1 overflow-y-auto">
         {selected ? (
           <BoxInspector
             box={selected}
@@ -183,7 +185,7 @@ export function BoxesBoard() {
             onRemoved={() => setSelectedId(null)}
           />
         ) : (
-          <div className="flex h-full items-center justify-center">
+          <div className="hidden h-full items-center justify-center lg:flex">
             <Empty>{boxes.boxes.length === 0 ? "The boxes appear on the left." : "Pick a box on the left."}</Empty>
           </div>
         )}

@@ -226,7 +226,7 @@ function ShotRow({
         {...listeners}
         // Without this the browser scrolls the list instead of dragging the row.
         style={{ touchAction: "none" }}
-        className="mt-0.5 shrink-0 cursor-grab text-slate"
+        className="-my-1 -ml-1.5 shrink-0 cursor-grab p-1.5 text-slate"
         aria-label="Reorder"
       >
         <GripVertical size={13} />

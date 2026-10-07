@@ -81,7 +81,7 @@ export function BarBoard() {
   if (status !== "ready") return null;
 
   return (
-    <div className="flex h-[calc(100dvh-var(--shell-header-h))]">
+    <div className="flex flex-col lg:h-[calc(100dvh-var(--shell-header-h))] lg:flex-row">
       <ToolUndo />
       <BarSheet bar={bar} sum={sum} doc={doc} coupleNames={event.coupleNames} write={(next, label) => setBar(next, { label })} />
     </div>

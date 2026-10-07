@@ -202,7 +202,7 @@ its own. Build only the accepted ones.
 
 Every file a new tool touches, in the order that keeps the build green. The
 Bar is the example throughout. Its id is `bar`, and its pieces are in
-`suite/lib/bar/`, `suite/components/bar/` and `suite/app/(app)/(tools)/bar/`.
+`suite/lib/bar/`, `suite/components/bar/` and `suite/app/(app)/bar/`.
 
 ### The data
 
@@ -280,11 +280,12 @@ exactly what it does to the shopping list.
    The header, the toolbox, the palette and the live presence list all read
    this registry, so they need nothing more.
 
-2. **The route**: `suite/app/(app)/(tools)/<id>/page.tsx`, a server component
-   holding the page's `metadata`, and `<Name>Client.tsx`, which loads the
-   board with `next/dynamic(..., { ssr: false })`. Copy Boxes' pair. The
-   `(tools)` group wraps a tool in the landscape gate. A page meant for a
-   phone, like the Binder, lives outside it.
+2. **The route**: `suite/app/(app)/<id>/page.tsx`, a server component
+   holding the page's `metadata` and a screen-reader `<h1>`, and
+   `<Name>Client.tsx`, which loads the board with
+   `next/dynamic(..., { ssr: false })`. Copy Boxes' pair. A tool that only
+   works on a wide screen goes under `(tools)/` instead, which wraps it in the
+   landscape gate (and supplies the `<h1>`), and has `wide: true`.
 
 3. **The board**, `suite/components/<tool>/<Name>Board.tsx`:
    - Render nothing until `useStatus()` is `"ready"`, because the store

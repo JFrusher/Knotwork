@@ -67,3 +67,11 @@
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
+
+/* Below the gate's width the page scrolls, as a phone expects, rather than the
+   board and the panels each scrolling inside one screenful. */
+@media (max-width: 1023px) {
+  .delegation-scope {
+    height: auto;
+  }
+}
