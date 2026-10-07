@@ -33,6 +33,185 @@ interface Post {
 
 export const POSTS: readonly Post[] = [
   {
+    slug: "the-family-photo-list",
+    title: "The family photo list: who is in each shot, and in what order",
+    description:
+      "Write the group photographs down by who is in them, take them in an order that lets people leave, and give the photographer a sheet with names on it.",
+    published: "2026-10-07",
+    author: "Knotwork",
+    kind: "guide",
+    tool: { href: "/group-shots", name: "Group shots", invitation: "Make your own shot list" },
+    sections: [
+      {
+        paragraphs: [
+          "The family photographs go quickly when the photographer has a list with names on it, in an order that lets people go once they are done. Write each shot down by who is in it, start with the biggest groups that include the oldest guests, and print it for the photographer and whoever is rounding people up. This is written for UK weddings, but none of it is law.",
+        ],
+      },
+      {
+        heading: "Start from the usual shots",
+        paragraphs: [
+          "Most lists are the same at the start: the two of you alone, each of you with your parents, the two of you with all four parents, and the wedding party. In Group shots, Seed the classic list puts those in, in your own names rather than \"the bride\" and \"the groom\". Then delete what does not apply and add your own.",
+          "If your families are already on the guest list, + families and groups adds one shot for each family and named group, filed under whose side they are. Pressing either button again adds nothing that is already there.",
+        ],
+      },
+      {
+        heading: "Name the people once",
+        paragraphs: [
+          "The classic shots are written by role: your mother, their father, your wedding party. Say who fills each role once, in Who's who, and every shot that uses it shows the name. If you get a name wrong, correct it there and every shot follows.",
+          "A shot can also hold particular guests, a whole family, or something that is not on the guest list at all, like the dog.",
+        ],
+      },
+      {
+        heading: "Before the day",
+        paragraphs: [
+          "Group shots checks the list as you write it. It tells you about a shot with nobody in it, a guest who has said they are not coming, and a guest or family who has been taken off the list since the shot was written.",
+        ],
+      },
+      {
+        heading: "The sheet for the photographer",
+        paragraphs: [
+          "Download PDF prints the list on A4 or A5, numbered, section by section, with the names in each shot written out. Download CSV gives the same list as a spreadsheet, if your photographer would rather have that. Give a copy to someone who knows both families, too: the photographer can take the picture, but someone has to find Uncle Pete.",
+        ],
+      },
+    ],
+    sources: [],
+  },
+  {
+    slug: "who-does-what-on-the-wedding-day",
+    title: "Who does what on the wedding day, and how everyone knows",
+    description:
+      "Hang each job off the part of the day it happens in, put a name on it, and give everyone a sheet with only their own jobs on it.",
+    published: "2026-10-07",
+    author: "Knotwork",
+    kind: "guide",
+    tool: { href: "/delegation", name: "Delegation", invitation: "Share out your own jobs" },
+    sections: [
+      {
+        paragraphs: [
+          "On the day, every small job needs a name on it, or it is left to whoever notices, which is usually one of you. Make the list against the timeline of the day, put a person on each job, check nobody is in two places at once, and give each person a sheet with only their own jobs on it. This is written for UK weddings, but none of it is law.",
+        ],
+      },
+      {
+        heading: "Start from the day",
+        paragraphs: [
+          "Jobs happen during something: the chairs go out before the ceremony, the candles are lit during the turnaround, the cake knife comes out before the cake. So Delegation starts from your Timeline, listing each part of the day in clock order, and you add a job to the part it belongs to with + Job. If there is no day yet, build it in Timeline first and it appears in Delegation.",
+          "Because each job hangs off its part of the day, its time comes from the timeline. Move the ceremony in Timeline and the jobs around it move too.",
+        ],
+      },
+      {
+        heading: "A name on every job",
+        paragraphs: [
+          "Pick a job and put people on it, from your guest list or by name. People can be in a team, the caterers or the ushers, and a job can go to a team before you know who in it will do it. Filter the board to the jobs nobody is named on to see what is left.",
+        ],
+      },
+      {
+        heading: "Nobody in two places",
+        paragraphs: [
+          "Delegation checks the board as you go. It tells you about a job nobody is on, and one that is on a team but nobody by name, but it still lets you print, because the sheets are often how the gaps get filled.",
+          "Two things stop the printing until you fix them: someone on two jobs that run at the same time, and a job left hanging off a part of the day you have since deleted. A sheet that puts somebody in two places is worse than none.",
+        ],
+      },
+      {
+        heading: "Everyone gets their own sheet",
+        paragraphs: [
+          "Download a PDF as one job list for the whole day, a sheet per person, or a sheet per team. A sheet per person is the useful one: your brother does not need to read the caterer's jobs to find his own.",
+        ],
+      },
+    ],
+    sources: [],
+  },
+  {
+    slug: "import-your-guest-list-from-joy-zola-or-the-knot",
+    title: "Bringing your guest list over from Joy, Zola or The Knot",
+    description:
+      "Export the list as a CSV, import it, say which column is which, and check what will change before anything does. Importing again later updates it.",
+    published: "2026-10-07",
+    author: "Knotwork",
+    kind: "guide",
+    tool: { href: "/guests", name: "Guests", invitation: "Import your own list" },
+    sections: [
+      {
+        paragraphs: [
+          "If your replies are coming in through a wedding website like Joy, Zola or The Knot, export the guest list from it as a CSV file and import that. You say which column is which, see exactly what will change, and nothing is saved until you agree. When more replies arrive, export and import again: the people already on your list are updated, not added twice. This is written for UK weddings, but it works for a list from anywhere.",
+        ],
+      },
+      {
+        heading: "Export a CSV",
+        paragraphs: [
+          "Each of these sites can download your guest list as a spreadsheet, and the menus move, so look for Export in the guest list. If it gives you an Excel file, open it and save it as CSV. A spreadsheet you kept yourself works the same way.",
+        ],
+      },
+      {
+        heading: "Say which column is which",
+        paragraphs: [
+          "On the Guests page, press Import guests and choose the file. Knotwork guesses which column holds the first names, the last names or a whole name, the email, the RSVP, dietary needs, the main course, the side and the notes, from the column headings. Check each guess, and leave any field blank that you do not want brought over. The only one you must give is the names.",
+          "Every site words its RSVP answers differently, so Knotwork lists each answer it finds in that column and asks what it means: coming, not coming or no answer yet. If there is a column for whose side a guest is on, it asks the same about that.",
+        ],
+      },
+      {
+        heading: "See what will change",
+        paragraphs: [
+          "Before anything is saved you see how many guests are new, how many are updated and how many are unchanged, and rows with no name are skipped. A guest already on your list is matched by email first, then by a name nobody else on the list has. If a name matches more than one guest, none of them is changed, and you can tick the ones who are someone new.",
+          "Anyone on your list who is not in the file is shown to you and kept, unless you tick them. Nobody loses their seat in an import.",
+        ],
+      },
+      {
+        heading: "Doing it again",
+        paragraphs: [
+          "Import as often as you like. Each time, the new replies update the guests you have, and the seating plan, the place cards and the rest of your wedding read the same list, so there is nothing to copy across.",
+        ],
+      },
+    ],
+    sources: [],
+  },
+  {
+    slug: "print-your-own-place-cards",
+    title: "How to print your own place cards",
+    description:
+      "Check your printer's scale on plain paper, line up the backs if you print both sides, and let the table numbers come from the seating plan.",
+    published: "2026-10-07",
+    author: "Knotwork",
+    kind: "guide",
+    tool: { href: "/stationery", name: "Stationery", invitation: "Make your own place cards" },
+    sections: [
+      {
+        paragraphs: [
+          "You can print place cards at home on an ordinary printer. Measure what your printer does to sizes before you print on card, line the backs up if you print both sides, and take the names and table numbers from the seating plan rather than typing them. That is all a print service does for you. This is written for UK weddings, and A4, but nothing in it is law.",
+        ],
+      },
+      {
+        heading: "The paper",
+        paragraphs: [
+          "Use the heaviest card your printer says it will feed, and buy a few sheets more than you need. Before any of it goes in, print on plain paper. Stationery's Two test cards button prints the first two cards on one sheet, at true size, with the cut lines on, so your first print is never on the good card.",
+          "The classic place card in Stationery is 85 by 55mm, flat, with the name in the middle and the table beneath it. Change the size under Format, and Stationery works out how to fit the most cards on a sheet.",
+        ],
+      },
+      {
+        heading: "Check the scale first",
+        paragraphs: [
+          "Printer drivers often shrink a page a little to fit it, and you will not notice until the cards are too small for their holders. So measure it. In Stationery, open Print setup under Output and press Download calibration page. Print it at 100%, with \"fit to page\" turned off, and measure the line printed on it, which should be 100mm. Type in what you measured and save it.",
+          "From then on every export is corrected for that printer, and the correction is printed on the sheet, so a print that comes out wrong says why. The same page has a cross 10mm in from each edge. If one is missing or cut off, your printer cannot reach that edge: type the border you measured and Stationery warns you when a fold or a bleed lands in it.",
+        ],
+      },
+      {
+        heading: "Printing both sides",
+        paragraphs: [
+          "A card with something on the back, a menu or a message, has to have its back land behind its front. Most home printers are a millimetre or two out, and some turn the paper on the other edge to the one you expect.",
+          "Under Print setup, open Double-sided. Choose the edge your printer turns the paper on, usually the long edge, and download the duplex test sheet. Print it on both sides of one sheet of thin paper, at 100%, and hold it up to a window, reading from the back. A mark inside its box means the edge is right. Four numbered scales show how far out the back is: type in what each one reads and apply them, and the backs are moved by that much. Print the test again and all four should read 0.",
+          "If the two pairs of scales disagree by more than a millimetre, the sheet went through crooked. Moving the back cannot fix that, so feed the paper straight and test again.",
+        ],
+      },
+      {
+        heading: "Table numbers from the plan",
+        paragraphs: [
+          "Do not type the names in. The place cards read the guest list and the seating plan, so each card already carries the guest's name and their table, and only guests who are coming get one. Someone with no table yet still gets a card, with the table left blank, and Stationery tells you how many there are.",
+          "Plans change after you print. When they do, Stationery says which cards have changed since you printed them and offers to print just those, so a late change costs one sheet, not the set.",
+        ],
+      },
+    ],
+    sources: [],
+  },
+  {
     slug: "a-wedding-day-timeline-you-can-move",
     title: "A wedding day timeline you can move",
     description:

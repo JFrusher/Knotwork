@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { openPdf } from "@/lib/pdf/readPdf";
 import { mmToPt } from "../../core/units";
 import { duplexTestPdf } from "./duplexTestPdf";
 
 async function read(bytes: Uint8Array) {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const task = pdfjs.getDocument({ data: new Uint8Array(bytes) });
-  const doc = await task.promise;
+  const { task, doc } = await openPdf(bytes);
   const pages = [];
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);

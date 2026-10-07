@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { Knotwork } from "@jfrusher/knotwork";
 import { FileSpreadsheet, ListChecks, RotateCcw } from "lucide-react";
 import { Button, Check, Panel, Segmented, SelectField } from "@/components/ui/controls";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { ToolUndo } from "@/components/shell/ToolUndo";
+import { useConfirm } from "@/components/ui/Confirm";
+import { fromCalculator } from "@/lib/bar/calculator";
+import { applyTo } from "@/lib/library/items";
 import {
   chooseKind,
   resetMix,
@@ -24,7 +28,7 @@ import { hiddenToolIds } from "@/lib/model/toolbox";
 import { formatClock } from "@/lib/minutes";
 import { CROWD_NAMES, FIGURE_DEFAULTS, KIND_NAMES, LINES, MIXES, SHOP_NAMES } from "@/lib/bar/defaults";
 import { buyWords, forWords, shoppingCsv, shoppingList, spendWords } from "@/lib/bar/rows";
-import { barSum, figure, mixOf, type LineSum } from "@/lib/bar/sum";
+import { barSum, figure, mixOf, type BarSum, type LineSum } from "@/lib/bar/sum";
 import { download } from "@/lib/data/file";
 import { useBar, useEvent, useStatus, useWriters } from "@/lib/model/useSuite";
 import { useKnotworkStore } from "@/lib/store/useKnotworkStore";
@@ -53,11 +57,58 @@ export function BarBoard() {
   const doc = useKnotworkStore((s) => s.doc);
   const event = useEvent();
   const { setBar } = useWriters();
-  const [note, setNote] = useState<string | null>(null);
+  const confirm = useConfirm();
+
+  // Settings carried from the public calculator are offered, never applied
+  // unasked: they replace this wedding's, as a kept Bar from the library does.
+  useEffect(() => {
+    if (status !== "ready") return;
+    const content = fromCalculator(window.location.hash);
+    if (!content) return;
+    window.history.replaceState(null, "", window.location.pathname);
+    void (async () => {
+      const ok = await confirm({
+        title: "Use the calculator's figures here?",
+        body: <p>The bar&rsquo;s settings here are replaced. How many are coming, hours taken from your Timeline, and what is already bought, are not. Undo takes it back.</p>,
+        action: "Use them",
+      });
+      if (!ok) return;
+      const state = useKnotworkStore.getState();
+      state.setSlices(applyTo("bar", content, state.raw), { label: "using the calculator's figures" });
+    })();
+  }, [status, confirm]);
 
   if (status !== "ready") return null;
 
-  const stem = (event.coupleNames || "wedding").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "wedding";
+  return (
+    <div className="flex h-[calc(100dvh-var(--shell-header-h))]">
+      <ToolUndo />
+      <BarSheet bar={bar} sum={sum} doc={doc} coupleNames={event.coupleNames} write={(next, label) => setBar(next, { label })} />
+    </div>
+  );
+}
+
+/**
+ * The figures and what to buy, for the Bar and the public calculator alike, so
+ * the two show the same sums the same way. With no wedding (`doc` null) the
+ * head count is typed and the hours are never read from a Timeline.
+ */
+export function BarSheet({
+  bar,
+  sum,
+  doc,
+  coupleNames,
+  write,
+}: {
+  bar: Bar;
+  sum: BarSum;
+  doc: Knotwork | null;
+  coupleNames: string;
+  write: (next: Bar, label: string) => void;
+}) {
+  const [note, setNote] = useState<string | null>(null);
+
+  const stem = (coupleNames || "wedding").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "wedding";
   const print = async () => {
     setNote(null);
     try {
@@ -67,7 +118,7 @@ export function BarBoard() {
       ]);
       const bytes = await renderShoppingList(shoppingList(bar, sum), {
         fontSource: browserFontSource(),
-        coupleNames: event.coupleNames,
+        coupleNames,
         forWhom: forWords(sum),
         spend: spendWords(sum),
         generatedOn: `Made with Knotwork, ${new Date().toLocaleDateString()}`,
@@ -78,7 +129,6 @@ export function BarBoard() {
     }
   };
 
-  const write = (next: Bar, label: string) => setBar(next, { label });
   const { heads, each } = sum;
 
   const field = (id: Figure) => (
@@ -91,9 +141,8 @@ export function BarBoard() {
   );
 
   return (
-    <div className="flex h-[calc(100dvh-var(--shell-header-h))]">
-      <ToolUndo />
-      <div data-tour="bar.figures" className="w-[26rem] shrink-0 overflow-y-auto border-r border-charcoal/10 p-4">
+    <>
+      <div data-tour="bar.figures" className="overflow-y-auto border-charcoal/10 p-4 lg:w-[26rem] lg:shrink-0 lg:border-r">
         <h2 className="mb-4 font-display text-2xl text-charcoal">The figures</h2>
         <Panel title="Who">
           <div className="flex items-center justify-between gap-2 text-sm text-charcoal">
@@ -106,7 +155,7 @@ export function BarBoard() {
               className={`${CONTROL} w-20`}
             />
           </div>
-          <p className="mt-1 text-xs text-slate">
+          {doc && <p className="mt-1 text-xs text-slate">
             {heads.typed ? (
               <>
                 Typed: the guest list has {heads.listed}.{" "}
@@ -117,7 +166,7 @@ export function BarBoard() {
             ) : (
               "From the guest list: everyone who has not said no."
             )}
-          </p>
+          </p>}
           <div className="mt-3 flex flex-col gap-2">
             {field("eveningGuests")}
             {field("notDrinkingPct")}
@@ -141,12 +190,12 @@ export function BarBoard() {
         <Panel title="The day">
           <p className="mb-2 text-xs text-slate">Drinks each, for those drinking. Set a part to nothing if you are not buying for it — a venue&rsquo;s own bar.</p>
           <div className="flex flex-col gap-2">
-            <HoursField part="reception" bar={bar} doc={doc} typed={field("receptionHours")} onChange={write} />
+            {doc ? <HoursField part="reception" bar={bar} doc={doc} typed={field("receptionHours")} onChange={write} /> : field("receptionHours")}
             {field("receptionPerHour")}
             <Each>{number(each.reception)} each at the reception</Each>
             {field("toastGlasses")}
             {field("mealGlasses")}
-            <HoursField part="evening" bar={bar} doc={doc} typed={field("eveningHours")} onChange={write} />
+            {doc ? <HoursField part="evening" bar={bar} doc={doc} typed={field("eveningHours")} onChange={write} /> : field("eveningHours")}
             {field("eveningPerHour")}
             <Each>{number(each.evening)} each in the evening</Each>
           </div>
@@ -186,6 +235,7 @@ export function BarBoard() {
           <p className="mt-4 text-sm text-slate">Nobody to buy for yet. Add the guests, or type how many are coming.</p>
         ) : (
           <>
+            <div className="overflow-x-auto">
             <table aria-label="What to buy" className="mt-4 w-full text-sm">
               <thead>
                 <tr className="border-b border-charcoal/10 text-left text-xs tracking-wide text-slate">
@@ -204,6 +254,7 @@ export function BarBoard() {
                 ))}
               </tbody>
             </table>
+            </div>
             <p className="mt-4 text-sm text-charcoal">{spendWords(sum)}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Button icon={ListChecks} onClick={() => void print()}>
@@ -221,7 +272,7 @@ export function BarBoard() {
           </>
         )}
       </div>
-    </div>
+    </>
   );
 }
 

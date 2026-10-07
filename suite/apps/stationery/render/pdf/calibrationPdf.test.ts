@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { openPdf } from "@/lib/pdf/readPdf";
 import { mmToPt } from "../../core/units";
 import { calibrationPdf } from "./calibrationPdf";
 
 async function pageOne(bytes: Uint8Array) {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const task = pdfjs.getDocument({ data: new Uint8Array(bytes) });
-  const doc = await task.promise;
+  const { task, doc } = await openPdf(bytes);
   const page = await doc.getPage(1);
   const content = await page.getTextContent();
   const text = content.items.map((i) => ("str" in i ? i.str : "")).join(" ");

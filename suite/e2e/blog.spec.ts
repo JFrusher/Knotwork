@@ -41,6 +41,26 @@ test("the blog is in the sitemap, post by post", async ({ request }) => {
 
 for (const guide of [
   {
+    slug: "the-family-photo-list",
+    title: "The family photo list: who is in each shot, and in what order",
+    tool: { link: "Make your own shot list in Group shots", url: /\/group-shots$/ },
+  },
+  {
+    slug: "who-does-what-on-the-wedding-day",
+    title: "Who does what on the wedding day, and how everyone knows",
+    tool: { link: "Share out your own jobs in Delegation", url: /\/delegation$/ },
+  },
+  {
+    slug: "import-your-guest-list-from-joy-zola-or-the-knot",
+    title: "Bringing your guest list over from Joy, Zola or The Knot",
+    tool: { link: "Import your own list in Guests", url: /\/guests$/ },
+  },
+  {
+    slug: "print-your-own-place-cards",
+    title: "How to print your own place cards",
+    tool: { link: "Make your own place cards in Stationery", url: /\/stationery$/ },
+  },
+  {
     slug: "how-to-make-a-wedding-seating-chart",
     title: "How to make a wedding seating chart, and keep it up to date",
     tool: { link: "Draw your room and seat your guests in Seating", url: /\/seating$/ },
