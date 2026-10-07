@@ -1,13 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FileSpreadsheet, ListChecks, PackagePlus, Plus, Tag, Trash2, X } from "lucide-react";
+import { FileSpreadsheet, ListChecks, PackagePlus, Plus, Tag, Trash2, Wine, X } from "lucide-react";
 import { formatClock } from "@/lib/minutes";
 import { Button, Empty, IconButton, NumberField, Panel, SelectField, TextArea, TextField } from "@/components/ui/controls";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { ToolUndo } from "@/components/shell/ToolUndo";
 import { addBox, addItem, moveItem, patchBox, patchItem, removeBox, removeItem, USUAL_BOXES, withUsualBoxes } from "@/lib/boxes/actions";
+import { DRINKS, drinksChanged, drinksLines, withDrinks } from "@/lib/boxes/drinks";
 import { find, neededAt, packing, whereBy } from "@/lib/boxes/view";
+import { hiddenToolIds } from "@/lib/model/toolbox";
 import { boxesCsv, boxRows } from "@/lib/boxes/rows";
 import { download } from "@/lib/data/file";
 import { dayPlaces, personName, type Place } from "@/lib/model/slices";
@@ -29,6 +31,7 @@ export function BoxesBoard() {
   const crew = useCrew();
   const guests = useGuests();
   const event = useEvent();
+  const doc = useKnotworkStore((s) => s.doc);
   const places = useKnotworkStore((s) => dayPlaces(s.doc));
   const { setBoxes } = useWriters();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -41,6 +44,8 @@ export function BoxesBoard() {
   const selected = boxes.boxes.find((box) => box.id === selectedId) ?? null;
   const have = new Set(boxes.boxes.map((box) => box.name.trim().toLowerCase()));
   const usualMissing = USUAL_BOXES.some((usual) => !have.has(usual.name.toLowerCase()));
+  // Only while the wedding has a Bar with something to buy, and no drinks box yet.
+  const drinksAddable = !hiddenToolIds(doc).has("bar") && !have.has(DRINKS.toLowerCase()) && drinksLines(doc).length > 0;
 
   const stem = (event.coupleNames || "wedding").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "wedding";
   const rows = () => boxRows(boxes, places, crew, guests);
@@ -81,6 +86,11 @@ export function BoxesBoard() {
           {usualMissing && (
             <Button icon={PackagePlus} onClick={() => setBoxes(withUsualBoxes(boxes), { label: "adding the usual boxes" })}>
               Add the usual boxes
+            </Button>
+          )}
+          {drinksAddable && (
+            <Button icon={Wine} onClick={() => setBoxes(withDrinks(boxes, doc), { label: "adding the drinks" })}>
+              Add the drinks
             </Button>
           )}
         </div>
@@ -168,6 +178,7 @@ export function BoxesBoard() {
             crew={crew}
             guests={guests}
             places={places}
+            barChanged={selected.name.trim().toLowerCase() === DRINKS.toLowerCase() && !hiddenToolIds(doc).has("bar") && drinksChanged(selected, doc)}
             onChange={setBoxes}
             onRemoved={() => setSelectedId(null)}
           />
@@ -187,6 +198,7 @@ function BoxInspector({
   crew,
   guests,
   places,
+  barChanged,
   onChange,
   onRemoved,
 }: {
@@ -195,6 +207,8 @@ function BoxInspector({
   crew: Crew;
   guests: Record<string, Guest>;
   places: ReadonlyMap<string, Place>;
+  /** A drinks box whose list the Bar no longer agrees with. */
+  barChanged: boolean;
   onChange: (next: Boxes, options: { label: string }) => void;
   onRemoved: () => void;
 }) {
@@ -291,6 +305,7 @@ function BoxInspector({
       </Panel>
 
       <Panel title="In it">
+        {barChanged && <p className="mb-2 text-sm text-slate">The Bar&rsquo;s list has changed since these were added.</p>}
         <ul className="mb-2 flex flex-col gap-1">
           {box.items.map((item) => (
             <li key={item.id} className="flex items-center gap-2">
