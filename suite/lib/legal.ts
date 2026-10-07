@@ -39,7 +39,7 @@ export const RETENTION_MONTHS = 24;
 export const PRIVACY: Policy = {
   title: "Privacy",
   updated: "2026-10-07",
-  digest: "d1216e2ae196655e",
+  digest: "e690d4dde51a825e",
   intro:
     "Knotwork is a wedding planning tool that keeps your wedding in your own browser. This page says exactly what is stored, where, for how long, and what I can and cannot see.",
   sections: [
@@ -55,7 +55,7 @@ export const PRIVACY: Policy = {
       heading: "Where your wedding lives",
       paragraphs: [
         "In your browser. Guests, seating, the running order, the crew and the stationery are all stored on the device you are using, in IndexedDB, and nothing is sent anywhere by default.",
-        "You can use the whole application without any of it ever reaching a server. Making an account changes that — to plan on more than one device, with your partner, or with your planner — and so does publishing a link for your guests or your suppliers, which needs one.",
+        "You can use the whole application without any of it ever reaching a server. Making an account changes that — to plan on more than one device, with your partner, or with your planner — and so does publishing a link for your guests, your suppliers or your helpers, which needs one.",
       ],
     },
     {
@@ -87,16 +87,25 @@ export const PRIVACY: Policy = {
       ],
     },
     {
+      heading: "What a helper's link contains",
+      paragraphs: [
+        "Each person in your crew can be given a link to their own sheet for the day: the running order with its times and places, their jobs and their team's, the boxes and what is in each, the group photos with the names of the people in each, and the phone numbers you have entered for your crew — with the couple's names, the date and the venue.",
+        "It never contains anyone's dietary needs, which can be medical, nor any guest's email address, nor the guest list, the seating plan, money, notes or the checklist. The only guests' names in it are those in the group photos.",
+        "It is sealed the same way as the guest link, under a key in the link's fragment that is also kept with your wedding, and it updates itself as the day changes. If your wedding has a date, the link stops working at the end of the day after it, everywhere in the world; without a date it works until it is taken down. Taking it down deletes it outright, and it goes by itself if that person is removed from your crew.",
+        "Once opened, a copy is kept on the helper's phone so it works without signal at the venue. Taking the link down, or its running out, stops it opening again from the link, but cannot remove a copy already on their phone.",
+      ],
+    },
+    {
       heading: "How long it is kept",
       paragraphs: [
-        `A wedding on an account that is not written to for ${RETENTION_MONTHS} months is deleted automatically, along with its history, its uploaded files, its guest link and its suppliers' links. That is long enough to cover an engagement, the wedding, and a year of still wanting the seating plan.`,
+        `A wedding on an account that is not written to for ${RETENTION_MONTHS} months is deleted automatically, along with its history, its uploaded files, its guest link and its suppliers' and helpers' links. That is long enough to cover an engagement, the wedding, and a year of still wanting the seating plan.`,
         "There is no backup that outlives this. When it is deleted, it is gone.",
       ],
     },
     {
       heading: "Deleting it yourself",
       paragraphs: [
-        "Deleting your account is on the account page — signing in is what proves it is yours. It takes you off every wedding you are on, and deletes each one nobody else is still on, with its history, its files, its guest link and its suppliers' links, immediately. A wedding someone else is on stays with them, because it is their wedding too.",
+        "Deleting your account is on the account page — signing in is what proves it is yours. It takes you off every wedding you are on, and deletes each one nobody else is still on, with its history, its files, its guest link and its suppliers' and helpers' links, immediately. A wedding someone else is on stays with them, because it is their wedding too.",
         "Leaving one wedding works the same way, for that wedding alone. Deleting your account also deletes your library, if you kept one.",
         "Your own browser keeps its copy unless you choose otherwise, because withdrawing from a server is not the same as wanting to lose your seating plan. Signing out asks whether to remove it from the device; clearing this site's data in your browser removes it too.",
       ],
@@ -105,7 +114,7 @@ export const PRIVACY: Policy = {
       heading: "Cookies, tracking and counting visits",
       paragraphs: [
         "No advertising, no tracking pixels, and nothing that follows you from one website to another.",
-        "On the hosted site — this one, not a copy somebody runs elsewhere — visits to each page are counted with Vercel Web Analytics, the host's own counter. For each page it records the page's address, the site the visit came from, the country, and the kind of browser, system and device. Before an address is sent, anything in it that is not simply the page is cut out: the token in a guest link, a supplier's link or an invitation, the id of a wedding, and everything after a ? or a #. Nothing from your wedding is in it — no guest, no name, no table.",
+        "On the hosted site — this one, not a copy somebody runs elsewhere — visits to each page are counted with Vercel Web Analytics, the host's own counter. For each page it records the page's address, the site the visit came from, the country, and the kind of browser, system and device. Before an address is sent, anything in it that is not simply the page is cut out: the token in a guest link, a supplier's or a helper's link, or an invitation, the id of a wedding, and everything after a ? or a #. Nothing from your wedding is in it — no guest, no name, no table.",
         "The hosted site also sends the page's address to Vercel Speed Insights, to measure how quickly pages load. That address is cut the same way first.",
         "It sets no cookie and stores nothing on your device. It tells one visit from another by a code worked out from the request, which changes every day, so a visit cannot be linked to one on another day or on another website. It is done on the basis of legitimate interest: knowing which parts of the site are used.",
         "One cookie exists, and only if you sign in: it holds your session, which is what keeps you signed in between visits. It is not used to track you and there is nothing to opt into, because without an account no cookie is set at all.",

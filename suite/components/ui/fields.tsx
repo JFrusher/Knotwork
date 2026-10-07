@@ -72,10 +72,10 @@ export function TextField({
   placeholder?: string;
   hideLabel?: boolean;
   /**
-   * Passed to the input. `date` and `number` are worth reaching for: they buy
-   * a picker and a numeric keypad on every platform for nothing.
+   * Passed to the input. `date`, `number` and `tel` are worth reaching for:
+   * they buy a picker or the right keypad on every platform for nothing.
    */
-  type?: "text" | "date" | "number" | "email";
+  type?: "text" | "date" | "number" | "email" | "tel";
   /**
    * Offered, not enforced. A free-text field with a list of likely answers is
    * still free text — the church down the road is a real location even though
