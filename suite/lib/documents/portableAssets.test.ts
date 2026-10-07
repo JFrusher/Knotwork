@@ -31,7 +31,7 @@ describe("asset ownership", () => {
     // A wedding written by a later version of the suite, carrying a tool this
     // one has never heard of. Better ignored than stored somewhere arbitrary.
     for (const source of Object.values(SOURCES)) {
-      expect(source.owns("brigade.badge.0001")).toBe(false);
+      expect(source.owns("delegation.badge.0001")).toBe(false);
       expect(source.owns("")).toBe(false);
     }
   });

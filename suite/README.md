@@ -71,7 +71,7 @@ test suites:
   overrides, the icon and image pipelines, and both renderers.
 - **Cadence** — the scheduling resolver, clash detection, slack, NOAA solar, and
   all five printed pieces.
-- **Brigade** — coverage analysis, reconciliation, and the three job-sheet PDFs.
+- **Brigade** (now Delegation) — coverage analysis, reconciliation, and the three job-sheet PDFs.
 
 Two things were rewritten rather than ported. Plaque's CSV reader used papaparse;
 it now uses the dependency-free tokenizer already in the suite, which grew

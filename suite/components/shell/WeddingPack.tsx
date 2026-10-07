@@ -160,9 +160,9 @@ async function runSheet(): Promise<Uint8Array | null> {
 
 async function jobList(): Promise<Uint8Array | null> {
   const [{ renderJobList }, { browserFontSource }, { readSlice }] = await Promise.all([
-    import("@/apps/brigade/render/pdf/jobSheets"),
+    import("@/apps/delegation/render/pdf/jobSheets"),
     import("@/lib/pdf/fontSource"),
-    import("@/apps/brigade/state/sliceBridge"),
+    import("@/apps/delegation/state/sliceBridge"),
   ]);
   const doc = readSlice(useKnotworkStore.getState().doc);
   if (doc.jobs.length === 0) return null;

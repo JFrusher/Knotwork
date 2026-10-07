@@ -1,4 +1,4 @@
-// ponytail: imports Brigade's page/table/text/units/font kit rather than making
+// ponytail: imports Delegation's page/table/text/units/font kit rather than making
 // a third near-copy of it (Cadence already carries a second). Promote the
 // shared parts to lib/pdf/ if a fourth tool ever needs this kit.
 import { PDFDocument, type PDFFont } from "pdf-lib";

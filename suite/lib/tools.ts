@@ -91,7 +91,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "delegation",
     href: "/delegation",
-    tokens: "brigade-tokens",
+    tokens: "delegation-tokens",
     name: "Delegation",
     tagline: "The jobs, and the hands doing them.",
     icon: ClipboardList,
@@ -121,7 +121,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "boxes",
     href: "/boxes",
-    tokens: "brigade-tokens",
+    tokens: "delegation-tokens",
     name: "Boxes",
     tagline: "What is packed in which box, and where each has to be, by when.",
     icon: Package,
@@ -131,7 +131,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "bar",
     href: "/bar",
-    tokens: "brigade-tokens",
+    tokens: "delegation-tokens",
     name: "Bar",
     tagline: "How much drink to buy, in bottles and cases, and roughly what it costs.",
     icon: Wine,
@@ -141,7 +141,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "money",
     href: "/money",
-    tokens: "brigade-tokens",
+    tokens: "delegation-tokens",
     name: "Money",
     tagline: "What each supplier costs, what is paid, and what falls due.",
     icon: Banknote,
@@ -151,7 +151,7 @@ export const TOOLS: readonly Tool[] = [
   {
     id: "checklist",
     href: "/checklist",
-    tokens: "brigade-tokens",
+    tokens: "delegation-tokens",
     name: "Checklist",
     tagline: "What to have done before the day, each with a date.",
     icon: ListChecks,

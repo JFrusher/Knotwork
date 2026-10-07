@@ -45,7 +45,7 @@ const NETWORK_APIS = [
 const MAY_FETCH = [
   join("apps", "plaque", "state", "fontLoader.ts"),
   join("apps", "cadence", "render", "pdf", "fontSource.ts"),
-  join("apps", "brigade", "render", "pdf", "fontSource.ts"),
+  join("apps", "delegation", "render", "pdf", "fontSource.ts"),
 ];
 
 function filesIn(dir: string): string[] {

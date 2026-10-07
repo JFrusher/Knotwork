@@ -1,4 +1,4 @@
-// Brigade's page, text and font kit, as the shot sheet uses it: see the note
+// Delegation's page, text and font kit, as the shot sheet uses it: see the note
 // at the top of lib/group-shots/render/pdf/shotSheet.ts.
 import { PDFDocument } from "pdf-lib";
 import { embedFamily } from "@/lib/pdf/embedFonts";

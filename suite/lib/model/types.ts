@@ -2,7 +2,7 @@
  * The entity shapes the suite reads and writes.
  *
  * These are the shapes the four standalone apps already use, transcribed to
- * TypeScript — Tableaux's guest and table, Cadence's block, Brigade's job.
+ * TypeScript — Tableaux's guest and table, Cadence's block, Delegation's job.
  * They live here rather than in `@jfrusher/knotwork` on purpose: that package
  * validates the envelope and stops at the slice boundary, so that a change to
  * what a guest is does not need a release of the contract. See its
@@ -236,7 +236,7 @@ export interface Seating {
   settings: SeatingSettings;
 }
 
-/** One piece of work on the day. The `crew` slice. Brigade's model. */
+/** One piece of work on the day. The `crew` slice. Delegation's model. */
 export interface Team {
   id: string;
   tag: string | null;

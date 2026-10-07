@@ -13,7 +13,7 @@ import { isDietaryKey, normaliseDietary } from "./dietary";
  * type cannot give.
  *
  * Here rather than in each tool because this file is where the suite actually
- * reads them; Plaque, Brigade and Cadence never touch `event` directly.
+ * reads them; Plaque, Delegation and Cadence never touch `event` directly.
  */
 type EventKeys = keyof typeof eventSchema.shape;
 type Assert<T extends true> = T;

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BrigadeApp } from "./BrigadeClient";
+import { DelegationApp } from "./DelegationClient";
 
 export const metadata: Metadata = {
   title: "Delegation",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function DelegationPage() {
-  return <BrigadeApp />;
+  return <DelegationApp />;
 }

@@ -1,5 +1,5 @@
 /**
- * The labelled fields Cadence and Brigade build their side panels from.
+ * The labelled fields Cadence and Delegation build their side panels from.
  *
  * The two shipped byte-identical copies of this file and its stylesheet — one
  * was made by copying the other, and both then stayed still. Holding it once
@@ -13,7 +13,7 @@
  *
  * The clock helpers come from Cadence, which owns the day: it is the tool that
  * publishes the resolved times everything else reads, so it is the one that
- * should decide what "17:30" means. Brigade held an identical copy.
+ * should decide what "17:30" means. Delegation held an identical copy.
  *
  * These read the token names the three sibling tools share, so they render
  * correctly only inside one of those scopes.

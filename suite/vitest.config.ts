@@ -73,7 +73,7 @@ export default defineConfig({
       {
         resolve: { alias: { "@": root } },
         test: {
-          name: "brigade",
+          name: "delegation",
           /*
            * Generous, because these render real PDFs. Alone each takes about a
            * second; sharing a machine with the rest of the suite they can pass
@@ -84,7 +84,7 @@ export default defineConfig({
            */
           testTimeout: 20_000,
           sequence: { groupOrder: 0 },
-          include: ["apps/brigade/**/*.test.{ts,tsx}"],
+          include: ["apps/delegation/**/*.test.{ts,tsx}"],
           environment: "node",
         },
       },
