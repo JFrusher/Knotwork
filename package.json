@@ -35,7 +35,7 @@
     "clean": "git clean -Xdf node_modules dist .next coverage"
   },
   "dependencies": {
-    "zod": "^4.6.5"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^5.0.3",
